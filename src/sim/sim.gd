@@ -24,6 +24,8 @@ const SAY_INTERVAL := 3.5
 const STREIK_TIME := 5.0
 const DMG_EVENTS_PER_FRAME := 24
 const KASSE_IN := 10
+## Player targeting preference (options): which enemy in range the weapons pick.
+enum Target { CLOSEST, MOST_HP, LEAST_HP }
 const KASSE_OUT := 20              # taken from the Kasse ...
 const KASSE_TAX := 0.25            # ... minus 25 % Kapitalertragsteuer
 const KASSE_REPAIR_DISCOUNT := 0.3
@@ -73,6 +75,7 @@ class SimPlayer:
 	var lifesteal_cd := 0.0
 	var repair_time := 0.0
 	var max_weapons := Content.MAX_WEAPONS
+	var target_mode := 0               # Sim.Target
 
 
 class SimEnemy:
@@ -112,6 +115,7 @@ class SimEnemy:
 	var hit_cd := {}
 	var no_reward := false
 	var encounter := ""
+	var vel := Vector2.ZERO            # measured each frame, for lead aiming
 
 
 class SimProj:
@@ -868,17 +872,18 @@ func _step_weapons(dt: float) -> void:
 			if w["cd"] > 0.0:
 				continue
 			var rng_r := _weapon_range(p, def)
-			var target := _nearest_enemy(p.pos, rng_r)
+			var target := _pick_target(p.pos, rng_r, p.target_mode)
 			if target == null:
 				w["cd"] = 0.05
 				continue
 			w["cd"] = def["cd"]
-			var dir = (target.pos - p.pos).normalized()
+			var aim_at := lead_point(p.pos, target.pos, target.vel, def.get("speed", 0.0))
+			var dir = (aim_at - p.pos).normalized()
 			w["angle"] = dir.angle()
 			if p.flags.has("fax"):
 				p.pending_shots.append({"t": 3.0, "w": wi, "dir": dir})
 			else:
-				_fire(p, w, dir, target.pos)
+				_fire(p, w, dir, aim_at)
 
 
 func _weapon_range(p: SimPlayer, def: Dictionary) -> float:
@@ -988,6 +993,30 @@ func orbit_points(p: SimPlayer) -> Array:
 		for i in count:
 			out.append(p.pos + Vector2.RIGHT.rotated(w["angle"] + TAU * i / count) * def["range"])
 	return out
+
+
+## Picks the target for a weapon among enemies in range, by the player's mode.
+func _pick_target(pos: Vector2, r: float, mode: int) -> SimEnemy:
+	if mode == Target.CLOSEST:
+		return _nearest_enemy(pos, r)
+	var best: SimEnemy = null
+	for e in enemies:
+		if not e.alive or e.behind or e.pos.distance_to(pos) - e.radius > r:
+			continue
+		if best == null or (mode == Target.MOST_HP and e.hp > best.hp) or (mode == Target.LEAST_HP and e.hp < best.hp):
+			best = e
+	return best
+
+
+## Where to aim so a projectile of `speed` meets a target moving with `vel`.
+static func lead_point(from: Vector2, target: Vector2, vel: Vector2, speed: float) -> Vector2:
+	if speed <= 0.0 or vel.length() < 1.0:
+		return target
+	var aim := target
+	for i in 3:
+		var t := from.distance_to(aim) / speed
+		aim = target + vel * t
+	return aim
 
 
 func _nearest_enemy(pos: Vector2, r: float, exclude := {}) -> SimEnemy:
@@ -1227,13 +1256,14 @@ func _step_summons(dt: float) -> void:
 		if s.type == info_t:
 			s.cd -= dt
 			if s.cd <= 0.0:
-				var t := _nearest_enemy(s.pos, s.reach)
+				var owner: SimPlayer = players.get(s.owner)
+				var t := _pick_target(s.pos, s.reach, owner.target_mode if owner else Target.CLOSEST)
 				if t:
 					s.cd = s.fire_cd
 					var pr := SimProj.new()
 					pr.type = Content.idx(Content.PROJ_ORDER, "flugblatt")
 					pr.pos = s.pos
-					pr.vel = (t.pos - s.pos).normalized() * 520.0
+					pr.vel = (lead_point(s.pos, t.pos, t.vel, 520.0) - s.pos).normalized() * 520.0
 					pr.dmg = s.dmg
 					pr.owner = s.owner
 					pr.weapon = "infostand"
@@ -1288,6 +1318,7 @@ func _step_enemies(dt: float) -> void:
 		if not e.alive:
 			continue
 		e.hit_flash = maxf(0.0, e.hit_flash - dt)
+		var pos_before: Vector2 = e.pos
 		if e.poison_t > 0.0:
 			e.poison_t -= dt
 			_damage_poison(e, e.poison * dt)
@@ -1326,6 +1357,7 @@ func _step_enemies(dt: float) -> void:
 		if e.def["ai"] != "flyer":
 			var min_y = WALL_BOTTOM + e.radius if not e.behind else 0.0
 			e.pos = Vector2(clampf(e.pos.x, e.radius, ARENA.x - e.radius), clampf(e.pos.y, min_y + 2.0, ARENA.y - e.radius))
+		e.vel = (e.pos - pos_before) / dt if dt > 0.0 else Vector2.ZERO
 		_contact(e)
 
 
@@ -2144,6 +2176,9 @@ func request(peer: int, action: String, arg = null) -> bool:
 	var p: SimPlayer = players.get(peer)
 	if p == null or p.state == 2:
 		return false
+	if action == "target_mode":
+		p.target_mode = clampi(int(arg), 0, Target.size() - 1)
+		return true
 	if action == "streik":
 		if phase == Phase.WAVE and streik_available:
 			streik_available = false

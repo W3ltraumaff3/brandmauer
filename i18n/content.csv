@@ -98,7 +98,47 @@ ITEM_MATE_KISTE_DESC,"+15 Akkord, −3 Solidarität. Das Herz rast, die Hände a
 ITEM_GEWERKSCHAFTSWESTE_NAME,Gewerkschaftsweste
 ITEM_GEWERKSCHAFTSWESTE_DESC,"+2 Kündigungsschutz, +5 Solidarität. Die Warnweste für den Warnstreik."
 ITEM_WUT_TAGEBUCH_NAME,Wut-Tagebuch
-ITEM_WUT_TAGEBUCH_DESC,+12 Wut. Heute: Nebenkostenabrechnung.
+ITEM_WUT_TAGEBUCH_DESC,+12 Wut. Heute: %s
+WUT_TAGEBUCH_1,Mieterhöhung. Begründung: „Lage“. Die Lage ist ernst.
+WUT_TAGEBUCH_2,Der Zug kam pünktlich. Ich traue dem Frieden nicht.
+WUT_TAGEBUCH_3,Die Pfandflasche lag NEBEN dem Mülleimer. Neben. Dem. Mülleimer.
+WUT_TAGEBUCH_4,Mit Onkel Gerd über Politik geredet. Jetzt ist auch der Kartoffelsalat traurig.
+WUT_TAGEBUCH_5,Drei Stunden Warteschleife beim Bürgeramt. Die Musik wohnt jetzt in meinem Kopf.
+WUT_TAGEBUCH_6,"Strompreis gestiegen, Lohn nicht. Physik kann ich, Mathe leider auch."
+WUT_TAGEBUCH_7,"Mein Chef sagt, wir sind eine Familie. Dann will ich mein Erbe."
+WUT_TAGEBUCH_8,„Störung im Betriebsablauf“. Ich habe zurückgestört. Lauter.
+WUT_TAGEBUCH_9,Wieder „Man wird ja wohl noch sagen dürfen“ gehört. Durfte er. Hat er. Lange.
+WUT_TAGEBUCH_10,Talkshow über Bürgergeld. Gäste: vier Millionär:innen. Puls: 180.
+WUT_TAGEBUCH_11,"„Leistung muss sich wieder lohnen“, sagt der Erbe. Von seiner Yacht aus."
+WUT_TAGEBUCH_12,Der Späti hatte keine Mate mehr. Der Kapitalismus hat viele Gesichter.
+WUT_TAGEBUCH_13,„Wohnung Berlin“ gegoogelt. Google hat gelacht.
+WUT_TAGEBUCH_14,Gelernt: Steuerhinterziehung heißt bei Reichen „Gestaltung“.
+WUT_TAGEBUCH_15,Nachbar hat noch die Fahne von der EM hängen. Die EM ist zwei Jahre her.
+WUT_TAGEBUCH_16,"Das Jobcenter will einen Nachweis, dass ich existiere. Ich habe meine Wut eingereicht."
+WUT_TAGEBUCH_17,„Die Brandmauer steht.“ Wieder ein Loch gefunden.
+WUT_TAGEBUCH_18,Porsche auf dem Radweg. Ich habe ihm Gesellschaft geleistet. Mit Kreide.
+WUT_TAGEBUCH_19,Lobbyist:in mit Hausausweis gesehen. Ich hatte nur Hunger.
+WUT_TAGEBUCH_20,Kurz die Nachrichten angemacht. Kurz die Nachrichten ausgemacht.
+WUT_TAGEBUCH_21,"Leserbrief geschrieben. 14 Seiten, keine Absätze. Ich verstehe Onkel Gerd jetzt."
+WUT_TAGEBUCH_22,„Leistungsträger:innen“ gehört. Gemeint war nicht die Pflege.
+WUT_TAGEBUCH_23,"Heizung kaputt. Macht nichts, die Wut wärmt."
+WUT_TAGEBUCH_24,Kita-Platz: Warteliste Platz 312. Das Kind macht jetzt Abitur.
+WUT_TAGEBUCH_25,„Sozialtourismus“ im Fernsehen. Fernbedienung geworfen. Kam zurück wie eine Pfandflasche.
+WUT_TAGEBUCH_26,Ich bin nicht wütend. Ich bin organisiert wütend. Das ist ein Unterschied.
+WUT_TAGEBUCH_27,Vermieter:in schreibt „Eigenbedarf“. Für den dritten Zweitwohnsitz.
+WUT_TAGEBUCH_28,Die Bahn-App sagt +5 Minuten. Die Bahn-App lügt.
+WUT_TAGEBUCH_29,Heute „Brandmauer“ gegoogelt. Erster Treffer: Baumarkt. Zweiter: Bundestag. Beide bröckeln.
+WUT_TAGEBUCH_30,Gehalt kam. Gehalt ging. Dazwischen: Miete.
+WUT_TAGEBUCH_31,Der Koalitionsvertrag hat 144 Seiten. Gelesen hat ihn niemand. Auch nicht die Koalition.
+WUT_TAGEBUCH_32,Ein Hinterbänkler hat geklatscht. An der falschen Stelle. Mit den Falschen.
+WUT_TAGEBUCH_33,Faxgerät im Amt kaputt. Digitalisierung: verschoben auf 2045.
+WUT_TAGEBUCH_34,Supermarkt: Butter jetzt mit Alarmsicherung. Aktionär:innen jetzt mit Rekorddividende.
+WUT_TAGEBUCH_35,Heute nichts passiert. Verdächtig.
+WUT_TAGEBUCH_36,Jemand hat „Gendersternchen“ gesagt und ist dabei rot angelaufen. Er hat es überlebt. Knapp.
+WUT_TAGEBUCH_37,Sondervermögen beschlossen. Für mich bleibt: das Sonder.
+WUT_TAGEBUCH_38,Im Telegram-Chat der Familie: 47 neue Nachrichten. Ich bin nicht stark genug.
+WUT_TAGEBUCH_39,"Freibad hatte geschlossen. Personalmangel. Wie überall, außer im Aufsichtsrat."
+WUT_TAGEBUCH_40,"Liebes Tagebuch, morgen wird's besser. Haha. Kleiner Scherz."
 ITEM_LAUTSPRECHERWAGEN_NAME,Lautsprecherwagen
 ITEM_LAUTSPRECHERWAGEN_DESC,"+3 Durchschlagskraft, +30 Reichweite. Die Straße gehört dir. Bis dich der Wasserwerfer kriegt."
 ITEM_STRICKLIESEL_NAME,Strickliesel

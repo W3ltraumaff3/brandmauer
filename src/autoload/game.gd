@@ -156,6 +156,12 @@ func request(action: String, arg = null) -> void:
 		Net.send_request(action, arg)
 
 
+## Sends the player's targeting preference (Save option "target_mode") to the host.
+func send_target_mode() -> void:
+	if is_running():
+		request("target_mode", int(Save.option("target_mode", 0)))
+
+
 func back_to_lobby() -> void:
 	if is_host_side():
 		Net.return_to_lobby()
@@ -212,6 +218,8 @@ func _on_run_start(cfg: Dictionary) -> void:
 		meta = {}
 	meta_changed.emit()
 	run_started.emit()
+	if mode != Mode.SERVER:
+		send_target_mode()
 	if mode != Mode.SERVER:
 		screen_requested.emit("run")
 	else:

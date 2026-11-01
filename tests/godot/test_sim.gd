@@ -285,3 +285,31 @@ func test_coop_only_items_not_in_solo_shop() -> void:
 		var o := s._roll_offer(p)
 		assert_false(Content.ITEMS.get(o["id"], {}).get("coop_only", false), "coop item offered in solo: " + o["id"])
 
+
+func test_target_modes() -> void:
+	var s := _sim(["oma"])
+	var p: Sim.SimPlayer = s.players[1]
+	s.enemies.clear()
+	var near := s.spawn_enemy("besorgter_buerger", p.pos + Vector2(60, 0))
+	var tank := s.spawn_enemy("reichsbuerger", p.pos + Vector2(200, 0))
+	var weak := s.spawn_enemy("ju_schnoesel", p.pos + Vector2(-150, 0))
+	near.behind = false
+	tank.behind = false
+	weak.behind = false
+	weak.hp = 1.0
+	assert_eq(s._pick_target(p.pos, 400.0, Sim.Target.CLOSEST), near, "closest")
+	assert_eq(s._pick_target(p.pos, 400.0, Sim.Target.MOST_HP), tank, "most hp")
+	assert_eq(s._pick_target(p.pos, 400.0, Sim.Target.LEAST_HP), weak, "least hp")
+	assert_true(s.request(1, "target_mode", 2))
+	assert_eq(p.target_mode, 2)
+
+
+func test_lead_point_hits_moving_target() -> void:
+	var from := Vector2.ZERO
+	var target := Vector2(300, 0)
+	var vel := Vector2(0, 100)
+	var aim := Sim.lead_point(from, target, vel, 600.0)
+	var t := from.distance_to(aim) / 600.0
+	assert_true(aim.distance_to(target + vel * t) < 2.0, "projectile meets target")
+	assert_eq(Sim.lead_point(from, target, Vector2.ZERO, 600.0), target, "standing target")
+

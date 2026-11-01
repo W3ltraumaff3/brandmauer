@@ -141,6 +141,11 @@ OPTIONS_TITLE,Optionen
 OPTIONS_MUSIC,Musik
 OPTIONS_SFX,Geräusche
 OPTIONS_FULLSCREEN,Vollbild
+OPTIONS_TARGET,Zielauswahl
+OPTIONS_TARGET_CLOSEST,Nächste:r Gegner:in
+OPTIONS_TARGET_MOST_HP,Meiste Lebenspunkte
+OPTIONS_TARGET_LEAST_HP,Wenigste Lebenspunkte
+OPTIONS_TARGET_TIP,"Worauf deine Waffen automatisch zielen. Nächste:r = sicher, Meiste = Elites und Bosse zuerst, Wenigste = schnell aufräumen."
 OPTIONS_FULLSCREEN_ON,an
 OPTIONS_HINT,Wird sofort gespeichert. Ganz ohne Formular.
 # End screen
