@@ -159,6 +159,56 @@ def apply(ALL, check_rows):
     h = byid["hoecke-10"]
     h["notizen"] = ("KLARSTELLUNG 11/2026: Höcke im Spiel als Faschisten zu bezeichnen ist als eigene Meinung (Werturteil) zulässig. "
                     "Nur nie behaupten, ein Gericht habe ihn als Faschisten eingestuft oder festgestellt. ") + h["notizen"]
+    for qid, k in KORREKTUREN.items():
+        q = byid[qid]
+        if "zitat" in k:
+            q["zitat"] = k["zitat"]
+            q["kurz"] = len(k["zitat"].split()) <= 15
+        for f in ("datum", "kontext", "status"):
+            if f in k:
+                q[f] = k[f]
+        for u in k.get("add", []):
+            if u not in q["quellen"]:
+                q["quellen"].append(u)
+        q["notizen"] = (q["notizen"] + " " + k["note"]).strip()
     # Regel 3: Drecksarbeit
     d = byid["merz-16"]
     d["notizen"] = "Ausdrücklich fürs Spiel gewünscht (zeigt seine Haltung); Wortlaut gesichert (ZDF selbst). " + d["notizen"]
+
+
+# Verifikationsdurchgang 11/2026 (siehe research/verifikation.md): Korrekturen am Wortlaut und an Metadaten.
+# id -> dict(zitat=, datum=, kontext=, status=, add=[urls], note=)
+KORREKTUREN = {
+    "merz-01": dict(
+        zitat="[…] aber wir haben natürlich immer im Stadtbild noch dieses Problem",
+        note="VERIFIKATION 11/2026: Auf das gesicherte Fragment gekürzt. Der Rest des Satzes ist in den Quellen uneinheitlich "
+             "(Stuttgarter Zeitung nach Video: 'in sehr großem Umfang Rückführungen', zdfheute und andere: 'in sehr großem Umfang auch Rückführungen'); ohne Video nicht entscheidbar."),
+    "merz-19": dict(
+        datum="2025-11-13",
+        add=["https://www.bundesregierung.de/breg-de/aktuelles/rede-kanzler-handelskongress-2393818"],
+        note="VERIFIKATION 11/2026: Rede beim Handelskongress am 13.11.2025, Wortlaut laut Bundesregierung-Transkript. Brasilien-Reise, aber keine Stadt (nicht 'Belém') nennen."),
+    "spahn-01": dict(
+        kontext="Äußerung in der Debatte um den Aufnahmestopp für Ausländer bei der Essener Tafel (März 2018); er sagte auch: 'Damit hat jeder das, was er zum Leben braucht.'",
+        note="VERIFIKATION 11/2026: Der Wortlaut ist bei Tagesspiegel, Ärzteblatt und t-online belegt; das Medium der ursprünglichen Äußerung (Funke/Berliner Morgenpost?) konnte nicht bestätigt werden, daher nicht genannt."),
+    "soeder-02": dict(
+        add=["https://www.perlentaucher.de/9punkt/2018-04-25.html"],
+        note="VERIFIKATION 11/2026: Ganzer Satz bei bpb (Graf) und perlentaucher wiedergegeben; Originalvideo/Pressekonferenz nicht eingesehen. Begründung laut perlentaucher: 'Bekenntnis zur Identität' und zur 'kulturellen Prägung'."),
+    "merz-33": dict(
+        kontext="Pressekonferenz im Konrad-Adenauer-Haus am Tag nach der Landtagswahl in Sachsen-Anhalt (AfD stärkste Kraft mit über 40 %, CDU historisches Tief).",
+        note="VERIFIKATION 11/2026: Kontext präzisiert; nach apotheke adhoc lag die AfD bei rund 44 %, die CDU bei 17,2 %."),
+    "petry-01": dict(
+        kontext="Interview mit dem 'Mannheimer Morgen' (Samstagsausgabe, 30.01.2016) zum Umgang der Grenzpolizei mit illegalen Grenzübertritten.",
+        note="VERIFIKATION 11/2026: Die frühere Angabe, die Frage habe einem über einen Zaun kletternden Flüchtling gegolten, ist in keiner geprüften Quelle belegt und wurde entfernt. Relativierung von Petry und Meuthen am 01.02.2016 beachten."),
+    "hoecke-02": dict(
+        note="VERIFIKATION 11/2026: Wortlaut ohne 'eine' bestätigt. Drei voneinander unabhängige Transkripte (Tagesspiegel-Dokumentation, brightsblog-Transkript, geschichte-und-politik.info nach YouTube-Mitschnitt) haben übereinstimmend 'Wir brauchen nichts anderes als erinnerungspolitische Wende um 180 Grad!'; später in der Rede 'diese erinnerungspolitische Wende um 180 Grad'. Das 'eine' stammt aus Überschrift und Anmoderation der Tagesspiegel-Dokumentation, nicht aus der Rede. Das DIMR klammert '[eine]' grammatisch ein. Eine eigene Prüfung am Videoton steht aus."),
+    "weidel-03": dict(
+        zitat="Er war dieser kommunistische, sozialistische Typ. Punkt.",
+        note="VERIFIKATION 11/2026: Zitat ersetzt. Die frühere Fassung 'Er war ein Kommunist und sah sich selbst als Sozialisten.' steht nur in der Jüdischen Allgemeinen; die jetzige dpa-Übersetzung steht in Jüdischer Allgemeiner und Stuttgarter Zeitung. Weiterhin nur Übersetzung aus dem englischen Gespräch ('(übersetzt)' kennzeichnen), kein offizielles Transkript."),
+    "weidel-06": dict(
+        note="VERIFIKATION 11/2026: taz schreibt 'rot-lackierte Nazis' (mit Bindestrich), Stuttgarter Zeitung und Transkript ohne; Wortlaut sonst gleich. Nur als Fragment verwenden, nicht als Satz."),
+    "gauland-04": dict(
+        zitat="Wir werden sie jagen! […] und wir werden uns unser Land und unser Volk zurückholen!",
+        note="VERIFIKATION 11/2026: Zitat näher am Original gesetzt (Buchauszug: 'Wir werden sie jagen! Wir werden Frau Merkel oder wen auch immer jagen und wir werden uns unser Land und unser Volk zurückholen!'); die Auslassung ersetzt 'Wir werden Frau Merkel oder wen auch immer jagen'. Kurzform fürs Spiel bleibt 'Wir werden sie jagen.'"),
+    "chrupalla-01": dict(
+        note="VERIFIKATION 11/2026: Satz 1 und 2 wortgleich bei Berliner Zeitung, Berliner Kurier und web.de. zdfheute formuliert den zweiten Satz anders ('Ich sehe aktuell durch Russland keine Gefahr für Deutschland.'), vermutlich Paraphrase. Sicherste Kurzform: 'Mir hat er nichts getan.'"),
+}

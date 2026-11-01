@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parent.parent
 QUOTES = ROOT / "research" / "zitate_de.json"
 
 FIELDS = {"id", "sprecher", "partei", "rolle_damals", "zitat", "datum", "kontext",
-          "quellen", "status", "kategorien", "kurz", "notizen"}
+          "quellen", "status", "kategorien", "kurz", "notizen", "kontext_kurz"}
 STATUSES = {"verifiziert", "sinngemäß", "umstritten", "unverifiziert"}
 CATEGORIES = {"Migration", "Sozialstaat/Arbeit", "Wirtschaft/Kapital", "Klima", "Gender/Familie",
               "Geschichte/NS-Relativierung", "Demokratie/Medien", "Europa", "Sonstiges/Absurd"}

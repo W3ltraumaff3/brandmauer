@@ -226,6 +226,11 @@ static func clipping(quote_id: String, header := "", degrees := -1.2, quote_size
 		var src := type_label("— " + Quotes.source_label(q), quote_size - 3, UITheme.INK_SOFT, true)
 		src.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		inner.add_child(src)
+		var ctx := Quotes.context_label(q)
+		if ctx != "":
+			var cl := type_label(ctx, quote_size - 4, UITheme.GREY)
+			cl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			inner.add_child(cl)
 	box.add_child(paper)
 	return box
 

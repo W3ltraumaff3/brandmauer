@@ -98,6 +98,7 @@ func _add_bubble(pos: Vector2, key: String, quote_id: String) -> void:
 			return
 		b["text"] = "„%s“" % str(q.get("zitat", ""))
 		b["src"] = "– " + Quotes.source_label(q)
+		b["ctx"] = Quotes.context_label(q)
 		b["quote"] = true
 		b["life"] = QUOTE_LIFE
 	elif key != "":
@@ -114,6 +115,10 @@ func _add_bubble(pos: Vector2, key: String, quote_id: String) -> void:
 	var w := QUOTE_W if b["quote"] else BUBBLE_W
 	var sz := font.get_multiline_string_size(b["text"], HORIZONTAL_ALIGNMENT_LEFT, w, fs)
 	var h := sz.y + (22.0 if b["quote"] else 6.0)
+	b["ctx_h"] = 0.0
+	if b["quote"] and str(b.get("ctx", "")) != "":
+		b["ctx_h"] = font.get_multiline_string_size(b["ctx"], HORIZONTAL_ALIGNMENT_LEFT, w, 11).y + 2.0
+		h += b["ctx_h"]
 	b["size"] = Vector2(minf(sz.x, w) + 20.0, h + 14.0)
 	_push(_bubbles, b, MAX_BUBBLES)
 
@@ -248,7 +253,10 @@ func _draw_bubble(b: Dictionary) -> void:
 	var w := QUOTE_W if quote else BUBBLE_W
 	draw_multiline_string(font, r.position + Vector2(10, 8 + fs), b["text"], HORIZONTAL_ALIGNMENT_LEFT, w, fs, -1, Color(INK, a))
 	if quote:
-		draw_string(font, Vector2(r.position.x + 10, r.end.y - 8), b["src"], HORIZONTAL_ALIGNMENT_LEFT, w, 11, Color(0.35, 0.33, 0.3, a))
+		var ctx_h: float = b.get("ctx_h", 0.0)
+		draw_string(font, Vector2(r.position.x + 10, r.end.y - 8 - ctx_h), b["src"], HORIZONTAL_ALIGNMENT_LEFT, w, 11, Color(0.35, 0.33, 0.3, a))
+		if ctx_h > 0.0:
+			draw_multiline_string(font, Vector2(r.position.x + 10, r.end.y - ctx_h + 4), b["ctx"], HORIZONTAL_ALIGNMENT_LEFT, w, 11, -1, Color(0.45, 0.42, 0.38, a))
 
 
 func _heart(c: Vector2, r: float, col: Color) -> void:

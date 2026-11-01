@@ -31,7 +31,7 @@ Taboo, in visuals, names and text:
 ## 3. Real politicians
 
 - **No real, identifiable politician is killed or physically harmed in the game.**
-- **Bosses are parodies with invented names** (e.g. "Der Sauerländer"). When beaten, they're **"in den Aufsichtsrat befördert"**, not killed.
+- **Bosses are parodies with invented names** (e.g. "Der Sauerländer"). When beaten, they're **"abgesetzt"** and sent **"ins politische Abseits"**, not killed.
 - **No Nazi symbols** (§86a StGB), not even satirically, for example in AfD-related content.
 
 ## 4. Quotes
@@ -41,7 +41,9 @@ Taboo, in visuals, names and text:
   - `sinngemäß` quotes may not be presented as quotes.
   - `umstritten` (wording or attribution actually disputed) and `unverifiziert` quotes are not used.
 - **Single-source quotes** need a highly reputable source (dpa, Tagesschau, ZDF…), or they get double-checked. If in doubt, leave them out.
-- **Every quote in the game has a source, date and context** in the Zitat-Album.
+- **Every quote shown anywhere in the game carries speaker, party, date and a short context line** (`kontext_kurz`, e.g. "über Adolf Hitler, im Gespräch mit Elon Musk"). The Album additionally shows the full context and sources.
+- **The most drastic quotes are wanted**, especially NS and Holocaust relativization and racism. A racist quote about a group (even about children) is fine: shown with name and party, it always exposes the speaker. The punch-up rule (§1) is about *our* jokes and drawings, not about quoting what politicians actually said.
+- **The start screen always shows one of the strongest quotes** (use `startbildschirm`).
 - **No inventing, shortening or "smoothing"** a quote's wording. Satire is protected (Art. 5 GG), but a misquote is defamation risk (§§185–188 StGB, Persönlichkeitsrecht).
 - **Our own opinions are allowed** (e.g. calling Höcke a fascist). We just never present an opinion as a court's finding or as a fact that a court ruled on.
 - **Invented satire lines** must look clearly different from real quotes (no source, a different font).

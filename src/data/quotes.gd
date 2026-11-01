@@ -72,4 +72,13 @@ static func source_label(q: Dictionary) -> String:
 		nice = "%s.%s.%s" % [parts[2], parts[1], parts[0]]
 	elif parts.size() == 2:
 		nice = "%s/%s" % [parts[1], parts[0]]
-	return "%s, %s" % [q.get("sprecher", ""), nice]
+	var who: String = q.get("sprecher", "")
+	var party: String = q.get("partei", "")
+	if party != "" and party != "—" and party != "-" and not who.contains("(" + party):
+		who += " (%s)" % party
+	return "%s, %s" % [who, nice]
+
+
+## One short line explaining what the quote was about and where it was said.
+static func context_label(q: Dictionary) -> String:
+	return str(q.get("kontext_kurz", ""))
