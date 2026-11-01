@@ -72,7 +72,7 @@ func build() -> void:
 	refresh()
 	var focus_id := str(mine.get("char", Content.CHAR_ORDER[0]))
 	if _char_buttons.has(focus_id):
-		(_char_buttons[focus_id] as Button).grab_focus.call_deferred()
+		UIKit.focus_later((_char_buttons[focus_id] as Button))
 
 
 func _exit_tree() -> void:

@@ -150,9 +150,9 @@ func _on_overlay_closed(from: Control) -> void:
 	if _name_edit:
 		_name_edit.text = str(UIApi.option("name", _name_edit.text))
 	if from and is_instance_valid(from) and from.is_inside_tree():
-		from.grab_focus()
+		UIKit.focus_later(from)
 	elif _first_button:
-		_first_button.grab_focus()
+		UIKit.focus_later(_first_button)
 
 
 func _on_quit() -> void:

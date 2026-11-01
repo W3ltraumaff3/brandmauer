@@ -1107,7 +1107,17 @@ func _add_xp(xp: float) -> void:
 	meta_dirty = true
 
 
+const MAX_PICKUPS := 250
+
+
 func _drop(type: int, pos: Vector2, value: int, life := -1.0) -> void:
+	# Too many bottles lying around: add the value to an existing bottle instead.
+	if pickups.size() >= MAX_PICKUPS and type == Content.idx(Content.PICKUP_ORDER, "pfand"):
+		for i in 8:
+			var other: SimPickup = pickups[rng.randi_range(0, pickups.size() - 1)]
+			if other.alive and other.type == type:
+				other.value += value
+				return
 	var k := SimPickup.new()
 	k.type = type
 	k.pos = Vector2(clampf(pos.x, 10, ARENA.x - 10), clampf(pos.y, PLAYER_MIN_Y, ARENA.y - 10))

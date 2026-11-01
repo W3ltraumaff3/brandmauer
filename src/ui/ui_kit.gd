@@ -259,7 +259,16 @@ static func clear(c: Node) -> void:
 static func focus_first(root: Node) -> void:
 	var f := _first_focusable(root)
 	if f:
-		f.grab_focus.call_deferred()
+		focus_later(f)
+
+
+## Grab focus next frame, but only if the control still exists and is shown
+## (screens may be swapped within the same frame).
+static func focus_later(c: Control) -> void:
+	var cb := func():
+		if is_instance_valid(c) and c.is_inside_tree() and c.is_visible_in_tree():
+			c.grab_focus()
+	cb.call_deferred()
 
 
 static func _first_focusable(n: Node) -> Control:

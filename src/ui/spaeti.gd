@@ -35,7 +35,7 @@ func _ready() -> void:
 	for n in ["levelup_0", "buy_0", "ready"]:
 		var b := _root_box.find_child(n, true, false) as BaseButton
 		if b and not b.disabled:
-			b.grab_focus.call_deferred()
+			UIKit.focus_later(b)
 			return
 	UIKit.focus_first(_root_box)
 
@@ -124,7 +124,7 @@ func _rebuild() -> void:
 	if keep != "":
 		var target := _root_box.find_child(keep, true, false) as Control
 		if target and target.focus_mode != FOCUS_NONE and not (target is BaseButton and target.disabled):
-			target.grab_focus()
+			UIKit.focus_later(target)
 		else:
 			UIKit.focus_first(_root_box)
 

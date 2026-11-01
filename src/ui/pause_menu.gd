@@ -47,7 +47,7 @@ func _ready() -> void:
 	_card_box.add_child(UIKit.button(tr("MENU_OPTIONS"), _on_options, 24))
 	_quit_btn = UIKit.button(tr("PAUSE_GIVE_UP") if _solo else tr("PAUSE_LEAVE"), _on_quit, 24)
 	_card_box.add_child(_quit_btn)
-	resume.grab_focus.call_deferred()
+	UIKit.focus_later(resume)
 
 
 func resume_game() -> void:
@@ -68,7 +68,7 @@ func _on_options() -> void:
 
 func _on_options_closed() -> void:
 	if is_inside_tree():
-		(_card_box.get_child(3) as Button).grab_focus()
+		UIKit.focus_later(_card_box.get_child(3) as Button)
 
 
 func _on_quit() -> void:

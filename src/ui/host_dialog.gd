@@ -23,7 +23,7 @@ func build() -> void:
 	row.add_child(UIKit.button(tr("UI_CANCEL"), close))
 	row.add_child(go)
 	content.add_child(row)
-	go.grab_focus.call_deferred()
+	UIKit.focus_later(go)
 
 
 func _on_go() -> void:

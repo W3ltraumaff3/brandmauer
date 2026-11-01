@@ -65,7 +65,7 @@ func build() -> void:
 	UIApi.connect_opt(net, "disconnected", _on_failed)
 	UIApi.call_opt(net, "start_lan_discovery")
 	_refresh_lan()
-	_join_btn.grab_focus.call_deferred()
+	UIKit.focus_later(_join_btn)
 
 
 func _exit_tree() -> void:

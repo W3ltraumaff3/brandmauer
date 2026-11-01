@@ -240,3 +240,15 @@ func test_meta_shape() -> void:
 	var pm: Dictionary = m["players"][1]
 	for key in ["pfand", "stats", "weapons", "offers", "levelup_options", "ready", "spend_left"]:
 		assert_true(pm.has(key), "player meta has " + key)
+
+
+func test_pickups_are_capped_without_losing_pfand() -> void:
+	var s := _sim(["oma"])
+	var t := Content.idx(Content.PICKUP_ORDER, "pfand")
+	for i in 400:
+		s._drop(t, Vector2(500, 500), 1)
+	assert_true(s.pickups.size() <= Sim.MAX_PICKUPS, "capped: %d" % s.pickups.size())
+	var total := 0
+	for k in s.pickups:
+		total += k.value
+	assert_true(total >= 395, "value kept: %d" % total)
