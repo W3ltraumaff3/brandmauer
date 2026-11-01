@@ -350,21 +350,21 @@ ITEM_GENERALSCHLUESSEL_DESC,"+20 Direkte Aktion, −10 Solidarität. Öffnet Tü
 ITEM_SOLI_KONZERT_NAME,Soli-Konzert
 ITEM_SOLI_KONZERT_DESC,"+30 Akkord, +10 Eltern, −8 Solidarität. Ohrenbetäubend solidarisch."
 ITEM_HAUSBESETZUNG_NAME,Hausbesetzung
-ITEM_HAUSBESETZUNG_DESC,"ROT · Nahkampf-Build: Nahkampfwaffen ×2 Schaden, alle anderen nur ×0,5. Die Häuser denen, die drin kämpfen."
+ITEM_HAUSBESETZUNG_DESC,"Nahkampf-Build: Nahkampfwaffen ×2 Schaden, alle anderen nur ×0,5. Die Häuser denen, die drin kämpfen."
 ITEM_WURFMASCHINE_NAME,Wurfmaschine
-ITEM_WURFMASCHINE_DESC,"ROT · Fernkampf-Build: Geschosse durchschlagen +1 Ziel und fliegen 50 % schneller, Nahkampf nur ×0,5."
+ITEM_WURFMASCHINE_DESC,"Fernkampf-Build: Geschosse durchschlagen +1 Ziel und fliegen 50 % schneller, Nahkampf nur ×0,5."
 ITEM_GENOSSENSCHAFTSANTEIL_NAME,Genossenschaftsanteil
-ITEM_GENOSSENSCHAFTSANTEIL_DESC,"ROT · Spar-Build: Jede Woche +15 % deines Pfands (max. 50), aber nur 2 Käufe pro Späti-Besuch."
+ITEM_GENOSSENSCHAFTSANTEIL_DESC,"Spar-Build: Jede Woche +15 % deines Pfands (max. 50), aber nur 2 Käufe pro Späti-Besuch."
 ITEM_EHRENAMTSKARTE_NAME,Ehrenamtskarte
-ITEM_EHRENAMTSKARTE_DESC,"ROT · Helfer:innen-Build: Infostände und Genoss:innen ×2 Schaden und Dauer, eigene Waffen nur ×0,6."
+ITEM_EHRENAMTSKARTE_DESC,"Helfer:innen-Build: Infostände und Genoss:innen ×2 Schaden und Dauer, eigene Waffen nur ×0,6."
 ITEM_KOMPOST_NAME,Kompost
-ITEM_KOMPOST_DESC,"ROT · Status-Build: Gift und Kleber ×2, Gift springt beim Tod auf Nachbar:innen über, direkter Schaden ×0,7."
+ITEM_KOMPOST_DESC,"Status-Build: Gift und Kleber ×2, Gift springt beim Tod auf Nachbar:innen über, direkter Schaden ×0,7."
 ITEM_KRITISCHE_MASSE_NAME,Kritische Masse
-ITEM_KRITISCHE_MASSE_DESC,"ROT · Krit-Build: Krits treffen ×1,5 härter, alle anderen Treffer nur ×0,7."
+ITEM_KRITISCHE_MASSE_DESC,"Krit-Build: Krits treffen ×1,5 härter, alle anderen Treffer nur ×0,7."
 ITEM_ROBIN_HOOD_NAME,Robin-Hood-Kostüm
-ITEM_ROBIN_HOOD_DESC,"ROT · Umverteilungs-Build: Umverteilung heilt ×3, dafür kein Krankenschein mehr."
+ITEM_ROBIN_HOOD_DESC,"Umverteilungs-Build: Umverteilung heilt ×3, dafür kein Krankenschein mehr."
 ITEM_TARNKAPPE_NAME,Tarnkappe
-ITEM_TARNKAPPE_DESC,"ROT · Ausweich-Build: Schwarzfahren bis 80 % statt 60 %, aber Kündigungsschutz fällt auf 0."
+ITEM_TARNKAPPE_DESC,"Ausweich-Build: Schwarzfahren bis 80 % statt 60 %, aber Kündigungsschutz fällt auf 0."
 RARITY_1,Grün
 RARITY_2,Blau
 RARITY_3,Lila
@@ -403,10 +403,10 @@ ITEM_PUMA_DESC,"+25 Durchschlagskraft, +10 Kündigungsschutz. Alle 18 s fallen a
 ITEM_ZWEITER_WAHLGANG_NAME,Zweiter Wahlgang
 ITEM_ZWEITER_WAHLGANG_DESC,Einmal pro Run: statt umzufallen mit 50 % Solidarität weiter. −10 Wut. Im zweiten Anlauf reicht's. Knapp.
 ITEM_CUMEX_ERSTATTUNG_NAME,Cum-Ex-Erstattung
-ITEM_CUMEX_ERSTATTUNG_DESC,"ROT · Spar-Build: Ungenutztes Pfand wird am Wochenende nochmal erstattet (max. +40). Nach Woche 15: Betriebsprüfung, die Hälfte ist weg."
+ITEM_CUMEX_ERSTATTUNG_DESC,"Spar-Build: Ungenutztes Pfand wird am Wochenende nochmal erstattet (max. +40). Nach Woche 15: Betriebsprüfung, die Hälfte ist weg."
 ITEM_DOPPELWUMMS_NAME,Doppelwumms
-ITEM_DOPPELWUMMS_DESC,ROT · Fernkampf-Build: Jeder Kill explodiert zweimal (150 px). −15 Kündigungsschutz. Die Rechnung kommt später.
+ITEM_DOPPELWUMMS_DESC,Fernkampf-Build: Jeder Kill explodiert zweimal (150 px). −15 Kündigungsschutz. Die Rechnung kommt später.
 ITEM_BRANDMAUER_FERTIGPUTZ_NAME,Brandmauer-Fertigputz
-ITEM_BRANDMAUER_FERTIGPUTZ_DESC,"ROT · Panzer-Build: +50 Kündigungsschutz, wer dich berührt, fliegt zurück. −30 Deutschlandticket. Hält allem stand, außer einer Abstimmung."
+ITEM_BRANDMAUER_FERTIGPUTZ_DESC,"Panzer-Build: +50 Kündigungsschutz, wer dich berührt, fliegt zurück. −30 Deutschlandticket. Hält allem stand, außer einer Abstimmung."
 ITEM_ENTLASSUNGSURKUNDE_NAME,Entlassungsurkunde
-ITEM_ENTLASSUNGSURKUNDE_DESC,"ROT · Krit-Build: +20 Direkte Aktion, Krit auf Gegner:innen unter 30 % setzt sie sofort ab. −15 Durchschlagskraft."
+ITEM_ENTLASSUNGSURKUNDE_DESC,"Krit-Build: +20 Direkte Aktion, Krit auf Gegner:innen unter 30 % setzt sie sofort ab. −15 Durchschlagskraft."

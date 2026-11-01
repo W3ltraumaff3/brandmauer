@@ -453,10 +453,15 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 		for i in options.size():
 			var o: Dictionary = options[i]
 			var stat := str(o.get("stat", ""))
-			var b := _btn("%s\n%s" % [UIKit.stat_name(stat), UIKit.signed(float(o.get("amount", 0.0)))],
-				"levelup_%d" % i, _on_levelup.bind(i), 22)
+			var stat_label := UIKit.stat_name(stat)
+			# Shrink long names (Durchschlagskraft, Ziviler Ungehorsam …) until they fit on one line.
+			var fs := 22
+			while fs > 13 and UITheme.hand().get_string_size(stat_label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > 132.0:
+				fs -= 1
+			var b := _btn("%s\n%s" % [stat_label, UIKit.signed(float(o.get("amount", 0.0)))],
+				"levelup_%d" % i, _on_levelup.bind(i), fs)
 			b.custom_minimum_size = Vector2(150, 110)
-			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			b.autowrap_mode = TextServer.AUTOWRAP_OFF
 			b.tooltip_text = UIKit.trk("STAT_%s_DESC" % stat.to_upper())
 			UIKit.tilt(b, UIKit.tilt_for(i, 1.2))
 			row.add_child(b)
@@ -535,18 +540,8 @@ func _offer_card(i: int, o: Dictionary, meta: Dictionary, me: Dictionary) -> Con
 	top.add_child(n)
 	if weapon:
 		top.add_child(UIKit.label(tr("SPAETI_WEAPON_TIER") % UIKit.roman(int(o.get("tier", 1))), 16, UITheme.BLUE))
-	elif rarity == 4:
-		var st := UIKit.stamp(tr("SPAETI_RED_STAMP"), rcol, -5.0, 15)
-		st.size_flags_vertical = SIZE_SHRINK_CENTER
-		st.add_theme_stylebox_override("panel", _stamp_box(rcol))
-		st.mouse_filter = MOUSE_FILTER_PASS
-		st.tooltip_text = tr("SPAETI_RED_STAMP_TIP")
-		top.add_child(st)
 	else:
-		var tag := UIKit.label(tr("SPAETI_ITEM_RARITY") % UIKit.rarity_name(rarity), 16, rcol)
-		tag.mouse_filter = MOUSE_FILTER_PASS
-		tag.tooltip_text = tr("SPAETI_RARITY_TIP") % UIKit.rarity_name(rarity)
-		top.add_child(tag)
+		top.add_child(UIKit.label(tr("SPAETI_ITEM"), 16, rcol))
 	v.add_child(top)
 	var d := UIKit.para(UIKit.content_text(kind, id, "DESC"), 14, UITheme.INK_SOFT)
 	d.size_flags_vertical = SIZE_EXPAND_FILL
@@ -661,13 +656,21 @@ func _items_card(me: Dictionary) -> Control:
 		for state in ["normal", "hover", "pressed", "focus", "disabled"]:
 			chip.add_theme_stylebox_override(state, _chip_box(rcol, state))
 		chip.add_theme_color_override("font_color", UITheme.INK)
-		var tip_head := "%s (%s)\n%s\n" % [UIKit.content_text("ITEM", id), tr("SPAETI_RARITY_TIP") % UIKit.rarity_name(rarity),
-			UIKit.content_text("ITEM", id, "DESC")]
+		var tip_head := "%s\n%s\n" % [UIKit.content_text("ITEM", id), UIKit.content_text("ITEM", id, "DESC")]
 		InputGlyphs.bind(chip, "tooltip_text", func() -> String:
 			return tip_head + (InputGlyphs.fmt("SPAETI_ITEM_PAD_TIP", ["ui_accept"]) if InputGlyphs.using_pad()
 				else tr("SPAETI_ITEM_CLICK_TIP")))
 		flow.add_child(chip)
-	parts[1].add_child(flow)
+	# Long item lists scroll inside the card instead of pushing the Bereit bar off screen.
+	var scroll := ScrollContainer.new()
+	scroll.name = "items_scroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = SIZE_EXPAND_FILL
+	scroll.custom_minimum_size.y = 40
+	flow.size_flags_horizontal = SIZE_EXPAND_FILL
+	scroll.add_child(flow)
+	parts[1].size_flags_vertical = SIZE_EXPAND_FILL
+	parts[1].add_child(scroll)
 	return parts[0]
 
 
@@ -689,16 +692,6 @@ func _tight(s: StyleBoxFlat) -> void:
 	s.content_margin_right = 7
 	s.content_margin_top = 0
 	s.content_margin_bottom = 2
-
-
-## Compact stamp frame for the red build-item tag.
-func _stamp_box(col: Color) -> StyleBoxFlat:
-	var s := UITheme.box(Color(1, 1, 1, 0.55), col, 2, 3)
-	s.content_margin_left = 6
-	s.content_margin_right = 6
-	s.content_margin_top = 0
-	s.content_margin_bottom = 1
-	return s
 
 
 ## What selling this weapon pays (the Sim prices it for the coming wave).
@@ -1149,8 +1142,7 @@ class DiscardDialog extends UIDialog:
 		t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		UIKit.tilt(t, -1.2)
 		content.add_child(t)
-		var sub := UIKit.label(tr("SPAETI_RARITY_TIP") % UIKit.rarity_name(rarity) + (" · ×%d" % owned if owned > 1 else ""),
-			17, UIKit.rarity_color(rarity))
+		var sub := UIKit.label(("×%d" % owned) if owned > 1 else "", 17, UIKit.rarity_color(rarity))
 		content.add_child(sub)
 		var nav: Array = []
 		if owned > 1:

@@ -159,7 +159,7 @@ DENY_NOTHING_TO_REPAIR,Die Brandmauer steht. Noch.
 # Pause
 PAUSE_TITLE,Pause
 PAUSE_TITLE_COOP,Kurz Luft holen
-PAUSE_HINT,Die Welt hält kurz an. Die da oben leider nicht.
+PAUSE_HINT,Die Welt hält kurz an. Die Mieten leider nicht.
 PAUSE_HINT_COOP,Achtung: Im Koop läuft das Spiel weiter!
 PAUSE_RESUME,Fortsetzen
 PAUSE_GIVE_UP,Aufgeben
@@ -257,8 +257,6 @@ MENU_BUG,Bug melden
 # Späti: Seltenheit / Wegwerfen / Kombinieren / Enthalten
 SPAETI_ITEM_RARITY,Item · %s
 SPAETI_RARITY_TIP,Seltenheit: %s
-SPAETI_RED_STAMP,ROT · Build-Item
-SPAETI_RED_STAMP_TIP,"Seltenheit: Rot. Krempelt deinen Build um, aber nur für eine Spielweise."
 SPAETI_ITEM_CLICK_TIP,Klicken: wegwerfen
 SPAETI_DISCARD_TITLE,%s wegwerfen?
 SPAETI_DISCARD_HOW_MANY,Wie viele fliegen raus?
@@ -311,3 +309,4 @@ ALBUM_KEYS_HINT,%s blättert im Zitat
 END_SCROLL_HINT,%s blättert
 SPAETI_SECTIONS_HINT,%s %s Abschnitt wechseln
 SPAETI_ITEM_PAD_TIP,%s: wegwerfen
+OPTIONS_MASTER,Gesamtlautstärke

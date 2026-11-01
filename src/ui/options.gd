@@ -33,11 +33,17 @@ func build() -> void:
 	grid.add_theme_constant_override("v_separation", 14)
 	card.add_child(UIKit.margin(grid, 16, 12, 16, 12))
 
+	grid.add_child(UIKit.label(tr("OPTIONS_MASTER"), 24))
+	var master := _slider(float(UIApi.option("master", 0.7)))
+	master.name = "master"
+	master.value_changed.connect(_on_master)
+	focus_target = master
+	grid.add_child(master)
+
 	grid.add_child(UIKit.label(tr("OPTIONS_MUSIC"), 24))
-	_music = _slider(float(UIApi.option("music", 0.7)))
+	_music = _slider(float(UIApi.option("music", 0.5)))
 	_music.name = "music"
 	_music.value_changed.connect(_on_music)
-	focus_target = _music
 	grid.add_child(_music)
 
 	grid.add_child(UIKit.label(tr("OPTIONS_SFX"), 24))
@@ -123,6 +129,11 @@ func _slider(v: float) -> HSlider:
 	s.add_theme_stylebox_override("grabber_area", fill)
 	s.add_theme_stylebox_override("grabber_area_highlight", fill)
 	return s
+
+
+func _on_master(v: float) -> void:
+	UIApi.set_option("master", v)
+	UIApi.call_opt(UIApi.audio(), "set_master_volume", [v])
 
 
 func _apply_volumes() -> void:
