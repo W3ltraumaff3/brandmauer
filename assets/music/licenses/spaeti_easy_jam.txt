@@ -1,0 +1,9 @@
+License proof - accessed 2026-11-01
+Track: "Easy Jam" by Kevin MacLeod
+Track page: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100245
+  (the page is rendered by JavaScript; the data below is the catalog entry from https://incompetech.com/music/royalty-free/pieces.json, which the page uses)
+Download: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Jam.mp3
+Catalog entry: length 00:04:56, bpm 84, genre id 18, instruments: Bass, Drum Kit, Guitar, Trumpet, Trombone, Flute, feel: Dark, Grooving, uploaded 2006-01-01, ISRC USUAN1100245
+License statement (incompetech Music FAQ, https://incompetech.com/music/royalty-free/faq.html, "Crediting"):
+  "Title Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 https://creativecommons.org/licenses/by/4.0/"
+License: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/

@@ -23,3 +23,6 @@ desktop.ini
 # Python
 __pycache__/
 *.pyc
+
+# Claude Code local state
+.claude/

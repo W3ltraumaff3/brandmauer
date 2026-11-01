@@ -37,3 +37,11 @@ Format: **ID · date · decision** — rationale. A decision is never edited; a 
 | D-031 | 2026-11-01 | Quotes: "said is said". Apologies don't matter; everything legal goes. `umstritten` only for disputed wording. Calling Höcke a fascist is allowed as our own opinion. The "Drecksarbeit" quote is allowed. Single sources get double-checked, and unclear ones are left out | User decision |
 | D-032 | 2026-11-01 | Regular enemy roster: 12 enemies in 3 groups (GDD §13); no animal metaphors | Each mechanic carries the joke |
 | D-033 | 2026-11-01 | MVP encounters: wave 5 Sylt-Clique, wave 10 Geschichtslehrer, wave 15 Sauerländer, **final boss wave 20: Weidel parody** (she "remigrates" to Switzerland) | User decision |
+| D-034 | 2026-11-01 | Network ports: game UDP **24713**, LAN discovery UDP **24714** | Unused range; configurable via `--port=` |
+| D-035 | 2026-11-01 | Projectiles are included in snapshots (quantized). Enemies are synced via snapshots, not seed-based schedules. Supersedes the projectile/seed part of D-017 | Simpler and robust; measured 4.8 KB per snapshot (about 0.75 Mbit/s per client at 20 Hz) |
+| D-036 | 2026-11-01 | Elite waves: if the timer runs out while an elite is still alive, it flees ("Termin im Aufsichtsrat") with no reward | Keeps the run within the time budget |
+| D-037 | 2026-11-01 | Players can't pass the Brandmauer; AfD enemies come through the holes. One hole exists from the start | Keeps the wall a strip and the arena playable |
+| D-038 | 2026-11-01 | Final boss placeholder name "Die Eidgenossin" (alternatives: Die Remigrantin, Heidi aus Einsiedeln …). "Alice für Deutschland" rejected | Echoes the banned SA slogan; bosses get invented names (D-018) |
+| D-039 | 2026-11-01 | Curated quotes: 62 of 110 verified quotes in the game (research/auswahl.json); the dropped ones are listed with reasons in research/auswahl.md | User: only really good quotes |
+| D-040 | 2026-11-01 | All art is drawn procedurally in code (doodle style); fonts Patrick Hand + Courier Prime (OFL); music Kevin MacLeod & others (CC BY); SFX synthesized by tools/gen_sfx.py | No image assets needed; fully license-clean |
+| D-041 | 2026-11-01 | Translations: one CSV per module in i18n/, imported as "keep" and loaded at runtime by `Loc` | Raw CSVs must ship in exports |

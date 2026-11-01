@@ -1,0 +1,9 @@
+License proof - accessed 2026-11-01
+Track: "Ready Aim Fire" by Kevin MacLeod
+Track page: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500002
+  (the page is rendered by JavaScript; the data below is the catalog entry from https://incompetech.com/music/royalty-free/pieces.json, which the page uses)
+Download: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ready%20Aim%20Fire.mp3
+Catalog entry: length 00:03:37, bpm 172, genre id 19, instruments: Guitar, Bass, Drums, Organ, feel: Aggressive, Driving, Intense, uploaded 2015-01-03, ISRC USUAN1500002
+License statement (incompetech Music FAQ, https://incompetech.com/music/royalty-free/faq.html, "Crediting"):
+  "Title Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 https://creativecommons.org/licenses/by/4.0/"
+License: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/

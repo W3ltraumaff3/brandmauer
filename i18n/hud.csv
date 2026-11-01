@@ -1,0 +1,39 @@
+keys,de
+HUD_SOLIDARITAET,Solidarität
+HUD_PFAND,Pfand
+HUD_AKTIEN,Aktien
+HUD_KASSE,Koalitionskasse
+HUD_WAVE,Sitzungswoche %d
+HUD_WAVE_BOSS,Koalitionsverhandlungen
+HUD_WAVE_START_SUB,Die Sitzung ist eröffnet.
+HUD_WAVE_BOSS_SUB,Das kann dauern.
+HUD_WAVE_END,Feierabend!
+HUD_WAVE_END_SUB,Ab in den Späti.
+HUD_ZUSAMMENHALT,Zusammenhalt
+HUD_LEVEL,Stufe %d
+HUD_LEVELUP,Zusammenhalt Stufe %d!
+HUD_STAGE_BANNER,Zusammenhalt: %s
+HUD_WALL_INTACT,Brandmauer: steht
+HUD_WALL_HOLE_ONE,Brandmauer: 1 Loch
+HUD_WALL_HOLES,Brandmauer: %d Löcher
+HUD_WALL_ABGESTIMMT,ABGESTIMMT
+HUD_MIETZONE,€/m²
+HUD_REVERSED,↻180°
+HUD_VERSPAETUNG,Verspätung
+HUD_REVIVE_HINT,Hilf mir hoch!
+HUD_DOWN_TAG,am Boden
+HUD_GONE_TAG,weg
+HUD_YOU_DOWN,"Kurz durchatmen – die anderen holen dich zurück!"
+HUD_STREIK_PROMPT,[%s] Streik ausrufen!
+HUD_STREIK_ACTIVE,Streik! Noch %d s
+HUD_STREIK_STAMP,STREIK!
+HUD_VERTRAG,"Koalitionsvertrag: %s (noch %d Wochen)"
+HUD_VERTRAG_ONE,"Koalitionsvertrag: %s (noch 1 Woche)"
+HUD_KEIN_NETZ,Kein Netz
+HUD_WENDE,Wende um 180 Grad!
+HUD_WENDE_SUB,Steuerung vertauscht: links ist jetzt rechts!
+HUD_ACH,Erfolg freigeschaltet
+HUD_OVER_WON,Geschafft!
+HUD_OVER_LOST,Vertagt.
+FX_DOWN,Kurz durchatmen!
+FX_REVIVE,Solidarität!
