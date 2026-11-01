@@ -101,7 +101,7 @@ Characters start **exhausted by circumstances** and get stronger and more visibl
 | Dodge | **Schwarzfahren** | |
 | Movement speed | **Deutschlandticket** | |
 | Luck | **Eltern** | the tooltip notes that for some players it starts at 9,000 |
-| Pfand per wave (passive) | **Nebenjob** | |
+| Extra Pfand per wave | **Nebenjob** | a second job after hours, paid at the end of each wave |
 | Pickup radius | **Pfandradar** | |
 | Zusammenhalt gain (XP) | **Vernetzung** | |
 
@@ -115,7 +115,7 @@ Each character's insult-quote appears **only on the unlock card**, with its sour
 |---|---|---|
 | **Das Stadtbild** | Crowd that grows: you collect passers-by during the wave; the bigger and more mixed the crowd, the stronger you are | A crowd of everyone who keeps the city running: Pflegerin, Dönermann, Busfahrerin, Späti-Betreiber, Bauarbeiter, student, Oma. Nobody is drawn as a stereotype; each is simply their job. Barely moved by "Abschiebung" knockback, because it's a whole city |
 | **Sozialtourist** | Economy: lots of starting money, free rerolls | |
-| **Bürgergeld-Empfänger** | Passive income each wave, −% damage | The "lazy" build actually wins through economy |
+| **Bürgergeld-Empfänger** | Extra Pfand each wave (Nebenjob +8), −% damage | The "lazy" build actually wins through economy |
 | **Klimakleber** | Huge damage while standing still, slows enemies | |
 | **Lastenrad-Grüne** | Fast, ramming damage, extra weapon slots in the cargo box | |
 | **Gewerkschaftsmitglied** | Team/aura: stronger near other players (in solo, near own summons) | |
