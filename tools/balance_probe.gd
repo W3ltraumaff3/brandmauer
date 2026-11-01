@@ -24,7 +24,7 @@ func _initialize() -> void:
 func _run(char_id: String, seed: int, umfrage: int) -> int:
 	var s := Sim.new()
 	s.start_run({"seed": seed, "players": [{"id": 1, "name": "bot", "char": char_id}],
-		"org": Content.ORG_ORDER[seed % 3], "difficulty": umfrage})
+		"org": Content.ORG_ORDER[seed % 3], "difficulty": umfrage, "skip_intro": true})
 	var p: Sim.SimPlayer = s.players[1]
 	var steps := 0
 	while s.phase != Sim.Phase.OVER and steps < 200000:

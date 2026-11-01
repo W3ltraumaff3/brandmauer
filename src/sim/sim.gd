@@ -76,6 +76,7 @@ class SimPlayer:
 	var repair_time := 0.0
 	var max_weapons := Content.MAX_WEAPONS
 	var target_mode := 0               # Sim.Target
+	var last_fire := -10.0             # sim time of the last shot (aim follows shots)
 
 
 class SimEnemy:
@@ -115,7 +116,6 @@ class SimEnemy:
 	var hit_cd := {}
 	var no_reward := false
 	var encounter := ""
-	var vel := Vector2.ZERO            # measured each frame, for lead aiming
 
 
 class SimProj:
@@ -204,6 +204,9 @@ var streik_active := 0.0
 var streik_discount := false
 var encounter := ""
 var encounter_pending := -1.0
+var intro_wait := false              # boss card shown, world paused until everyone continues
+var intro_done := {}
+var skip_intro := false              # bots/tests
 var encounters_beaten: Array[String] = []
 var result := {}
 var meta_dirty := true
@@ -231,6 +234,7 @@ func start_run(cfg: Dictionary) -> void:
 	difficulty = int(cfg.get("difficulty", 0))
 	diff = Content.difficulty_mult(difficulty)
 	blackrock = cfg.get("blackrock", false)
+	skip_intro = cfg.get("skip_intro", false)
 	wall.clear()
 	for i in WALL_SEGMENTS:
 		wall.append(true)
@@ -258,6 +262,7 @@ func remove_player(id: int) -> void:
 	if players.has(id):
 		players[id].state = 2
 		meta_dirty = true
+		_check_intro_done()
 		_check_game_over()
 
 
@@ -331,7 +336,7 @@ static func clamp_player(pos: Vector2) -> Vector2:
 
 func step(dt: float) -> void:
 	time += dt
-	if phase != Phase.WAVE:
+	if phase != Phase.WAVE or intro_wait:
 		return
 	_dmg_events = 0
 	wave_time += dt
@@ -428,6 +433,8 @@ func _begin_wave(n: int) -> void:
 		var pool: Array = Content.ENCOUNTER_POOLS[n]
 		encounter = pool[rng.randi_range(0, pool.size() - 1)]
 		encounter_pending = INTRO_DELAY
+		intro_wait = not skip_intro
+		intro_done = {}
 		_event(["card", encounter])
 	if org == "omas" and summons.is_empty():
 		var s := SimSummon.new()
@@ -702,7 +709,8 @@ func _step_players(dt: float) -> void:
 			dir = Vector2.ZERO
 		if dir.length() > 0.05:
 			p.still_time = 0.0
-			p.aim = dir.angle()
+			if time - p.last_fire > 0.6:
+				p.aim = dir.angle()
 		else:
 			p.still_time += dt
 		p.pos = move_player(p.pos, dir, player_speed(p), dt)
@@ -877,9 +885,11 @@ func _step_weapons(dt: float) -> void:
 				w["cd"] = 0.05
 				continue
 			w["cd"] = def["cd"]
-			var aim_at := lead_point(p.pos, target.pos, target.vel, def.get("speed", 0.0))
+			var aim_at: Vector2 = target.pos
 			var dir = (aim_at - p.pos).normalized()
 			w["angle"] = dir.angle()
+			p.aim = dir.angle()
+			p.last_fire = time
 			if p.flags.has("fax"):
 				p.pending_shots.append({"t": 3.0, "w": wi, "dir": dir})
 			else:
@@ -934,6 +944,8 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			var r := _weapon_range(p, def)
 			var half := deg_to_rad(def["arc"]) / 2.0
 			for e in _query(p.pos, r):
+				if e.behind and shot_blocked(p.pos, e.pos):
+					continue
 				var to: Vector2 = e.pos - p.pos
 				if def["arc"] >= 360.0 or absf(angle_difference(dir.angle(), to.angle())) <= half + 0.15:
 					_damage_enemy(e, dmg, p, crit, to.normalized(), def.get("knock", 0.0))
@@ -1001,29 +1013,29 @@ func _pick_target(pos: Vector2, r: float, mode: int) -> SimEnemy:
 		return _nearest_enemy(pos, r)
 	var best: SimEnemy = null
 	for e in enemies:
-		if not e.alive or e.behind or e.pos.distance_to(pos) - e.radius > r:
+		if not e.alive or (e.behind and shot_blocked(pos, e.pos)) or e.pos.distance_to(pos) - e.radius > r:
 			continue
 		if best == null or (mode == Target.MOST_HP and e.hp > best.hp) or (mode == Target.LEAST_HP and e.hp < best.hp):
 			best = e
 	return best
 
 
-## Where to aim so a projectile of `speed` meets a target moving with `vel`.
-static func lead_point(from: Vector2, target: Vector2, vel: Vector2, speed: float) -> Vector2:
-	if speed <= 0.0 or vel.length() < 1.0:
-		return target
-	var aim := target
-	for i in 3:
-		var t := from.distance_to(aim) / speed
-		aim = target + vel * t
-	return aim
+
+## True if an intact Brandmauer segment lies between a and b (shots can pass holes).
+func shot_blocked(a: Vector2, b: Vector2) -> bool:
+	var mid := (WALL_TOP + WALL_BOTTOM) * 0.5
+	if (a.y - mid) * (b.y - mid) > 0.0:
+		return false
+	var t := (mid - a.y) / (b.y - a.y) if b.y != a.y else 0.0
+	var x := a.x + (b.x - a.x) * t
+	return wall[clampi(int(x / SEG_W), 0, WALL_SEGMENTS - 1)]
 
 
 func _nearest_enemy(pos: Vector2, r: float, exclude := {}) -> SimEnemy:
 	var best: SimEnemy = null
 	var bd := r
 	for e in enemies:
-		if not e.alive or e.behind or exclude.has(e.id):
+		if not e.alive or exclude.has(e.id) or (e.behind and shot_blocked(pos, e.pos)):
 			continue
 		var d: float = e.pos.distance_to(pos) - e.radius
 		if d < bd:
@@ -1263,7 +1275,7 @@ func _step_summons(dt: float) -> void:
 					var pr := SimProj.new()
 					pr.type = Content.idx(Content.PROJ_ORDER, "flugblatt")
 					pr.pos = s.pos
-					pr.vel = (lead_point(s.pos, t.pos, t.vel, 520.0) - s.pos).normalized() * 520.0
+					pr.vel = (t.pos - s.pos).normalized() * 520.0
 					pr.dmg = s.dmg
 					pr.owner = s.owner
 					pr.weapon = "infostand"
@@ -1318,7 +1330,6 @@ func _step_enemies(dt: float) -> void:
 		if not e.alive:
 			continue
 		e.hit_flash = maxf(0.0, e.hit_flash - dt)
-		var pos_before: Vector2 = e.pos
 		if e.poison_t > 0.0:
 			e.poison_t -= dt
 			_damage_poison(e, e.poison * dt)
@@ -1357,7 +1368,6 @@ func _step_enemies(dt: float) -> void:
 		if e.def["ai"] != "flyer":
 			var min_y = WALL_BOTTOM + e.radius if not e.behind else 0.0
 			e.pos = Vector2(clampf(e.pos.x, e.radius, ARENA.x - e.radius), clampf(e.pos.y, min_y + 2.0, ARENA.y - e.radius))
-		e.vel = (e.pos - pos_before) / dt if dt > 0.0 else Vector2.ZERO
 		_contact(e)
 
 
@@ -1874,7 +1884,7 @@ func _step_projectiles(dt: float) -> void:
 func _proj_hit_enemies(pr: SimProj) -> void:
 	var src: SimPlayer = players.get(pr.owner)
 	for e in _query(pr.pos, pr.radius):
-		if e.behind or pr.hit_ids.has(e.id):
+		if pr.hit_ids.has(e.id):
 			continue
 		pr.hit_ids[e.id] = true
 		var def: Dictionary = Content.WEAPONS.get(pr.weapon, {})
@@ -2176,6 +2186,11 @@ func request(peer: int, action: String, arg = null) -> bool:
 	var p: SimPlayer = players.get(peer)
 	if p == null or p.state == 2:
 		return false
+	if action == "continue_intro":
+		if intro_wait:
+			intro_done[p.id] = true
+			_check_intro_done()
+		return true
 	if action == "target_mode":
 		p.target_mode = clampi(int(arg), 0, Target.size() - 1)
 		return true
@@ -2325,6 +2340,17 @@ func _repair_one_hole() -> void:
 			return
 
 
+func _check_intro_done() -> void:
+	if not intro_wait:
+		return
+	for p in players.values():
+		if p.state != 2 and not intro_done.has(p.id):
+			meta_dirty = true
+			return
+	intro_wait = false
+	meta_dirty = true
+
+
 func _check_all_ready() -> void:
 	if phase != Phase.SHOP:
 		return
@@ -2360,6 +2386,7 @@ func build_meta() -> Dictionary:
 		"wall_holes": wall.count(false), "repair_price": Content.repair_price(wave),
 		"streik": {"available": streik_available, "active": streik_active},
 		"vertrag": vertrag.duplicate(true), "encounter": encounter,
+		"intro_wait": intro_wait, "intro_done": intro_done.keys(),
 		"team": {"level": team_level, "xp": team_xp, "need": Content.xp_for_level(team_level), "stage": stage},
 		"num_players": num_players(), "players": pm, "result": result,
 	}

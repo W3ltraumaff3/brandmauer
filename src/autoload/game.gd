@@ -59,9 +59,9 @@ func _register_input() -> void:
 	var keys := {
 		"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 		"move_up": [KEY_W, KEY_UP], "move_down": [KEY_S, KEY_DOWN],
-		"streik": [KEY_Q], "pause": [KEY_ESCAPE],
+		"streik": [KEY_Q], "pause": [KEY_ESCAPE], "ultimate": [KEY_SPACE],
 	}
-	var pad := {"streik": JOY_BUTTON_Y, "pause": JOY_BUTTON_START}
+	var pad := {"streik": JOY_BUTTON_Y, "pause": JOY_BUTTON_START, "ultimate": JOY_BUTTON_X}
 	var axes := {
 		"move_left": [JOY_AXIS_LEFT_X, -1.0], "move_right": [JOY_AXIS_LEFT_X, 1.0],
 		"move_up": [JOY_AXIS_LEFT_Y, -1.0], "move_down": [JOY_AXIS_LEFT_Y, 1.0],
@@ -290,6 +290,18 @@ func _reset_run() -> void:
 	_end_timer = -1.0
 	_seq = 0
 	_last_ack = 0
+
+
+func _process(_dt: float) -> void:
+	# Boss card: the world waits until every player pressed W/A/S/D or Space.
+	if not is_running() or mode == Mode.SERVER or not bool(meta.get("intro_wait", false)):
+		return
+	if local_id() in meta.get("intro_done", []):
+		return
+	for action in ["move_left", "move_right", "move_up", "move_down", "ultimate"]:
+		if Input.is_action_just_pressed(action):
+			request("continue_intro")
+			return
 
 
 func _physics_process(dt: float) -> void:

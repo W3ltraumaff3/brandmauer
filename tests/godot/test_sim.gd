@@ -8,7 +8,7 @@ func _sim(chars: Array, org := "gewerkschaft", seed := 7) -> Sim:
 	for i in chars.size():
 		players.append({"id": i + 1, "name": "P%d" % (i + 1), "char": chars[i]})
 	var s := Sim.new()
-	s.start_run({"seed": seed, "players": players, "org": org, "difficulty": 0})
+	s.start_run({"seed": seed, "players": players, "org": org, "difficulty": 0, "skip_intro": true})
 	return s
 
 
@@ -304,12 +304,75 @@ func test_target_modes() -> void:
 	assert_eq(p.target_mode, 2)
 
 
-func test_lead_point_hits_moving_target() -> void:
-	var from := Vector2.ZERO
-	var target := Vector2(300, 0)
-	var vel := Vector2(0, 100)
-	var aim := Sim.lead_point(from, target, vel, 600.0)
-	var t := from.distance_to(aim) / 600.0
-	assert_true(aim.distance_to(target + vel * t) < 2.0, "projectile meets target")
-	assert_eq(Sim.lead_point(from, target, Vector2.ZERO, 600.0), target, "standing target")
+func test_boss_intro_pauses_until_everyone_continues() -> void:
+	var s := Sim.new()
+	s.start_run({"seed": 1, "players": [{"id": 1, "char": "oma"}, {"id": 2, "char": "antifa"}], "org": "omas"})
+	s._begin_wave(5)
+	assert_true(s.intro_wait, "boss card pauses")
+	var t := s.wave_time
+	s.step(1.0)
+	assert_eq(s.wave_time, t, "world frozen")
+	s.request(1, "continue_intro")
+	assert_true(s.intro_wait, "waits for player 2")
+	s.request(2, "continue_intro")
+	assert_false(s.intro_wait, "continues")
+	s.step(0.5)
+	assert_true(s.wave_time > t, "world runs again")
+
+
+func test_shots_pass_holes_but_not_wall() -> void:
+	var s := _sim(["oma"])
+	for i in Sim.WALL_SEGMENTS:
+		s.wall[i] = true
+	var below := Vector2(100, 300)
+	var above := Vector2(100, 40)
+	assert_true(s.shot_blocked(below, above), "intact wall blocks")
+	s.wall[0] = false
+	assert_false(s.shot_blocked(below, above), "hole lets shots through")
+	assert_false(s.shot_blocked(below, Vector2(500, 600)), "same side never blocked")
+
+
+func test_every_weapon_aims_at_closest_enemy_in_all_directions() -> void:
+	for wid in Content.WEAPON_ORDER:
+		var kind: String = Content.WEAPONS[wid]["kind"]
+		if kind == "orbit" or kind == "turret":
+			continue  # orbit circles the player; turrets place a stand, then aim on their own
+		for k in 8:
+			var ang := TAU * k / 8.0
+			var s := _sim(["oma"])
+			var p: Sim.SimPlayer = s.players[1]
+			p.pos = Vector2(800, 560)
+			p.input = Vector2.ZERO
+			p.weapons = [{"id": wid, "tier": 1, "cd": 0.0, "angle": 0.0}]
+			s.enemies.clear()
+			s.projectiles.clear()
+			s.hazards.clear()
+			s.take_events()
+			var reach: float = s._weapon_range(p, Content.WEAPONS[wid])
+			var near := s.spawn_enemy("hinterbaenkler", p.pos + Vector2.RIGHT.rotated(ang) * reach * 0.5)
+			var far := s.spawn_enemy("hinterbaenkler", p.pos + Vector2.RIGHT.rotated(ang + PI) * reach * 0.9)
+			for e in [near, far]:
+				e.speed = 0.0
+				e.behind = false
+			s._build_grid()
+			s._step_weapons(1.0 / 60.0)
+			var want := Vector2.RIGHT.rotated(ang)
+			var label := "%s at %d°" % [wid, k * 45]
+			match kind:
+				"shot":
+					var shots := s.projectiles.filter(func(pr): return pr.owner == 1)
+					assert_false(shots.is_empty(), label + " fired")
+					for pr in shots:
+						assert_true(pr.vel.normalized().dot(want) > 0.95, label + " aims at closest")
+				"cone":
+					var swings := s.take_events().filter(func(e): return e[0] == "swing")
+					assert_false(swings.is_empty(), label + " swung")
+					for sw in swings:
+						assert_true(Vector2.RIGHT.rotated(sw[2]).dot(want) > 0.95, label + " swings at closest")
+					assert_true(near.hp < near.max_hp, label + " hit the closest enemy")
+				"puddle":
+					var puddles := s.hazards.filter(func(h): return h.owner == 1)
+					assert_false(puddles.is_empty(), label + " placed glue")
+					for h in puddles:
+						assert_true(h.pos.distance_to(near.pos) < 1.0, label + " glue on closest")
 

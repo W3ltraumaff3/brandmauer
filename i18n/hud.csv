@@ -37,3 +37,5 @@ HUD_OVER_WON,Geschafft!
 HUD_OVER_LOST,Vertagt.
 FX_DOWN,Kurz durchatmen!
 FX_REVIVE,Solidarität!
+HUD_INTRO_CONTINUE,"Weiter mit W, A, S, D oder Leertaste"
+HUD_INTRO_WAITING,Warte auf die anderen …
