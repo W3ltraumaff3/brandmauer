@@ -1,0 +1,46 @@
+name: Bug melden
+description: Etwas ist kaputt, komisch oder unfair? Erzähl's uns.
+title: "[Bug] "
+labels: ["bug", "beta"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke fürs Testen! Je genauer, desto schneller ist es repariert.
+        **Logdatei:** Unter Windows liegt sie in `%APPDATA%\Godot\app_userdata\Brandmauer\logs\godot.log` (Pfad in die Adresszeile des Explorers kopieren). Bitte unten anhängen.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Steht unten rechts im Hauptmenü, z. B. v0.2.0-beta.
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Spielmodus
+      options: [Solo, "Koop: Host", "Koop: Mitspieler:in", Dedizierter Server]
+    validations:
+      required: true
+  - type: input
+    id: character
+    attributes:
+      label: Figur und Welle
+      description: z. B. "Oma gegen Rechts, Sitzungswoche 12"
+  - type: textarea
+    id: what
+    attributes:
+      label: Was ist passiert?
+      description: Und was hättest du stattdessen erwartet?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Wie kann man's nachmachen?
+      placeholder: "1. Solo starten\n2. ...\n3. ..."
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshot / Logdatei
+      description: Einfach per Drag & Drop hier reinziehen.

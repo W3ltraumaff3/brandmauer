@@ -21,6 +21,7 @@ func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_STOP
 	if theme == null:
 		theme = UITheme.get_theme()  # also themed under a CanvasLayer
+	UINav.modal_open(self)  # the Späti behind stays out of reach
 	_solo = UIApi.is_solo()
 	if _solo:
 		UIApi.call_opt(UIApi.game(), "set_paused", [true])
@@ -47,6 +48,11 @@ func _ready() -> void:
 	_card_box.add_child(UIKit.button(tr("MENU_OPTIONS"), _on_options, 24))
 	_quit_btn = UIKit.button(tr("PAUSE_GIVE_UP") if _solo else tr("PAUSE_LEAVE"), _on_quit, 24)
 	_card_box.add_child(_quit_btn)
+	var keys := UIKit.label("", 16, UITheme.GREY, HORIZONTAL_ALIGNMENT_CENTER)
+	keys.name = "input_hint"
+	InputGlyphs.bind(keys, "text", func() -> String:
+		return InputGlyphs.fmt("PAUSE_KEYS_HINT", ["ui_accept", "pause"]))
+	_card_box.add_child(keys)
 	UIKit.focus_later(resume)
 
 
@@ -54,6 +60,7 @@ func resume_game() -> void:
 	if _closing:
 		return
 	_closing = true
+	UINav.modal_close(self)
 	if _solo:
 		UIApi.call_opt(UIApi.game(), "set_paused", [false])
 	closed.emit()

@@ -22,3 +22,10 @@ NET_UPNP_PENDING,Router wird gefragt …
 NET_UPNP_OK,Port automatisch geöffnet (UPnP).
 NET_UPNP_FAILED,UPnP fehlgeschlagen – Port %d ggf. manuell freigeben.
 NET_LAN_UNAVAILABLE,LAN-Suche nicht möglich (Port belegt).
+NET_ERR_SESSION,Deine Sitzung ist abgelaufen – die Runde lief ohne dich weiter.
+NET_ERR_HOST_CLOSED,Der Host hat das Spiel beendet.
+SAY_PUMA_AUSFALL,Puma ausgefallen. Alle 18.
+SAY_ZWEITER_WAHLGANG,Zweiter Wahlgang! Knapp gewählt.
+SAY_ENTLASSEN,Entlassen!
+SAY_NICHTIG,Nichtig erklärt!
+SAY_BETRIEBSPRUEFUNG,Betriebsprüfung! Die Hälfte ist weg.

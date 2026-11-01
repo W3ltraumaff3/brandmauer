@@ -1,10 +1,17 @@
 class_name OptionsScreen
 extends UIScreen
-## Options: music/SFX volume, fullscreen, player name. Usable from the main
-## menu and the pause menu.
+## Options: music/SFX volume, window mode, speech bubble opacity, target mode,
+## player name. Usable from the main menu, the pause menu and the Späti.
+
+## Save option `window_mode` (architecture §11), in OptionButton order.
+const WINDOW_MODES := ["fullscreen", "maximized", "windowed"]
+const WINDOW_MODE_KEYS := ["OPTIONS_WINDOW_FULLSCREEN", "OPTIONS_WINDOW_MAXIMIZED", "OPTIONS_WINDOW_WINDOWED"]
+const BUBBLE_DEFAULT := 0.7
 
 var _music: HSlider
 var _sfx: HSlider
+var _bubbles: HSlider
+var _bubbles_label: Label
 var _sfx_timer := 0.0
 
 
@@ -23,37 +30,64 @@ func build() -> void:
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 24)
-	grid.add_theme_constant_override("v_separation", 18)
-	card.add_child(UIKit.margin(grid, 16, 14, 16, 14))
+	grid.add_theme_constant_override("v_separation", 14)
+	card.add_child(UIKit.margin(grid, 16, 12, 16, 12))
 
 	grid.add_child(UIKit.label(tr("OPTIONS_MUSIC"), 24))
 	_music = _slider(float(UIApi.option("music", 0.7)))
+	_music.name = "music"
 	_music.value_changed.connect(_on_music)
+	focus_target = _music
 	grid.add_child(_music)
 
 	grid.add_child(UIKit.label(tr("OPTIONS_SFX"), 24))
 	_sfx = _slider(float(UIApi.option("sfx", 0.8)))
+	_sfx.name = "sfx"
 	_sfx.value_changed.connect(_on_sfx)
 	grid.add_child(_sfx)
 
-	grid.add_child(UIKit.label(tr("OPTIONS_FULLSCREEN"), 24))
-	var fs := CheckBox.new()
-	fs.text = tr("OPTIONS_FULLSCREEN_ON")
-	fs.button_pressed = bool(UIApi.option("fullscreen", false))
-	fs.toggled.connect(_on_fullscreen)
-	grid.add_child(fs)
+	grid.add_child(UIKit.label(tr("OPTIONS_WINDOW_MODE"), 24))
+	var wm := OptionButton.new()
+	wm.name = "window_mode"
+	for key in WINDOW_MODE_KEYS:
+		wm.add_item(tr(key))
+	wm.selected = maxi(0, WINDOW_MODES.find(saved_window_mode()))
+	wm.item_selected.connect(_on_window_mode)
+	UINav.step_option(wm)
+	grid.add_child(wm)
+
+	var bl := UIKit.label(tr("OPTIONS_BUBBLES"), 24)
+	bl.mouse_filter = MOUSE_FILTER_PASS
+	bl.tooltip_text = tr("OPTIONS_BUBBLES_TIP")
+	grid.add_child(bl)
+	var brow := UIKit.hbox(12)
+	_bubbles = _slider(UIKit.option_float("bubble_opacity", BUBBLE_DEFAULT))
+	_bubbles.name = "bubble_opacity"
+	_bubbles.custom_minimum_size.x = 300
+	_bubbles.tooltip_text = tr("OPTIONS_BUBBLES_TIP")
+	_bubbles.value_changed.connect(_on_bubbles)
+	brow.add_child(_bubbles)
+	_bubbles_label = UIKit.label("", 22, UITheme.INK_SOFT)
+	_bubbles_label.custom_minimum_size.x = 68
+	_bubbles_label.size_flags_vertical = SIZE_SHRINK_CENTER
+	brow.add_child(_bubbles_label)
+	_update_bubbles_label(_bubbles.value)
+	grid.add_child(brow)
 
 	grid.add_child(UIKit.label(tr("OPTIONS_TARGET"), 24))
 	var tm := OptionButton.new()
+	tm.name = "target_mode"
 	for key in ["OPTIONS_TARGET_CLOSEST", "OPTIONS_TARGET_MOST_HP", "OPTIONS_TARGET_LEAST_HP"]:
 		tm.add_item(tr(key))
 	tm.selected = clampi(int(UIApi.option("target_mode", 0)), 0, 2)
 	tm.tooltip_text = tr("OPTIONS_TARGET_TIP")
 	tm.item_selected.connect(_on_target_mode)
+	UINav.step_option(tm)
 	grid.add_child(tm)
 
 	grid.add_child(UIKit.label(tr("MENU_NAME"), 24))
 	var name_edit := LineEdit.new()
+	name_edit.name = "player_name"
 	name_edit.text = str(UIApi.option("name", tr("MENU_DEFAULT_NAME")))
 	name_edit.max_length = 20
 	name_edit.custom_minimum_size.x = 380
@@ -63,6 +97,12 @@ func build() -> void:
 	var hint := UIKit.para(tr("OPTIONS_HINT"), 18, UITheme.INK_SOFT)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.add_child(hint)
+	var keys := UIKit.para("", 16, UITheme.GREY)
+	keys.name = "input_hint"
+	keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	InputGlyphs.bind(keys, "text", func() -> String:
+		return InputGlyphs.fmt("OPTIONS_KEYS_HINT", ["ui_cancel"]))
+	body.add_child(keys)
 
 
 func _slider(v: float) -> HSlider:
@@ -103,15 +143,46 @@ func _on_sfx(v: float) -> void:
 		UIApi.sfx("pickup")
 
 
-func _on_fullscreen(on: bool) -> void:
-	UIApi.set_option("fullscreen", on)
-	apply_fullscreen(on)
+## Fx reads the option every frame, so this applies live during a wave.
+func _on_bubbles(v: float) -> void:
+	UIApi.set_option("bubble_opacity", v)
+	_update_bubbles_label(v)
 
 
-static func apply_fullscreen(on: bool) -> void:
+func _update_bubbles_label(v: float) -> void:
+	if _bubbles_label:
+		_bubbles_label.text = tr("OPTIONS_BUBBLES_OFF") if v <= 0.001 else "%d %%" % int(round(v * 100.0))
+
+
+func _on_window_mode(i: int) -> void:
+	var m: String = WINDOW_MODES[clampi(i, 0, WINDOW_MODES.size() - 1)]
+	UIApi.set_option("window_mode", m)
+	apply_window_mode(m)
+
+
+## The saved window mode; falls back to the old `fullscreen` bool.
+static func saved_window_mode() -> String:
+	var m = UIApi.option("window_mode", null)
+	if m is String and WINDOW_MODES.has(m):
+		return m
+	return "fullscreen" if bool(UIApi.option("fullscreen", false)) else "windowed"
+
+
+static func apply_window_mode(m: String) -> void:
 	if DisplayServer.get_name() == "headless":
 		return
-	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if on else DisplayServer.WINDOW_MODE_WINDOWED)
+	match m:
+		"fullscreen":
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		"maximized":
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MAXIMIZED)
+		_:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+## Old entry point (bool); kept for callers that still pass fullscreen on/off.
+static func apply_fullscreen(on: bool) -> void:
+	apply_window_mode("fullscreen" if on else "windowed")
 
 
 func _on_target_mode(i: int) -> void:

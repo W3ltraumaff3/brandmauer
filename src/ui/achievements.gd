@@ -18,6 +18,7 @@ func build() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
 	body.add_child(scroll)
 	var grid := GridContainer.new()
 	grid.columns = 2
@@ -40,7 +41,11 @@ func build() -> void:
 		var c := UIKit.card(UITheme.PAPER if done else UITheme.PAPER_DARK, UITheme.GREEN if done else UITheme.GREY,
 			UIKit.tilt_for(i, 0.8), 3 if done else 2)
 		c.size_flags_horizontal = SIZE_EXPAND_FILL
+		c.name = "ach_%d" % i
+		# Focusable so the stick walks the list; FocusTips draws the frame.
 		c.focus_mode = FOCUS_ALL
+		if i == 0:
+			focus_target = c
 		var h := UIKit.hbox(12)
 		c.add_child(h)
 		var v := UIKit.vbox(2)

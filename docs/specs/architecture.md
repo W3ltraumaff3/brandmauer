@@ -46,7 +46,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `wave_time_left` | float | seconds left; `-1` in the boss wave |
 | `stage` | int | Zusammenhalt stage 0..4 |
 | `wall` | int | bitmask of intact wall segments (bit i = segment i intact, 12 segments) |
-| `players` | Array[Dictionary] | `{id:int, char:int, pos:Vector2, hp:float, max_hp:float, state:int (0 alive, 1 downed, 2 gone), aim:float, flags:int, followers:int, weapons:PackedByteArray, seq:int (last input seq the host applied for this player, for client reconciliation)}`. Player flags: 1 reversed controls, 2 stunned, 4 standing still (Klimakleber), 8 invulnerable, 16 reviving someone |
+| `players` | Array[Dictionary] | `{id:int, char:int, pos:Vector2, hp:float, max_hp:float, state:int (0 alive, 1 downed, 2 gone, 3 away: connection lost, frozen, invulnerable, untargeted; networking.md §7.4), aim:float, flags:int, followers:int, weapons:PackedByteArray, seq:int (last input seq the host applied for this player, for client reconciliation)}`. Player flags: 1 reversed controls, 2 stunned, 4 standing still (Klimakleber), 8 invulnerable, 16 reviving someone |
 | `e_id` | PackedInt32Array | enemy ids |
 | `e_type` | PackedByteArray | index into `Content.ENEMY_ORDER` |
 | `e_pos` | PackedVector2Array | |
@@ -74,6 +74,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
   "num_players": int,
   "players": { peer_id(int): {
       "name": String, "char": String, "pfand": int, "alive": bool,
+      "away": bool,                          # state 3: connection lost, grace period running
       "stats": {stat_id: float},             # final computed stats
       "weapons": [{"id": String, "tier": int}], "max_weapons": int,
       "items": [String],
@@ -117,6 +118,8 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `levelup` | `[team_level]` |
 | `down` | `[peer]` |
 | `revive` | `[peer]` |
+| `away` | `[peer]` (a co-op player lost its connection; the HUD shows a toast, the team panel "weg") |
+| `back` | `[peer]` (an away player reconnected) |
 | `exit` | `[encounter_id, pos]` (boss exit animation) |
 | `wende` | `[duration]` |
 | `streik` | `[duration]` |
@@ -144,14 +147,21 @@ Each machine updates **its own** save from the `result` entry for its own peer i
 ## 8. Module interfaces (autoloads)
 
 ### `Net` (src/autoload/net.gd)
+Peer ids in signals, `lobby`, meta and the `Sim` are **player ids**: the ENet peer id of a player's first join. After a reconnect only `Net` maps it to the new ENet peer (networking.md §7.4).
 ```
 const PORT := 24713                 # game port (UDP); LAN discovery uses PORT + 1
-const PROTOCOL_VERSION := 1
+const PROTOCOL_VERSION := 2
+const GRACE_S := 60.0               # host: away players are kept this long
+const RECONNECT_S := 60.0 / RETRY_INTERVAL_S := 2.0   # client reconnect budget / interval
 signal lobby_changed                # lobby dict, org or difficulty changed
 signal connected                    # client: handshake accepted
 signal connection_failed(reason: String)
-signal disconnected(reason: String) # we lost the server, or it kicked us
-signal peer_left(peer: int)         # host: a client left
+signal disconnected(reason: String) # we lost the server for good, or it kicked us
+signal connection_lost              # client: lost the host mid-run, reconnecting
+signal reconnected                  # client: back in the run
+signal peer_left(peer: int)         # host: a client left (for good)
+signal peer_away(peer: int)         # host: a client's connection dropped mid-run (grace period)
+signal peer_back(peer: int)         # host: an away client reconnected with its token
 signal lan_games_changed            # discovered LAN games changed
 signal run_start_received(config: Dictionary)
 signal snapshot_received(bytes: PackedByteArray)
@@ -160,7 +170,7 @@ signal events_received(events: Array)
 signal input_received(peer: int, seq: int, dir: Vector2)
 signal request_received(peer: int, action: String, arg)
 
-var lobby := {}        # peer_id -> {"name": String, "char": String, "ready": bool}
+var lobby := {}        # player_id -> {"name": String, "char": String, "ready": bool}
 var org := "gewerkschaft"
 var difficulty := 0
 var dedicated := false
@@ -171,8 +181,14 @@ func start_solo(player_name: String) -> void
 func host(player_name: String, port := PORT, use_upnp := true) -> Error
 func start_dedicated(port := PORT) -> Error
 func join(ip: String, port: int, player_name: String) -> void
-func leave() -> void                # closes the peer, removes UPnP mapping, clears the lobby
+func leave() -> void                # says bye/host_closed, closes the peer, removes UPnP mapping, clears the lobby
 func is_host() -> bool              # true for solo, host and dedicated
+func is_reconnecting() -> bool      # client: lost the host mid-run, retrying (HUD indicator)
+func reconnect_time_left() -> float
+func local_player_id() -> int       # our player id (stays the same across reconnects)
+func player_for_peer(peer: int) -> int    # host: ENet peer -> player id (0 = none)
+func peer_for_player(player: int) -> int  # host: player id -> current ENet peer (0 = away)
+func is_away(player: int) -> bool         # host: grace period running
 func set_char(char_id: String) -> void   # local player
 func set_ready(ready: bool) -> void
 func set_org(org_id: String) -> void     # host only
@@ -202,7 +218,7 @@ var meta := {}           # architecture §4
 var view: ViewState      # current frame for rendering (interpolated on clients)
 var config := {}         # config of the current run
 var blackrock := false   # menu easter egg (set by the menu when "BLACKROCK" is typed)
-func local_id() -> int
+func local_id() -> int                   # our player id (Net.local_player_id(); 1 on the host and in solo)
 func local_meta() -> Dictionary          # meta.players[local_id()] or {}
 func open_solo() / open_host(name, use_upnp) / open_join(ip, port, name)  # -> lobby screen
 func start_run() -> void                 # host only: builds the config from Net.lobby and broadcasts it
@@ -248,3 +264,36 @@ static func source_label(q) -> String          # "Friedrich Merz, 01.07.2025"
   - The Straßenblockade is drawn with ordinary `kleber` hazards.
   - Stunned enemies carry `EF_SLOWED`. Enemies under "Fragen Sie mal uns" carry `EF_BUFFED` (red aura = vulnerable).
 - **Texts:** `ULT_<ID>_NAME` and `ULT_<ID>_DESC` in `i18n/content.csv`.
+
+## 10. Run statistics (contract)
+
+`meta.players[pid]["run_stats"]` holds these fields:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `damage` | Array | `{key, kind, id, tier, sold, total, wave}`, sorted by `total`. `kind` is `"weapon"` (`id` = weapon id, `tier`, `sold` if sold since), `"ram"` (Lastenrad contact), `"ult"` (ultimate) or `"other"`. `total` counts the whole run, `wave` the current or last wave. Damage counts what actually landed (no overkill) |
+| `lifesteal` | int | HP healed through Umverteilung (lifesteal); no overheal |
+| `regen` | int | HP healed through Krankenschein (regen); no overheal |
+| `dmg_taken` | int | damage taken |
+| `dmg_blocked` | int | damage absorbed by Kündigungsschutz (armor) |
+| `dodges`, `crits`, `kills` | int | counts |
+| `pfand_collected` | int | Pfand picked up |
+| `pfand_income` | int | Pfand earned at wave end (Nebenjob etc.) |
+| `pfand_spent` | int | Pfand spent in the Späti |
+| `ults` | int | ultimates used |
+
+## 11. Shop additions (contract)
+
+| Request | Argument | Effect |
+|---|---|---|
+| `combine` | weapon index | merges that weapon with another of the same id and tier into tier + 1 (max IV) |
+| `discard_item` | `{"id", "count"}` (`count` -1 = all) | throws items away, no refund |
+| `vote` | `-1` | abstain |
+| `ready` | — | refused with `DENY_VOTE_FIRST` while a Koalitionsvertrag vote is open and the player hasn't voted or abstained |
+
+- **Buying a weapon** whose twin (same id and tier < IV) is already owned combines it automatically, even when all slots are full.
+- **Event:** `["combine", peer, weapon_id, new_tier]`.
+- **Offers** carry `rarity` (items: 1 green, 2 blue, 3 purple, 4 red; colors in `Content.RARITY_COLORS`, names `RARITY_1..4`).
+- **`run_stats.damage` rows** carry `merged` (the weapon was combined into a higher tier).
+- **Speech bubbles during waves** only carry invented lines and status text, never real quotes. Their opacity is the Save option `bubble_opacity` (0..1, 0 = hidden).
+- **Window mode** is the Save option `window_mode`: `"fullscreen"`, `"maximized"` or `"windowed"`.

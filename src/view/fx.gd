@@ -12,6 +12,10 @@ const MAX_PUFFS := 60
 const MAX_BUBBLES := 5
 const MAX_SWINGS := 40
 const MAX_ULTS := 12
+const MAX_LINES := 24
+const CHAIN_LIFE := 0.4
+const BEAM_LIFE := 0.25
+const WHISTLE_LIFE := 0.6
 const NUMBER_LIFE := 0.8
 const PUFF_LIFE := 0.45
 const SWING_LIFE := 0.22
@@ -36,14 +40,57 @@ var _bubbles: Array = []
 var _swings: Array = []
 var _marks: Array = []
 var _ults: Array = []        # {id, peer, pos, t, life} from ["ult", peer, ult_id, pos]
+var _chains: Array = []      # {pts, t, seed} from ["chain", points] (Unterschriftenliste)
+var _beams: Array = []       # {from, to, t} from ["beam", from, to] (Scheinwerfer)
+var _whistles: Array = []    # {pos, range, t, seed} from a Trillerpfeife "swing"
 var _hand: Font
 var _type: Font
 var _t := 0.0
+## Save option `bubble_opacity` (0..1, 0 = hidden), re-read every frame so a
+## change in the options applies live (architecture §11).
+var bubble_opacity := 0.7
+## Set by tools (view_preview); < 0 = read the Save option.
+var bubble_opacity_override := -1.0
+## Speech-line keys of ordinary enemies (Content.ENEMIES[*].say). Every other
+## "say" key is a status bubble (Verspätung, Schwarz gefahren!, …).
+static var _chatter := {}
+
+## Status bubbles never fade below this while bubbles are on.
+const STATUS_MIN_ALPHA := 0.9
 
 
 func _ready() -> void:
 	_hand = UITheme.hand()
 	_type = UITheme.typewriter()
+	_read_bubble_opacity()
+
+
+static func is_chatter(key: String) -> bool:
+	if _chatter.is_empty():
+		for id in Content.ENEMIES:
+			var lines = Content.ENEMIES[id].get("say", [])
+			if lines is Array:
+				for k in lines:
+					_chatter[str(k)] = true
+		_chatter[""] = false  # marks the cache as built
+	return bool(_chatter.get(key, false))
+
+
+func _read_bubble_opacity() -> void:
+	if bubble_opacity_override >= 0.0:
+		bubble_opacity = clampf(bubble_opacity_override, 0.0, 1.0)
+	else:
+		bubble_opacity = UIKit.option_float("bubble_opacity", 0.7)
+
+
+## Alpha factor for a bubble: enemy chatter (and the legacy real-quote path)
+## follows the option, status text stays readable; 0 hides everything.
+func _bubble_alpha(b: Dictionary) -> float:
+	if bubble_opacity <= 0.001:
+		return 0.0
+	if bool(b.get("status", false)):
+		return maxf(bubble_opacity, STATUS_MIN_ALPHA)
+	return bubble_opacity
 
 
 func handle_event(ev: Array) -> void:
@@ -67,9 +114,22 @@ func handle_event(ev: Array) -> void:
 			if ev.size() >= 4:
 				_add_bubble(ev[1], str(ev[2]), str(ev[3]))
 		"swing":
-			if ev.size() >= 6:
+			if ev.size() >= 6 and str(ev[5]) == "trillerpfeife":
+				_push(_whistles, {"pos": ev[1], "range": float(ev[3]), "t": 0.0, "seed": randi() % 1000}, MAX_LINES)
+			elif ev.size() >= 6:
 				_push(_swings, {"pos": ev[1], "ang": float(ev[2]), "range": float(ev[3]), "arc": float(ev[4]),
 					"id": str(ev[5]), "t": 0.0}, MAX_SWINGS)
+		"chain":
+			if ev.size() >= 2 and (ev[1] is Array or ev[1] is PackedVector2Array):
+				var pts := PackedVector2Array()
+				for q in ev[1]:
+					if q is Vector2:
+						pts.append(q)
+				if pts.size() >= 2:
+					_push(_chains, {"pts": pts, "t": 0.0, "seed": randi() % 1000}, MAX_LINES)
+		"beam":
+			if ev.size() >= 3 and ev[1] is Vector2 and ev[2] is Vector2:
+				_push(_beams, {"from": ev[1], "to": ev[2], "t": 0.0}, MAX_LINES)
 		"down", "revive":
 			var p := _player_pos(int(ev[1]) if ev.size() > 1 else -1)
 			if p != Vector2.INF:
@@ -101,7 +161,10 @@ func _push(arr: Array, item: Dictionary, cap: int) -> void:
 
 
 func _add_bubble(pos: Vector2, key: String, quote_id: String) -> void:
-	var b := {"pos": pos, "t": 0.0, "quote": false, "src": ""}
+	_read_bubble_opacity()
+	if bubble_opacity <= 0.001:
+		return  # bubbles off: don't even take a slot
+	var b := {"pos": pos, "t": 0.0, "quote": false, "src": "", "status": quote_id == "" and not is_chatter(key)}
 	if quote_id != "":
 		var q := Quotes.get_quote(quote_id)
 		if q.is_empty():
@@ -135,10 +198,14 @@ func _add_bubble(pos: Vector2, key: String, quote_id: String) -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	_read_bubble_opacity()
 	_age(_numbers, delta, NUMBER_LIFE)
 	_age(_puffs, delta, PUFF_LIFE)
 	_age(_swings, delta, SWING_LIFE)
 	_age(_marks, delta, MARK_LIFE)
+	_age(_chains, delta, CHAIN_LIFE)
+	_age(_beams, delta, BEAM_LIFE)
+	_age(_whistles, delta, WHISTLE_LIFE)
 	var j := _ults.size() - 1
 	while j >= 0:
 		_ults[j]["t"] += delta
@@ -166,6 +233,12 @@ func _age(arr: Array, delta: float, life: float) -> void:
 func _draw() -> void:
 	for s in _swings:
 		_draw_swing(s)
+	for b in _beams:
+		_draw_beam(b)
+	for c in _chains:
+		_draw_chain(c)
+	for w in _whistles:
+		_draw_whistle(w)
 	for p in _puffs:
 		_draw_puff(p)
 	for u in _ults:
@@ -234,6 +307,130 @@ func _draw_swing(s: Dictionary) -> void:
 		draw_polyline(sp, Color(c, c.a * 0.6), 1.5)
 
 
+## Unterschriftenliste: a ballpoint signature that scrawls from the player through
+## every hit enemy (it re-wobbles with the boil, so it crackles), a tick at each
+## signer.
+func _draw_chain(c: Dictionary) -> void:
+	var k: float = c["t"] / CHAIN_LIFE
+	var a := 1.0 - k * k
+	var pts: PackedVector2Array = c["pts"]
+	var seed_v: int = c["seed"]
+	var reveal := clampf(c["t"] / 0.1, 0.0, 1.0) * (pts.size() - 1)
+	var ink := Color(0.12, 0.23, 0.62, a)
+	var line := PackedVector2Array()
+	var fr := Doodle.frame
+	for s in pts.size() - 1:
+		if s >= reveal:
+			break
+		var p0 := pts[s]
+		var p1 := pts[s + 1]
+		var part := clampf(reveal - s, 0.0, 1.0)
+		var d := p1 - p0
+		var dl := d.length()
+		if dl < 1.0:
+			continue
+		var dir := d / dl
+		var nrm := dir.orthogonal()
+		var steps := maxi(8, int(dl / 2.5))
+		for j in steps + 1:
+			var u := float(j) / steps
+			if u > part:
+				break
+			# cursive handwriting: a prolate cycloid (little loops) riding on a slow
+			# wave, faded in/out at the signers and re-jittered per boil frame (crackle)
+			var env := sqrt(sin(u * PI))
+			var ph := u * dl / 5.0 + seed_v + s
+			var along := -6.5 * sin(ph) * env
+			var wave := sin(u * dl / 23.0 + seed_v * 0.1 + s) * 6.0
+			var jit := Doodle.noise(seed_v + j * 13 + fr * 7 + s) * 1.4
+			line.append(p0 + d * u + dir * along + nrm * ((5.0 * cos(ph) + wave + jit) * env))
+	if line.size() >= 2:
+		draw_polyline(line, Color(1, 1, 1, 0.65 * a), 6.0)
+		draw_polyline(line, ink, 2.4)
+	# ticks at the signers, plus a blue ink blot
+	for s in range(1, pts.size()):
+		if s > reveal + 0.01:
+			break
+		var p := pts[s] + Vector2(10, -26)
+		var tk := _pop(c["t"] - s * 0.03)
+		draw_circle(pts[s] + Vector2(0, -6), 3.0 * tk, Color(ink, a * 0.8))
+		draw_polyline(PackedVector2Array([p + Vector2(-5, 0) * tk, p + Vector2(-1, 5) * tk, p + Vector2(7, -7) * tk]),
+			Color(1, 1, 1, a), 5.0)
+		draw_polyline(PackedVector2Array([p + Vector2(-5, 0) * tk, p + Vector2(-1, 5) * tk, p + Vector2(7, -7) * tk]),
+			Color(0.15, 0.55, 0.25, a), 2.5)
+
+
+## Enthüllungs-Scheinwerfer: a cone of bright, translucent light from the player
+## along the beam, widening to the hit width, with a pool of light at the end.
+func _draw_beam(b: Dictionary) -> void:
+	var k: float = b["t"] / BEAM_LIFE
+	var a := 1.0 - k
+	a *= a * (3.0 - 2.0 * a)
+	var p0: Vector2 = b["from"]
+	var p1: Vector2 = b["to"]
+	var d := p1 - p0
+	var dl := d.length()
+	if dl < 1.0:
+		return
+	var dir := d / dl
+	var n := dir.orthogonal()
+	var start := p0 + dir * 14.0
+	var flare := 1.0 + 0.25 * k
+	var warm := Color(1.0, 0.95, 0.62)
+	draw_colored_polygon(PackedVector2Array([start + n * 7.0, p1 + n * 30.0 * flare, p1 - n * 30.0 * flare, start - n * 7.0]),
+		Color(warm, 0.26 * a))
+	draw_colored_polygon(PackedVector2Array([start + n * 3.5, p1 + n * 15.0 * flare, p1 - n * 15.0 * flare, start - n * 3.5]),
+		Color(1.0, 1.0, 0.86, 0.42 * a))
+	draw_line(start, p1, Color(1, 1, 1, 0.85 * a), 2.5)
+	draw_line(start + n * 7.0, p1 + n * 30.0 * flare, Color(0.95, 0.75, 0.2, 0.55 * a), 1.5)
+	draw_line(start - n * 7.0, p1 - n * 30.0 * flare, Color(0.95, 0.75, 0.2, 0.55 * a), 1.5)
+	var pool := PackedVector2Array()
+	for j in 16:
+		var ang := TAU * j / 16.0
+		pool.append(p1 + Vector2(cos(ang) * 30.0, sin(ang) * 20.0) * flare)
+	draw_colored_polygon(pool, Color(warm, 0.3 * a))
+	# dust motes drifting in the light
+	for j in 7:
+		var u := fmod(0.12 + j * 0.13 + k * 0.3, 1.0)
+		var side := Doodle.noise(j * 31 + 5) * 0.8
+		var mp := start + d * u + n * side * (7.0 + 23.0 * u)
+		draw_circle(mp, 1.6, Color(1, 1, 1, 0.8 * a))
+	# the lamp itself at the start
+	draw_circle(p0 + dir * 12.0, 6.0, Color(0.23, 0.24, 0.27, a))
+	draw_circle(p0 + dir * 14.0, 3.5, Color(1.0, 0.98, 0.8, a))
+
+
+## Trillerpfeife: sound waves rippling out to the stun radius and a "PFIFF!".
+func _draw_whistle(w: Dictionary) -> void:
+	var t: float = w["t"]
+	var k := t / WHISTLE_LIFE
+	var a := 1.0 - k * k
+	var pos: Vector2 = w["pos"]
+	var rng: float = w["range"]
+	var seed_v: int = w["seed"]
+	var col := Color(0.93, 0.47, 0.12)
+	# faint stun-radius ring
+	if k < 0.6:
+		var ra := 1.0 - k / 0.6
+		draw_polyline(Doodle.circle_pts(pos, rng, Doodle.frame % Doodle.VARIANTS), Color(0.15, 0.3, 0.7, 0.35 * ra), 2.0)
+	# ")))" wave fronts in eight directions, moving outward
+	for j in 3:
+		var u := clampf(k * 1.5 - j * 0.18, 0.0, 1.0)
+		if u <= 0.0 or u >= 1.0:
+			continue
+		var r := 24.0 + (rng - 24.0) * u
+		var wa := a * (1.0 - u * 0.6)
+		for dirn in 8:
+			var ang := TAU * dirn / 8.0 + seed_v * 0.01
+			draw_arc(pos, r, ang - 0.28, ang + 0.28, 7, Color(col, wa), 3.5 - j * 0.8)
+	# lettering pops above the player
+	var tk := _pop(t)
+	if tk > 0.0:
+		draw_set_transform(pos + Vector2(4, -72.0 - minf(t, 0.4) * 22.0), -0.1 + sin(t * 40.0) * 0.03, Vector2(tk, tk))
+		Doodle.text(self, tr("FX_PFIFF"), Vector2.ZERO, 30, Color(col.darkened(0.15), a), _hand, 6, Color(1, 1, 1, a))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
 func _draw_puff(p: Dictionary) -> void:
 	var k: float = p["t"] / PUFF_LIFE
 	var pos: Vector2 = p["pos"]
@@ -254,7 +451,9 @@ func _draw_puff(p: Dictionary) -> void:
 func _draw_bubble(b: Dictionary) -> void:
 	var t: float = b["t"]
 	var life: float = b["life"]
-	var a := clampf(minf(t * 6.0, (life - t) * 3.0), 0.0, 1.0)
+	var a := clampf(minf(t * 6.0, (life - t) * 3.0), 0.0, 1.0) * _bubble_alpha(b)
+	if a <= 0.0:
+		return
 	var quote: bool = b["quote"]
 	var sz: Vector2 = b["size"]
 	var anchor: Vector2 = b["pos"] + Vector2(0, -44 - minf(t, 0.3) * 20)

@@ -10,6 +10,8 @@ signal closed
 var closable := true
 ## Focus the first button after build(); off if build() grabs focus itself.
 var auto_focus := true
+## Set in build() to the first sensible control (wins over auto_focus).
+var focus_target: Control
 var body: VBoxContainer
 var background: PaperBg
 
@@ -29,8 +31,13 @@ func _ready() -> void:
 	var m := UIKit.margin(body, 40, 22, 40, 22)
 	UIKit.full(m)
 	add_child(m)
+	if closable:
+		UINav.modal_open(self)  # overlay: keep focus inside until it closes
 	build()
-	if auto_focus:
+	UINav.sync_disabled(self)
+	if focus_target != null:
+		UIKit.focus_later(focus_target)
+	elif auto_focus:
 		UIKit.focus_first(self)
 
 
@@ -40,6 +47,9 @@ func build() -> void:
 
 
 func close() -> void:
+	if is_queued_for_deletion():
+		return
+	UINav.modal_close(self)
 	closed.emit()
 	queue_free()
 

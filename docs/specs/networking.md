@@ -133,9 +133,11 @@
    - Players join and pick their characters, and the group picks the Organisation and Umfrage level.
    - The host starts the run. A dedicated server starts it automatically (§9).
 2. **Handshake:** the client sends a protocol and game version. A mismatch is rejected with a clear message.
-3. **Joining mid-run:** not in the MVP. Lobby only.
-4. **A client disconnects:** their character is removed and the enemy scaling adjusts at the start of the next wave.
-5. **The host disconnects:** the run ends. There's no host migration in the MVP.
+3. **Joining mid-run:** not in the MVP. Lobby only. The one exception is a **reconnect** with a valid session token (§7.4).
+4. **A client disconnects:**
+   - **in the lobby, or deliberately** (menu, quit): their entry and character are removed at once.
+   - **mid-run, connection lost:** their character stays as **away** for a 60 s grace period and they can reconnect (§7.4). Only after that is the character removed; the enemy scaling then adjusts at the start of the next wave.
+5. **The host disconnects:** the run ends. There's no host migration in the MVP. Clients first retry for up to 60 s (§7.4); a host that quits deliberately tells them, so they go straight to the menu.
 
 ### 7.1 Handshake (implemented in `src/autoload/net.gd`)
 1. **Hello:** once ENet connects, the client sends `hello(PROTOCOL_VERSION, application/config/version, name)`.
@@ -145,24 +147,32 @@
    - **lobby size:** at most 4 players, else `NET_ERR_FULL`
 3. **Rejection:** the client receives `reject(reason)`, emits `connection_failed(reason)` and closes. The host drops the peer after 1 s.
    - ENet accepts 2 connections beyond the player limit, so that a client of a full lobby still gets its reason.
-4. **Acceptance:** the host adds `{name, char: "stadtbild", ready: false}` to the lobby, sends `welcome` (the client emits `connected`) and resyncs the lobby.
+4. **Acceptance:** the host adds `{name, char: "stadtbild", ready: false}` to the lobby, sends `session(token, player_id)` and then `welcome` on the same reliable channel (the client emits `connected`), and resyncs the lobby.
+   - **Session token:** 16 random bytes (`Crypto.generate_random_bytes`) as 32 hex characters, one per player, kept by the host for the whole session.
+   - The client keeps the token, its player id and the host's `ip:port` **in memory only** (never saved), for reconnects (§7.4).
 5. **Timeouts:**
    - A client that isn't welcomed within **8 s** gets `connection_failed("NET_ERR_TIMEOUT")`.
    - A pending peer that never says hello is dropped after 8 s.
    - If ENet itself fails to connect, the client gets `NET_ERR_CONNECT`.
 6. **Stable RPC ids:** the handshake RPCs are named `_rpc_00_hello`, `_rpc_01_reject` and `_rpc_02_welcome`.
    - Godot numbers RPCs by sorted method name, so these keep the same ids across game versions, and an old client still gets a clean version error.
-   - Never rename them or change their arguments.
+   - Never rename them or change their arguments. New RPCs (`_rpc_session`, `_rpc_resume`, `_rpc_bye`, `_rpc_host_closed`, …) sort after them.
+7. **Protocol version:** `PROTOCOL_VERSION` is **2** since the reconnect RPCs were added (they shift the ids of every later RPC).
 
 ### 7.2 Lobby
-- **Ownership:** the host owns `Net.lobby` (`{peer: {name, char, ready}}`), `Net.org` and `Net.difficulty`, and pushes all three to every client on every change. Each push emits `lobby_changed`.
+- **Ownership:** the host owns `Net.lobby` (`{player_id: {name, char, ready}}`), `Net.org` and `Net.difficulty`, and pushes all three to every client on every change. Each push emits `lobby_changed`.
 - **Client changes:** clients call `set_char` and `set_ready`, which become requests to the host. The host validates them: the char must be in `Content.CHAR_ORDER`, the org in `Content.ORG_ORDER`, and the difficulty is clamped to 0..5.
 - **Names:** trimmed, `|` replaced, at most 20 characters.
-- **A peer leaves:**
-  - The host removes it from the lobby, emits `peer_left(peer)` and resyncs.
-  - On a dedicated server, if the lobby empties during a run, `Game.back_to_lobby()` is called.
-- **Losing the host:** the client gets `disconnected("NET_ERR_LOST")`. ENet peer timeouts are set to a maximum of 10 s.
-- **Return to lobby:** `return_to_lobby()` resets every ready flag and makes every peer emit `returned_to_lobby`.
+- **A peer leaves** (in the lobby, after its grace period, or with `bye`):
+  - The host removes it from the lobby, forgets its token, emits `peer_left(player_id)` and resyncs.
+  - On a dedicated server, if the lobby empties during a run, `Game.back_to_lobby()` is called. Away players still count as being in the lobby, so this only happens once the last grace period ran out.
+- **Deliberate leave:** `Net.leave()` sends a goodbye and flushes it before closing, so nobody waits for a reconnect that never comes:
+  - a client sends `bye`: the host removes it at once, without a grace period.
+  - a host or dedicated server sends `host_closed`: clients leave at once with `disconnected("NET_ERR_HOST_CLOSED")`.
+  - The old ENet peer stays open for 0.3 s after a goodbye (ENet drops packets that aren't dispatched yet when the disconnect arrives in the same poll). If the goodbye is lost anyway, the normal timeout path applies.
+- **Losing the host:** mid-run with a token, the client reconnects (§7.4); otherwise it gets `disconnected("NET_ERR_LOST")`.
+- **ENet peer timeouts** (`ENetPacketPeer.set_timeout(32, 5000, 15000)`, both sides): the limit is a factor on the round-trip time; a peer is **never dropped before 5 s** without acknowledgement and **always after 15 s**. Short lags therefore don't disconnect anyone.
+- **Return to lobby:** `return_to_lobby()` removes away players (they can only rejoin a running run), resets every ready flag and makes every peer emit `returned_to_lobby`.
 
 ### 7.3 Run traffic and channels
 - **RPC placement:** every RPC lives on the `Net` autoload (`/root/Net`, the same path on every peer). `server_relay` is off, so clients only ever talk to the host.
@@ -174,10 +184,53 @@
 
 | ENet channel | Mode | Traffic |
 |---|---|---|
-| 0 | reliable | handshake, lobby sync, `set_char`, `set_ready` |
+| 0 | reliable | handshake (`hello`, `reject`, `session`, `welcome`, `resume`), lobby sync, `set_char`, `set_ready`, `bye`, `host_closed` |
 | 1 | reliable | run start, meta, events, requests, return to lobby |
 | 2 | unreliable_ordered | snapshots (host → clients) |
 | 3 | unreliable_ordered | inputs `(seq, dir)` (client → host; `dir` is clamped to length 1) |
+
+### 7.4 Short disconnects and reconnects (implemented in `src/autoload/net.gd`, `game.gd`, `sim.gd`)
+
+**Goal:** a short connection loss mid-run must not throw anyone out. The host computes the game, so a client can't play on alone; it waits and reconnects as soon as possible.
+
+**Player ids vs. peer ids (design):**
+- A player's **player id** is the ENet peer id of its **first join**. It never changes, so `Sim`, `Game`, meta, events, the result and `Net.lobby` stay keyed by it.
+- A reconnect gets a **new ENet peer id**. Only `Net` knows the mapping (`_peer_of: player_id -> current peer`, `0` while away):
+  - incoming RPCs are translated with `player_for_peer(sender)`; a peer that no longer belongs to a player (the dead old connection) maps to `0` and is ignored.
+  - outgoing sends go to `peer_for_player(player)`; away players get nothing.
+  - `Net.local_player_id()` / `Game.local_id()` return the player id on the client, not `multiplayer.get_unique_id()`.
+- Rationale: renaming the player inside `Sim` would mean rewriting every owner reference (projectiles, hazards, summons, votes, intro flags, stats); the mapping keeps `Sim` unaware of the network.
+
+**Host (grace period):**
+1. A client's peer disconnects while a run is active (`Game.config` non-empty) and without `bye`: the host keeps its lobby entry, marks it away for **60 s** (`Net.GRACE_S`) and emits `peer_away(player)`.
+2. `Game` calls `Sim.set_away(player, true)`: the player gets **state 3 "away"** and the event `["away", player]` goes out (architecture §3, §5). An away player:
+   - keeps its character, **frozen** (no movement, weapons or ultimate, requests refused) and **greyed out** in the view.
+   - is **invulnerable** and **not targeted** by enemies.
+   - **doesn't block** the Späti ready check or the boss intro wait. If everyone present is ready, the next wave starts without them.
+   - still counts for enemy scaling and the Koalitionskasse (`num_players`), gets wave income, Späti offers and level-ups.
+   - **never causes a game over.** While nobody is alive and at least one player is away (`Sim.waiting_for_away()`, e.g. the only other player is downed, or a dedicated server whose only client dropped), the world waits. If they're removed after the grace period, the normal game-over check applies.
+   - comes back in the state it left in (a downed player is still downed); waves that started in between bring it back alive.
+3. If the client comes back in time (below), the host emits `peer_back(player)`, `Game` calls `Sim.set_away(player, false)` (event `["back", player]`) and forces a fresh meta, snapshots resume at once.
+4. If not, after 60 s the host calls `remove_player` as before (`peer_left`).
+
+**Client (reconnect):**
+1. On losing the host mid-run with a token (`server_disconnected` in `CLIENT` mode), `Net` switches to `RECONNECTING` and emits `connection_lost`, instead of `disconnected`.
+2. `Game` keeps the run: it keeps rendering the last snapshot (extrapolated for at most 100 ms, then held) and keeps predicting its own movement locally. Inputs and requests aren't sent meanwhile.
+3. The HUD shows a small **disconnect indicator** in the top-right corner: an unplugged plug in an orange frame, "Verbindung weg – verbinde neu …" and the seconds left. The Funkloch easter egg is suppressed meanwhile, so the joke and the real problem never look alike.
+4. `Net` starts an ENet connection to the stored `ip:port` right away and **every 2 s** (`RETRY_INTERVAL_S`). An attempt that has connected gets up to 8 s for the answer. On connect it sends `resume(protocol, version, token)` instead of `hello`.
+5. The host checks `resume`: same version, a run is active, the token belongs to a lobby player. Else it rejects with `NET_ERR_VERSION` / `NET_ERR_SESSION`, and the client gives up at once.
+   - This is the only way into a running run: a plain `hello` still gets `NET_ERR_RUNNING`.
+   - If the host hasn't noticed the old connection dying yet, it disconnects the old peer itself; that peer's disconnect is then ignored.
+   - On success the host maps the new peer to the player and sends `session(token, player)` + `welcome`; the client emits `reconnected`, `Game` clears its snapshot buffer and its unacknowledged predicted inputs, and play continues.
+6. After **60 s** (`RECONNECT_S`) without success, or on a rejection, the client leaves and gets `disconnected("NET_ERR_LOST")`: back to the menu with that message.
+
+**Solo is unaffected:** no socket, so no disconnects, no away state, no timers, no indicator. The host's own player (peer 1) is never away.
+
+**Limitations:**
+- No host migration: if the host is gone for good, clients retry for 60 s and then return to the menu.
+- The session lives in memory only; a client that restarts the game can't rejoin the running run.
+- Events sent while a client was away (sounds, speech bubbles, toasts) are lost; meta and snapshots are full state, so everything else catches up.
+- A run that ends or returns to the lobby during the grace period drops the away players; their reconnect is then rejected.
 
 ## 8. Saves & trust
 
@@ -198,10 +251,14 @@ godot --headless --path . -- --server [--port=N] [--org=<id>] [--umfrage=0-5] [-
 
 ## 10. Tests
 
-- **Unit tests:** `tests/godot/test_snapshot.gd`, `test_snapshot_buffer.gd` and `test_net_lobby.gd` (no sockets) run with `godot --headless --path . -s res://tests/godot/run_tests.gd -- <filter>`.
-- **Smoke test:** `GODOT=<godot binary> tools/net_smoke.sh` starts a headless host (port 24813, no UPnP) and two headless clients. It passes when:
-  - the client with a wrong protocol version is rejected with `NET_ERR_VERSION`
-  - the other client completes the handshake and receives at least 5 snapshots and a meta dict
+- **Unit tests:** `tests/godot/test_snapshot.gd`, `test_snapshot_buffer.gd`, `test_net_lobby.gd` (no sockets; includes grace period, player/peer mapping, token checks and the client reconnect state machine) and `test_sim_away.gd` (Sim away state) run with `godot --headless --path . -s res://tests/godot/run_tests.gd -- <filter>`.
+- **Smoke test:** `GODOT=<godot binary> tools/net_smoke.sh` runs two scenarios. It passes when every process exits 0:
+  1. A headless host (port 24813, no UPnP) and two headless clients:
+     - the client with a wrong protocol version is rejected with `NET_ERR_VERSION`
+     - the other client completes the handshake and receives at least 5 snapshots and a meta dict
+  2. **Reconnect** (port 24815, real `Game` + `Sim` run): the client drops its connection mid-run without telling the host and reconnects with its token.
+     - `host-run` passes if the player went away (sim state 3, still in the lobby), came back on a new peer id that maps to the same player id (state alive/downed again), and then left with `bye`.
+     - `join-reconnect` passes if its run state survived the drop, its player id stayed the same on a new peer id, and it received at least 5 snapshots (own player not away) plus meta after the reconnect.
 
 ## 11. Open items
 

@@ -4,6 +4,7 @@ extends UIScreen
 ## cards show the quote in typewriter font with date, context and sources.
 
 var _detail: VBoxContainer
+var _detail_scroll: ScrollContainer
 var _ids: Array = []
 
 
@@ -27,6 +28,7 @@ func build() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size.x = 520
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
 	row.add_child(scroll)
 	var grid := GridContainer.new()
 	grid.columns = 3
@@ -39,6 +41,9 @@ func build() -> void:
 		var unlocked := UIApi.album_has(id)
 		var q := Quotes.get_quote(id)
 		var b := Button.new()
+		b.name = "card_%d" % i
+		if i == 0:
+			focus_target = b
 		b.custom_minimum_size = Vector2(156, 54)
 		b.add_theme_font_size_override("font_size", 18)
 		b.text = "#%d  %s\n%s" % [i + 1, _surname(str(q.get("sprecher", ""))), str(q.get("datum", "")).left(4)] if unlocked else "#%d  ???" % (i + 1)
@@ -53,6 +58,8 @@ func build() -> void:
 	row.add_child(card)
 	var dscroll := ScrollContainer.new()
 	dscroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	dscroll.follow_focus = true
+	_detail_scroll = dscroll
 	card.add_child(dscroll)
 	_detail = UIKit.vbox(8)
 	_detail.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -63,6 +70,17 @@ func build() -> void:
 		_detail.add_child(UIKit.para(tr("ALBUM_EMPTY"), 20, UITheme.GREY))
 	else:
 		_show(_ids[0], 0)
+	var keys := UIKit.label("", 16, UITheme.GREY, HORIZONTAL_ALIGNMENT_RIGHT)
+	keys.name = "input_hint"
+	InputGlyphs.bind(keys, "text", func() -> String:
+		return InputGlyphs.fmt("ALBUM_KEYS_HINT", ["ui_scroll_down"]))
+	InputGlyphs.show_on_pad(keys)
+	body.add_child(keys)
+
+
+## The detail card scrolls with the right stick while the grid keeps focus.
+func _process(delta: float) -> void:
+	UINav.stick_scroll(_detail_scroll, delta)
 
 
 func _surname(speaker: String) -> String:
@@ -74,6 +92,8 @@ func _surname(speaker: String) -> String:
 
 func _show(id: String, i: int) -> void:
 	UIKit.clear(_detail)
+	if _detail_scroll:
+		_detail_scroll.scroll_vertical = 0
 	var q := Quotes.get_quote(id)
 	_detail.add_child(UIKit.label(tr("ALBUM_CARD") % (i + 1), 18, UITheme.INK_SOFT))
 	if not UIApi.album_has(id):

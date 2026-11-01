@@ -1,0 +1,20 @@
+# gdlint (gdtoolkit 4.x) config, tuned to the existing code style.
+# Used by the non-blocking "GDScript lint" CI job (docs/specs/ci-cd.md §2).
+# Every rule not listed here keeps the gdtoolkit default (`gdlint -d` dumps them).
+
+# Tabs for indentation; count a tab as 4 columns, as the Godot editor shows it.
+tab-characters: 4
+max-line-length: 140
+
+excluded_directories: !!set
+  .git: null
+  .godot: null
+
+disable:
+  # We group constants, enums and vars by topic next to the code that uses them,
+  # not in the strict Godot style-guide order.
+  - class-definitions-order
+  # The Sim, Net and big views are deliberately single large classes
+  # (docs/specs/architecture.md); size is not a lint concern here.
+  - max-file-lines
+  - max-public-methods

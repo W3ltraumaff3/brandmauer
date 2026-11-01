@@ -170,6 +170,11 @@ class Sketch:
 	var lw := 2.0
 	var seg := 9.0
 	var misreg := 1.3
+	## Optional wash over every color (ghost bikes): fills move `tint_fill`,
+	## ink lines `tint_ink` of the way toward `tint`.
+	var tint := Color(0, 0, 0, 0)
+	var tint_fill := 0.0
+	var tint_ink := 0.0
 
 	func _init(seed_value: int, stage := 4, white_fill := false) -> void:
 		rng.seed = seed_value
@@ -180,10 +185,37 @@ class Sketch:
 	func fc(c: Color) -> Color:
 		if white:
 			return Color(1, 1, 1, c.a)
-		return Doodle.desat_amt(c, amt)
+		var d := Doodle.desat_amt(c, amt)
+		if tint_fill > 0.0:
+			return Color(d.lerp(tint, tint_fill), c.a)
+		return d
 
 	func lc(c: Color) -> Color:
-		return Doodle.desat_amt(c, amt)
+		var d := Doodle.desat_amt(c, amt)
+		if tint_ink > 0.0:
+			return Color(d.lerp(tint, tint_ink), c.a)
+		return d
+
+	## Soft pencil-smudge shadow: two stacked translucent ellipses (darker core).
+	## Not affected by the hit flash, so a flashing figure keeps its ground contact.
+	func soft_shadow(c: Vector2, rx: float, ry: float, alpha := 0.13) -> void:
+		var col := Color(0.18, 0.14, 0.1, alpha)
+		if tint_fill > 0.0:
+			col = Color(tint.darkened(0.3), alpha)
+		for k in 2:
+			var f := 1.0 - 0.38 * k
+			var pts := PackedVector2Array()
+			for i in 14:
+				var a := TAU * i / 14.0
+				pts.append(c + Vector2(cos(a) * rx * f, sin(a) * ry * f) * (1.0 + rng.randf_range(-0.04, 0.04)))
+			_poly_raw(pts, col)
+
+	## Quad with a color gradient (a,b get ca; c,d get cb); final colors, no jitter.
+	func grad_quad(a: Vector2, b: Vector2, c: Vector2, d: Vector2, ca: Color, cb: Color) -> void:
+		verts.append(a); verts.append(b); verts.append(c)
+		cols.append(ca); cols.append(ca); cols.append(cb)
+		verts.append(a); verts.append(c); verts.append(d)
+		cols.append(ca); cols.append(cb); cols.append(cb)
 
 	func j(scale := 1.0) -> Vector2:
 		return Vector2(rng.randf_range(-jit, jit), rng.randf_range(-jit, jit)) * scale

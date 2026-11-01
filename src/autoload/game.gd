@@ -47,6 +47,9 @@ func _ready() -> void:
 	Net.input_received.connect(_on_input)
 	Net.request_received.connect(_on_request)
 	Net.peer_left.connect(_on_peer_left)
+	Net.peer_away.connect(_on_peer_away)
+	Net.peer_back.connect(_on_peer_back)
+	Net.reconnected.connect(_on_reconnected)
 	Net.disconnected.connect(_on_disconnected)
 	Net.connected.connect(_on_connected)
 	Net.connection_failed.connect(_on_connection_failed)
@@ -87,10 +90,12 @@ func _register_input() -> void:
 
 # --- Public API --------------------------------------------------------------
 
+## Our player id (Sim/meta/view key). After a reconnect this is still the peer
+## id of the first join, not the current ENet peer id (networking.md §7.4).
 func local_id() -> int:
 	if multiplayer.multiplayer_peer == null:
 		return 1
-	return multiplayer.get_unique_id()
+	return Net.local_player_id()
 
 
 func local_meta() -> Dictionary:
@@ -268,6 +273,34 @@ func _on_request(peer: int, action: String, arg) -> void:
 func _on_peer_left(peer: int) -> void:
 	if sim:
 		sim.remove_player(peer)
+		_flush_events()
+
+
+## Host: a client's connection dropped mid-run; its character waits (grace period).
+func _on_peer_away(peer: int) -> void:
+	if sim:
+		sim.set_away(peer, true)
+		_flush_events()
+
+
+## Host: an away client reconnected; resend meta so it catches up at once.
+func _on_peer_back(peer: int) -> void:
+	if sim:
+		sim.set_away(peer, false)
+		sim.meta_dirty = true
+		_meta_timer = 0.0
+		_flush_events()
+
+
+## Client: back in the run after a lost connection. Drop stale snapshots and
+## predicted inputs the host never saw; the next snapshot takes over.
+func _on_reconnected() -> void:
+	if is_host_side() or not is_running():
+		return
+	_buffer = SnapshotBuffer.new()
+	_inputs.clear()
+	_pred_pos = Vector2.INF
+	send_target_mode()
 
 
 func _on_returned_to_lobby() -> void:

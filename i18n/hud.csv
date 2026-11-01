@@ -29,7 +29,7 @@ HUD_STREIK_ACTIVE,Streik! Noch %d s
 HUD_STREIK_STAMP,STREIK!
 HUD_VERTRAG,Koalitionsvertrag: %s (noch %d Wochen)
 HUD_VERTRAG_ONE,Koalitionsvertrag: %s (noch 1 Woche)
-HUD_KEIN_NETZ,Kein Netz
+HUD_KEIN_NETZ,Funkloch. Typisch Deutschland.
 HUD_WENDE,Wende um 180 Grad!
 HUD_WENDE_SUB,Steuerung vertauscht: links ist jetzt rechts!
 HUD_ACH,Erfolg freigeschaltet
@@ -37,6 +37,7 @@ HUD_OVER_WON,Geschafft!
 HUD_OVER_LOST,Vertagt.
 FX_DOWN,Kurz durchatmen!
 FX_REVIVE,Solidarität!
+FX_PFIFF,PFIFF!
 HUD_INTRO_CONTINUE,"Weiter mit W, A, S, D oder Leertaste"
 HUD_INTRO_WAITING,Warte auf die anderen …
 HUD_ULT_READY,bereit!
@@ -59,3 +60,9 @@ HUD_ULT_SIGN_1,Klima jetzt!
 HUD_ULT_SIGN_2,"1,5 °C"
 HUD_ULT_SIGN_3,Bahn statt Stau
 HUD_ULT_ANTIFA_FLAG,Solidarität
+HUD_AWAY_TAG,weg
+HUD_RECONNECTING,Verbindung weg – verbinde neu …
+HUD_RECONNECT_LEFT,"noch %d s, dann zurück ins Menü"
+HUD_PLAYER_AWAY,%s: Verbindung weg – wartet …
+HUD_PLAYER_BACK,%s ist wieder da!
+HUD_RECONNECTED,Wieder verbunden!

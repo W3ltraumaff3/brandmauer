@@ -98,8 +98,15 @@ static func tilt(c: Control, degrees: float) -> Control:
 		var p := c.get_parent()
 		if p is Container and not (p as Container).sort_children.is_connected(apply):
 			(p as Container).sort_children.connect(apply)
+	# Unhook when leaving, else a rebuilt container (UIKit.clear) keeps calling
+	# into freed children.
+	var unhook := func() -> void:
+		var p := c.get_parent()
+		if p is Container and (p as Container).sort_children.is_connected(apply):
+			(p as Container).sort_children.disconnect(apply)
 	c.resized.connect(apply)
 	c.tree_entered.connect(hook)
+	c.tree_exiting.connect(unhook)
 	apply.call()
 	return c
 
@@ -185,6 +192,32 @@ static func tr_ui(key: String) -> String:
 	return String(TranslationServer.translate(key))
 
 
+## Item rarity 1..4 (GDD §12). An offer's own `rarity` wins, else Content.ITEMS.
+static func item_rarity(id: String, offer: Dictionary = {}) -> int:
+	if offer.has("rarity"):
+		return clampi(int(offer["rarity"]), 1, 4)
+	var d: Dictionary = Content.ITEMS.get(id, {})
+	return clampi(int(d.get("rarity", 1)), 1, 4)
+
+
+static func rarity_color(rarity: int) -> Color:
+	return Content.RARITY_COLORS.get(rarity, UITheme.INK)
+
+
+## "Grün" / "Blau" / "Lila" / "Rot" (content.csv RARITY_1..4).
+static func rarity_name(rarity: int) -> String:
+	var t := trk("RARITY_%d" % rarity)
+	return t if t != "" else str(rarity)
+
+
+## Option-read helper with a float clamp, e.g. bubble_opacity (0..1).
+static func option_float(key: String, default: float, lo := 0.0, hi := 1.0) -> float:
+	var v = UIApi.option(key, default)
+	if not (v is float or v is int):
+		return default
+	return clampf(float(v), lo, hi)
+
+
 static func roman(n: int) -> String:
 	return ["I", "II", "III", "IV", "V"][clampi(n, 1, 5) - 1]
 
@@ -254,6 +287,10 @@ static func stamp(text: String, color := UITheme.RED, degrees := -8.0, size := 2
 static func title_bar(title: String, back: Callable) -> HBoxContainer:
 	var h := hbox(18)
 	var b := button("← " + tr_ui("UI_BACK"), back, 22)
+	b.name = "back"
+	# "← Zurück  [B]" / "[Esc]": the input that also closes the screen.
+	InputGlyphs.bind(b, "text", func() -> String:
+		return "← %s  %s" % [tr_ui("UI_BACK"), InputGlyphs.label("ui_cancel")])
 	h.add_child(b)
 	var t := heading(title, 40)
 	h.add_child(t)
@@ -268,7 +305,7 @@ static func clear(c: Node) -> void:
 
 ## Focus the first focusable button below `root` (gamepad/keyboard).
 static func focus_first(root: Node) -> void:
-	var f := _first_focusable(root)
+	var f := first_focusable(root)
 	if f:
 		focus_later(f)
 
@@ -277,18 +314,19 @@ static func focus_first(root: Node) -> void:
 ## (screens may be swapped within the same frame).
 static func focus_later(c: Control) -> void:
 	var cb := func():
-		if is_instance_valid(c) and c.is_inside_tree() and c.is_visible_in_tree():
+		if UINav.can_focus(c):
 			c.grab_focus()
 	cb.call_deferred()
 
 
-static func _first_focusable(n: Node) -> Control:
+## First shown, enabled control below `n` that takes keyboard/gamepad focus.
+static func first_focusable(n: Node) -> Control:
 	for ch in n.get_children():
 		if ch is Control and (ch as Control).visible:
 			var c := ch as Control
 			if c.focus_mode == Control.FOCUS_ALL and not (c is BaseButton and (c as BaseButton).disabled):
 				return c
-			var deep := _first_focusable(c)
+			var deep := first_focusable(c)
 			if deep:
 				return deep
 	return null

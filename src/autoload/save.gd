@@ -20,7 +20,7 @@ func _defaults() -> Dictionary:
 		"album": [],
 		"max_umfrage": 0,
 		"stats": {"runs": 0, "wins": 0, "best_wave": 0},
-		"options": {"music": 0.7, "sfx": 0.8, "fullscreen": false, "name": "Genoss:in"},
+		"options": {"music": 0.7, "sfx": 0.8, "window_mode": "windowed", "bubble_opacity": 0.7, "name": "Genoss:in"},
 	}
 
 
@@ -36,6 +36,12 @@ func load_save() -> void:
 				data[key].merge(parsed[key], true)
 			else:
 				data[key] = parsed[key]
+	# Old `fullscreen` bool -> `window_mode` (architecture §11).
+	if parsed is Dictionary and parsed.get("options") is Dictionary:
+		var old: Dictionary = parsed["options"]
+		if old.has("fullscreen") and not old.has("window_mode"):
+			data["options"]["window_mode"] = "fullscreen" if bool(old["fullscreen"]) else "windowed"
+	data["options"].erase("fullscreen")
 	# Old default name before the switch to colon gendering.
 	if data["options"].get("name", "") == "Genoss*in":
 		data["options"]["name"] = "Genoss:in"

@@ -1,12 +1,18 @@
 extends Node
-## Transport, handshake, lobby, UPnP, LAN discovery and every RPC
+## Transport, handshake, lobby, UPnP, LAN discovery, reconnects and every RPC
 ## (docs/specs/networking.md, docs/specs/architecture.md §8).
 ## All RPCs live on this autoload, so the node path (/root/Net) is the same on
 ## every peer. Solo uses OfflineMultiplayerPeer (peer 1, no socket).
+##
+## Player ids vs. peer ids (networking.md §7.4): a player's id is the ENet peer
+## id of its *first* join and never changes, so Sim, Game, meta, results and the
+## lobby are keyed by it. A client that reconnects mid-run gets a new ENet peer
+## id; only Net knows that mapping (_peer_of), translates incoming RPC senders to
+## player ids and outgoing sends to the current peer ids.
 
 const PORT := 24713                 # game port (UDP); LAN discovery uses PORT + 1
 const LAN_PORT := PORT + 1
-const PROTOCOL_VERSION := 1
+const PROTOCOL_VERSION := 2
 const MAX_PLAYERS := 4
 const DEFAULT_CHAR := "stadtbild"
 const HANDSHAKE_TIMEOUT_S := 8.0
@@ -17,6 +23,16 @@ const LAN_MAGIC := "BRANDMAUER"
 const AUTOSTART_DELAY_S := 3.0
 const NAME_MAX_LEN := 20
 const UPNP_DESC := "Brandmauer"
+const GRACE_S := 60.0               # host: an away player is kept this long before removal
+const RECONNECT_S := 60.0           # client: keep trying to reconnect this long ...
+const RETRY_INTERVAL_S := 2.0       # ... one attempt every 2 s
+## ENet peer timeouts (ENetPacketPeer.set_timeout): the limit is a factor on the
+## round-trip time; a peer is never dropped before MIN ms without an ack and always
+## after MAX ms. Lenient, so short lags never disconnect anyone.
+const PEER_TIMEOUT_LIMIT := 32
+const PEER_TIMEOUT_MIN_MS := 5000
+const PEER_TIMEOUT_MAX_MS := 15000
+const GOODBYE_LINGER_S := 0.3       # a goodbye RPC gets this long before the peer closes
 
 ## ENet transfer channels. Separate channels so unreliable snapshots never
 ## block reliable traffic (ENet orders per channel).
@@ -26,13 +42,17 @@ const CH_RUN := 1                   # run start, meta, events, requests (reliabl
 const CH_SNAPSHOT := 2              # snapshots (unreliable_ordered)
 const CH_INPUT := 3                 # inputs (unreliable_ordered)
 
-enum Mode { NONE, SOLO, HOST, SERVER, CONNECTING, CLIENT }
+enum Mode { NONE, SOLO, HOST, SERVER, CONNECTING, CLIENT, RECONNECTING }
 
 signal lobby_changed                # lobby dict, org, difficulty or upnp_status changed
 signal connected                    # client: handshake accepted
 signal connection_failed(reason: String)
-signal disconnected(reason: String) # we lost the server, or it kicked us
-signal peer_left(peer: int)         # host: a client left
+signal disconnected(reason: String) # we lost the server for good, or it kicked us
+signal connection_lost              # client: lost the host mid-run, reconnecting in the background
+signal reconnected                  # client: back in the run after connection_lost
+signal peer_left(peer: int)         # host: a client left (player id)
+signal peer_away(peer: int)         # host: a client's connection dropped mid-run (player id, grace period runs)
+signal peer_back(peer: int)         # host: an away client reconnected with its session token (player id)
 signal lan_games_changed            # discovered LAN games changed
 signal run_start_received(config: Dictionary)
 signal snapshot_received(bytes: PackedByteArray)
@@ -42,7 +62,7 @@ signal input_received(peer: int, seq: int, dir: Vector2)
 signal request_received(peer: int, action: String, arg)
 signal returned_to_lobby
 
-var lobby := {}        # peer_id -> {"name": String, "char": String, "ready": bool}
+var lobby := {}        # player id -> {"name": String, "char": String, "ready": bool}
 var org := "gewerkschaft"
 var difficulty := 0
 var dedicated := false
@@ -59,6 +79,7 @@ var _server_name := "Brandmauer"
 var _handshake_deadline := 0.0
 var _pending := {}                  # host: peer -> {"deadline": float, "rejected": bool}
 var _closing: Array[MultiplayerPeer] = []
+var _lingering: Array[MultiplayerPeer] = []   # closed after GOODBYE_LINGER_S
 var _upnp: UPNP = null
 var _upnp_port := 0
 var _upnp_jobs: Array[Dictionary] = []
@@ -70,6 +91,19 @@ var _countdown := -1.0
 var _shut_down := false
 var _test_protocol := -1            # smoke test: pretend to be another protocol version
 var _game_override: Node = null     # tests: stands in for /root/Game
+# host: reconnect bookkeeping
+var _tokens := {}                   # player id -> session token (String)
+var _peer_of := {}                  # player id -> current peer id, 0 while away; missing = the player id itself
+var _away := {}                     # player id -> deadline (host clock) for the grace period
+# client: session for reconnects (memory only)
+var _token := ""
+var _player_id := 0
+var _server_ip := ""
+var _server_port := 0
+var _reconnect_deadline := 0.0
+var _retry_at := 0.0
+var _attempt_started := 0.0
+var _attempt_connected := false
 
 
 func _ready() -> void:
@@ -96,6 +130,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_poll_upnp_jobs(false)
 	_tick_handshake(_now())
+	_tick_away(_now())
+	_tick_reconnect(_now())
 	_tick_lan(delta)
 	_tick_countdown(delta)
 
@@ -154,8 +190,10 @@ func start_dedicated(port := PORT) -> Error:
 func join(ip: String, port: int, player_name: String) -> void:
 	leave()
 	_local_name = _clean_name(player_name, 0)
+	_server_ip = ip.strip_edges()
+	_server_port = port
 	var peer := ENetMultiplayerPeer.new()
-	var err := peer.create_client(ip.strip_edges(), port, CHANNELS)
+	var err := peer.create_client(_server_ip, port, CHANNELS)
 	if err != OK:
 		_emit_failed_later.call_deferred(_session, "NET_ERR_CONNECT")
 		return
@@ -167,22 +205,69 @@ func join(ip: String, port: int, player_name: String) -> void:
 
 
 ## Closes the peer, removes the UPnP mapping and clears the lobby. Safe to call
-## from inside any Net signal handler.
+## from inside any Net signal handler. A deliberate leave tells the other side
+## (bye / host_closed), so nobody waits for a reconnect that never comes.
 func leave() -> void:
+	var said_bye := _say_goodbye()
 	_mode = Mode.NONE
 	_session += 1
 	_stop_lan_broadcast()
 	_remove_upnp()
-	_drop_peer()
+	_drop_peer(GOODBYE_LINGER_S if said_bye else 0.0)
 	dedicated = false
 	lobby = {}
 	_pending.clear()
 	_countdown = -1.0
 	upnp_status = ""
+	_tokens.clear()
+	_peer_of.clear()
+	_away.clear()
+	_token = ""
+	_player_id = 0
+	_server_ip = ""
+	_server_port = 0
+	_attempt_connected = false
 
 
 func is_host() -> bool:
 	return _mode == Mode.SOLO or _mode == Mode.HOST or _mode == Mode.SERVER
+
+
+## Client: lost the host mid-run and trying to get back in (HUD indicator).
+func is_reconnecting() -> bool:
+	return _mode == Mode.RECONNECTING
+
+
+## Client: seconds left before the reconnect gives up (0 when not reconnecting).
+func reconnect_time_left() -> float:
+	return maxf(0.0, _reconnect_deadline - _now()) if _mode == Mode.RECONNECTING else 0.0
+
+
+## Our player id: the peer id of our first join (stays the same after a reconnect).
+func local_player_id() -> int:
+	if (_mode == Mode.CLIENT or _mode == Mode.RECONNECTING or _mode == Mode.CONNECTING) and _player_id != 0:
+		return _player_id
+	return multiplayer.get_unique_id()
+
+
+## Host: player id of a connected peer, 0 if the peer isn't (or no longer) a player.
+func player_for_peer(peer: int) -> int:
+	for pid in _peer_of:
+		if int(_peer_of[pid]) == peer:
+			return int(pid)
+	if lobby.has(peer) and not _peer_of.has(peer):
+		return peer
+	return 0
+
+
+## Host: current peer id of a player, 0 while it is away.
+func peer_for_player(player: int) -> int:
+	return int(_peer_of.get(player, player))
+
+
+## Host: true while the player's connection is lost and the grace period runs.
+func is_away(player: int) -> bool:
+	return _away.has(player)
 
 
 func set_char(char_id: String) -> void:
@@ -290,6 +375,9 @@ func return_to_lobby() -> void:
 	if not is_host():
 		return
 	_countdown = -1.0
+	# Away players can only rejoin a running run; the lobby doesn't wait for them.
+	for pid in _away.keys():
+		_drop_player(int(pid), false)
 	for id in lobby:
 		lobby[id]["ready"] = false
 	for id in _client_ids():
@@ -357,17 +445,63 @@ func _on_peer_disconnected(id: int) -> void:
 	if _mode != Mode.HOST and _mode != Mode.SERVER:
 		return
 	_pending.erase(id)
-	if not lobby.has(id):
+	var pid := player_for_peer(id)
+	if pid == 0:
 		return
-	_log("%s left" % lobby[id]["name"])
-	lobby.erase(id)
-	peer_left.emit(id)
+	if _run_active():
+		# Mid-run: keep the player for GRACE_S, it may come back with its token.
+		_peer_of[pid] = 0
+		_away[pid] = _now() + GRACE_S
+		_log("%s lost the connection, waiting %d s for a reconnect" % [lobby[pid]["name"], int(GRACE_S)])
+		peer_away.emit(pid)
+		return
+	_drop_player(pid)
+
+
+## Host: removes a player for good (lobby, mapping, token) and emits peer_left.
+func _drop_player(pid: int, end_if_empty := true) -> void:
+	if not lobby.has(pid):
+		return
+	_log("%s left" % lobby[pid]["name"])
+	lobby.erase(pid)
+	_peer_of.erase(pid)
+	_away.erase(pid)
+	_tokens.erase(pid)
+	peer_left.emit(pid)
 	_lobby_updated()
-	if _mode == Mode.SERVER and lobby.is_empty() and _run_active():
+	if end_if_empty and _mode == Mode.SERVER and lobby.is_empty() and _run_active():
 		var game := _game()
 		if game != null and game.has_method("back_to_lobby"):
 			_log("Everyone left, ending the run")
 			game.call("back_to_lobby")
+
+
+## Host: away players whose grace period ran out are removed.
+func _tick_away(now: float) -> void:
+	if _away.is_empty():
+		return
+	for pid in _away.keys():
+		if now > float(_away[pid]):
+			_log("%s did not come back" % lobby.get(pid, {}).get("name", "?"))
+			_drop_player(int(pid))
+
+
+## Host: "" if this token may take over an existing player mid-run, else a reason
+## key; on success `out["player"]` holds the player id.
+func check_resume(protocol, version, token, out: Dictionary) -> String:
+	if typeof(protocol) != TYPE_INT or protocol != PROTOCOL_VERSION or str(version) != game_version():
+		return "NET_ERR_VERSION"
+	if not _run_active() or typeof(token) != TYPE_STRING or str(token) == "":
+		return "NET_ERR_SESSION"
+	for pid in _tokens:
+		if _tokens[pid] == token and lobby.has(pid):
+			out["player"] = int(pid)
+			return ""
+	return "NET_ERR_SESSION"
+
+
+static func _new_token() -> String:
+	return Crypto.new().generate_random_bytes(16).hex_encode()
 
 
 func _tick_handshake(now: float) -> void:
@@ -412,8 +546,9 @@ func _client_ids() -> Array[int]:
 	if _mode == Mode.HOST or _mode == Mode.SERVER:
 		var peers := multiplayer.get_peers()
 		for id in lobby:
-			if id != 1 and peers.has(id):
-				ids.append(id)
+			var peer := peer_for_player(int(id))
+			if peer != 1 and peer != 0 and peers.has(peer):
+				ids.append(peer)
 	return ids
 
 
@@ -486,6 +621,11 @@ func _tick_countdown(delta: float) -> void:
 # --- Client side ---------------------------------------------------------------
 
 func _on_connected_to_server() -> void:
+	if _mode == Mode.RECONNECTING:
+		_set_peer_timeout(1)
+		_attempt_connected = true
+		_rpc_resume.rpc_id(1, PROTOCOL_VERSION, game_version(), _token)
+		return
 	if _mode != Mode.CONNECTING:
 		return
 	_set_peer_timeout(1)
@@ -496,14 +636,111 @@ func _on_connected_to_server() -> void:
 func _on_connection_failed() -> void:
 	if _mode == Mode.CONNECTING:
 		_fail_connect("NET_ERR_CONNECT")
+	elif _mode == Mode.RECONNECTING:
+		_abort_attempt()
 
 
 func _on_server_disconnected() -> void:
 	if _mode == Mode.CLIENT:
-		leave()
-		disconnected.emit("NET_ERR_LOST")
+		if _can_reconnect():
+			_begin_reconnect()
+		else:
+			leave()
+			disconnected.emit("NET_ERR_LOST")
 	elif _mode == Mode.CONNECTING:
 		_fail_connect("NET_ERR_CONNECT")
+	elif _mode == Mode.RECONNECTING:
+		_abort_attempt()
+
+
+# --- Client reconnect (networking.md §7.4) -------------------------------------
+
+func _can_reconnect() -> bool:
+	return _token != "" and _server_ip != "" and _run_active()
+
+
+## Mid-run loss of the host: keep the run (Game keeps rendering and predicting)
+## and retry every RETRY_INTERVAL_S for up to RECONNECT_S.
+func _begin_reconnect() -> void:
+	_drop_peer()
+	_mode = Mode.RECONNECTING
+	var now := _now()
+	_reconnect_deadline = now + RECONNECT_S
+	_retry_at = now
+	_attempt_connected = false
+	_log("Lost the host, reconnecting to %s:%d" % [_server_ip, _server_port])
+	connection_lost.emit()
+
+
+func _tick_reconnect(now: float) -> void:
+	if _mode != Mode.RECONNECTING:
+		return
+	if now > _reconnect_deadline:
+		_give_up_reconnect()
+		return
+	if now < _retry_at:
+		return
+	# ENet is connected and the resume is on its way: give the answer a moment.
+	if _attempt_connected and now < _attempt_started + HANDSHAKE_TIMEOUT_S:
+		return
+	_start_attempt(now)
+
+
+func _start_attempt(now: float) -> void:
+	_drop_peer()
+	_attempt_connected = false
+	_attempt_started = now
+	_retry_at = now + RETRY_INTERVAL_S
+	var peer := ENetMultiplayerPeer.new()
+	if peer.create_client(_server_ip, _server_port, CHANNELS) != OK:
+		return
+	peer.host.compress(ENetConnection.COMPRESS_RANGE_CODER)
+	multiplayer.multiplayer_peer = peer
+
+
+## The current attempt failed; the next one starts at _retry_at.
+func _abort_attempt() -> void:
+	_attempt_connected = false
+	_drop_peer()
+
+
+func _give_up_reconnect() -> void:
+	_log("Reconnect failed")
+	leave()
+	disconnected.emit("NET_ERR_LOST")
+
+
+## Tests/smoke: drop the connection without telling the host, as if the network died.
+func debug_drop_connection() -> void:
+	if _mode != Mode.CLIENT:
+		return
+	if _can_reconnect():
+		_begin_reconnect()
+	else:
+		leave()
+		disconnected.emit("NET_ERR_LOST")
+
+
+## Deliberate leave: tell the other side and flush, so it goes out before the
+## close. Returns true if a goodbye was sent (the peer then lingers briefly: ENet
+## drops undispatched packets when the disconnect arrives in the same poll).
+func _say_goodbye() -> bool:
+	var peer := multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if peer == null or not is_inside_tree():
+		return false
+	if _mode == Mode.CLIENT:
+		_rpc_bye.rpc_id(1)
+	elif _mode == Mode.HOST or _mode == Mode.SERVER:
+		var ids := _client_ids()
+		if ids.is_empty():
+			return false
+		for id in ids:
+			_rpc_host_closed.rpc_id(id)
+	else:
+		return false
+	if peer.host != null:
+		peer.host.flush()
+	return true
 
 
 func _fail_connect(reason: String) -> void:
@@ -522,19 +759,31 @@ func _set_peer_timeout(id: int) -> void:
 		return
 	var pp := peer.get_peer(id)
 	if pp != null:
-		pp.set_timeout(32, 3000, 10000)   # notice a dead connection within ~10 s
+		pp.set_timeout(PEER_TIMEOUT_LIMIT, PEER_TIMEOUT_MIN_MS, PEER_TIMEOUT_MAX_MS)
 
 
 ## Detaches the current peer at once and closes it on the next idle frame, so it
 ## is never closed or freed while it is dispatching the signal/RPC that got us here.
-func _drop_peer() -> void:
+## linger > 0: close it only after that many seconds (a goodbye is in flight).
+func _drop_peer(linger := 0.0) -> void:
 	var old := multiplayer.multiplayer_peer
 	if old is OfflineMultiplayerPeer:
 		return
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-	if old != null:
+	if old == null:
+		return
+	if linger > 0.0 and is_inside_tree():
+		_lingering.append(old)
+		get_tree().create_timer(linger).timeout.connect(_close_lingering.bind(old))
+	else:
 		_closing.append(old)
 		_finish_close.call_deferred()
+
+
+func _close_lingering(p: MultiplayerPeer) -> void:
+	if _lingering.has(p):
+		_lingering.erase(p)
+		p.close()
 
 
 func _finish_close() -> void:
@@ -563,7 +812,9 @@ func _rpc_00_hello(protocol, version, player_name) -> void:
 		return
 	_pending.erase(id)
 	lobby[id] = _new_entry(_clean_name(player_name, id))
+	_tokens[id] = _new_token()
 	_log("%s joined (peer %d)" % [lobby[id]["name"], id])
+	_rpc_session.rpc_id(id, _tokens[id], id)   # same channel, so it arrives before the welcome
 	_rpc_02_welcome.rpc_id(id)
 	_lobby_updated()
 
@@ -572,14 +823,82 @@ func _rpc_00_hello(protocol, version, player_name) -> void:
 func _rpc_01_reject(reason) -> void:
 	if _mode == Mode.CONNECTING:
 		_fail_connect(str(reason))
+	elif _mode == Mode.RECONNECTING:
+		_log("Reconnect rejected: %s" % str(reason))
+		leave()
+		disconnected.emit("NET_ERR_LOST")
 
 
 @rpc("authority", "call_remote", "reliable", CH_LOBBY)
 func _rpc_02_welcome() -> void:
+	if _mode == Mode.RECONNECTING:
+		_mode = Mode.CLIENT
+		_attempt_connected = false
+		_log("Reconnected as player %d (peer %d)" % [_player_id, multiplayer.get_unique_id()])
+		reconnected.emit()
+		return
 	if _mode != Mode.CONNECTING:
 		return
 	_mode = Mode.CLIENT
 	connected.emit()
+
+
+## Client -> host instead of hello when reconnecting mid-run with a session token.
+@rpc("any_peer", "call_remote", "reliable", CH_LOBBY)
+func _rpc_resume(protocol, version, token) -> void:
+	if _mode != Mode.HOST and _mode != Mode.SERVER:
+		return
+	var id := multiplayer.get_remote_sender_id()
+	if not _pending.has(id) or _pending[id]["rejected"]:
+		return
+	var out := {}
+	var reason := check_resume(protocol, version, token, out)
+	if reason != "":
+		_pending[id] = {"deadline": _now() + REJECT_LINGER_S, "rejected": true}
+		_rpc_01_reject.rpc_id(id, reason)
+		_log("Rejected reconnect of peer %d: %s" % [id, reason])
+		return
+	_pending.erase(id)
+	var pid: int = out["player"]
+	var old := peer_for_player(pid)
+	_peer_of[pid] = id
+	_away.erase(pid)
+	# The host may not have noticed the old connection dying yet: drop it. Its
+	# disconnect is ignored, because the old peer no longer maps to the player.
+	var enet := multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if old != 0 and old != id and enet != null and multiplayer.get_peers().has(old):
+		enet.disconnect_peer(old)
+	_log("%s is back (player %d, peer %d)" % [lobby[pid]["name"], pid, id])
+	_rpc_session.rpc_id(id, _tokens[pid], pid)
+	_rpc_02_welcome.rpc_id(id)
+	peer_back.emit(pid)
+	_lobby_updated()
+
+
+## Host -> client before the welcome: the session token and our player id.
+@rpc("authority", "call_remote", "reliable", CH_LOBBY)
+func _rpc_session(token: String, player: int) -> void:
+	if _mode == Mode.CONNECTING or _mode == Mode.RECONNECTING:
+		_token = token
+		_player_id = player
+
+
+## Client -> host: deliberate leave, remove the player at once (no grace period).
+@rpc("any_peer", "call_remote", "reliable", CH_LOBBY)
+func _rpc_bye() -> void:
+	if _mode != Mode.HOST and _mode != Mode.SERVER:
+		return
+	var pid := player_for_peer(multiplayer.get_remote_sender_id())
+	if pid != 0:
+		_drop_player(pid)
+
+
+## Host -> clients: the host is shutting down; don't try to reconnect.
+@rpc("authority", "call_remote", "reliable", CH_LOBBY)
+func _rpc_host_closed() -> void:
+	if _mode == Mode.CLIENT:
+		leave()
+		disconnected.emit("NET_ERR_HOST_CLOSED")
 
 
 @rpc("authority", "call_remote", "reliable", CH_LOBBY)
@@ -595,13 +914,13 @@ func _rpc_lobby(new_lobby: Dictionary, new_org: String, new_difficulty: int) -> 
 @rpc("any_peer", "call_remote", "reliable", CH_LOBBY)
 func _rpc_set_char(char_id: String) -> void:
 	if _mode == Mode.HOST or _mode == Mode.SERVER:
-		_apply_char(multiplayer.get_remote_sender_id(), char_id)
+		_apply_char(player_for_peer(multiplayer.get_remote_sender_id()), char_id)
 
 
 @rpc("any_peer", "call_remote", "reliable", CH_LOBBY)
 func _rpc_set_ready(is_ready: bool) -> void:
 	if _mode == Mode.HOST or _mode == Mode.SERVER:
-		_apply_ready(multiplayer.get_remote_sender_id(), is_ready)
+		_apply_ready(player_for_peer(multiplayer.get_remote_sender_id()), is_ready)
 
 
 @rpc("authority", "call_remote", "reliable", CH_RUN)
@@ -638,18 +957,18 @@ func _rpc_snapshot(bytes: PackedByteArray) -> void:
 func _rpc_input(seq: int, dir: Vector2) -> void:
 	if _mode != Mode.HOST and _mode != Mode.SERVER:
 		return
-	var id := multiplayer.get_remote_sender_id()
-	if lobby.has(id) and dir.is_finite():
-		input_received.emit(id, seq, dir.limit_length(1.0))
+	var pid := player_for_peer(multiplayer.get_remote_sender_id())
+	if pid != 0 and dir.is_finite():
+		input_received.emit(pid, seq, dir.limit_length(1.0))
 
 
 @rpc("any_peer", "call_remote", "reliable", CH_RUN)
 func _rpc_request(action: String, arg) -> void:
 	if _mode != Mode.HOST and _mode != Mode.SERVER:
 		return
-	var id := multiplayer.get_remote_sender_id()
-	if lobby.has(id):
-		request_received.emit(id, action, arg)
+	var pid := player_for_peer(multiplayer.get_remote_sender_id())
+	if pid != 0:
+		request_received.emit(pid, action, arg)
 
 
 # --- LAN discovery -------------------------------------------------------------
@@ -788,6 +1107,9 @@ func _shutdown() -> void:
 	_shut_down = true
 	leave()
 	_finish_close()
+	for p in _lingering:
+		p.close()
+	_lingering.clear()
 	_poll_upnp_jobs(true)
 	stop_lan_discovery()
 

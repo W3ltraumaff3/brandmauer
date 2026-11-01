@@ -9,6 +9,7 @@ var _port: SpinBox
 var _lan_list: VBoxContainer
 var _status: Label
 var _join_btn: Button
+var _cancel_btn: Button
 
 
 func _init() -> void:
@@ -24,6 +25,7 @@ func build() -> void:
 	grid.add_theme_constant_override("v_separation", 8)
 	grid.add_child(UIKit.label(tr("JOIN_IP"), 22))
 	_ip = LineEdit.new()
+	_ip.name = "ip"
 	_ip.text = str(UIApi.option("last_ip", "127.0.0.1"))
 	_ip.placeholder_text = "192.168.0.23"
 	_ip.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -31,6 +33,7 @@ func build() -> void:
 	grid.add_child(_ip)
 	grid.add_child(UIKit.label(tr("JOIN_PORT"), 22))
 	_port = SpinBox.new()
+	_port.name = "port"
 	_port.min_value = 1024
 	_port.max_value = 65535
 	_port.value = int(UIApi.option("last_port", UIApi.port()))
@@ -42,6 +45,7 @@ func build() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size.y = 150
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
 	var lan_card := UIKit.card(UITheme.PAPER_DARK, UITheme.INK_SOFT, 0.0, 1)
 	lan_card.add_child(scroll)
 	_lan_list = UIKit.vbox(6)
@@ -54,8 +58,11 @@ func build() -> void:
 
 	var row := UIKit.hbox(12)
 	row.alignment = BoxContainer.ALIGNMENT_END
-	row.add_child(UIKit.button(tr("UI_CANCEL"), close))
+	_cancel_btn = UIKit.button(tr("UI_CANCEL"), close)
+	_cancel_btn.name = "cancel"
+	row.add_child(_cancel_btn)
 	_join_btn = UIKit.button(tr("JOIN_GO"), _on_join)
+	_join_btn.name = "join"
 	row.add_child(_join_btn)
 	content.add_child(row)
 
@@ -115,6 +122,9 @@ func _on_join() -> void:
 	_status.add_theme_color_override("font_color", UITheme.INK_SOFT)
 	_status.text = tr("JOIN_CONNECTING")
 	_join_btn.disabled = true
+	if _join_btn.has_focus():
+		_cancel_btn.grab_focus()  # focus never rests on a disabled button
+	UINav.sync_disabled(_join_btn)
 	UIApi.call_opt(g, "open_join", [ip, int(_port.value), player_name])
 
 
@@ -122,5 +132,7 @@ func _on_failed(reason: String = "") -> void:
 	if not is_inside_tree():
 		return
 	_join_btn.disabled = false
+	UINav.sync_disabled(_join_btn)
+	UIKit.focus_later(_join_btn)
 	_status.add_theme_color_override("font_color", UITheme.RED)
 	_status.text = tr(reason) if reason != "" else tr("JOIN_FAILED")

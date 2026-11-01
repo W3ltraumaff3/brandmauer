@@ -8,16 +8,28 @@ on:
 permissions:
   contents: read
 
+# A new push to a PR cancels the superseded run. On main a newer push replaces
+# a queued run, but a run that already started is allowed to finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 env:
   GODOT_VERSION: "4.7.2"
 
+# Third-party actions are pinned to commit SHAs (Dependabot updates them).
+# Required checks on main: "Quote data", "Godot tests", "Net smoke".
+# Do not rename these jobs; branch protection matches the job names.
 jobs:
   research:
     name: Quote data
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Validate quote data
@@ -32,25 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
-      - name: Cache Godot
-        id: cache-godot
-        uses: actions/cache@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          path: ~/godot
-          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-      - name: Download Godot
-        if: steps.cache-godot.outputs.cache-hit != 'true'
-        run: |
-          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
-          zip="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
-          cd "$RUNNER_TEMP"
-          curl -fsSL --retry 3 -O "$base/$zip" -O "$base/SHA512-SUMS.txt"
-          grep " $zip\$" SHA512-SUMS.txt | sha512sum -c -
-          mkdir -p ~/godot
-          unzip -q "$zip" -d ~/godot
-          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
-          chmod +x ~/godot/godot
+          persist-credentials: false
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
       - name: Import assets
         run: ~/godot/godot --headless --path . --import
       - name: Run tests
@@ -61,7 +60,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Check for tools/net_smoke.sh
         id: check
         run: |
@@ -71,28 +72,105 @@ jobs:
             echo "present=false" >> "$GITHUB_OUTPUT"
             echo "::notice title=Net smoke skipped::tools/net_smoke.sh does not exist yet"
           fi
-      - name: Cache Godot
+      - uses: ./.github/actions/setup-godot
         if: steps.check.outputs.present == 'true'
-        id: cache-godot
-        uses: actions/cache@v6
         with:
-          path: ~/godot
-          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-      - name: Download Godot
-        if: steps.check.outputs.present == 'true' && steps.cache-godot.outputs.cache-hit != 'true'
-        run: |
-          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
-          zip="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
-          cd "$RUNNER_TEMP"
-          curl -fsSL --retry 3 -O "$base/$zip" -O "$base/SHA512-SUMS.txt"
-          grep " $zip\$" SHA512-SUMS.txt | sha512sum -c -
-          mkdir -p ~/godot
-          unzip -q "$zip" -d ~/godot
-          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
-          chmod +x ~/godot/godot
+          version: ${{ env.GODOT_VERSION }}
       - name: Import assets
         if: steps.check.outputs.present == 'true'
         run: ~/godot/godot --headless --path . --import
       - name: Run net smoke test
         if: steps.check.outputs.present == 'true'
         run: GODOT="$HOME/godot/godot" bash tools/net_smoke.sh
+
+  # --- Informational jobs (not required checks yet, see docs/specs/ci-cd.md §2) ---
+
+  # Compiles every .gd file on its own with tools/check_script.gd, so one script
+  # that stops compiling (e.g. a `:=` on a Variant) is named directly instead of
+  # surfacing as many unrelated test failures.
+  gdscript-compile:
+    name: GDScript compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+      # Builds the global class cache, so class_name references resolve.
+      - name: Import assets
+        run: ~/godot/godot --headless --path . --import
+      - name: Compile every script
+        run: |
+          failed=0
+          total=0
+          log="$RUNNER_TEMP/check_script.log"
+          while IFS= read -r -d '' f; do
+            total=$((total + 1))
+            if ! ~/godot/godot --headless --path . -s res://tools/check_script.gd -- "res://$f" > "$log" 2>&1; then
+              failed=$((failed + 1))
+              echo "::error file=$f,title=GDScript compile::$f does not compile"
+              cat "$log"
+            fi
+          done < <(git ls-files -z -- '*.gd')
+          echo "Compiled $total scripts, $failed failed."
+          echo "GDScript compile: $total scripts, $failed failed." >> "$GITHUB_STEP_SUMMARY"
+          [ "$failed" -eq 0 ]
+
+  # gdtoolkit's gdlint with the repo's .gdlintrc. Non-blocking for now: findings
+  # show up as warning annotations, the job stays green. To make it blocking,
+  # remove continue-on-error from the "Run gdlint" step.
+  gdscript-lint:
+    name: GDScript lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install gdtoolkit (hash-pinned)
+        run: python -m pip install --require-hashes -r tools/requirements-lint.txt
+      - name: Run gdlint
+        continue-on-error: true
+        run: |
+          set +e
+          gdlint . > "$RUNNER_TEMP/gdlint.txt" 2>&1
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/gdlint.txt"
+          sed -nE 's#^(\./)?([^:]+):([0-9]+): Error: (.*)$#::warning file=\2,line=\3,title=gdlint::\4#p' "$RUNNER_TEMP/gdlint.txt"
+          {
+            echo "### gdlint"
+            echo
+            echo '```'
+            tail -n 1 "$RUNNER_TEMP/gdlint.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+  # Lints the workflow files (incl. shellcheck on run: scripts).
+  actionlint:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ACTIONLINT_VERSION: "1.7.12"
+      ACTIONLINT_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download actionlint (checksum-pinned)
+        run: |
+          tgz="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 3 -O "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/$tgz"
+          echo "$ACTIONLINT_SHA256  $tgz" | sha256sum -c -
+          tar -xzf "$tgz" actionlint
+      - name: Run actionlint
+        run: '"$RUNNER_TEMP/actionlint" -color'

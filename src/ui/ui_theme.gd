@@ -57,7 +57,9 @@ static func get_theme() -> Theme:
 	t.set_stylebox("normal", "Button", box(PAPER, INK, 2))
 	t.set_stylebox("hover", "Button", box(Color("fff8e6"), RED, 3))
 	t.set_stylebox("pressed", "Button", box(PAPER_DARK, RED, 3))
-	t.set_stylebox("focus", "Button", box(Color(0, 0, 0, 0), RED, 2))
+	t.set_stylebox("focus", "Button", focus_box())
+	t.set_stylebox("focus", "LinkButton", focus_box(4))
+	t.set_color("font_focus_color", "LinkButton", RED)
 	t.set_stylebox("disabled", "Button", box(PAPER_DARK, GREY, 2))
 	t.set_stylebox("panel", "Panel", box(PAPER, INK, 3))
 	t.set_stylebox("panel", "PanelContainer", box(PAPER, INK, 3))
@@ -69,6 +71,20 @@ static func get_theme() -> Theme:
 	t.set_color("font_color", "TooltipLabel", INK)
 	_theme = t
 	return t
+
+
+## Gamepad/keyboard focus frame (GDD §19b): a thick red marker line drawn a
+## few pixels outside the control, uneven like the other doodle boxes. Also
+## drawn by FocusTips around controls without a focus style of their own.
+static func focus_box(radius := 8) -> StyleBoxFlat:
+	var s := box(Color(0, 0, 0, 0), RED, 3, radius)
+	s.draw_center = false
+	s.expand_margin_left = 5
+	s.expand_margin_top = 4
+	s.expand_margin_right = 6
+	s.expand_margin_bottom = 5
+	s.anti_aliasing = true
+	return s
 
 
 ## Hand-drawn looking box: slightly uneven border via different widths.

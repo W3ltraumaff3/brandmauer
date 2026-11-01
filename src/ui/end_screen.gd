@@ -5,6 +5,7 @@ extends UIScreen
 
 ## Set by tools/ui_preview.gd; if not empty it replaces Game.meta.
 var preview_meta: Dictionary = {}
+var _scroll: ScrollContainer
 
 
 func _init() -> void:
@@ -44,6 +45,7 @@ func build() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll = scroll
 	var col := UIKit.vbox(14)
 	col.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(col)
@@ -55,34 +57,64 @@ func build() -> void:
 
 	var buttons := UIKit.hbox(16)
 	buttons.alignment = BoxContainer.ALIGNMENT_END
+	var keys := UIKit.label("", 16, UITheme.GREY)
+	keys.size_flags_vertical = SIZE_SHRINK_CENTER
+	keys.size_flags_horizontal = SIZE_EXPAND_FILL
+	InputGlyphs.bind(keys, "text", func() -> String:
+		return InputGlyphs.fmt("END_SCROLL_HINT", ["ui_scroll_down"]))
+	InputGlyphs.show_on_pad(keys)
+	buttons.add_child(keys)
 	if UIApi.is_host():
-		buttons.add_child(UIKit.button(tr("END_TO_LOBBY"), _on_lobby, 26))
-	buttons.add_child(UIKit.button(tr("END_TO_MENU"), _on_menu, 26))
+		var lb := UIKit.button(tr("END_TO_LOBBY"), _on_lobby, 26)
+		lb.name = "to_lobby"
+		buttons.add_child(lb)
+	var mb := UIKit.button(tr("END_TO_MENU"), _on_menu, 26)
+	mb.name = "to_menu"
+	buttons.add_child(mb)
 	body.add_child(buttons)
+
+
+## The result table and unlocks scroll with the right stick.
+func _process(delta: float) -> void:
+	UINav.stick_scroll(_scroll, delta)
 
 
 func _table(meta: Dictionary, r: Dictionary) -> Control:
 	var card := UIKit.card(UITheme.PAPER, UITheme.INK, 0.4)
-	var grid := GridContainer.new()
-	grid.columns = 7
-	grid.add_theme_constant_override("h_separation", 22)
-	grid.add_theme_constant_override("v_separation", 4)
-	card.add_child(grid)
-	for key in ["END_COL_NAME", "END_COL_CHAR", "END_COL_KILLS", "END_COL_DAMAGE", "END_COL_IN", "END_COL_OUT", "END_COL_MORAL"]:
-		grid.add_child(UIKit.label(tr(key), 19, UITheme.RED))
 	var rp: Dictionary = r.get("players", {})
 	var mp: Dictionary = meta.get("players", {})
 	var peers := rp.keys() if not rp.is_empty() else mp.keys()
 	peers.sort_custom(func(a, b) -> bool: return int(a) < int(b))
+	# Solo has no Koalitionskasse, so no Eingezahlt/Entnommen/Steuermoral.
+	var solo := is_solo_result(meta, r)
+	var cols := ["END_COL_NAME", "END_COL_CHAR", "END_COL_KILLS", "END_COL_DAMAGE"]
+	if not solo:
+		cols.append_array(["END_COL_IN", "END_COL_OUT", "END_COL_MORAL"])
+	var grid := GridContainer.new()
+	grid.columns = cols.size()
+	grid.add_theme_constant_override("h_separation", 40 if solo else 22)
+	grid.add_theme_constant_override("v_separation", 4)
+	card.add_child(grid)
+	if solo:
+		card.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	for key in cols:
+		grid.add_child(UIKit.label(tr(key), 19, UITheme.RED))
 	for peer in peers:
 		var p := UIApi.by_peer(rp, peer)
 		var m := UIApi.by_peer(mp, peer)
 		var pname := str(m.get("name", UIApi.by_peer(UIApi.lobby(), peer).get("name", "?")))
 		var me := str(peer) == str(UIApi.local_id())
-		grid.add_child(UIKit.label(pname + (" " + tr("LOBBY_YOU") if me else ""), 20))
+		var name_cell := UIKit.vbox(-6)
+		name_cell.add_child(UIKit.label(pname + (" " + tr("LOBBY_YOU") if me else ""), 20))
+		var best := _best_damage_text(p, m)
+		if best != "":
+			name_cell.add_child(UIKit.label(best, 15, UITheme.INK_SOFT))
+		grid.add_child(name_cell)
 		grid.add_child(UIKit.label(UIKit.content_text("CHAR", str(p.get("char", m.get("char", "")))), 20))
 		grid.add_child(UIKit.label(str(int(p.get("kills", m.get("kills", 0)))), 20))
 		grid.add_child(UIKit.label(str(int(p.get("damage", m.get("damage", 0)))), 20))
+		if solo:
+			continue
 		var paid := int(p.get("paid_in", m.get("paid_in", 0)))
 		var taken := int(p.get("taken_out", m.get("taken_out", 0)))
 		grid.add_child(UIKit.label(str(paid), 20))
@@ -97,6 +129,31 @@ func _table(meta: Dictionary, r: Dictionary) -> Control:
 	if peers.is_empty():
 		grid.add_child(UIKit.label("–", 20, UITheme.GREY))
 	return card
+
+
+## One player only (meta.num_players <= 1 or a single player in the result).
+static func is_solo_result(meta: Dictionary, r: Dictionary) -> bool:
+	if meta.has("num_players") and int(meta["num_players"]) <= 1:
+		return true
+	var rp: Dictionary = r.get("players", {})
+	if not rp.is_empty():
+		return rp.size() <= 1
+	var mp: Dictionary = meta.get("players", {})
+	return mp.size() <= 1
+
+
+## "Bester Schaden: <source> (<total>)" from run_stats (architecture §10);
+## the result entry wins, else the player's meta entry. "" if unknown.
+func _best_damage_text(rp: Dictionary, mp: Dictionary) -> String:
+	var rs = rp.get("run_stats", mp.get("run_stats", {}))
+	if not (rs is Dictionary):
+		return ""
+	var best := StatsPanel.best_source(rs)
+	if best.is_empty():
+		return ""
+	var who := mp if not mp.is_empty() else rp
+	return tr("END_BEST_DAMAGE") % [StatsPanel.source_name(best, StatsPanel.ult_id(who)),
+		StatsPanel.fmt_int(int(best.get("total", 0)))]
 
 
 ## German school grade 1 (best) .. 6. Uses the Sim's steuermoral if it is a

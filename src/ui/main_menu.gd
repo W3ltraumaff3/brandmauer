@@ -37,7 +37,7 @@ func build() -> void:
 		["MENU_SOLO", _on_solo], ["MENU_HOST", _on_host],
 		["MENU_JOIN", _on_join], ["MENU_ALBUM", _open.bind("album")],
 		["MENU_ACHIEVEMENTS", _open.bind("achievements")], ["MENU_OPTIONS", _open.bind("options")],
-		["MENU_CREDITS", _open.bind("credits")], ["MENU_QUIT", _on_quit],
+		["MENU_CREDITS", _open.bind("credits")], ["MENU_BUG", _on_bug], ["MENU_QUIT", _on_quit],
 	]
 	for i in entries.size():
 		var b := UIKit.button(tr(entries[i][0]), entries[i][1], 26)
@@ -159,6 +159,13 @@ func _on_overlay_closed(from: Control) -> void:
 
 func _on_quit() -> void:
 	get_tree().quit()
+
+
+const BUG_URL := "https://github.com/W3ltraumaff3/brandmauer/issues/new?template=bug_report.yml"
+
+
+func _on_bug() -> void:
+	OS.shell_open(BUG_URL)
 
 
 func _input(event: InputEvent) -> void:

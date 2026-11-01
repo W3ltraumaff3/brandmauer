@@ -10,6 +10,8 @@ var card: PanelContainer
 var width := 520.0
 ## Set to false in build() if the dialog grabs focus itself.
 var auto_focus := true
+## Small "[A] bestätigen · [B] zurück" line under the content (GDD §19b).
+var input_hint := true
 
 
 func _ready() -> void:
@@ -30,8 +32,18 @@ func _ready() -> void:
 	card.custom_minimum_size.x = width
 	center.add_child(card)
 	content = UIKit.vbox(12)
-	card.add_child(UIKit.margin(content, 14, 10, 14, 10))
+	var col := UIKit.vbox(2)
+	col.add_child(content)
+	card.add_child(UIKit.margin(col, 14, 10, 14, 6))
+	UINav.modal_open(self)
 	build()
+	if input_hint:
+		var hint := UIKit.label("", 15, UITheme.GREY, HORIZONTAL_ALIGNMENT_RIGHT)
+		hint.name = "input_hint"
+		InputGlyphs.bind(hint, "text", func() -> String:
+			return InputGlyphs.fmt("UI_DIALOG_HINT", ["ui_accept", "ui_cancel"]))
+		col.add_child(hint)
+	UINav.sync_disabled(content)
 	if auto_focus:
 		UIKit.focus_first(content)
 
@@ -41,6 +53,9 @@ func build() -> void:
 
 
 func close() -> void:
+	if is_queued_for_deletion():
+		return
+	UINav.modal_close(self)
 	closed.emit()
 	queue_free()
 

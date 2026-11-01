@@ -79,12 +79,18 @@ func _run() -> void:
 		await _shot_hud()
 	if _want("fx"):
 		await _shot_fx()
+	if _want("bubbles"):
+		await _shot_bubbles()
 	if _want("exits"):
 		await _shot_exits()
 	if _want("ults"):
 		await _shot_ults()
 	if _want("ulthud"):
 		await _shot_ult_hud()
+	if _want("bike"):
+		await _shot_bike()
+	if _want("weapons"):
+		await _shot_new_weapons()
 	if _want("stress"):
 		await _stress()
 	for line in report:
@@ -381,6 +387,17 @@ func _shot_hud() -> void:
 	_show(vs2, Vector2(800, 450), 1.0, m2)
 	hud.trigger_funkloch()
 	await _capture("hud_wave20_funkloch")
+	# Connection loss (networking.md §7.4): away teammate + own reconnect indicator.
+	var vs3 := _vs(3)
+	_player(vs3, 1, "oma", Vector2(800, 500), ["stricknadeln"])
+	_player(vs3, 2, "antifa", Vector2(900, 520), [], {"state": 3})
+	_player(vs3, 3, "lastenrad", Vector2(700, 540), [])
+	_show(vs3, Vector2(800, 450), 1.0, _meta(3))
+	hud.handle_event(["away", 2])
+	hud.preview_reconnect_left = 47.0
+	await _capture("hud_reconnecting")
+	hud.preview_reconnect_left = -1.0
+	hud._toasts.clear()
 	hud.visible = false
 
 
@@ -403,6 +420,35 @@ func _shot_fx() -> void:
 	fx.handle_event(["swing", Vector2(800, 510), PI, 200.0, 60.0, "megafon"])
 	fx.handle_event(["swing", Vector2(800, 510), PI * 0.5, 110.0, 360.0, "transparent"])
 	await _capture("fx", 6)
+
+
+## Option `bubble_opacity` (architecture §11): enemy chatter fades with it,
+## status bubbles (Verspätung, Schwarz gefahren!) stay readable; 0 hides all.
+func _shot_bubbles() -> void:
+	_clear_labels()
+	var vs := _vs(2)
+	_player(vs, 1, "gewerkschaft", Vector2(800, 520), ["megafon"])
+	_enemy(vs, "besorgter_buerger", Vector2(620, 420))
+	_enemy(vs, "telegram_onkel", Vector2(990, 430))
+	_enemy(vs, "ju_schnoesel", Vector2(660, 650))
+	_show(vs, Vector2(800, 520), 1.3)
+	for op in [1.0, 0.3, 0.0]:
+		_fx_reset()
+		fx.bubble_opacity_override = op if op > 0.0 else 0.3
+		fx.handle_event(["say", Vector2(620, 420), "SAY_BESORGT_1", ""])
+		fx.handle_event(["say", Vector2(990, 430), "SAY_TELEGRAM_1", ""])
+		fx.handle_event(["say", Vector2(660, 650), "SAY_JU_1", ""])
+		fx.handle_event(["say", Vector2(800, 520), "SAY_VERSPAETUNG", ""])
+		fx.handle_event(["say", Vector2(940, 640), "SAY_DODGE", ""])
+		for b in fx._bubbles:
+			b["t"] = 1.0
+		# 0 %: bubbles already on screen vanish live, new ones are not added.
+		fx.bubble_opacity_override = op
+		_label("bubble_opacity = %d %%  (debug)" % int(op * 100), Vector2(330, 750), 16)
+		await _capture("bubbles_%d" % int(op * 100), 3)
+		_clear_labels()
+	fx.bubble_opacity_override = -1.0
+	_fx_reset()
 
 
 func _shot_exits() -> void:
@@ -442,6 +488,9 @@ func _fx_reset() -> void:
 	fx._swings.clear()
 	fx._puffs.clear()
 	fx._marks.clear()
+	fx._chains.clear()
+	fx._beams.clear()
+	fx._whistles.clear()
 	fx.queue_redraw()
 
 
@@ -638,6 +687,167 @@ func _shot_ult_hud() -> void:
 	hud.preview_overlay_t = -1.0
 	hud.set_process(true)
 	hud.visible = false
+
+
+## Lastenrad close-ups: one row per Zusammenhalt stage (facing right / left),
+## then two bikes in motion (close and at game zoom).
+func _shot_bike() -> void:
+	_clear_labels()
+	_fx_reset()
+	var imgs: Array[Image] = []
+	for st in 5:
+		var vs := _vs(st)
+		_player(vs, 1, "lastenrad", Vector2(700, 500), ["megafon"] if st >= 2 else [], {"aim": 0.0})
+		_player(vs, 2, "lastenrad", Vector2(860, 500), [], {"aim": PI})
+		world._p_prev.clear()
+		world._p_heading.clear()
+		_show(vs, Vector2(780, 490), 3.0, _meta(1))
+		for k in 4:
+			await process_frame
+		await RenderingServer.frame_post_draw
+		var img := root.get_texture().get_image()
+		imgs.append(img.get_region(Rect2i(0, 190, img.get_width(), 290)))
+	var out := Image.create(imgs[0].get_width(), imgs[0].get_height() * 5, false, imgs[0].get_format())
+	for st in 5:
+		out.blit_rect(imgs[st], Rect2i(Vector2i.ZERO, imgs[st].get_size()), Vector2i(0, st * imgs[st].get_height()))
+	out.save_png(out_dir + "bike_stages.png")
+	report.append("saved bike_stages.png (rows = stage 0..4)")
+	# in motion: one riding right, one riding up-left, positions advance every frame
+	for st in [4, 0]:
+		var vs := _vs(st)
+		_player(vs, 1, "lastenrad", Vector2(600, 470), ["megafon", "tofu"], {"aim": 0.0})
+		_player(vs, 2, "lastenrad", Vector2(990, 610), ["kleber"], {"aim": 0.0})
+		world._p_prev.clear()
+		world._p_heading.clear()
+		_show(vs, Vector2(780, 510), 2.6, _meta(2))
+		for i in 30:
+			vs.players[0]["pos"] = Vector2(600, 470) + Vector2(4.0, 0.0) * i
+			vs.players[1]["pos"] = Vector2(990, 610) + Vector2(-3.4, -1.2) * i
+			await process_frame
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png(out_dir + "bike_motion_s%d.png" % st)
+		report.append("saved bike_motion_s%d.png" % st)
+	# game zoom, three bikes riding among enemies
+	var vs2 := _vs(3)
+	_player(vs2, 1, "lastenrad", Vector2(520, 520), ["megafon", "tofu", "doener"], {"aim": 0.0})
+	_player(vs2, 2, "lastenrad", Vector2(1080, 640), ["kleber"], {"aim": PI})
+	_player(vs2, 3, "oma", Vector2(800, 380), ["stricknadeln"])
+	for i in 10:
+		_enemy(vs2, Content.ENEMY_ORDER[i % 7], Vector2(420 + i * 85, 300 + (i % 3) * 170))
+	world._p_prev.clear()
+	world._p_heading.clear()
+	_show(vs2, Vector2(780, 500), 0.92, _meta(3))
+	for i in 20:
+		vs2.players[0]["pos"] = Vector2(520, 520) + Vector2(5.0, 1.0) * i
+		vs2.players[1]["pos"] = Vector2(1080, 640) + Vector2(-5.0, 0.0) * i
+		await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png(out_dir + "bike_gamezoom.png")
+	report.append("saved bike_gamezoom.png")
+	world._p_prev.clear()
+	world._p_heading.clear()
+
+
+## GDD §11 "New weapons": every new weapon in action (overview), then a
+## close-up per weapon plus the held icons.
+const NEW_WEAPONS := ["kartoffelbrei", "trillerpfeife", "brandmauer_ziegel", "normenkontrolle",
+	"unterschriftenliste", "scheinwerfer", "neun_euro_ticket", "weisser_overall"]
+
+
+func _hz(vs: ViewState, id: String, pos: Vector2, r: float, life: float) -> void:
+	vs.h_type.append(Content.HAZARD_ORDER.find(id)); vs.h_pos.append(pos); vs.h_rad.append(r); vs.h_life.append(life)
+
+
+func _weapons_vs() -> ViewState:
+	var vs := _vs(4)
+	vs.wall = 0xFFF
+	# Kartoffelbrei: blob in flight above its target marker, plus a fresh splat
+	_player(vs, 1, "oma", Vector2(200, 330), ["kartoffelbrei"], {"aim": 0.0})
+	_hz(vs, "brei_marker", Vector2(440, 330), 110.0 * 0.6, 0.5)
+	vs.p_type.append(Content.PROJ_ORDER.find("kartoffelbrei")); vs.p_pos.append(Vector2(320, 330)); vs.p_ang.append(0.0)
+	_hz(vs, "explosion", Vector2(330, 500), 66.0, 0.6)
+	_enemy(vs, "besorgter_buerger", Vector2(460, 350))
+	_enemy(vs, "ju_schnoesel", Vector2(350, 520))
+	_label("kartoffelbrei (lob + marker) / splat", Vector2(150, 230), 11)
+	# Trillerpfeife: 360° whistle
+	_player(vs, 2, "gewerkschaft", Vector2(720, 330), ["trillerpfeife"], {"aim": 0.0})
+	_enemy(vs, "telegram_onkel", Vector2(640, 290))
+	_enemy(vs, "hinterbaenkler", Vector2(810, 370))
+	_label("trillerpfeife", Vector2(680, 200), 11)
+	# Brandmauer-Ziegel: a wall across a horizontal aim (vertical row) and across an upward aim
+	for k in 5:
+		_hz(vs, "ziegel", Vector2(1060, 300 + (k - 2) * 35.0), 20.0, 0.7)
+		_hz(vs, "ziegel", Vector2(1290 + (k - 2) * 35.0, 290), 20.0, 0.5 if k != 4 else 0.97)
+	_enemy(vs, "besorgter_buerger", Vector2(1090, 320), ViewState.EF_SLOWED)
+	_enemy(vs, "lobbyist", Vector2(1300, 300), ViewState.EF_SLOWED)
+	_label("brandmauer_ziegel (2 walls)", Vector2(1080, 170), 11)
+	# Normenkontrolle: § stamps with countdown (one almost due)
+	_enemy(vs, "lobbyist", Vector2(220, 660))
+	_hz(vs, "paragraf", Vector2(220, 660), 27.0, 0.65)
+	_enemy(vs, "reichsbuerger", Vector2(410, 690))
+	_hz(vs, "paragraf", Vector2(410, 690), 36.0, 0.22)
+	_label("normenkontrolle", Vector2(250, 560), 11)
+	# Unterschriftenliste: chain through four signers
+	_player(vs, 3, "antifa", Vector2(600, 640), ["unterschriftenliste"], {"aim": 0.0})
+	for p in [Vector2(690, 600), Vector2(770, 670), Vector2(850, 600), Vector2(930, 660)]:
+		_enemy(vs, "besorgter_buerger", p)
+	_label("unterschriftenliste", Vector2(700, 540), 11)
+	# Scheinwerfer: beam along the aim
+	_player(vs, 4, "klimakleber", Vector2(1040, 640), ["scheinwerfer"], {"aim": 0.0})
+	for p in [Vector2(1150, 630), Vector2(1280, 655), Vector2(1400, 640)]:
+		_enemy(vs, "fdp_jungunternehmer", p)
+	_label("scheinwerfer", Vector2(1200, 560), 11)
+	# 9-Euro-Ticket: fan of nine tickets
+	_player(vs, 5, "sozialtourist", Vector2(220, 880), ["neun_euro_ticket"], {"aim": 0.0})
+	for k in 9:
+		var a := -PI / 6.0 + PI / 3.0 * k / 8.0
+		vs.p_type.append(Content.PROJ_ORDER.find("ticket")); vs.p_pos.append(Vector2(220, 880) + Vector2.RIGHT.rotated(a) * 70.0)
+		vs.p_ang.append(a)
+	_label("neun_euro_ticket", Vector2(220, 790), 11)
+	# Weißer Overall: three activists sprinting at enemies
+	_player(vs, 6, "buergergeld", Vector2(640, 880), ["weisser_overall"], {"aim": 0.0})
+	for p in [Vector2(730, 850), Vector2(770, 900), Vector2(710, 930)]:
+		vs.s_type.append(Content.SUMMON_ORDER.find("overall")); vs.s_pos.append(p)
+	_enemy(vs, "porsche_suv", Vector2(880, 880))
+	_label("weisser_overall", Vector2(700, 790), 11)
+	# held icons: all eight new weapons in the fans
+	_player(vs, 7, "lastenrad", Vector2(1160, 880), NEW_WEAPONS.slice(0, 7), {"aim": 0.0})
+	_player(vs, 8, "toechter", Vector2(1380, 880), [NEW_WEAPONS[7], NEW_WEAPONS[0], NEW_WEAPONS[5]], {"aim": PI})
+	_label("held icons", Vector2(1230, 790), 11)
+	return vs
+
+
+## Fire the one-shot fx of the new weapons and park their clocks mid-effect.
+func _weapons_fx() -> void:
+	_fx_reset()
+	fx.handle_event(["swing", Vector2(720, 330), 0.0, 150.0, 360.0, "trillerpfeife"])
+	fx.handle_event(["chain", [Vector2(600, 640), Vector2(690, 600), Vector2(770, 670), Vector2(850, 600), Vector2(930, 660)]])
+	fx.handle_event(["beam", Vector2(1040, 640), Vector2(1440, 640)])
+	fx._whistles[-1]["t"] = 0.16
+	fx._chains[-1]["t"] = 0.12
+	fx._beams[-1]["t"] = 0.0
+	# the splat at (330, 500) belongs to a Kartoffelbrei that just landed
+	world._brei_seen[Vector2i(330, 500)] = world.anim_time
+
+
+func _shot_new_weapons() -> void:
+	_clear_labels()
+	var vs := _weapons_vs()
+	_show(vs, Vector2(800, 560), 0.78, _meta(1))
+	for i in 3:
+		await process_frame  # bake every mesh first, so the fx clocks don't jump
+	_weapons_fx()
+	await _capture("weapons_overview", 3)
+	_clear_labels()
+	var shots := [["kartoffelbrei", Vector2(330, 400), 2.0], ["trillerpfeife", Vector2(720, 300), 2.2],
+		["ziegel", Vector2(1180, 290), 2.2], ["normenkontrolle", Vector2(320, 640), 2.4],
+		["unterschriftenliste", Vector2(765, 620), 2.4], ["scheinwerfer", Vector2(1240, 630), 1.9],
+		["neun_euro_ticket", Vector2(280, 870), 2.8], ["weisser_overall", Vector2(760, 880), 2.8],
+		["icons", Vector2(1270, 860), 3.0]]
+	for s in shots:
+		_show(vs, s[1], s[2], _meta(1))
+		_weapons_fx()
+		await _capture("weapon_%s" % s[0], 3)
 
 
 func _stress() -> void:
