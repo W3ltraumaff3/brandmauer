@@ -17,7 +17,6 @@ When a question is answered, move it into [decisions.md](decisions.md) and remov
 
 ## Content (depends on the quote research)
 
-- [ ] **Single-source check is running.** The results go into `research/zitate_de.md` under "Einzelquellen-Prüfung".
 - [ ] Which quotes go on boss cards, which become speech bubbles, which go on loading screens.
 - [ ] More character, item and boss ideas from the research.
 

@@ -1,0 +1,200 @@
+{
+  "falschzitate": [
+    {
+      "falsch": "Hitler und die Nazis sind nur ein Fliegenschiss in der Geschichte.",
+      "richtig": "Hitler und die Nazis sind nur ein Vogelschiss in über 1000 Jahren erfolgreicher deutscher Geschichte.",
+      "sprecher": "Alexander Gauland",
+      "erklaerung": "Gauland sagte am 02.06.2018 'Vogelschiss'. Friedrich Merz verwechselte es am 29.01.2025 im Bundestag ('Das war Ihr Fliegenschiss, von dem Sie vor Jahr und Tag gesprochen haben'); Stephan Brandner rief dazwischen: 'Er hat nicht „Fliegenschiss“ gesagt! Herr Gauland hat nie „Fliegenschiss“ gesagt!' Auch die Variante 'in unserer über 1000jährigen Geschichte' ist ungenau.",
+      "quellen": [
+        "https://dserver.bundestag.de/btp/20/20209.pdf",
+        "https://taz.de/Gaulands-Relativierung-der-NS-Zeit/!5510144/",
+        "https://www.berliner-zeitung.de/article/vogelschiss-aeusserung-gauland-denkt-nicht-an-entschuldigung-29043"
+      ]
+    },
+    {
+      "falsch": "Höcke nannte das Holocaust-Mahnmal ein 'Schandmal'.",
+      "richtig": "… das einzige Volk der Welt, das sich ein Denkmal der Schande in das Herz seiner Hauptstadt gepflanzt hat.",
+      "sprecher": "Björn Höcke",
+      "erklaerung": "Der Begriff 'Schandmal' ist eine Verkürzung (u. a. in der Argumentation vor dem VG Meiningen, wiedergegeben im VG-Köln-Urteil). Höcke sagte 'Denkmal der Schande'; er behauptete später, damit den Holocaust gemeint zu haben.",
+      "quellen": [
+        "https://www.tagesspiegel.de/politik/19273518.html",
+        "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html"
+      ]
+    },
+    {
+      "falsch": "Ein Gericht hat festgestellt / entschieden, dass Höcke ein Faschist ist.",
+      "richtig": "Das VG Meiningen entschied am 26.09.2019 im Eilverfahren, dass Demonstranten Höcke in einem konkreten Versammlungskontext 'Faschist' nennen durften, weil ihr Werturteil 'auf einer überprüfbaren Tatsachengrundlage beruht'.",
+      "sprecher": "Björn Höcke (über ihn)",
+      "erklaerung": "Das LG Hamburg untersagte am 16.03.2020 (324 O 103/20) per einstweiliger Verfügung die Behauptung, Höcke sei gerichtlich als Faschist eingestuft worden. Rechtlich heikel – nur korrekt formulieren.",
+      "quellen": [
+        "https://www.lto.de/recht/nachrichten/n/lg-hamburg-324o103-20-einstweilige-verfuegung-aeusserung-hoecke-gerichtlich-zum-faschisten-erklaert",
+        "https://www.lto.de/recht/nachrichten/n/vg-meiningen-2-e-jj94-19-me-bjoern-hoecke-faschist-afd-gegendemonstration"
+      ]
+    },
+    {
+      "falsch": "Höcke rief in Gera 'Alles für Deutschland'.",
+      "richtig": "In Gera (12.12.2023) sagte Höcke nur 'Alles für' und animierte das Publikum mit Gesten, 'Deutschland' zu ergänzen; die vollständige Parole verwendete er in Merseburg (29.05.2021).",
+      "sprecher": "Björn Höcke",
+      "erklaerung": "Beide Fälle führten zu rechtskräftigen Verurteilungen (LG Halle 14.05.2024 und 01.07.2024; BGH-Beschlüsse 20.08.2025).",
+      "quellen": [
+        "https://www.beck-aktuell.de/heute-im-recht/rechtsprechung/bgh-3str48424-3str51924-hoecke-revisionen-sa-parole-2025-09-11"
+      ]
+    },
+    {
+      "falsch": "Nicht alle SS-Leute waren Verbrecher.",
+      "richtig": "Ich werde nie sagen, dass jeder, der eine SS-Uniform trug, automatisch ein Verbrecher war. / Es gab sicherlich einen hohen Prozentsatz an Kriminellen, aber nicht alle waren kriminell.",
+      "sprecher": "Maximilian Krah",
+      "erklaerung": "Die Kurzform ist eine Paraphrase der Medien. Wörtliche (übersetzte) Fassung aus La Repubblica, 18.05.2024, siehe krah-01/krah-02. Original italienisch.",
+      "quellen": [
+        "https://www.juedische-allgemeine.de/politik/eklat-um-ss-aeusserungen-von-maximilian-krah-le-pen-bricht-mit-der-afd/"
+      ]
+    },
+    {
+      "falsch": "Putin hat mir persönlich nichts getan. / Mir hat Putin nichts getan.",
+      "richtig": "Mir hat er nichts getan. Ich sehe keine Gefahr für Deutschland aktuell durch Russland.",
+      "sprecher": "Tino Chrupalla",
+      "erklaerung": "Die Varianten stammen aus Überschriften bzw. der Frageformulierung im ZDF-Morgenmagazin; bei 'Markus Lanz' (11.11.2025) sagte er 'Mir hat er nichts getan'.",
+      "quellen": [
+        "https://www.berliner-kurier.de/article/chrupalla-bei-lanz-10005221",
+        "https://www.zdfheute.de/politik/deutschland/chrupalla-russland-aussagen-putin-entspannungspolitik-100.html"
+      ]
+    },
+    {
+      "falsch": "Wir reißen alle Windräder der Schande ab.",
+      "richtig": "Und ich kann Ihnen sagen, wenn wir am Ruder sind, wir reißen alle Windkraftwerke nieder. Nieder mit diesen Windmühlen der Schande.",
+      "sprecher": "Alice Weidel",
+      "erklaerung": "Es heißt 'Windmühlen der Schande' und 'niederreißen'. Weidel schränkte später ein, gemeint sei v. a. der Reinhardswald.",
+      "quellen": [
+        "https://www.zdfheute.de/politik/deutschland/weidel-afd-windraeder-reinhardswald-windkraft-kritik-100.html"
+      ]
+    },
+    {
+      "falsch": "Hitler war Kommunist. (als deutsches Originalzitat Weidels)",
+      "richtig": "Original englisch im X-Space mit Elon Musk (09.01.2025); dpa-Übersetzung: 'Er war ein Kommunist und sah sich selbst als Sozialisten.'",
+      "sprecher": "Alice Weidel",
+      "erklaerung": "Deutsche Fassungen sind Übersetzungen; englische Transkripte variieren. Als übersetzt kennzeichnen.",
+      "quellen": [
+        "https://www.juedische-allgemeine.de/politik/weidel-im-talk-mit-musk-hitler-war-ein-kommunist"
+      ]
+    },
+    {
+      "falsch": "Wir werden Frau Merkel jagen.",
+      "richtig": "Wir werden sie jagen. […] Wir werden uns unser Land und unser Volk zurückholen. (Mittelsatz laut Tagesspiegel: 'Wir werden Frau Merkel oder wen auch immer jagen' – nicht selbst geprüft)",
+      "sprecher": "Alexander Gauland",
+      "erklaerung": "Die verbreitete Kurzform ist eine Spiegel-Überschrift; gemeint war die künftige Bundesregierung, 'wen auch immer'.",
+      "quellen": [
+        "https://www.spiegel.de/politik/deutschland/afd-alexander-gauland-wir-werden-frau-merkel-jagen-a-1169598.html"
+      ]
+    },
+    {
+      "falsch": "Petry forderte einen 'Schießbefehl' an der Grenze.",
+      "richtig": "Er muss den illegalen Grenzübertritt verhindern, notfalls auch von der Schusswaffe Gebrauch machen. So steht es im Gesetz.",
+      "sprecher": "Frauke Petry",
+      "erklaerung": "'Schießbefehl' ist ein Medien-/Kritikerbegriff, nicht Petrys Wortlaut.",
+      "quellen": [
+        "https://www.salzburg24.at/news/welt/afd-fordert-schiessbefehl-an-grenze-art-114035",
+        "https://www.evangelisch.de/inhalte/131288/01-02-2016/petry-relativiert-forderung-nach-schusswaffen-einsatz-grenze"
+      ]
+    },
+    {
+      "falsch": "Ich bin mit der Maus abgerutscht. (als gesichertes Zitat von Storchs)",
+      "richtig": "Nicht gesichert – siehe unverifiziert.",
+      "sprecher": "Beatrix von Storch",
+      "erklaerung": "Der Spiegel berichtete Anfang 2016, von Storch habe sich parteiintern so gerechtfertigt; sie bestreitet, das so gesagt zu haben, und ließ 2017 den Verlag eines Buchs, das das Zitat enthielt, abmahnen.",
+      "quellen": [
+        "https://www.turi2.de/aktuell/afd-politikerin-geht-gegen-afd-buch-von-spiegel-journalistin-vor/"
+      ]
+    },
+    {
+      "falsch": "Kopftuchmädchen und Messermänner (verkürzte Zuordnung als Sammelbegriff für alle Muslime) bzw. 'Burkas, Kopftuchmädchen und alimentierte Messermänner'",
+      "richtig": "Burkas, Kopftuchmädchen, alimentierte Messermänner und sonstige Taugenichtse werden unseren Wohlstand, das Wirtschaftswachstum und vor allem den Sozialstaat nicht sichern.",
+      "sprecher": "Alice Weidel",
+      "erklaerung": "Maßgeblich ist das Plenarprotokoll 19/32; die Bundestags-Pressemeldung fügt ein 'und' ein.",
+      "quellen": [
+        "https://dserver.bundestag.de/btp/19/19032.pdf"
+      ]
+    }
+  ],
+  "unverifiziert": [
+    {
+      "zitat": "Ich bin mit der Maus abgerutscht. / … sie sei 'mit der Maus abgerutscht'",
+      "sprecher": "Beatrix von Storch",
+      "grund": "Nur als indirekte, parteiinterne Rechtfertigung vom Spiegel (2016) bzw. im Buch von Melanie Amann berichtet; von Storch bestreitet die Äußerung und ging 2017 per Abmahnung gegen das Buch vor (turi2). Kein Primärbeleg – rechtlich riskant, nicht als ihr Zitat verwenden."
+    },
+    {
+      "zitat": "Wer das HALT an unserer Grenze nicht akzeptiert, der ist ein Angreifer. Und gegen Angriffe müssen wir uns verteidigen.",
+      "sprecher": "Beatrix von Storch",
+      "grund": "Nur im DIMR-Bericht (zitiert FAZ, 31.01.2016) gefunden; FAZ-Artikel nicht abrufbar, keine zweite Quelle."
+    },
+    {
+      "zitat": "Gegen Kinder ist der Schusswaffeneinsatz richtigerweise nicht zulässig. Frauen sind anders als Kinder verständig.",
+      "sprecher": "Beatrix von Storch",
+      "grund": "Nur in einer dpa-Meldung (wortgleich auf Ippen-Portalen leinetal24/heidelberg24/echo24) gefunden; keine unabhängige zweite Quelle."
+    },
+    {
+      "zitat": "Die Pläne für einen Massenaustausch der Bevölkerung sind längst geschrieben.",
+      "sprecher": "Beatrix von Storch",
+      "grund": "Nur im DIMR-Bericht, dort zitiert nach Pfahl-Traughber (2019); Originaltweet (Mai 2016) nicht eingesehen."
+    },
+    {
+      "zitat": "Heute lautet die Frage: Schaf oder Wolf. Und ich, nein, wir entscheiden uns in dieser Lage, Wolf zu sein.",
+      "sprecher": "Björn Höcke",
+      "grund": "Nur im DIMR-Bericht, zitiert nach Kraske (2021); Datum dort 'Kyffhäusertreffen Juni 2018'. Keine zweite Quelle gefunden."
+    },
+    {
+      "zitat": "Ich will, dass Deutschland nicht nur eine tausendjährige Vergangenheit hat. Ich will, dass Deutschland auch eine tausendjährige Zukunft hat.",
+      "sprecher": "Björn Höcke",
+      "grund": "Varianten widersprechen sich: SPD-Zitatesammlung nennt Erfurt/FAZ 16.10.2015, das VG-Köln-Urteil gibt in der Zusammenfassung der Antragsteller eine Magdeburg-Variante wieder ('dass Magdeburg und dass Deutschland …'). Kein gesicherter Wortlaut."
+    },
+    {
+      "zitat": "Thüringer! Deutsche! 3.000 Jahre Europa. 1.000 Jahre Deutschland.",
+      "sprecher": "Björn Höcke",
+      "grund": "Nur mit 'soll gerufen haben' berichtet (web.de/dpa 2015)."
+    },
+    {
+      "zitat": "Ich erkläre hiermit diesen Schuldkult für beendet, für endgültig beendet.",
+      "sprecher": "Jens Maier",
+      "grund": "Nur Fragmente gesichert ('Schuldkult', 'für endgültig beendet' – L-IZ, LTO); vollständiger Satz variiert zwischen Quellen."
+    },
+    {
+      "zitat": "Breivik ist aus Verzweiflung heraus zum Massenmörder geworden.",
+      "sprecher": "Jens Maier",
+      "grund": "Laut BfV-Gutachten/Parteiausschlussantrag (LTO); Maier bestreitet die Äußerung, die Videoaufnahme ist verschwunden. Rechtlich riskant."
+    },
+    {
+      "zitat": "Das will ich ganz klar dementieren. (zur Verwendung des Wortes 'Umvolkung')",
+      "sprecher": "Tino Chrupalla",
+      "grund": "ZDF-Interview mit Theo Koll nach seiner Wahl zum Parteichef (Ende Nov./1.12.2019); wörtlich nur in einem Ippen-Artikel (heidelberg24) gefunden; ZDF-Original nicht mehr abrufbar. Auch 'Habe ihn nicht bewusst gesetzt' nur dort."
+    },
+    {
+      "zitat": "Wir schließen alle Gender Studies und schmeißen die Professoren raus.",
+      "sprecher": "Alice Weidel",
+      "grund": "Riesa 11.01.2025; wörtlich nur in der taz gefunden (zwei taz-Artikel). Ein Transkript gibt es nur sinngemäß wieder. Für 'verifiziert' fehlt eine unabhängige zweite Quelle."
+    },
+    {
+      "zitat": "Wir versuchen, die Grenzen des Sagbaren auszuweiten. / Und ja, da findet eine Ausweitung der sagbaren Zone statt, und das ist auch beabsichtigt.",
+      "sprecher": "Alexander Gauland",
+      "grund": "Nur im DIMR-Bericht, zitiert nach 'Frankfurter Allgemeine Woche' (08.06.2018); FAZ nicht abrufbar."
+    },
+    {
+      "zitat": "links-rot-grün verseuchtes 68er-Deutschland",
+      "sprecher": "Jörg Meuthen (2022 aus der AfD ausgetreten)",
+      "grund": "Stuttgarter Parteitag 30.04.2016; Wortlaut variiert zwischen Quellen ('verseucht' vs. 'versifft', Datum/Parteitag uneinheitlich)."
+    },
+    {
+      "zitat": "Die AfD ist die letzte evolutionäre Chance für dieses Land. Danach kommt nur noch ‚Helm auf‘.",
+      "sprecher": "Andreas Kalbitz (2020 Mitgliedschaft annulliert)",
+      "grund": "Nur via news4teachers, das sich auf 'Welt' beruft (Kyffhäuser 2017); Welt-Artikel nicht abgerufen."
+    },
+    {
+      "zitat": "Schau keine Pornos, wähl' nicht die Grünen, geh' raus an die frische Luft …",
+      "sprecher": "Maximilian Krah",
+      "grund": "TikTok 2023; nur bei Nordkurier wörtlich gefunden."
+    },
+    {
+      "zitat": "Mit der Bombardierung Dresdens und der anderen deutschen Städte wollte man nichts anderes als uns unsere kollektive Identität rauben.",
+      "sprecher": "Björn Höcke",
+      "grund": "Nur im Spiegel (12.03.2020, nach Verfassungsschutz) gefunden, ohne genaues Datum/Ort ('2017 in Sachsen')."
+    }
+  ]
+}

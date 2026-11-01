@@ -1,0 +1,162 @@
+{
+  "falschzitate": [
+    {
+      "falsch": "Hartz IV bedeutet nicht Armut.",
+      "richtig": "Niemand müsste in Deutschland hungern, wenn es die Tafeln nicht gäbe. / Damit hat jeder das, was er zum Leben braucht.",
+      "sprecher": "Jens Spahn",
+      "erklaerung": "In allen geprüften Agentur- und Zeitungstexten nur als indirekte Rede ('Hartz IV bedeute nicht Armut, sondern sei die Antwort der Solidargemeinschaft auf Armut'). Original-Interview (Funke/Berliner Morgenpost, März 2018) nicht eingesehen. Im Spiel nur als Paraphrase kennzeichnen.",
+      "quellen": [
+        "https://www.aerzteblatt.de/news/debatte-um-armutsbekaempfung-entbrannt-0e8fb5a0-8932-460c-9203-fe2fb214cca3",
+        "https://www.evangelisch.de/inhalte/149112/13-03-2018/jens-spahn-sozialverbaende-hartz-iv-beduerfnisse-unzureichend",
+        "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_83385430/jens-spahn-rudert-in-hartz-iv-debatte-zurueck-natuerlich-ist-es-schwierig-.html"
+      ]
+    },
+    {
+      "falsch": "Wir werden einander viel verzeihen müssen.",
+      "richtig": "[…] dass wir nämlich miteinander in ein paar Monaten wahrscheinlich viel werden verzeihen müssen",
+      "sprecher": "Jens Spahn",
+      "erklaerung": "Die geglättete Fassung ist der Titel seines Buchs (2022). Der tatsächliche Bundestagswortlaut (22.04.2020) steht im Plenarprotokoll 19/155, S. 19211.",
+      "quellen": [
+        "https://dserver.bundestag.de/btp/19/19155.pdf"
+      ]
+    },
+    {
+      "falsch": "Ein Kind, das kaum Deutsch spricht oder versteht, hat auf einer Grundschule noch nichts zu suchen. / 'Linnemann fordert Grundschulverbot'",
+      "richtig": "Um es auf den Punkt zu bringen: Ein Kind, das kaum Deutsch spricht und versteht, hat auf einer Grundschule noch nichts zu suchen.",
+      "sprecher": "Carsten Linnemann",
+      "erklaerung": "epd und dpa geben 'spricht und versteht' wieder, die taz 'oder'. Ein Verbot des Grundschulbesuchs forderte er nicht; er wollte Vorschulpflicht und notfalls spätere Einschulung (dpa hatte zunächst anders gemeldet).",
+      "quellen": [
+        "https://www.evangelisch.de/inhalte/159036/05-08-2019/cdu-politiker-erstklaessler-muessen-gute-deutschkenntnisse-haben",
+        "https://www.abendzeitung-muenchen.de/politik/debatte-ohne-deutschkenntnisse-kein-grundschulbesuch-art-582068",
+        "https://taz.de/Grundschul-Forderung-aus-der-CDU/!5611031/"
+      ]
+    },
+    {
+      "falsch": "Die Grünen sind unser Hauptgegner.",
+      "richtig": "Der Hauptkonkurrent um Platz eins sind die Grünen. Sie müssen wir stärker in den Fokus nehmen.",
+      "sprecher": "Markus Söder",
+      "erklaerung": "'Hauptgegner' ließ sich in den geprüften Quellen nicht als wörtliches Söder-Zitat belegen (der Begriff taucht in CSU-Kontexten z. B. bei Generalsekretär Blume zur Kommunalwahl auf). Belegt ist 'Hauptkonkurrent' (2019). Nicht ausgeschlossen, dass Söder 'Hauptgegner' anderswo sagte – nur ohne Beleg nicht verwenden.",
+      "quellen": [
+        "https://www.abendzeitung-muenchen.de/bayern/soeder-gruene-sind-gegner-keine-fixierung-auf-rechtsaussen-art-658881"
+      ]
+    },
+    {
+      "falsch": "Der Bundestag ist kein Zirkuszelt. (Klöckner zugeschrieben)",
+      "richtig": "Klöckners Sprecher begründete den CSD-Verzicht der Bundestagsverwaltung mit der 'notwendige[n] politische[n] Neutralität der Verwaltung'. Der Zirkuszelt-Satz wird in Berichten Friedrich Merz zugeschrieben.",
+      "sprecher": "Julia Klöckner",
+      "erklaerung": "Häufige Verwechslung in der Regenbogenflaggen-Debatte 2025. Merz-Wortlaut hier nicht geprüft (Merz separat recherchiert). Zur Flagge selbst ist kein eigenes wörtliches Klöckner-Zitat in den abgerufenen Quellen belegt (nur Sprecher-Zitate).",
+      "quellen": [
+        "https://www.zdfheute.de/politik/csd-bundestag-regenbogenfahne-kloeckner-100.html"
+      ]
+    },
+    {
+      "falsch": "Klöckner: Die Kirchen sollen sich aus der Politik raushalten / Maulkorb für die Kirchen",
+      "richtig": "Ich meine: Klar kann sich Kirche auch zu Tempo 130 äußern, aber dafür zahle ich jetzt nicht unbedingt Kirchensteuer.",
+      "sprecher": "Julia Klöckner",
+      "erklaerung": "Im Interview sagt sie ausdrücklich 'da kann man alles sicherlich tun und machen'; die 'Maulkorb'-Zuspitzung stammt von Kritikern.",
+      "quellen": [
+        "https://www.evangelisch.de/inhalte/241992/20-04-2025/bundestagspraesidentin-kloeckner-kirche-muss-sinn-stiften"
+      ]
+    },
+    {
+      "falsch": "Die Anti-Abschiebe-Industrie sabotiert den Rechtsstaat.",
+      "richtig": "Es ist nicht akzeptabel, dass durch eine aggressive Anti-Abschiebe-Industrie bewusst die Bemühungen des Rechtsstaates sabotiert und eine weitere Gefährdung der Öffentlichkeit provoziert wird.",
+      "sprecher": "Alexander Dobrindt",
+      "erklaerung": "Verkürzte Kurzfassung kursiert; das Original bezieht sich auf 'die Bemühungen des Rechtsstaates'.",
+      "quellen": [
+        "https://www.tagesspiegel.de/politik/csu-landesgruppenchef-dobrindt-beklagt-eine-anti-abschiebe-industrie/21248990.html"
+      ]
+    },
+    {
+      "falsch": "Hubert Aiwanger hat das antisemitische Flugblatt geschrieben. (als Tatsache)",
+      "richtig": "Ich habe das fragliche Papier nicht verfasst und erachte den Inhalt als ekelhaft und menschenverachtend. (Hubert Aiwanger) / Ich bin der Verfasser dieses in der Presse wiedergegebenen Flugblatts. (Helmut Aiwanger)",
+      "sprecher": "Hubert Aiwanger",
+      "erklaerung": "Keine Zitat-, sondern Tatsachenbehauptung mit hohem Rechtsrisiko: Die Süddeutsche nannte ihn als Verfasser, sein Bruder bekannte sich zur Autorschaft. Im Spiel nicht als Tatsache darstellen.",
+      "quellen": [
+        "https://www.evangelisch.de/inhalte/220113/26-08-2023/wende-im-fall-aiwanger-bruder-bekennt-sich-zu-flugblatt"
+      ]
+    }
+  ],
+  "unverifiziert": [
+    {
+      "zitat": "Für mich persönlich gilt: Ich werde das Wort Asyltourismus nicht wieder verwenden, wenn es jemanden verletzt",
+      "sprecher": "Markus Söder",
+      "grund": "Nur bei Junge Freiheit und Tichys Einblick gefunden (angeblich Bayerischer Landtag, 11.07.2018); Landtagsprotokoll und Leitmedien nicht geprüft. Wäre der wichtigste Walk-back zu soeder-01."
+    },
+    {
+      "zitat": "Die Bevölkerung versteht das Wort 'Asyltourismus' leider sehr genau",
+      "sprecher": "Markus Söder",
+      "grund": "Angeblich Welt am Sonntag (Juli 2018); nur über Junge Freiheit gefunden."
+    },
+    {
+      "zitat": "(Bäume umarmen / Klimawende-Zitate 2019)",
+      "sprecher": "Markus Söder",
+      "grund": "Kein wörtliches Söder-Zitat zum Bäume-Umarmen gefunden; 'Söder umarmt Bäume' scheint vor allem Spott/Fremdbeschreibung zu sein."
+    },
+    {
+      "zitat": "(#söderisst-Posts)",
+      "sprecher": "Markus Söder",
+      "grund": "Kein einzelner Post wörtlich geprüft; stattdessen soeder-08 ('Ich lasse mir nicht vorschreiben, was ich esse') verwenden."
+    },
+    {
+      "zitat": "Die Reichinnek soll sich lieber in einen Trabi setzen und nicht bayerische Produkte missbrauchen.",
+      "sprecher": "Markus Söder",
+      "grund": "Wortlaut zwischen Der Standard und Berliner Zeitung abweichend (Berliner Zeitung: 'Die soll sich lieber in einen Trabi oder in einen Lada setzen' / 'und nicht bayerische Produkte da missbrauchen')."
+    },
+    {
+      "zitat": "Die Macht des Faktischen wirkt längst. Die Bundespolizisten werden vor Ort die Probleme lösen.",
+      "sprecher": "Alexander Dobrindt",
+      "grund": "Nur Ippen-Medien (heidelberg24/echo24, angeblich gegenüber Bild, Juni 2025); ein anderer (Blog-)Text schreibt die Formel Michael Kretschmer zu. Zuschreibung unklar."
+    },
+    {
+      "zitat": "(Original-Formulierung 'Klima-RAF', Bild am Sonntag Nov. 2022)",
+      "sprecher": "Alexander Dobrindt",
+      "grund": "Original nicht eingesehen; dpa paraphrasiert nur. Belegt ist die Wiederholung vom April 2023 (dobrindt-03)."
+    },
+    {
+      "zitat": "Wir sind der Deutsche Bundestag und bei uns weht eine Fahne: Schwarz-Rot-Gold",
+      "sprecher": "Julia Klöckner",
+      "grund": "Nur in einer Suchzusammenfassung (angeblich ARD-Interview 2025) aufgetaucht, in keinem abgerufenen Artikel wörtlich gefunden."
+    },
+    {
+      "zitat": "Ich freue mich, dass wir Unterstützung haben für unsere Innovations- und Reduktionsstrategie. Weniger Zucker, weniger Salz und weniger Fett in den Produkten, die die Bürger gerne mögen.",
+      "sprecher": "Julia Klöckner",
+      "grund": "Nestlé-Video Juni 2019: Wortlaut nur bei t-online gefunden; Video selbst nicht geprüft."
+    },
+    {
+      "zitat": "(Leitkultur-Zitat)",
+      "sprecher": "Carsten Linnemann",
+      "grund": "Kein wörtliches Linnemann-Zitat zur Leitkultur in reputablen Quellen gefunden."
+    },
+    {
+      "zitat": "Wenn sie mich jetzt aufgestellt hätten, weiß ich nicht, als Gesundheitsminister, wäre ich wahrscheinlich nicht erfolgreich gewesen.",
+      "sprecher": "Carsten Linnemann",
+      "grund": "Phoenix 2025, nur über Apotheken Umschau (Einzelquelle, 'sie/Sie' unklar). Satirisch reizvoll, da er 2026 Gesundheitsminister wurde – vor Verwendung das Phoenix-Video prüfen."
+    },
+    {
+      "zitat": "Wir werden auch darüber reden, ob die telefonische Krankschreibung so sinnvoll ist oder ob man nicht sagt, wenn man krank ist, muss man zum Arzt gehen",
+      "sprecher": "Carsten Linnemann",
+      "grund": "August 2025 (CDU-Klausur Rheinland-Pfalz); nur über Apotheken Umschau (zitiert Tagesspiegel) gefunden."
+    },
+    {
+      "zitat": "Dieser Sozialismus wird bei der Genossin Reichinnek nicht besser funktionieren, als beim Genossen Honecker",
+      "sprecher": "Jens Spahn",
+      "grund": "Angebliche Talkshow-Fassung, nur über Apollo News; belegt ist die Parteitagsfassung (spahn-05)."
+    },
+    {
+      "zitat": "Da würde ich uns einfach empfehlen, … (Satzanfang zu spahn-03)",
+      "sprecher": "Jens Spahn",
+      "grund": "Satzanfang nur in Suchergebnis-Snippets (Nordkurier/Schwäbische) gesehen, nicht selbst abgerufen."
+    },
+    {
+      "zitat": "(Gendern-Zitate)",
+      "sprecher": "Christoph Ploß",
+      "grund": "Aus Zeitgründen nicht recherchiert."
+    },
+    {
+      "zitat": "(Zitate als Kulturstaatsminister)",
+      "sprecher": "Wolfram Weimer",
+      "grund": "Aus Zeitgründen nicht recherchiert."
+    }
+  ]
+}

@@ -19,3 +19,7 @@ Thumbs.db
 desktop.ini
 .vscode/
 *.tmp
+
+# Python
+__pycache__/
+*.pyc
