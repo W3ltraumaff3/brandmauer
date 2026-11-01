@@ -77,12 +77,16 @@ func _register_input() -> void:
 			var ev := InputEventKey.new()
 			ev.physical_keycode = k
 			InputMap.action_add_event(action, ev)
+		# device = -1: accept every controller, not only device 0 (other HID devices, e.g.
+		# analog keyboards, can take device 0 and the real pad becomes 1).
 		if pad.has(action):
 			var jb := InputEventJoypadButton.new()
+			jb.device = -1
 			jb.button_index = pad[action]
 			InputMap.action_add_event(action, jb)
 		if axes.has(action):
 			var ja := InputEventJoypadMotion.new()
+			ja.device = -1
 			ja.axis = axes[action][0]
 			ja.axis_value = axes[action][1]
 			InputMap.action_add_event(action, ja)

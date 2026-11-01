@@ -25,6 +25,8 @@ var _side_scroll: ScrollContainer
 ## LB / RB jump between these sections (GDD §19b), in this order.
 const SECTIONS := ["sec_offers", "sec_weapons", "sec_items", "sec_kasse", "sec_wall", "sec_vertrag",
 	"sec_ready", "sec_stats"]
+## D-pad / stick / arrow keys stay inside the focused section (GDD §19b).
+const NAV_SIDES := {"ui_left": SIDE_LEFT, "ui_right": SIDE_RIGHT, "ui_up": SIDE_TOP, "ui_down": SIDE_BOTTOM}
 
 
 func _ready() -> void:
@@ -101,6 +103,8 @@ func _input(event: InputEvent) -> void:
 	if InputMap.has_action("ui_page_right") and event.is_action_pressed("ui_page_right"):
 		_jump_section(1)
 		return
+	if _keep_in_section(event):
+		return
 	if not event.is_action_pressed("ui_cancel"):
 		return
 	var o := _top_overlay()
@@ -144,6 +148,61 @@ func _jump_section(dir: int) -> void:
 			UIApi.sfx("ui_click")
 			target.grab_focus()
 			return
+
+
+## A direction step that would leave the focused section goes to the nearest
+## control of that section in that direction instead, or nowhere. Only LB / RB
+## change the section. True if the event was handled here.
+func _keep_in_section(event: InputEvent) -> bool:
+	var side := -1
+	for a in NAV_SIDES:
+		if InputMap.has_action(a) and event.is_action_pressed(a, true):
+			side = NAV_SIDES[a]
+			break
+	if side < 0 or _top_overlay() != null:
+		return false
+	var f := get_viewport().gui_get_focus_owner()
+	var sec := _section_of(f)
+	if sec == null:
+		return false
+	var next := f.find_valid_focus_neighbor(side)
+	if next != null and sec.is_ancestor_of(next):
+		return false  # Godot's own step stays inside
+	get_viewport().set_input_as_handled()
+	var best := _nearest_in(sec, f, side)
+	if best != null:
+		best.grab_focus()
+	return true
+
+
+func _section_of(c: Control) -> Control:
+	var n: Node = c
+	while n != null and n != _root_box:
+		if SECTIONS.has(String(n.name)):
+			return n as Control
+		n = n.get_parent()
+	return null
+
+
+## The focusable control in `sec` closest to `from` in direction `side`
+## (sideways offset counts double), or null.
+func _nearest_in(sec: Control, from: Control, side: int) -> Control:
+	var dir: Vector2 = [Vector2.LEFT, Vector2.UP, Vector2.RIGHT, Vector2.DOWN][side]
+	var origin := from.get_global_rect().get_center()
+	var best: Control = null
+	var best_score := INF
+	for c in sec.find_children("*", "Control", true, false):
+		if c == from or not UINav.can_focus(c):
+			continue
+		var d := (c as Control).get_global_rect().get_center() - origin
+		var along := d.dot(dir)
+		if along < 4.0:
+			continue
+		var score := along + absf(d.dot(dir.orthogonal())) * 2.0
+		if score < best_score:
+			best_score = score
+			best = c as Control
+	return best
 
 
 func open_stats() -> void:

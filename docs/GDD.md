@@ -531,6 +531,12 @@ The whole game is fully playable with a gamepad (Xbox/PlayStation/Switch layouts
 | Späti tabs/sections | LB / RB jump between the sections Angebote, Waffen, Items, Kasse, Mauer, Vertrag, Bereit and Werte; the right stick scrolls lists | — |
 
 - **Every menu, dialog and the Späti are navigable with focus:** there's a visible focus frame, focus never gets lost, and the first sensible button gets focus.
+- **Directions mean directions:** right moves to the control on the right, down to the one below, and so on.
+- **In the Späti, the D-pad, left stick and arrow keys stay inside the current section.** At the edge of a section, focus stays where it is. Only LB / RB change the section.
+- **The character grid in the lobby is read like text:**
+  - Right on the last card of a row goes to the first card of the next row.
+  - Left on the first card of a row goes to the last card of the previous row.
+  - Up and down move by one row.
 - **Prompts show the input in use:** "[X]" instead of "[Leertaste]" once a gamepad was used last, and they switch back when the keyboard is used.
 - **Tooltips** are shown for the focused element, not only on mouse hover.
 - **Co-op:** each player plays on their own machine, so there's one controller per machine (no local split-screen).
