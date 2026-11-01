@@ -1,0 +1,445 @@
+[
+  {
+    "id": "merz-01",
+    "verwendung": [
+      "freischalt_karte:stadtbild"
+    ],
+    "begruendung": "Das Original des Stadtbild-Zitats; der Charakter ist die Antwort darauf."
+  },
+  {
+    "id": "merz-02",
+    "verwendung": [
+      "freischalt_karte:toechter"
+    ],
+    "begruendung": "Ikonisch, kurz, Grundlage der Freischaltfigur Die Töchter."
+  },
+  {
+    "id": "merz-03",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "Trotzig und typisch, aber ohne Kontext schwächer als die übrigen Merz-Zeilen."
+  },
+  {
+    "id": "merz-06",
+    "verwendung": [
+      "freischalt_karte:sozialtourist"
+    ],
+    "begruendung": "Ursprung des Begriffs, auf dem der Charakter Sozialtourist aufbaut."
+  },
+  {
+    "id": "merz-08",
+    "verwendung": [
+      "freischalt_karte:zahnarzt"
+    ],
+    "begruendung": "Das Zähne-neu-machen-Zitat ist die direkte Vorlage für den Zahnarzt-Touristen."
+  },
+  {
+    "id": "merz-09",
+    "verwendung": [
+      "freischalt_karte:genz",
+      "ladebildschirm"
+    ],
+    "begruendung": "Auf den Punkt gebracht: Work-Life-Balance als Wohlstandsgefahr."
+  },
+  {
+    "id": "merz-10",
+    "verwendung": [
+      "freischalt_karte:buergergeld"
+    ],
+    "begruendung": "Zeigt die Sozialstaat-Sicht des Kanzlers; der Bürgergeld-Build gewinnt trotzdem."
+  },
+  {
+    "id": "merz-12",
+    "verwendung": [
+      "boss_karte:sauerlaender",
+      "sprechblase:hinterbaenkler"
+    ],
+    "begruendung": "Das Brandmauer-Zitat schlechthin, im GDD schon für den Hinterbänkler vorgesehen."
+  },
+  {
+    "id": "merz-14",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Merz kontert Gauland mit dessen eigenem Wort, herrlich absurd."
+  },
+  {
+    "id": "merz-15",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Der Notar-Spruch ist ein Lehrstück der Selbstverwechslung."
+  },
+  {
+    "id": "merz-16",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Ausdrücklich gewünscht; zeigt seine Haltung in einem Satz (Kontext im Album: das Wort stammte aus der Frage)."
+  },
+  {
+    "id": "merz-17",
+    "verwendung": [
+      "boss_ruf:sauerlaender"
+    ],
+    "begruendung": "Passt exakt zu Phase 3 Zirkuszelt."
+  },
+  {
+    "id": "merz-18",
+    "verwendung": [
+      "freischalt_karte:klimakleber"
+    ],
+    "begruendung": "Die Klima-Kleinrechnung ist die Vorlage für den Klimakleber."
+  },
+  {
+    "id": "merz-19",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Absurd-arrogante Journalistenfrage nach der COP30."
+  },
+  {
+    "id": "merz-21",
+    "verwendung": [
+      "sprechblase:immobilienerbe",
+      "ladebildschirm"
+    ],
+    "begruendung": "Der Millionär in der Mittelschicht ist die Immobilienerben-Pointe in einem Satz."
+  },
+  {
+    "id": "merz-24",
+    "verwendung": [
+      "boss_ruf:sauerlaender"
+    ],
+    "begruendung": "Das AfD-Halbierungsversprechen passt zum Brandmauer-Thema."
+  },
+  {
+    "id": "merz-26",
+    "verwendung": [
+      "boss_ruf:sauerlaender"
+    ],
+    "begruendung": "Whatever it takes: perfekter Ruf für Phase 2 Sondervermögen."
+  },
+  {
+    "id": "merz-28",
+    "verwendung": [
+      "freischalt_karte:oma"
+    ],
+    "begruendung": "Eine Oma gegen Rechts widerlegt 'Links ist vorbei' durch pure Präsenz."
+  },
+  {
+    "id": "merz-29",
+    "verwendung": [
+      "freischalt_karte:lastenrad"
+    ],
+    "begruendung": "Der Spinner-Satz richtet sich direkt an die Lastenrad-Grünen."
+  },
+  {
+    "id": "merz-30",
+    "verwendung": [
+      "freischalt_karte:gewerkschaft"
+    ],
+    "begruendung": "Der Krankenstand-Satz ist die natürliche Vorlage für Gewerkschaft und Streik."
+  },
+  {
+    "id": "merz-32",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "Bezeichnend herablassend; die Ärztin bleibt unbenannt, nur fürs Album."
+  },
+  {
+    "id": "merz-33",
+    "verwendung": [
+      "sprechblase:hinterbaenkler",
+      "ladebildschirm"
+    ],
+    "begruendung": "Der Schock über das Offensichtliche ist unfreiwillig komisch und kurz."
+  },
+  {
+    "id": "soeder-02",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Absurd: Das Kreuz sei kein religiöses Zeichen."
+  },
+  {
+    "id": "soeder-04",
+    "verwendung": [
+      "sprechblase:hinterbaenkler"
+    ],
+    "begruendung": "Kurz und prägnant, typisches Anti-Grünen-Schlagwort."
+  },
+  {
+    "id": "soeder-05",
+    "verwendung": [
+      "sprechblase:hinterbaenkler"
+    ],
+    "begruendung": "Ironisch bei einer Union, die Mehrheiten mit der AfD sucht."
+  },
+  {
+    "id": "soeder-06",
+    "verwendung": [
+      "sprechblase:ju_schnoesel"
+    ],
+    "begruendung": "Hochpeinlich und komisch: TikTok-Tante, Rosa Luxemburg für Arme."
+  },
+  {
+    "id": "linnemann-03",
+    "verwendung": [
+      "freischalt_karte:totalverweigerer"
+    ],
+    "begruendung": "Die Totalverweigerer-Behauptung ist die Vorlage für den gleichnamigen Charakter."
+  },
+  {
+    "id": "linnemann-05",
+    "verwendung": [
+      "sprechblase:lobbyist",
+      "ladebildschirm"
+    ],
+    "begruendung": "Kurz und absurd: Zehn Krankenkassen reichen."
+  },
+  {
+    "id": "spahn-01",
+    "verwendung": [
+      "sprechblase:ju_schnoesel",
+      "ladebildschirm"
+    ],
+    "begruendung": "Der Tafel-Satz offenbart Weltbild und Realitätsferne."
+  },
+  {
+    "id": "spahn-02",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Der berühmte Satz über das Verzeihen in der Pandemie."
+  },
+  {
+    "id": "spahn-04",
+    "verwendung": [
+      "sprechblase:lobbyist"
+    ],
+    "begruendung": "Haben ist wichtiger als Brauchen: eine perfekte Lobbyisten-Zeile."
+  },
+  {
+    "id": "spahn-05",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Honecker-Vergleich mit Tattoos und TikTok ist herrlich verstiegen."
+  },
+  {
+    "id": "dobrindt-01",
+    "verwendung": [
+      "freischalt_karte:ngo"
+    ],
+    "begruendung": "Anti-Abschiebe-Industrie ist die Vorlage für die steuerfinanzierte NGO."
+  },
+  {
+    "id": "dobrindt-02",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Die konservative Revolution der Bürger: pathetisch und entlarvend."
+  },
+  {
+    "id": "kloeckner-01",
+    "verwendung": [
+      "sprechblase:lobbyist"
+    ],
+    "begruendung": "Der Nestlé-Tweet ist das Lobby-Beispiel schlechthin."
+  },
+  {
+    "id": "amthor-01",
+    "verwendung": [
+      "sprechblase:lobbyist"
+    ],
+    "begruendung": "Ikonisch: 'Ich bin nicht käuflich' zur Lobbyisten-Affäre."
+  },
+  {
+    "id": "amthor-04",
+    "verwendung": [
+      "sprechblase:ju_schnoesel"
+    ],
+    "begruendung": "Die Formel für Brandmauer-Löcher: Lieber 10 Prozent von X als 20 von nix."
+  },
+  {
+    "id": "aiwanger-01",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Bekannte Demagogie-Zeile, die den Ton der Rede direkt zeigt."
+  },
+  {
+    "id": "weidel-01",
+    "verwendung": [
+      "freischalt_karte:taugenichts"
+    ],
+    "begruendung": "Die Taugenichts-Beleidigung ist die Vorlage für den Luck-Build mit Eichendorff-Ei."
+  },
+  {
+    "id": "weidel-02",
+    "verwendung": [
+      "sprechblase:telegram_onkel"
+    ],
+    "begruendung": "Sarkastisch und sehr kurz, passt zum Weltbild des Telegram-Onkels."
+  },
+  {
+    "id": "weidel-03",
+    "verwendung": [
+      "boss_ruf:eidgenossin",
+      "ladebildschirm"
+    ],
+    "begruendung": "Hitler als Kommunist: absurd und sofort einprägsam."
+  },
+  {
+    "id": "weidel-04",
+    "verwendung": [
+      "boss_ruf:eidgenossin"
+    ],
+    "begruendung": "Das Remigrations-Zitat für Phase 2 und die Pointe mit dem Schweiz-Exit."
+  },
+  {
+    "id": "weidel-05",
+    "verwendung": [
+      "boss_karte:eidgenossin"
+    ],
+    "begruendung": "Don-Quijote-Kampfruf, laut GDD für Phase 1 vorgesehen."
+  },
+  {
+    "id": "weidel-06",
+    "verwendung": [
+      "freischalt_karte:antifa"
+    ],
+    "begruendung": "Fragment (nur als Fragment zitieren); der Antifa-Aktivist ist die Antwort auf 'rot lackierte Nazis'."
+  },
+  {
+    "id": "weidel-08",
+    "verwendung": [
+      "boss_ruf:eidgenossin",
+      "sprechblase:besorgter_buerger"
+    ],
+    "begruendung": "Der Müllhaufen der Geschichte, kurz und knackig, passt zu 'man darf nichts mehr sagen'."
+  },
+  {
+    "id": "hoecke-01",
+    "verwendung": [
+      "boss_ruf:geschichtslehrer"
+    ],
+    "begruendung": "Das 'Denkmal der Schande' ist der Auslöser der gesamten Debatte."
+  },
+  {
+    "id": "hoecke-02",
+    "verwendung": [
+      "boss_karte:geschichtslehrer"
+    ],
+    "begruendung": "Direkte Grundlage der Mechanik Wende um 180 Grad."
+  },
+  {
+    "id": "hoecke-03",
+    "verwendung": [
+      "boss_ruf:geschichtslehrer"
+    ],
+    "begruendung": "Die 'dämliche Bewältigungspolitik' zeigt sein Geschichtsbild."
+  },
+  {
+    "id": "hoecke-04",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "Wohltemperierte Grausamkeit, Dokumentation seines Remigrationsplans (nur Album)."
+  },
+  {
+    "id": "hoecke-06",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "Pseudowissenschaftliche Rassentheorie, nur als Dokumentation im Album."
+  },
+  {
+    "id": "hoecke-07",
+    "verwendung": [
+      "boss_ruf:geschichtslehrer"
+    ],
+    "begruendung": "Gallier-Fantasie, absurd, aber lang (daher nur Boss-Ruf, keine Sprechblase)."
+  },
+  {
+    "id": "hoecke-09",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "SA-Parole: ausschließlich Dokumentation im Album, nie Sprechblase oder Karte."
+  },
+  {
+    "id": "hoecke-10",
+    "verwendung": [
+      "album",
+      "ladebildschirm"
+    ],
+    "begruendung": "Gerichtsbeschluss, kein Höcke-Zitat; Infotext zur Einordnung des Begriffs 'Faschist' als zulässiges Werturteil."
+  },
+  {
+    "id": "gauland-01",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Der Vogelschiss-Satz ist ikonisch."
+  },
+  {
+    "id": "gauland-04",
+    "verwendung": [
+      "sprechblase:identitaerer_hipster"
+    ],
+    "begruendung": "Kurz und bedrohlich, passt zur Jagdrhetorik der Identitären."
+  },
+  {
+    "id": "chrupalla-01",
+    "verwendung": [
+      "sprechblase:reichsbuerger"
+    ],
+    "begruendung": "Realitätsverweigerung in kurzer Form, passt zum Reichsbürger."
+  },
+  {
+    "id": "chrupalla-04",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Heinrich Heine als Antwort auf die Frage eines Kinderreporters ist eine Pointe für sich."
+  },
+  {
+    "id": "storch-02",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "Ein einziges 'Ja' auf die Schusswaffen-Frage; Kontext zwingend, daher nur Album."
+  },
+  {
+    "id": "storch-04",
+    "verwendung": [
+      "freischalt_karte:teilzeit"
+    ],
+    "begruendung": "'Rabenmutter!' ist die Zeile, auf die die Teilzeit-Mama antwortet."
+  },
+  {
+    "id": "krah-01",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "SS-Relativierung, nur als Dokumentation im Album."
+  },
+  {
+    "id": "krah-03",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "'Echte Männer sind rechts' ist komisch-peinlich."
+  },
+  {
+    "id": "brandner-01",
+    "verwendung": [
+      "ladebildschirm"
+    ],
+    "begruendung": "Der Fliegenschiss-Konter ist die beste Zeile der Debatte."
+  }
+]

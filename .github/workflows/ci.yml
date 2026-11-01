@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  GODOT_VERSION: "4.7.2"
+
 jobs:
   research:
     name: Quote data
@@ -23,3 +26,73 @@ jobs:
         run: |
           python -I research/scripts/build_all.py
           git diff --exit-code -- research/
+
+  godot:
+    name: Godot tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v6
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+      - name: Download Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          zip="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 3 -O "$base/$zip" -O "$base/SHA512-SUMS.txt"
+          grep " $zip\$" SHA512-SUMS.txt | sha512sum -c -
+          mkdir -p ~/godot
+          unzip -q "$zip" -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+          chmod +x ~/godot/godot
+      - name: Import assets
+        run: ~/godot/godot --headless --path . --import
+      - name: Run tests
+        run: ~/godot/godot --headless --path . -s res://tests/godot/run_tests.gd
+
+  net-smoke:
+    name: Net smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check for tools/net_smoke.sh
+        id: check
+        run: |
+          if [ -f tools/net_smoke.sh ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Net smoke skipped::tools/net_smoke.sh does not exist yet"
+          fi
+      - name: Cache Godot
+        if: steps.check.outputs.present == 'true'
+        id: cache-godot
+        uses: actions/cache@v6
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+      - name: Download Godot
+        if: steps.check.outputs.present == 'true' && steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          zip="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 3 -O "$base/$zip" -O "$base/SHA512-SUMS.txt"
+          grep " $zip\$" SHA512-SUMS.txt | sha512sum -c -
+          mkdir -p ~/godot
+          unzip -q "$zip" -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+          chmod +x ~/godot/godot
+      - name: Import assets
+        if: steps.check.outputs.present == 'true'
+        run: ~/godot/godot --headless --path . --import
+      - name: Run net smoke test
+        if: steps.check.outputs.present == 'true'
+        run: GODOT="$HOME/godot/godot" bash tools/net_smoke.sh

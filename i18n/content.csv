@@ -1,0 +1,256 @@
+keys,de
+STAT_MAX_HP,Solidarität
+STAT_MAX_HP_DESC,Maximale Lebenspunkte. Gemeinsam hält man mehr aus. Pro Stufe +3.
+STAT_HP_REGEN,Krankenschein
+STAT_HP_REGEN_DESC,"Lebensregeneration. Drei Tage zu Hause, ganz offiziell. Pro Stufe +2."
+STAT_LIFESTEAL,Umverteilung
+STAT_LIFESTEAL_DESC,"Leben bei Treffer. Du nimmst es von denen, die zu viel haben. Pro Stufe +2."
+STAT_DAMAGE,Wut
+STAT_DAMAGE_DESC,"Mehr Schaden in Prozent. Wer Miete zahlt, versteht das. Pro Stufe +5."
+STAT_MELEE,Handarbeit
+STAT_MELEE_DESC,"Nahkampfschaden. Ehrliche Arbeit, auch Omas Stricken. Pro Stufe +2."
+STAT_RANGED,Lautstärke
+STAT_RANGED_DESC,Fernkampfschaden. Das Megafon hat endlich Stufen. Pro Stufe +2.
+STAT_STATUS,Ziviler Ungehorsam
+STAT_STATUS_DESC,"Gift- und Verlangsamungsschaden. Kleben, tofuen, nerven. Pro Stufe +2."
+STAT_ATTACK_SPEED,Akkord
+STAT_ATTACK_SPEED_DESC,Angriffstempo. Diesmal arbeitest du für dich. Pro Stufe +5.
+STAT_CRIT,Direkte Aktion
+STAT_CRIT_DESC,Chance auf kritische Treffer. Spontan und gut organisiert. Pro Stufe +4.
+STAT_SUMMON,Ehrenamt
+STAT_SUMMON_DESC,"Stärke deiner Helfer. Unbezahlt, aber unbezahlbar. Pro Stufe +2."
+STAT_RANGE,Reichweite
+STAT_RANGE_DESC,"Größere Reichweite, auch in den sozialen Medien. Pro Stufe +25."
+STAT_ARMOR,Kündigungsschutz
+STAT_ARMOR_DESC,"Rüstung: Jeder Treffer wird abgemildert. Fristgerecht, versteht sich. Pro Stufe +1."
+STAT_DODGE,Schwarzfahren
+STAT_DODGE_DESC,"Ausweichchance, maximal 60 %. Kontrolle? Nie gesehen. Pro Stufe +3."
+STAT_SPEED,Deutschlandticket
+STAT_SPEED_DESC,"Lauftempo. Fährt sogar, wenn die Bahn nicht fährt. Pro Stufe +4."
+STAT_LUCK,Eltern
+STAT_LUCK_DESC,Glück. Bei manchen startet der Wert bei 9.000. Pro Stufe +6.
+STAT_INCOME,Nebenjob
+STAT_INCOME_DESC,"Pfand pro Welle, ganz passiv. Mit Minijob-Charme. Pro Stufe +2."
+STAT_PICKUP,Pfandradar
+STAT_PICKUP_DESC,Einsammelradius. Du hörst jede Flasche klirren. Pro Stufe +20.
+STAT_XP,Vernetzung
+STAT_XP_DESC,Mehr Zusammenhalt pro Sieg. Dafür gibt es sogar eine Signal-Gruppe. Pro Stufe +8.
+CHAR_STADTBILD_NAME,Das Stadtbild
+CHAR_STADTBILD_DESC,"+2 Solidarität, startet mit dem Döner-Spieß. Wächst mit jedem Passanten. Ohne uns steht hier alles still."
+CHAR_SOZIALTOURIST_NAME,Sozialtourist
+CHAR_SOZIALTOURIST_DESC,"Startet mit 30 Pfand und 2 Gratis-Rerolls, dafür −3 Solidarität. Der Plan geht auf."
+CHAR_BUERGERGELD_NAME,Bürgergeld-Empfänger
+CHAR_BUERGERGELD_DESC,"+8 Nebenjob, aber −20 Wut. Startet mit dem Gendersternchen. Faul? Er gewinnt über die Wirtschaft."
+CHAR_KLIMAKLEBER_NAME,Klimakleber
+CHAR_KLIMAKLEBER_DESC,"Starker Schaden im Stehen, bremst Gegner. −20 Deutschlandticket. Startet mit dem Kleber."
+CHAR_LASTENRAD_NAME,Lastenrad-Grüne
+CHAR_LASTENRAD_DESC,"+25 Deutschlandticket, Rammschaden, 7 statt 6 Waffenplätze (Transportkorb). Startet mit dem Megafon."
+CHAR_GEWERKSCHAFT_NAME,Gewerkschaftsmitglied
+CHAR_GEWERKSCHAFT_DESC,"+2 Ehrenamt, stärker bei Mitstreitern oder eigenen Helfern. Startet mit dem Infostand."
+CHAR_ANTIFA_NAME,Antifa-Aktivist
+CHAR_ANTIFA_DESC,"+10 Deutschlandticket, +10 Wut, Bonus gegen Brandmauer-Tore. Startet mit dem Farbbeutel."
+CHAR_OMA_NAME,Oma gegen Rechts
+CHAR_OMA_DESC,"+15 Solidarität, +4 Kündigungsschutz, −20 Deutschlandticket. Fels in der Brandung, mit Stricknadeln."
+CHAR_TOECHTER_NAME,Die Töchter
+CHAR_TOECHTER_DESC,"Mehr Schaden, je mehr alte Männer in Anzügen im Bild sind. Startet mit dem Transparent."
+WEAPON_GENDERSTERNCHEN_NAME,Gendersternchen
+WEAPON_GENDERSTERNCHEN_DESC,"Wurfstern, prallt 1× ab, 6 Schaden. Trifft auch den, der sich nicht gemeint fühlt."
+WEAPON_PFANDFLASCHE_NAME,Pfandflasche
+WEAPON_PFANDFLASCHE_DESC,"Bumerang, durchschlägt alles, 10 % Chance auf Pfand. Kreislaufwirtschaft."
+WEAPON_MEGAFON_NAME,Megafon
+WEAPON_MEGAFON_DESC,"Kegelangriff mit Rückstoß, skaliert mit Lautstärke. Die Nachbarn beschweren sich später."
+WEAPON_STRICKNADELN_NAME,Stricknadeln
+WEAPON_STRICKNADELN_DESC,"Feuern alle 0,35 s. Skaliert mit Handarbeit und Lautstärke. Maschen pro Minute."
+WEAPON_DOENER_NAME,Döner-Spieß
+WEAPON_DOENER_DESC,"Nahkampf-Kegel, 12 Schaden. Heiß, hart und systemrelevant."
+WEAPON_GRUNDGESETZ_NAME,Grundgesetz
+WEAPON_GRUNDGESETZ_DESC,Breiter Nahkampf mit sattem Rückstoß. Artikel 1 haut richtig rein.
+WEAPON_TRANSPARENT_NAME,Transparent
+WEAPON_TRANSPARENT_DESC,Schlägt 360° um dich herum. Demo-Basics.
+WEAPON_MIETSPIEGEL_NAME,Mietspiegel
+WEAPON_MIETSPIEGEL_DESC,Kreist um dich und trifft alles. Ab Stufe 3 doppelt. Endlich mal verbindlich.
+WEAPON_TOFU_NAME,Tofu
+WEAPON_TOFU_DESC,"Vergiftet: 3 Schaden über 3 s, skaliert mit zivilem Ungehorsam. Schmeckt nach nichts, wirkt trotzdem."
+WEAPON_FARBBEUTEL_NAME,Farbbeutel
+WEAPON_FARBBEUTEL_DESC,"Flächenschaden, bremst um 40 %. Kunst am Bau."
+WEAPON_KLEBER_NAME,Kleber
+WEAPON_KLEBER_DESC,"Pfützen, die 3 s lang um 70 % bremsen. Hält länger als jede Koalition."
+WEAPON_INFOSTAND_NAME,Infostand
+WEAPON_INFOSTAND_DESC,Bis zu 2 Stände feuern 10 s lang Flugblätter. Haben Sie kurz Zeit für Demokratie?
+ITEM_SCHULDENBREMSE_NAME,Schuldenbremse
+ITEM_SCHULDENBREMSE_DESC,+15 Wut. Fluch: Pro Späti-Besuch darfst du nur begrenzt Geld ausgeben. Verfassungsrang für Geiz.
+ITEM_SONDERVERMOEGEN_NAME,Sondervermögen
+ITEM_SONDERVERMOEGEN_DESC,"+5 Nebenjob, hebt die Schuldenbremse auf. Nur kaufen, wenn du vorher laut versprochen hast, es nie zu kaufen."
+ITEM_BIERDECKEL_NAME,Bierdeckel-Steuererklärung
+ITEM_BIERDECKEL_DESC,Tut absolut nichts. Aber sie passt auf einen Bierdeckel. Seit Jahren versprochen.
+ITEM_FAXGERAET_NAME,Faxgerät
+ITEM_FAXGERAET_DESC,+40 Wut. Fluch: Jeder Angriff wird um 3 s verzögert. Piepst bei Verbindung.
+ITEM_DB_TICKET_NAME,DB-Ticket
+ITEM_DB_TICKET_DESC,+30 Deutschlandticket. Fluch: Zufällige Betäubung durch „Verspätung“ (+5 Min). Grund: Signalstörung.
+ITEM_THERMOSKANNE_NAME,Thermoskanne
+ITEM_THERMOSKANNE_DESC,+2 Krankenschein. Heißer Kaffee wärmt auch die Wut.
+ITEM_BETRIEBSRAT_NAME,Betriebsrat
+ITEM_BETRIEBSRAT_DESC,"+3 Kündigungsschutz, −3 Deutschlandticket. Bewegt sich nur nach Sitzung."
+ITEM_SOLIBUTTON_NAME,Soli-Button
+ITEM_SOLIBUTTON_DESC,"+10 Solidarität. Der Anstecker, der mehr bewirkt als jede Pressemitteilung."
+ITEM_MATE_KISTE_NAME,Mate-Kiste
+ITEM_MATE_KISTE_DESC,"+15 Akkord, −3 Solidarität. Das Herz rast, die Hände auch."
+ITEM_GEWERKSCHAFTSWESTE_NAME,Gewerkschaftsweste
+ITEM_GEWERKSCHAFTSWESTE_DESC,"+2 Kündigungsschutz, +5 Solidarität. Die Warnweste für den Warnstreik."
+ITEM_WUT_TAGEBUCH_NAME,Wut-Tagebuch
+ITEM_WUT_TAGEBUCH_DESC,+12 Wut. Heute: Nebenkostenabrechnung.
+ITEM_LAUTSPRECHERWAGEN_NAME,Lautsprecherwagen
+ITEM_LAUTSPRECHERWAGEN_DESC,"+3 Lautstärke, +30 Reichweite. Die Straße gehört dir. Bis das Ordnungsamt kommt."
+ITEM_STRICKLIESEL_NAME,Strickliesel
+ITEM_STRICKLIESEL_DESC,"+3 Handarbeit. Meditation mit Wolle, Gegner inklusive."
+ITEM_BOLZENSCHNEIDER_NAME,Bolzenschneider
+ITEM_BOLZENSCHNEIDER_DESC,"+5 Direkte Aktion, +2 Handarbeit. Für Zäune, Sperren und Gegner."
+ITEM_SCHWARZFAHRER_MUETZE_NAME,Schwarzfahrer-Mütze
+ITEM_SCHWARZFAHRER_MUETZE_DESC,"+8 Schwarzfahren. Wer sie trägt, dem fällt kein Kontrolleur auf."
+ITEM_DEUTSCHLANDTICKET_ABO_NAME,Deutschlandticket-Abo
+ITEM_DEUTSCHLANDTICKET_ABO_DESC,"+10 Deutschlandticket. Monatlich kündbar, wie es sich gehört."
+ITEM_PFANDRING_NAME,Pfandring
+ITEM_PFANDRING_DESC,"+60 Pfandradar. Die Flasche gehört in den Ring, das Geld in deine Tasche."
+ITEM_MINIJOB_NAME,Minijob
+ITEM_MINIJOB_DESC,"+5 Nebenjob. Zusatzverdienst für alle, die ohnehin nie schlafen."
+ITEM_ANRUF_BEI_MAMA_NAME,Anruf bei Mama
+ITEM_ANRUF_BEI_MAMA_DESC,"+15 Eltern. Sie kennt noch jemanden, der jemanden kennt."
+ITEM_SIGNAL_GRUPPE_NAME,Signal-Gruppe
+ITEM_SIGNAL_GRUPPE_DESC,+15 Vernetzung. Heißt „Demo morgen?“ und wird nie stumm geschaltet.
+ITEM_SPENDENDOSE_NAME,Spendendose
+ITEM_SPENDENDOSE_DESC,+2 Umverteilung. Mit sanftem Nachdruck fließt etwas zurück.
+ITEM_SEKUNDENKLEBER_NAME,Sekundenkleber
+ITEM_SEKUNDENKLEBER_DESC,+3 Ziviler Ungehorsam. Hält länger als jedes Wahlversprechen.
+ITEM_VEREINSHEIM_NAME,Vereinsheim
+ITEM_VEREINSHEIM_DESC,+3 Ehrenamt. Samt Kuchenbasar und Satzung.
+ITEM_FERNGLAS_NAME,Fernglas
+ITEM_FERNGLAS_DESC,+50 Reichweite. Du siehst das Problem schon von weitem.
+ITEM_MIETENDECKEL_NAME,Mietendeckel
+ITEM_MIETENDECKEL_DESC,+1 Kündigungsschutz. Immun gegen Mietzonen. Hier hält er sogar.
+ITEM_ERSTE_HILFE_KURS_NAME,Erste-Hilfe-Kurs
+ITEM_ERSTE_HILFE_KURS_DESC,+5 Solidarität. Wiederbeleben kostet nur die Hälfte. Stabile Seitenlage sitzt.
+ITEM_STREIKKASSE_NAME,Streikkasse
+ITEM_STREIKKASSE_DESC,"Am Wellenende +10 % deines ungenutzten Pfands, max. 20. Eisern gespart."
+ITEM_SPAETI_SONNENBRILLE_NAME,Späti-Sonnenbrille
+ITEM_SPAETI_SONNENBRILLE_DESC,"+5 Direkte Aktion, +5 Eltern. Nachts um zwei sieht man klarer."
+ITEM_TAUGENICHTS_NAME,Aus dem Leben eines Taugenichts
+ITEM_TAUGENICHTS_DESC,"+20 Eltern, −10 Akkord. Jede Welle +1 zufälliger Wert. Das Glück liegt auf der Straße."
+ITEM_VOGELSCHISS_NAME,Vogelschiss
+ITEM_VOGELSCHISS_DESC,+1 Wut. Sonst nichts. Nur ein kleines Detail in der Geschichte.
+ITEM_REICHSAUSWEIS_NAME,Reichsausweis
+ITEM_REICHSAUSWEIS_DESC,Wertlos. Gültig nur im Reich. Dummerweise gibt es das nicht.
+ENEMY_BESORGTER_BUERGER_NAME,Besorgter Bürger
+ENEMY_TELEGRAM_ONKEL_NAME,Telegram-Onkel
+ENEMY_IDENTITAERER_HIPSTER_NAME,Identitärer Hipster
+ENEMY_REICHSBUERGER_NAME,Reichsbürger
+ENEMY_JU_SCHNOESEL_NAME,JU-Schnösel
+ENEMY_HINTERBAENKLER_NAME,Hinterbänkler
+ENEMY_LOBBYIST_NAME,Lobbyist
+ENEMY_PORSCHE_SUV_NAME,Porsche-SUV
+ENEMY_IMMOBILIENERBE_NAME,Immobilienerbe
+ENEMY_GOLFCLUB_VORSTAND_NAME,Golfclub-Vorstand
+ENEMY_FDP_JUNGUNTERNEHMER_NAME,FDP-Jungunternehmer
+ENEMY_STARTUP_NAME,Start-up
+ENEMY_PRIVATJET_NAME,Privatjet
+ENEMY_SYLT_MEMBER_NAME,Sylt-Schnösel
+ENEMY_GESCHICHTSLEHRER_NAME,Der Geschichtslehrer
+ENEMY_SAUERLAENDER_NAME,Der Sauerländer
+ENEMY_EIDGENOSSIN_NAME,Die Eidgenossin
+ENC_SYLT_CLIQUE_NAME,Die Sylt-Clique
+ENC_SYLT_CLIQUE_EXIT,segelt davon.
+ENC_GESCHICHTSLEHRER_NAME,Der Geschichtslehrer
+ENC_GESCHICHTSLEHRER_EXIT,wird in den Aufsichtsrat befördert.
+ENC_SAUERLAENDER_NAME,Der Sauerländer
+ENC_SAUERLAENDER_EXIT,fliegt mit dem Privatjet davon und landet per goldenem Fallschirm im Aufsichtsrat.
+ENC_EIDGENOSSIN_NAME,Die Eidgenossin
+ENC_EIDGENOSSIN_EXIT,remigriert in die Schweiz.
+ORG_GEWERKSCHAFT_NAME,Gewerkschaft
+ORG_GEWERKSCHAFT_DESC,"Jede 5. Welle ein Streik: Gegner frieren 5 s ein, der Späti wird billiger. Einkommen steigt (Tarifvertrag)."
+ORG_ANTIFA_NAME,Antifa-Ortsgruppe
+ORG_ANTIFA_DESC,"Die Brandmauer repariert sich langsam, Bonus gegen AfD-Gegner, gelegentlich bremst eine Sitzblockade."
+ORG_OMAS_NAME,Omas gegen Rechts
+ORG_OMAS_DESC,Extra Krankenschein. Eine Oma haut mit dem Regenschirm zu und verteilt Pfand.
+VERTRAG_DIGITALPAKT_NAME,Digitalpakt
+VERTRAG_DIGITALPAKT_DESC,"Passiert nichts. Wie beim Faxgerät, nur mit Förderantrag."
+VERTRAG_TEMPOLIMIT_NAME,Tempolimit
+VERTRAG_TEMPOLIMIT_DESC,"Du −10 Deutschlandticket, Gegner 15 % langsamer. Freie Fahrt für niemanden."
+VERTRAG_MINDESTLOHN_NAME,Mindestlohn
+VERTRAG_MINDESTLOHN_DESC,"+3 Nebenjob für alle, Gegner haben 10 % mehr Leben. Rechnet sich."
+VERTRAG_BUEROKRATIEABBAU_NAME,Bürokratieabbau
+VERTRAG_BUEROKRATIEABBAU_DESC,"+25 Vernetzung, aber ein Späti-Angebot weniger. Abgebaut wird per Formular."
+VERTRAG_AUFRUESTUNG_NAME,Aufrüstung
+VERTRAG_AUFRUESTUNG_DESC,"+20 Wut für dich, Gegner machen 20 % mehr Schaden. Hat Rendite."
+VERTRAG_SCHULDENBREMSE_NAME,Schuldenbremse
+VERTRAG_SCHULDENBREMSE_DESC,"Späti-Preise −15 %, aber keine Regeneration. Sparen, bis es wehtut."
+VERTRAG_SANKTIONEN_NAME,Sanktionen
+VERTRAG_SANKTIONEN_DESC,"Einkommen halbiert, 30 % weniger Pfand-Drops. Willkommen im Jobcenter."
+ACH_ACH_DOEP_NAME,Döp dödö döp
+ACH_ACH_DOEP_DESC,Besiege die Sylt-Clique.
+ACH_DOEP_NAME,Döp dödö döp
+ACH_DOEP_DESC,Besiege die Sylt-Clique.
+ACH_ACH_180_NAME,180 Grad
+ACH_ACH_180_DESC,Besiege den Geschichtslehrer. Danach geht es nur noch vorwärts.
+ACH_180_NAME,180 Grad
+ACH_180_DESC,Besiege den Geschichtslehrer. Danach geht es nur noch vorwärts.
+ACH_ACH_AUFSICHTSRAT_NAME,Aufsichtsrat
+ACH_ACH_AUFSICHTSRAT_DESC,Besiege den Sauerländer. Schaltet Die Töchter frei.
+ACH_AUFSICHTSRAT_NAME,Aufsichtsrat
+ACH_AUFSICHTSRAT_DESC,Besiege den Sauerländer. Schaltet Die Töchter frei.
+ACH_ACH_REMIGRATION_NAME,Remigration
+ACH_ACH_REMIGRATION_DESC,Besiege die Eidgenossin. Sie geht freiwillig.
+ACH_REMIGRATION_NAME,Remigration
+ACH_REMIGRATION_DESC,Besiege die Eidgenossin. Sie geht freiwillig.
+ACH_ACH_UNMOEGLICH_NAME,Unmöglich
+ACH_ACH_UNMOEGLICH_DESC,Beende einen Run mit intakter Brandmauer.
+ACH_UNMOEGLICH_NAME,Unmöglich
+ACH_UNMOEGLICH_DESC,Beende einen Run mit intakter Brandmauer.
+ACH_ACH_FAUL_EFFIZIENT_NAME,"Faul, aber effizient"
+ACH_ACH_FAUL_EFFIZIENT_DESC,"Gewinne als Bürgergeld-Empfänger, ohne eine Waffe zu kaufen."
+ACH_FAUL_EFFIZIENT_NAME,"Faul, aber effizient"
+ACH_FAUL_EFFIZIENT_DESC,"Gewinne als Bürgergeld-Empfänger, ohne eine Waffe zu kaufen."
+ACH_ACH_KASSENWART_NAME,Kassenwart
+ACH_ACH_KASSENWART_DESC,Zahle in einem Run 200 in die Koalitionskasse ein.
+ACH_KASSENWART_NAME,Kassenwart
+ACH_KASSENWART_DESC,Zahle in einem Run 200 in die Koalitionskasse ein.
+ACH_ACH_VOGELSCHISS_NAME,Fliegenschiss
+ACH_ACH_VOGELSCHISS_DESC,Finde den versteckten Vogelschiss. Nur ein kleines Detail.
+ACH_VOGELSCHISS_NAME,Fliegenschiss
+ACH_VOGELSCHISS_DESC,Finde den versteckten Vogelschiss. Nur ein kleines Detail.
+DIFF_0,Umfrage 10%
+DIFF_0_DESC,Immerhin noch zweistellig. Normale Gegnerstärke.
+DIFF_1,Umfrage 15%
+DIFF_1_DESC,"Die Zahlen steigen. Gegner +12 % Leben, +10 % Schaden, +8 % Spawns."
+DIFF_2,Umfrage 20%
+DIFF_2_DESC,"Plötzlich sind alle „besorgt“. Gegner +24 % Leben, +20 % Schaden, +16 % Spawns."
+DIFF_3,Umfrage 25%
+DIFF_3_DESC,"Man müsse die Sorgen ernst nehmen. Gegner +36 % Leben, +30 % Schaden, +24 % Spawns."
+DIFF_4,Umfrage 30%
+DIFF_4_DESC,"Brandmauer? Nie gehört. Gegner +48 % Leben, +40 % Schaden, +32 % Spawns."
+DIFF_5,Umfrage 35%
+DIFF_5_DESC,"Das hat keiner kommen sehen. Gegner +60 % Leben, +50 % Schaden, +40 % Spawns."
+STAGE_0,Erschöpft
+STAGE_1,Genervt
+STAGE_2,Wütend
+STAGE_3,Organisiert
+STAGE_4,Unaufhaltsam
+SAY_BESORGT_1,Man wird ja wohl noch sagen dürfen…
+SAY_BESORGT_2,"Ich bin ja kein Rassist, aber…"
+SAY_TELEGRAM_1,Bitte weiterleiten! Das sagen die Medien nicht!
+SAY_HIPSTER_1,"Ist doch nur Ästhetik, Bro."
+SAY_REICHSBUERGER_1,Ich erkenne Sie nicht an!
+SAY_JU_1,Abstimmung! Ich will auch mal.
+SAY_LOBBY_1,Wir hätten da einen Formulierungsvorschlag.
+SAY_ERBE_1,Ich habe es mir selbst erarbeitet. Von Papa.
+SAY_FDP_1,Wir gründen jetzt disruptiv. Mit Papas Geld.
+SAY_SYLT_1,Champagner? Alles für die Stimmung!
+SAY_SYLT_HUM,♪ Döp dödö döp ♪
+PICKUP_PFAND_NAME,Pfand
+PICKUP_PASSANT_NAME,Passant
+PICKUP_GELDSCHEIN_NAME,Geldschein
+PICKUP_STULLE_NAME,Stulle
+PICKUP_REICHSAUSWEIS_NAME,Reichsausweis
+SUMMON_INFOSTAND_NAME,Infostand
+SUMMON_OMA_NAME,Oma
+SUMMON_TURBINE_NAME,Windrad
+CURRENCY_PFAND,Pfand
+CURRENCY_AKTIEN,Aktien

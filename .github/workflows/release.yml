@@ -1,0 +1,129 @@
+name: Release
+
+# Manual run: build all exports and upload them as workflow artifacts.
+# Tag push (v*): additionally publish a GitHub Release with the zipped builds.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  export:
+    name: Export builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v6
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+      - name: Download Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          zip="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 3 -O "$base/$zip" -O "$base/SHA512-SUMS.txt"
+          grep " $zip\$" SHA512-SUMS.txt | sha512sum -c -
+          mkdir -p ~/godot
+          unzip -q "$zip" -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+          chmod +x ~/godot/godot
+
+      # The full .tpz is ~1.3 GB; we only keep the four templates we export with.
+      - name: Cache export templates
+        id: cache-templates
+        uses: actions/cache@v6
+        with:
+          path: ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
+          key: godot-templates-${{ env.GODOT_VERSION }}-win-linux-macos
+      - name: Download export templates
+        if: steps.cache-templates.outputs.cache-hit != 'true'
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          tpz="Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          dest="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 3 -O "$base/$tpz" -O "$base/SHA512-SUMS.txt"
+          grep " $tpz\$" SHA512-SUMS.txt | sha512sum -c -
+          mkdir -p "$dest"
+          unzip -q -j -o "$tpz" -d "$dest" \
+            templates/version.txt \
+            templates/linux_release.x86_64 \
+            templates/windows_release_x86_64.exe \
+            templates/macos.zip
+          rm "$tpz"
+          ls -la "$dest"
+
+      - name: Import assets
+        run: ~/godot/godot --headless --path . --import
+
+      - name: Export
+        run: |
+          export_one() {  # preset, output path
+            mkdir -p "$(dirname "$2")"
+            ~/godot/godot --headless --path . --export-release "$1" "$2"
+            test -s "$2" || { echo "::error::export of '$1' produced no $2"; exit 1; }
+          }
+          export_one "Windows Desktop" build/windows/Brandmauer.exe
+          export_one "Linux"           build/linux/Brandmauer.x86_64
+          export_one "macOS"           build/macos/Brandmauer.zip
+          export_one "Linux Server"    build/server/BrandmauerServer.x86_64
+
+      - name: Package
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="$GITHUB_REF_NAME"
+          else
+            version="dev-${GITHUB_SHA::7}"
+          fi
+          mkdir -p dist
+          chmod +x build/linux/Brandmauer.x86_64 build/server/BrandmauerServer.x86_64
+          (cd build/windows && zip -q -r "$GITHUB_WORKSPACE/dist/Brandmauer-$version-windows.zip" .)
+          (cd build/linux && zip -q -r "$GITHUB_WORKSPACE/dist/Brandmauer-$version-linux.zip" .)
+          (cd build/server && zip -q -r "$GITHUB_WORKSPACE/dist/BrandmauerServer-$version-linux.zip" .)
+          # The macOS export already is a zip containing Brandmauer.app.
+          cp build/macos/Brandmauer.zip "dist/Brandmauer-$version-macos.zip"
+          ls -la dist
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: brandmauer-builds
+          path: dist/*.zip
+          if-no-files-found: error
+          compression-level: 0  # already zipped
+
+  publish:
+    name: Publish release
+    needs: export
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: brandmauer-builds
+          path: dist
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          extra=()
+          [[ "$GITHUB_REF_NAME" == *-* ]] && extra+=(--prerelease)  # e.g. v0.2.0-beta
+          gh release create "$GITHUB_REF_NAME" dist/*.zip \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Brandmauer $GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag \
+            "${extra[@]}"

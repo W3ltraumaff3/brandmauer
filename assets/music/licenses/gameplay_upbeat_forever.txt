@@ -1,0 +1,9 @@
+License proof - accessed 2026-11-01
+Track: "Upbeat Forever" by Kevin MacLeod
+Track page: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500063
+  (the page is rendered by JavaScript; the data below is the catalog entry from https://incompetech.com/music/royalty-free/pieces.json, which the page uses)
+Download: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Upbeat%20Forever.mp3
+Catalog entry: length 00:03:15, bpm 164, genre id 21, instruments: Bass, Guitar, Drums, Horns, feel: Bouncy, Bright, uploaded 2015-09-23, ISRC USUAN1500063
+License statement (incompetech Music FAQ, https://incompetech.com/music/royalty-free/faq.html, "Crediting"):
+  "Title Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 https://creativecommons.org/licenses/by/4.0/"
+License: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/

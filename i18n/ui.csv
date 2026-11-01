@@ -1,0 +1,206 @@
+keys,de
+# Shared
+UI_BACK,Zurück
+UI_CANCEL,Abbrechen
+UI_NOT_READY,Formular fehlt. Bitte später erneut einreichen.
+QUOTE_MISSING,Zitat nicht gefunden.
+# Main menu
+MENU_SUBTITLE,Ein Arena-Roguelite gegen die da oben.
+MENU_SOLO,Solo
+MENU_HOST,Koop hosten
+MENU_JOIN,Koop beitreten
+MENU_ALBUM,Zitat-Album
+MENU_ACHIEVEMENTS,Erfolge
+MENU_OPTIONS,Optionen
+MENU_CREDITS,Credits
+MENU_QUIT,Beenden
+MENU_NAME,Dein Name
+MENU_DEFAULT_NAME,Genoss*in
+MENU_RECORD,Deine Bilanz
+MENU_RECORD_LINE,{runs} Runs · {wins} Siege · beste Welle: {wave}
+MENU_RECORD_UMFRAGE,Höchste freie Umfrage: %d %%
+MENU_QUOTE_HEADER,"O-Ton (echt, leider):"
+MENU_BLACKROCK,Alle Pfandflaschen wurden in Aktien umgewandelt. Viel Glück.
+# Host / join
+HOST_TITLE,Koop hosten
+HOST_INFO,Du machst den Laden auf. Die anderen verbinden sich über Port %d (UDP).
+HOST_UPNP,Router-Port automatisch öffnen (UPnP)
+HOST_UPNP_HINT,Klappt das nicht: Port im Router freigeben oder im selben LAN spielen.
+HOST_START,Lobby öffnen
+JOIN_TITLE,Koop beitreten
+JOIN_IP,IP-Adresse
+JOIN_PORT,Port
+JOIN_LAN,Spiele im LAN (anklicken zum Beitreten)
+JOIN_LAN_EMPTY,Noch nichts gefunden. Wir suchen weiter …
+JOIN_LAN_ENTRY,{name} · {players}/4 · {ip}:{port}
+JOIN_GO,Beitreten
+JOIN_NO_IP,Ohne IP-Adresse wird das nix.
+JOIN_CONNECTING,Verbinde … bitte nicht auflegen.
+JOIN_FAILED,Verbindung fehlgeschlagen.
+# Lobby
+LOBBY_TITLE,Lobby
+LOBBY_MODE_SOLO,Solo: du gegen die da oben
+LOBBY_MODE_HOST,Koop: du bist Gastgeber*in
+LOBBY_MODE_CLIENT,Koop: du bist zu Gast
+LOBBY_BACK,Hauptmenü
+LOBBY_WAIT_HOST,Der Host wählt Organisation und Umfrage.
+LOBBY_WAIT_READY,"Warten, bis alle bereit sind …"
+LOBBY_READY,Bereit?
+LOBBY_READY_ON,Bereit!
+LOBBY_START,Los geht's!
+LOBBY_PLAYERS,Mitspielende
+LOBBY_ORG,Organisation
+LOBBY_DIFF,Umfrage
+LOBBY_DIFF_LOCKED,(gesperrt)
+LOBBY_DIFF_FALLBACK,Umfrage %d %%
+LOBBY_CHARS,Wer bist du?
+LOBBY_LOCKED,GESPERRT
+LOBBY_YOU,(du)
+LOBBY_IS_READY,bereit
+LOBBY_NOT_READY,noch nicht
+LOBBY_NOBODY,Noch niemand da. Komisch.
+LOBBY_IPS,Deine IPs: %s
+LOBBY_PORT,Port: %d (UDP)
+LOBBY_UPNP_OK,UPnP: Port im Router ist offen.
+LOBBY_UPNP_PENDING,UPnP: Router wird gefragt …
+LOBBY_UPNP_OFF,UPnP: aus. Port selbst freigeben oder im LAN spielen.
+LOBBY_UPNP_FAILED,UPnP hat nicht geklappt (%s). Port selbst freigeben.
+LOBBY_UNLOCK_HOW,Freischalten: %s
+LOBBY_START_WEAPON,Startwaffe: %s
+LOBBY_EXTRA_PFAND,+%d Start-Pfand
+LOBBY_EXTRA_REROLLS,%d Gratis-Rerolls
+LOBBY_EXTRA_SLOTS,%d Waffenplätze
+LOBBY_ANSWER_TO,Die Antwort auf:
+# Spaeti
+SPAETI_EMPTY,Der Späti hat gerade zu. (Keine Daten.)
+SPAETI_TITLE,Späti
+SPAETI_WAVE_DONE,Woche %d überstanden. Kurz durchatmen.
+SPAETI_SPEND_LEFT,Schuldenbremse: noch %d %s
+SPAETI_AKTIEN_TIP,Deine Pfandflaschen sind jetzt Aktien. Sie verlieren an Wert. Du nicht.
+SPAETI_STATS,Werte
+SPAETI_LEVELUP,Level-up! (noch %d)
+SPAETI_LEVELUP_HINT,"Erst stärker werden, dann shoppen. Such dir was aus:"
+SPAETI_OFFERS,Im Angebot
+SPAETI_REROLL,Neu würfeln (%d)
+SPAETI_REROLL_FREE,"Neu würfeln (gratis, noch %d)"
+SPAETI_NO_OFFERS,Regale leer. Lieferkette.
+SPAETI_WEAPON_TIER,Waffe %s
+SPAETI_ITEM,Item
+SPAETI_SOLD,Weg
+SPAETI_BUY,Kaufen
+SPAETI_WEAPONS,Waffen %d/%d
+SPAETI_SELL,Verkaufen +%d
+SPAETI_NO_WEAPONS,Keine Waffen. Nur Haltung.
+SPAETI_ITEMS,Items
+SPAETI_NO_ITEMS,Noch nichts in der Tasche.
+SPAETI_KASSE,Koalitionskasse: %d %s
+SPAETI_KASSE_IN,+10 einzahlen
+SPAETI_KASSE_OUT,-10 entnehmen
+SPAETI_KASSE_MINE,"Du: %d eingezahlt, %d entnommen"
+SPAETI_WALL,Brandmauer
+SPAETI_WALL_HOLE_ONE,Ein Loch. Da kommt was durch.
+SPAETI_WALL_HOLES,%d Löcher. Da kommt was durch.
+SPAETI_REPAIR,Reparieren (%d %s)
+SPAETI_WALL_OK,Steht. Noch.
+SPAETI_VERTRAG,Koalitionsvertrag
+SPAETI_VERTRAG_HINT,Nicht einstimmig? Die schlechteste Option gewinnt.
+SPAETI_VERTRAG_ACTIVE,Gilt: %s (noch %d Wochen)
+SPAETI_VOTE,Dafür
+SPAETI_VOTED,Gewählt
+SPAETI_VOTES_BY,Stimmen: %s
+SPAETI_STILL_SHOPPING,shoppt noch
+SPAETI_QUOTE,Zitat der Woche (echt):
+SPAETI_READY,Bereit
+SPAETI_READY_ON,Bereit!
+# Request denied (host -> deny event)
+DENY_NO_PFAND,Zu wenig Pfand.
+DENY_SLOTS_FULL,Keine Waffenplätze frei.
+DENY_SPEND_LIMIT,Schuldenbremse! Mehr gibt's diese Woche nicht.
+DENY_LAST_WEAPON,"Ohne Waffe? Mutig, aber nein."
+DENY_KASSE_EMPTY,Die Koalitionskasse ist leer. Wie immer.
+DENY_NOTHING_TO_REPAIR,Die Brandmauer steht. Noch.
+# Pause
+PAUSE_TITLE,Pause
+PAUSE_TITLE_COOP,Kurz Luft holen
+PAUSE_HINT,Die Welt hält kurz an. Die da oben leider nicht.
+PAUSE_HINT_COOP,Achtung: Im Koop läuft das Spiel weiter!
+PAUSE_RESUME,Fortsetzen
+PAUSE_GIVE_UP,Aufgeben
+PAUSE_LEAVE,Verlassen
+PAUSE_CONFIRM,Wirklich? Nochmal drücken.
+# Options
+OPTIONS_TITLE,Optionen
+OPTIONS_MUSIC,Musik (Ska)
+OPTIONS_SFX,Geräusche
+OPTIONS_FULLSCREEN,Vollbild
+OPTIONS_FULLSCREEN_ON,an
+OPTIONS_HINT,Wird sofort gespeichert. Ganz ohne Formular.
+# End screen
+END_WON,Gewonnen! Die Brandmauer hält.
+END_LOST,Verloren. Diesmal.
+END_NO_RESULT,Kein Ergebnis übermittelt. Vermutlich Funkloch.
+END_SUMMARY,Welle {wave} · {time} Minuten · Umfrage {umfrage} %
+END_PROMOTED,In den Aufsichtsrat befördert: %s
+END_WALL_INTACT,"Brandmauer intakt. Unmöglich, aber wahr."
+END_TO_LOBBY,Zurück zur Lobby
+END_TO_MENU,Hauptmenü
+END_COL_NAME,Name
+END_COL_CHAR,Figur
+END_COL_KILLS,Besiegt
+END_COL_DAMAGE,Schaden
+END_COL_IN,Eingezahlt
+END_COL_OUT,Entnommen
+END_COL_MORAL,Steuermoral
+END_GRADE,Note %d: %s
+END_MORAL_1,"vorbildlich, fast verdächtig"
+END_MORAL_2,solidarisch mit Ausrutschern
+END_MORAL_3,"ausgeglichen, sehr schwäbisch"
+END_MORAL_4,hat einen Steuerberater
+END_MORAL_5,Cum-Ex-Verdacht
+END_MORAL_6,Wohnsitz: Steuerparadies
+END_MORAL_NONE,Kasse nie angefasst
+END_NO_UNLOCKS,Diesmal nichts Neues freigeschaltet. Nächstes Mal!
+END_NEW_ACH,Neue Erfolge
+END_NEW_CHARS,Neue Figuren
+END_NEW_QUOTES,Neu im Zitat-Album (%d)
+END_MORE_QUOTES,… und %d weitere im Album.
+# Album
+ALBUM_TITLE,Zitat-Album
+ALBUM_COUNTER,%d / %d gesammelt
+ALBUM_EMPTY,Keine Zitate geladen.
+ALBUM_CARD,Karte #%d
+ALBUM_LOCKED,"Noch nicht gesammelt. Schick Bosse und Elites in den Aufsichtsrat, dann landet die Karte hier."
+ALBUM_CONTEXT,Kontext
+ALBUM_SOURCES,Quellen (anklicken öffnet den Browser)
+"# Achievements screen (ACHS_, not ACH_: those are content keys)"
+ACHS_TITLE,Erfolge
+ACHS_COUNTER,%d / %d geschafft
+ACHS_UNLOCKS_CHAR,Schaltet frei: %s
+ACHS_DONE,GESCHAFFT
+ACHS_OPEN,OFFEN
+# Credits (satire: Amtsdeutsch)
+CREDITS_TITLE,Credits
+CREDITS_AUTHORITY,Bundesamt für Spielspaß und Brandschutz (BSB)
+CREDITS_AUTHORITY_SUB,Referat Z 3: Klärung der Zuständigkeit für Zuständigkeiten
+CREDITS_AZ,Az.: BM-2026/§1-SpaßG/0815
+CREDITS_DATE,Datum: siehe Poststempel
+CREDITS_BESCHEID,Bescheid
+CREDITS_SUBJECT,über die Mitwirkung an der Erstellung eines Computerspiels gemäß § 1 Spaßgesetz (SpaßG) in Verbindung mit der Verordnung über das Zusammenhalten (ZusHaltV)
+CREDITS_P1,"Sehr geehrte Spielende, auf Ihren formlosen Antrag hin (Betätigung der Schaltfläche „Credits“) ergeht folgender Bescheid: Die Mitwirkung der nachstehend aufgeführten Personen und Werke an der Erstellung des Computerspiels „Brandmauer“ wird hiermit festgestellt, anerkannt und, soweit erforderlich, rückwirkend genehmigt."
+CREDITS_P2,"Das Spiel wurde erstellt vom Brandmauer-Team in Tateinheit mit Ska-Musik, Mate und Pfandflaschen. Ein Anspruch auf Erstattung des Pfands besteht nicht (§ 3 Abs. 2 Einwegpfandrückgabeunwilligkeitsverordnung)."
+CREDITS_P3,Ähnlichkeiten der Bossgegner mit lebenden Personen sind beabsichtigt und als Satire im Sinne von Art. 5 GG zu verstehen. Kein Boss wurde verletzt. Alle wurden ordnungsgemäß in den Aufsichtsrat befördert und erhalten einen goldenen Fallschirm nach Besoldungsgruppe B11.
+CREDITS_P4,"Die im Spiel verwendeten Zitate sind echt, wörtlich und belegt. Für deren Inhalt übernimmt das Amt keine Verantwortung. Die Sprechenden leider auch nicht."
+CREDITS_P5,"Die Schuldenbremse findet auf diesen Bescheid keine Anwendung. Er ergeht gebührenfrei, da sich die Gebührenordnung noch in der Ressortabstimmung befindet (voraussichtlich bis 2049)."
+CREDITS_RECHTSBEHELF,Rechtsbehelfsbelehrung
+CREDITS_RECHTSBEHELF_TEXT,"Gegen diesen Bescheid kann innerhalb eines Monats Lachen eingelegt werden. Das Lachen ist schriftlich oder zur Niederschrift beim nächstgelegenen Späti einzulegen. Ein Widerspruch per Fax ist zulässig, wird aber mit 3 Sekunden Verzögerung bearbeitet."
+CREDITS_SIGNED,Im Auftrag: gez. Sachbearbeitung Spaß
+CREDITS_SIGNED_SUB,Dieses Schreiben wurde maschinell erstellt und ist ohne Unterschrift gültig. Leider.
+CREDITS_STAMP,GENEHMIGT
+CREDITS_ATTRIBUTION,Anlage 1: Fremde Werke und Lizenzen
+CREDITS_ATTRIBUTION_INTRO,"Titel — Urheber*in — Lizenz — Quelle. Danke an alle, die ihre Arbeit frei teilen!"
+CREDITS_MISSING,CREDITS.md nicht gefunden. Das Amt ermittelt.
+CREDITS_QUOTES,"Alle Zitate mit Datum, Kontext und Quellen: siehe Zitat-Album."
+CREDITS_END,Danke fürs Zusammenhalten!
+# main.gd
+MAIN_RUN_MISSING,Die Arena wird noch gebaut. Bitte Geduld.
+MAIN_SERVER_STATUS,Brandmauer: dedizierter Server · Port {port} · {players} Leute ({ready} bereit) · UPnP: {upnp}

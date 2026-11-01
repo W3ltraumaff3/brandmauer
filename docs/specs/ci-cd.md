@@ -19,15 +19,19 @@ Runs on every PR and every push to `main`. The plan grows with the project:
 
 | Stage | Content | Status |
 |---|---|---|
-| Quote data | `tests/test_quotes.py` validates `zitate_de.json` against the content guidelines. A rebuild must produce no diff | active |
-| Godot unit tests | headless Godot 4.7.2 plus a test framework (GUT or gdUnit4) for game logic: economy, wave schedule, stats, shop | planned (with the project skeleton) |
-| Network tests | headless host plus 1–3 clients in one CI job: handshake, sync, disconnect | planned |
+| Quote data | `tests/test_quotes.py` validates `zitate_de.json` against the content guidelines. A rebuild must produce no diff | active (job `Quote data`) |
+| Godot unit tests | headless Godot 4.7.2 (official Linux build, SHA-512 checked, cached), `--import`, then the custom runner `tests/godot/run_tests.gd` over `tests/godot/test_*.gd` | active (job `Godot tests`) |
+| Network tests | `tools/net_smoke.sh`: headless host plus clients in one CI job: handshake, sync, disconnect | active (job `Net smoke`; skips with a notice while the script doesn't exist) |
 | Lint | `gdlint` / `gdformat --check` (gdtoolkit) | planned |
-| Export check | export Windows and Linux builds (no publishing) | planned |
+| Export check | export all four presets (no publishing) | via `release.yml` on manual dispatch (`workflow_dispatch`), not on every PR |
 
 ## 3. CD
 
-- **Release builds come from tags** (`v*`). Godot exports Windows, Linux and macOS builds, plus the headless dedicated-server build, and they're uploaded as a GitHub Release.
+- **Release builds come from tags** (`v*`). Godot exports Windows, Linux and macOS builds, plus the headless dedicated-server build, and they're uploaded as a GitHub Release. **Status: active** (`.github/workflows/release.yml`):
+  - Presets live in `export_presets.cfg`: "Windows Desktop", "Linux", "macOS" (ad-hoc signed, not notarized) and "Linux Server" (feature tags `dedicated_server`, `server`).
+  - The workflow downloads the official 4.7.2 export templates (SHA-512 checked; only the four needed templates are cached), exports every preset with `--export-release` and uploads the zips as one artifact.
+  - On a `v*` tag it also runs `gh release create` with the zips; a tag containing `-` (e.g. `v0.2.0-beta`) becomes a pre-release.
+  - A manual run (`workflow_dispatch`) only builds artifacts.
 - **Steam upload (later, optional)** uses the same artifacts.
 
 ## 4. Tests: ground rules

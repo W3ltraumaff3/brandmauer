@@ -1,0 +1,19 @@
+{
+  "gameplay": [
+    "res://assets/music/gameplay_upbeat_forever.mp3",
+    "res://assets/music/gameplay_runaround.mp3",
+    "res://assets/music/gameplay_ska_track.mp3",
+    "res://assets/music/gameplay_b_roll_ska.mp3"
+  ],
+  "spaeti": [
+    "res://assets/music/spaeti_montego.mp3",
+    "res://assets/music/spaeti_easy_jam.mp3"
+  ],
+  "boss": [
+    "res://assets/music/boss_ready_aim_fire.mp3",
+    "res://assets/music/boss_summon_the_rawk.mp3"
+  ],
+  "menu": [
+    "res://assets/music/menu_blue_ska.mp3"
+  ]
+}

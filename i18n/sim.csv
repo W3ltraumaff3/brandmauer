@@ -1,0 +1,24 @@
+keys,de
+SAY_ELITE_FLEES,Termin im Aufsichtsrat. Bis nächste Woche!
+SAY_VERSPAETUNG,Verspätung aus betrieblichen Gründen.
+SAY_DODGE,Schwarz gefahren!
+SAY_ANTIFA_REPAIR,Loch gestopft. Brandmauer steht.
+SAY_SHIELD_BROKEN,Das Steuerparadies hat Risse!
+SAY_JU_VOTE,"Abgestimmt! Mit wem, ist doch egal."
+SAY_STARTUP_INSOLVENT,Insolvent. Aber disruptiv!
+SAY_LEHRER_WENDE,"Achtung, gleich wird gewendet …"
+SAY_SONDERVERMOEGEN,"Sondervermögen! Einsammeln, bevor er's tut!"
+SAY_WINDMUEHLE,Windrad niedergerissen. Strom kommt jetzt aus Moskau.
+SAY_PASSANT_JOINS,Ich bin auch das Stadtbild!
+SAY_REICHSAUSWEIS,Ein Reichsausweis. Gültig bis 1945.
+NET_ERR_HOST,Server konnte nicht gestartet werden. Ist der Port belegt?
+NET_ERR_VERSION,Andere Spielversion – bitte aktualisieren.
+NET_ERR_FULL,Die Lobby ist voll (max. 4 Leute).
+NET_ERR_RUNNING,Dort läuft gerade schon eine Runde.
+NET_ERR_TIMEOUT,Keine Antwort vom Host (Zeitüberschreitung).
+NET_ERR_LOST,Verbindung zum Host verloren.
+NET_ERR_CONNECT,Verbindung fehlgeschlagen. Stimmen IP und Port?
+NET_UPNP_PENDING,Router wird gefragt …
+NET_UPNP_OK,Port automatisch geöffnet (UPnP).
+NET_UPNP_FAILED,UPnP fehlgeschlagen – Port %d ggf. manuell freigeben.
+NET_LAN_UNAVAILABLE,LAN-Suche nicht möglich (Port belegt).
