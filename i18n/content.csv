@@ -30,7 +30,7 @@ STAT_SPEED_DESC,"Lauftempo. Fährt sogar, wenn die Bahn nicht fährt. Pro Stufe 
 STAT_LUCK,Eltern
 STAT_LUCK_DESC,Glück. Bei manchen startet der Wert bei 9.000. Pro Stufe +6.
 STAT_INCOME,Nebenjob
-STAT_INCOME_DESC,"Pfand pro Welle, ganz passiv. Mit Minijob-Charme. Pro Stufe +2."
+STAT_INCOME_DESC,"Du schiebst nach Feierabend noch eine Schicht: extra Pfand am Ende jeder Woche. Pro Stufe +2."
 STAT_PICKUP,Pfandradar
 STAT_PICKUP_DESC,Einsammelradius. Du hörst jede Flasche klirren. Pro Stufe +20.
 STAT_XP,Vernetzung
