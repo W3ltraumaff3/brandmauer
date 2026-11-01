@@ -633,7 +633,7 @@ func _step_encounter_spawn(dt: float) -> void:
 	var scale := 1.0 + 0.75 * (num_players() - 1)
 	var units: Array = enc["units"]
 	for i in units.size():
-		var pos := Vector2(800, 260)
+		var pos := Vector2(800, 380)
 		if units.size() > 1:
 			pos = Vector2(300 + i * 330, ARENA.y - 120)
 		var e := spawn_enemy(units[i], pos, scale)
@@ -643,7 +643,7 @@ func _step_encounter_spawn(dt: float) -> void:
 			_place_turbines()
 	var q := Quotes.random_for("boss_ruf:" + encounter, rng)
 	if q != "":
-		_say_quote(Vector2(800, 260), q)
+		_say_quote(Vector2(800, 380), q)
 	meta_dirty = true
 
 
