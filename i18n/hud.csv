@@ -39,3 +39,23 @@ FX_DOWN,Kurz durchatmen!
 FX_REVIVE,Solidarität!
 HUD_INTRO_CONTINUE,"Weiter mit W, A, S, D oder Leertaste"
 HUD_INTRO_WAITING,Warte auf die anderen …
+HUD_ULT_READY,bereit!
+HUD_ULT_USED,verbraucht (nächste Woche wieder)
+HUD_ULT_SPACE,Leertaste
+HUD_ULT_TITLE,Ulti
+HUD_ULT_EFFECT,%s · noch %d s
+HUD_ULT_TARIF_BONUS,+%d %%
+HUD_ULT_BLOCKADE,BLOCKADE!
+HUD_ULT_VERKEHR,Wir sind der Verkehr!
+HUD_ULT_FRAGEN,FRAGEN SIE MAL UNS!
+HUD_ULT_FORMULAR,Formular
+HUD_ULT_FLASHMOB,FLASHMOB!
+HUD_ULT_KAFFEE,Kaffee und Kuchen!
+HUD_ULT_TARIF,Tarifrunde!
+HUD_ULT_BLOCK,Schwarzer Block!
+HUD_ULT_ANTRAG,Antrag gestellt!
+HUD_ULT_URLAUB,Urlaub!
+HUD_ULT_SIGN_1,Klima jetzt!
+HUD_ULT_SIGN_2,"1,5 °C"
+HUD_ULT_SIGN_3,Bahn statt Stau
+HUD_ULT_ANTIFA_FLAG,Solidarität

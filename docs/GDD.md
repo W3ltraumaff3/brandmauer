@@ -139,6 +139,20 @@ Each character's insult-quote appears **only on the unlock card**, with its sour
 - **Steuerfinanzierte NGO:** summoner whose minions carry clipboards.
 - **Zahnarzt-Tourist:** heals off enemies.
 
+## 9a. Ultimates (Space, once per wave)
+
+| Character | Ultimate | Effect |
+|---|---|---|
+| Das Stadtbild | **Flashmob** | the crowd storms outward: enemies nearby are stunned for 2 s, take damage (more with followers) and are knocked back |
+| Sozialtourist:in | **Urlaubsantrag** | 4 s on a sun lounger: invulnerable, can't move, heals |
+| Bürgergeld-Empfänger:in | **Antrag gestellt** | paperwork storm: all enemies 60 % slower for 6 s |
+| Klimakleber:in | **Straßenblockade** | a glue strip across the whole arena at your height; enemies get stuck for 6 s |
+| Lastenrad-Grüne | **Critical Mass** | dash ramming everything in the way, then double speed for 5 s |
+| Gewerkschaftsmitglied | **Tarifrunde** | +50 % damage for all players and summons for 8 s |
+| Antifa-Aktivist:in | **Schwarzer Block** | 6 comrades storm out for 6 s, push enemies back and deal damage |
+| Oma gegen Rechts | **Kaffee und Kuchen** | heals the whole team fully, revives downed teammates, +regeneration for 10 s |
+| Die Töchter | **Fragen Sie mal uns** | all "old men in suits" (Union, Kapital, Sauerländer) are stunned for 2 s and take double damage for 6 s |
+
 ## 10. Organisation (run modifier)
 
 Chosen before the run, by the group in co-op:

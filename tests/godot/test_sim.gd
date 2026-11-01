@@ -376,3 +376,52 @@ func test_every_weapon_aims_at_closest_enemy_in_all_directions() -> void:
 					for h in puddles:
 						assert_true(h.pos.distance_to(near.pos) < 1.0, label + " glue on closest")
 
+
+func test_every_ultimate_fires_once_per_wave() -> void:
+	for char_id in Content.CHAR_ORDER:
+		var s := _sim([char_id, "oma"])
+		var p: Sim.SimPlayer = s.players[1]
+		for i in 6:
+			var e := s.spawn_enemy("hinterbaenkler", p.pos + Vector2(80, 0).rotated(i))
+			e.behind = false
+		s._build_grid()
+		s.take_events()
+		assert_true(s.request(1, "ultimate"), char_id + " ult fires")
+		assert_false(s.request(1, "ultimate"), char_id + " only once per wave")
+		var evs := s.take_events().filter(func(e): return e[0] == "ult")
+		assert_eq(evs.size(), 1, char_id + " ult event")
+		for i in 120:
+			s.step(1.0 / 60.0)
+		_to_shop(s)
+		s.request(1, "ready", true)
+		s.request(2, "ready", true)
+		assert_true(s.players[1].ult_ready, char_id + " ult ready again next wave")
+
+
+func test_ultimate_effects() -> void:
+	var s := _sim(["toechter", "buergergeld"])
+	var p: Sim.SimPlayer = s.players[1]
+	var suit := s.spawn_enemy("lobbyist", p.pos + Vector2(100, 0))
+	var other := s.spawn_enemy("besorgter_buerger", p.pos + Vector2(-100, 0))
+	suit.behind = false
+	other.behind = false
+	s.request(1, "ultimate")
+	assert_true(suit.stun_t > 0.0 and suit.vuln_t > 0.0, "suit stunned and vulnerable")
+	assert_eq(other.stun_t, 0.0, "non-suit unaffected")
+	s.request(2, "ultimate")
+	assert_true(s.effects.has("antrag_gestellt"), "paperwork storm active")
+	var meta := s.build_meta()
+	assert_true(meta["effects"].has("antrag_gestellt"))
+	assert_false(meta["players"][1]["ult_ready"])
+
+	var t := _sim(["oma", "antifa"])
+	var b: Sim.SimPlayer = t.players[2]
+	b.stats["dodge"] = 0.0
+	t.damage_player(b, 9999.0)
+	assert_eq(b.state, 1, "downed")
+	t.request(1, "ultimate")
+	assert_eq(b.state, 0, "Kaffee und Kuchen revives")
+	assert_true(t.request(2, "ultimate"), "antifa ult")
+	var comrades := t.summons.filter(func(x): return x.type == Content.idx(Content.SUMMON_ORDER, "genosse"))
+	assert_eq(comrades.size(), 6, "Schwarzer Block spawns 6")
+

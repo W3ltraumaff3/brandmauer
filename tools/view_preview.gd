@@ -81,6 +81,10 @@ func _run() -> void:
 		await _shot_fx()
 	if _want("exits"):
 		await _shot_exits()
+	if _want("ults"):
+		await _shot_ults()
+	if _want("ulthud"):
+		await _shot_ult_hud()
 	if _want("stress"):
 		await _stress()
 	for line in report:
@@ -427,6 +431,213 @@ func _shot_exits() -> void:
 	await _capture("exits_jet_parachute")
 	world._exits.clear()
 	world.set_process(true)
+
+
+# --- ultimates (architecture §9) ---------------------------------------------------------
+
+func _fx_reset() -> void:
+	fx._ults.clear()
+	fx._bubbles.clear()
+	fx._numbers.clear()
+	fx._swings.clear()
+	fx._puffs.clear()
+	fx._marks.clear()
+	fx.queue_redraw()
+
+
+## Send an ult event to world/fx/hud and freeze its fx clock at `t`.
+func _fire_ult(peer: int, id: String, pos: Vector2, t: float) -> void:
+	var ev := ["ult", peer, id, pos]
+	world.handle_event(ev)
+	fx.handle_event(ev)
+	hud.handle_event(ev)
+	if not fx._ults.is_empty():
+		fx._ults[fx._ults.size() - 1]["t"] = t
+	fx.queue_redraw()
+
+
+func _ult_meta(ult: String, ready: bool, num := 1) -> Dictionary:
+	var m := _meta(num)
+	m["players"][1]["ult"] = ult
+	m["players"][1]["ult_ready"] = ready
+	m["streik"] = {"available": false, "active": 0.0}
+	return m
+
+
+func _ring_enemies(vs: ViewState, c: Vector2, r: float, types: Array, flags: int, n := 10) -> void:
+	for i in n:
+		var a := TAU * i / n + 0.3
+		_enemy(vs, types[i % types.size()], c + Vector2(cos(a) * r, sin(a) * r * 0.75), flags)
+
+
+func _shot_ults() -> void:
+	fx.set_process(false)
+	var slowed := ViewState.EF_SLOWED
+	# 1 Flashmob
+	_clear_labels(); _fx_reset()
+	var vs := _vs(4)
+	_player(vs, 1, "stadtbild", Vector2(800, 520), ["doener"], {"followers": 8})
+	_ring_enemies(vs, Vector2(800, 520), 250, ["besorgter_buerger", "telegram_onkel", "ju_schnoesel"], slowed, 12)
+	_show(vs, Vector2(800, 500), 1.0, _ult_meta("flashmob", false))
+	world.antrag_vis = 0.0
+	_fire_ult(1, "flashmob", Vector2(800, 520), 0.32)
+	await _capture("ult_flashmob")
+	fx._ults[0]["t"] = 0.9
+	fx.queue_redraw()
+	await _capture("ult_flashmob_late")
+	# 2 Urlaubsantrag (facing right and left)
+	_fx_reset()
+	vs = _vs(4)
+	_player(vs, 1, "sozialtourist", Vector2(740, 500), ["pfandflasche"], {"flags": ViewState.PF_ULT | ViewState.PF_INVULNERABLE})
+	_player(vs, 2, "sozialtourist", Vector2(900, 500), ["pfandflasche"], {"flags": ViewState.PF_ULT | ViewState.PF_INVULNERABLE, "aim": PI})
+	_enemy(vs, "besorgter_buerger", Vector2(640, 470))
+	_enemy(vs, "lobbyist", Vector2(1000, 520))
+	_show(vs, Vector2(820, 470), 2.0, _ult_meta("urlaubsantrag", false, 2))
+	_fire_ult(1, "urlaubsantrag", Vector2(740, 500), 0.6)
+	await _capture("ult_urlaubsantrag")
+	# 3 Antrag gestellt (+ HUD effect chip)
+	_fx_reset()
+	vs = _vs(3)
+	_player(vs, 1, "buergergeld", Vector2(800, 520), ["gendersternchen"])
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	for i in 22:
+		_enemy(vs, Content.ENEMY_ORDER[i % 10], Vector2(rng.randf_range(380, 1220), rng.randf_range(250, 800)), slowed)
+	var m := _ult_meta("antrag_gestellt", false)
+	m["effects"] = {"antrag_gestellt": 4.2}
+	hud.visible = true
+	_show(vs, Vector2(800, 520), 1.0, m)
+	world.antrag_vis = 1.0
+	_fire_ult(1, "antrag_gestellt", Vector2(800, 520), 0.45)
+	await _capture("ult_antrag_gestellt")
+	hud.visible = false
+	world.antrag_vis = 0.0
+	# 4 Straßenblockade
+	_fx_reset()
+	vs = _vs(4)
+	_player(vs, 1, "klimakleber", Vector2(800, 520), ["kleber"], {"flags": ViewState.PF_STILL})
+	var x := 23.0
+	while x < 1600.0:
+		vs.h_type.append(Content.HAZARD_ORDER.find("kleber")); vs.h_pos.append(Vector2(x, 520)); vs.h_rad.append(46.0); vs.h_life.append(0.9)
+		x += 70.0
+	for i in 8:
+		_enemy(vs, ["besorgter_buerger", "porsche_suv", "lobbyist", "hinterbaenkler"][i % 4], Vector2(420 + i * 110, 505 + (i % 2) * 20), slowed)
+	_show(vs, Vector2(800, 480), 0.85, _ult_meta("strassenblockade", false))
+	_fire_ult(1, "strassenblockade", Vector2(800, 520), 0.9)
+	await _capture("ult_strassenblockade")
+	# 5 Critical Mass (moving right, and one moving up-left)
+	_fx_reset()
+	vs = _vs(4)
+	_player(vs, 1, "lastenrad", Vector2(860, 480), ["megafon"], {"flags": ViewState.PF_ULT, "aim": 0.0})
+	_player(vs, 2, "lastenrad", Vector2(700, 600), ["megafon"], {"flags": ViewState.PF_ULT, "aim": PI * 1.2})
+	_enemy(vs, "porsche_suv", Vector2(1000, 470), slowed)
+	_show(vs, Vector2(800, 500), 1.6, _ult_meta("critical_mass", false, 2))
+	world._p_prev.clear()
+	world._p_heading.clear()
+	_fire_ult(1, "critical_mass", Vector2(860, 480), 0.4)
+	await _capture("ult_critical_mass")
+	# 6 Tarifrunde (+ HUD chip)
+	_fx_reset()
+	vs = _vs(3)
+	_player(vs, 1, "gewerkschaft", Vector2(760, 520), ["megafon"])
+	_player(vs, 2, "oma", Vector2(880, 540), ["stricknadeln"])
+	_player(vs, 3, "lastenrad", Vector2(660, 580), ["tofu"])
+	vs.s_type.append(Content.SUMMON_ORDER.find("infostand")); vs.s_pos.append(Vector2(980, 460))
+	m = _ult_meta("tarifrunde", false, 3)
+	m["effects"] = {"tarifrunde": 5.3}
+	hud.visible = true
+	_show(vs, Vector2(800, 500), 1.3, m)
+	_fire_ult(1, "tarifrunde", Vector2(760, 520), 0.5)
+	await _capture("ult_tarifrunde")
+	hud.visible = false
+	# 7 Schwarzer Block
+	_fx_reset()
+	vs = _vs(4)
+	_player(vs, 1, "antifa", Vector2(800, 520), ["farbbeutel"])
+	for i in 6:
+		var a := TAU * i / 6.0 + 0.2
+		vs.s_type.append(Content.SUMMON_ORDER.find("genosse"))
+		vs.s_pos.append(Vector2(800, 520) + Vector2(cos(a) * 120, sin(a) * 85))
+	_ring_enemies(vs, Vector2(800, 520), 230, ["besorgter_buerger", "identitaerer_hipster", "reichsbuerger"], 0, 8)
+	_show(vs, Vector2(800, 500), 1.4, _ult_meta("schwarzer_block", false))
+	_fire_ult(1, "schwarzer_block", Vector2(800, 520), 0.5)
+	await _capture("ult_schwarzer_block")
+	# genosse close-up
+	_fx_reset()
+	vs = _vs(4)
+	for i in 3:
+		vs.s_type.append(Content.SUMMON_ORDER.find("genosse")); vs.s_pos.append(Vector2(760 + i * 50, 500))
+	_player(vs, 1, "antifa", Vector2(700, 500), [])
+	_show(vs, Vector2(790, 485), 3.5, _ult_meta("schwarzer_block", false))
+	await _capture("ult_genosse_closeup")
+	# 8 Kaffee und Kuchen
+	_fx_reset()
+	vs = _vs(4)
+	_player(vs, 1, "oma", Vector2(720, 520), ["stricknadeln"])
+	_player(vs, 2, "klimakleber", Vector2(860, 500), ["kleber"])
+	_player(vs, 3, "buergergeld", Vector2(800, 640), ["tofu"])
+	_show(vs, Vector2(790, 540), 1.6, _ult_meta("kaffee_und_kuchen", false, 3))
+	_fire_ult(1, "kaffee_und_kuchen", Vector2(720, 520), 0.7)
+	await _capture("ult_kaffee_und_kuchen")
+	# 9 Fragen Sie mal uns
+	_fx_reset()
+	vs = _vs(4)
+	_player(vs, 1, "toechter", Vector2(800, 560), ["transparent"])
+	var suits := ["hinterbaenkler", "lobbyist", "ju_schnoesel", "golfclub_vorstand", "fdp_jungunternehmer", "immobilienerbe"]
+	for i in suits.size():
+		_enemy(vs, suits[i], Vector2(560 + i * 95, 360 + (i % 2) * 40), ViewState.EF_BUFFED | slowed)
+	_enemy(vs, "besorgter_buerger", Vector2(1100, 600))
+	_enemy(vs, "telegram_onkel", Vector2(500, 640))
+	_show(vs, Vector2(800, 480), 1.2, _ult_meta("fragen_sie_uns", false))
+	_fire_ult(1, "fragen_sie_uns", Vector2(800, 560), 0.55)
+	await _capture("ult_fragen_sie_uns")
+	_fx_reset()
+	fx.set_process(true)
+
+
+func _shot_ult_hud() -> void:
+	_clear_labels()
+	_fx_reset()
+	hud.visible = true
+	hud.set_process(false)
+	var vs := _vs(3)
+	_player(vs, 1, "stadtbild", Vector2(800, 500), ["doener"], {"followers": 4})
+	_show(vs, Vector2(800, 450), 1.0, _ult_meta("flashmob", true))
+	hud._ult_ready_prev = true
+	hud._ult_pop = -1.0
+	hud.queue_redraw()
+	await _capture("hud_ult_ready")
+	hud._ult_pop = 0.22
+	hud.queue_redraw()
+	await _capture("hud_ult_ready_pop")
+	hud._ult_pop = -1.0
+	vs = _vs(3)
+	_player(vs, 1, "toechter", Vector2(800, 500), ["transparent"])
+	_show(vs, Vector2(800, 450), 1.0, _ult_meta("fragen_sie_uns", false))
+	hud.queue_redraw()
+	await _capture("hud_ult_used")
+	var m := _ult_meta("tarifrunde", true)
+	m["effects"] = {"tarifrunde": 6.4, "antrag_gestellt": 2.1}
+	vs = _vs(3)
+	_player(vs, 1, "gewerkschaft", Vector2(800, 500), ["megafon"])
+	_show(vs, Vector2(800, 450), 1.0, m)
+	hud.queue_redraw()
+	await _capture("hud_ult_effects")
+	# boss intro: panel hidden, card shows "W/A/S/D or Space"
+	m = _ult_meta("tarifrunde", true)
+	m["intro_wait"] = true
+	m["intro_done"] = []
+	vs = _vs(3)
+	_player(vs, 1, "gewerkschaft", Vector2(800, 500), ["megafon"])
+	_show(vs, Vector2(800, 450), 1.0, m)
+	hud.handle_event(["card", "sauerlaender"])
+	hud.preview_overlay_t = 1.5
+	hud.queue_redraw()
+	await _capture("hud_ult_intro_hidden")
+	hud._overlays.clear()
+	hud.preview_overlay_t = -1.0
+	hud.set_process(true)
+	hud.visible = false
 
 
 func _stress() -> void:

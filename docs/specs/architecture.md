@@ -236,3 +236,15 @@ static func album_ids() -> Array               # all curated ids (research/auswa
 static func random_for(use: String, rng = null) -> String
 static func source_label(q) -> String          # "Friedrich Merz, 01.07.2025"
 ```
+
+## 9. Ultimates (contract)
+
+- **Each character has one ultimate** (`Content.CHARACTERS[id]["ult"]`, data in `Content.ULTS`). It can be used **once per wave** with the `ultimate` input action (Space, gamepad X), via the request `ultimate`.
+- **Meta:** `players[pid]["ult"]` (id) and `players[pid]["ult_ready"]` (bool). The root has `"effects": {"tarifrunde": seconds_left, "antrag_gestellt": seconds_left}`; team or global effects only appear while active.
+- **Event:** `["ult", peer, ult_id, pos]` when an ultimate fires.
+- **ViewState:**
+  - Player flag `32` (`PF_ULT`) is set while a personal ultimate effect runs. That covers the Urlaubsantrag sun lounger and Critical Mass (dash and boost).
+  - The new summon type `genosse` (Schwarzer Block, black-clad comrades) uses `s_type`/`s_pos`.
+  - The Straßenblockade is drawn with ordinary `kleber` hazards.
+  - Stunned enemies carry `EF_SLOWED`. Enemies under "Fragen Sie mal uns" carry `EF_BUFFED` (red aura = vulnerable).
+- **Texts:** `ULT_<ID>_NAME` and `ULT_<ID>_DESC` in `i18n/content.csv`.

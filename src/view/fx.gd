@@ -2,13 +2,16 @@ class_name Fx
 extends Node2D
 ## World-space effects driven by Game.events (architecture §5): floating damage
 ## numbers, kill puffs, speech bubbles (invented lines handwritten, real quotes in
-## typewriter with a source line), melee swooshes and down/revive markers.
+## typewriter with a source line), melee swooshes, down/revive markers and the
+## one-shot part of ultimates (shouts, shockwaves, crowds, signs, coffee and cake).
+## Lasting ultimate visuals (lounger, ghost bikes, paper storm) are in WorldView.
 ## Not desaturated by stage: feedback must stay readable.
 
 const MAX_NUMBERS := 40
 const MAX_PUFFS := 60
 const MAX_BUBBLES := 5
 const MAX_SWINGS := 40
+const MAX_ULTS := 12
 const NUMBER_LIFE := 0.8
 const PUFF_LIFE := 0.45
 const SWING_LIFE := 0.22
@@ -32,6 +35,7 @@ var _puffs: Array = []
 var _bubbles: Array = []
 var _swings: Array = []
 var _marks: Array = []
+var _ults: Array = []        # {id, peer, pos, t, life} from ["ult", peer, ult_id, pos]
 var _hand: Font
 var _type: Font
 var _t := 0.0
@@ -72,6 +76,12 @@ func handle_event(ev: Array) -> void:
 				var down: bool = ev[0] == "down"
 				_marks.append({"pos": p, "text": tr("FX_DOWN") if down else tr("FX_REVIVE"),
 					"col": Color(0.6, 0.15, 0.15) if down else Color(0.15, 0.55, 0.25), "t": 0.0, "heart": not down})
+		"ult":
+			if ev.size() >= 4:
+				var id := str(ev[2])
+				var pos: Vector2 = ev[3] if ev[3] is Vector2 else Vector2.ZERO
+				_push(_ults, {"id": id, "peer": int(ev[1]), "pos": pos, "t": 0.0, "life": _ult_life(id),
+					"seed": randi() % 1000}, MAX_ULTS)
 
 
 func _player_pos(peer: int) -> Vector2:
@@ -129,6 +139,12 @@ func _process(delta: float) -> void:
 	_age(_puffs, delta, PUFF_LIFE)
 	_age(_swings, delta, SWING_LIFE)
 	_age(_marks, delta, MARK_LIFE)
+	var j := _ults.size() - 1
+	while j >= 0:
+		_ults[j]["t"] += delta
+		if _ults[j]["t"] > _ults[j]["life"]:
+			_ults.remove_at(j)
+		j -= 1
 	var i := _bubbles.size() - 1
 	while i >= 0:
 		_bubbles[i]["t"] += delta
@@ -152,6 +168,8 @@ func _draw() -> void:
 		_draw_swing(s)
 	for p in _puffs:
 		_draw_puff(p)
+	for u in _ults:
+		_draw_ult(u)
 	for m in _marks:
 		var k: float = m["t"] / MARK_LIFE
 		var pos: Vector2 = m["pos"] + Vector2(0, -60 - k * 30)
@@ -263,3 +281,310 @@ func _heart(c: Vector2, r: float, col: Color) -> void:
 	draw_circle(c + Vector2(-r * 0.5, 0), r * 0.6, col)
 	draw_circle(c + Vector2(r * 0.5, 0), r * 0.6, col)
 	draw_colored_polygon(PackedVector2Array([c + Vector2(-r * 1.08, r * 0.15), c + Vector2(r * 1.08, r * 0.15), c + Vector2(0, r * 1.3)]), col)
+
+
+# --- Ultimates (architecture §9): ["ult", peer, ult_id, pos] ------------------------------
+
+const ULT_FLASH := Color(0.92, 0.45, 0.1)
+const ULT_PURPLE := Color(0.5, 0.2, 0.62)
+const ULT_RED := Color(0.78, 0.12, 0.1)
+const ULT_GREEN := Color(0.2, 0.55, 0.25)
+const ULT_BLUE := Color(0.15, 0.3, 0.65)
+
+
+func _ult_life(id: String) -> float:
+	match id:
+		"flashmob":
+			return 1.8
+		"strassenblockade":
+			return float(Content.ULTS["strassenblockade"]["time"])
+		"kaffee_und_kuchen", "fragen_sie_uns":
+			return 2.8
+	return 2.2
+
+
+## Pop-in scale with a little overshoot; 0 before the item starts.
+static func _pop(t: float) -> float:
+	if t <= 0.0:
+		return 0.0
+	var k := clampf(t / 0.22, 0.0, 1.0)
+	return k + sin(k * PI) * 0.25
+
+
+## The caster's current position if they're still in the view, else the event position.
+func _ult_anchor(u: Dictionary) -> Vector2:
+	var p := _player_pos(int(u["peer"]))
+	return p if p != Vector2.INF else (u["pos"] as Vector2)
+
+
+func _draw_ult(u: Dictionary) -> void:
+	var t: float = u["t"]
+	var life: float = u["life"]
+	var a := clampf((life - t) / 0.5, 0.0, 1.0)
+	match str(u["id"]):
+		"flashmob":
+			_ult_flashmob(u, t, a)
+		"urlaubsantrag":
+			_shout(tr("HUD_ULT_URLAUB"), _ult_anchor(u) + Vector2(0, -24), t, a, Color(0.1, 0.5, 0.75), 26, false)
+		"antrag_gestellt":
+			_ult_antrag(u, t, a)
+		"strassenblockade":
+			_ult_blockade(u, t, a)
+		"critical_mass":
+			var p := _ult_anchor(u)
+			if t < 0.6:
+				var k := t / 0.6
+				for i in 12:
+					var ang := TAU * i / 12.0
+					var d := Vector2(cos(ang), sin(ang) * 0.8)
+					draw_line(p + d * (30.0 + 90.0 * k), p + d * (50.0 + 130.0 * k), Color(ULT_GREEN, 1.0 - k), 3.0)
+			_shout(tr("HUD_ULT_VERKEHR"), p, t, a, ULT_GREEN, 28, true)
+		"tarifrunde":
+			var p := _ult_anchor(u)
+			if t < 1.0:
+				for i in 10:
+					var ang := TAU * i / 10.0 + t * 2.0
+					var r := 40.0 + t * 150.0
+					_cross(p + Vector2(cos(ang) * r, sin(ang) * r * 0.75 - 10.0), 6.0, Color(ULT_RED, 1.0 - t))
+			_shout(tr("HUD_ULT_TARIF"), p, t, a, ULT_RED, 30, true)
+		"schwarzer_block":
+			_shout(tr("HUD_ULT_BLOCK"), _ult_anchor(u), t, a, Color(0.15, 0.15, 0.18), 28, true)
+		"kaffee_und_kuchen":
+			_ult_kaffee(u, t, a)
+		"fragen_sie_uns":
+			_ult_fragen(u, t, a)
+
+
+## Speech/shout bubble over a point; `loud` = jagged outline.
+func _shout(text: String, anchor: Vector2, t: float, a: float, col: Color, fs: int, loud: bool) -> void:
+	var k := _pop(t)
+	if k <= 0.0 or a <= 0.0:
+		return
+	var sz := _hand.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs)
+	var w := sz.x + 26.0
+	var h := float(fs) + 18.0
+	var c := anchor + Vector2(0, -96.0 - minf(t, 0.5) * 16.0)
+	var bg := Color(1, 1, 1, 0.96 * a)
+	var tail := PackedVector2Array([c + Vector2(-10, h * 0.5 * k - 4), c + Vector2(10, h * 0.5 * k - 4), anchor + Vector2(4, -46)])
+	draw_colored_polygon(tail, bg)
+	draw_polyline(PackedVector2Array([tail[0], tail[2], tail[1]]), Color(INK, a), 2.0)
+	draw_set_transform(c, -0.04, Vector2(k, k))
+	if loud:
+		var pts := PackedVector2Array()
+		var n := 26
+		for i in n:
+			var ang := TAU * i / n
+			var r := 1.0 if i % 2 == 0 else 0.86
+			pts.append(Vector2(cos(ang) * (w * 0.5 + 22.0) * r, sin(ang) * (h * 0.5 + 16.0) * r))
+		draw_colored_polygon(pts, bg)
+		pts.append(pts[0])
+		draw_polyline(pts, Color(col, a), 3.0)
+	else:
+		var r := Rect2(-w * 0.5, -h * 0.5, w, h)
+		draw_rect(r, bg)
+		draw_polyline(Doodle.rect_pts(r, Doodle.frame % 3, 1.5), Color(INK, a), 2.0)
+	Doodle.text(self, text, Vector2(0, fs * 0.36), fs, Color(col, a), _hand)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+func _cross(p: Vector2, r: float, c: Color) -> void:
+	draw_line(p + Vector2(-r, 0), p + Vector2(r, 0), c, 3.0)
+	draw_line(p + Vector2(0, -r), p + Vector2(0, r), c, 3.0)
+
+
+## Flashmob: shockwave ring (radius from Content.ULTS) and a crowd bursting outward.
+func _ult_flashmob(u: Dictionary, t: float, a: float) -> void:
+	var p: Vector2 = u["pos"]
+	var big: float = Content.ULTS["flashmob"]["radius"]
+	var seed_v: int = u["seed"]
+	var k1 := clampf(t / 0.45, 0.0, 1.0)
+	var e := 1.0 - pow(1.0 - k1, 3.0)
+	var wa := clampf(1.0 - t / 0.9, 0.0, 1.0)
+	if wa > 0.0:
+		var v := Doodle.frame % Doodle.VARIANTS
+		draw_circle(p, big * e, Color(1.0, 0.85, 0.3, 0.16 * wa))
+		draw_polyline(Doodle.circle_pts(p, big * e, v), Color(ULT_FLASH, wa), 6.0)
+		draw_polyline(Doodle.circle_pts(p, big * e * 0.82, v + 1), Color(ULT_FLASH, wa * 0.5), 2.5)
+	var n := 14
+	var ke := 1.0 - pow(1.0 - clampf(t / 0.6, 0.0, 1.0), 2.0)
+	for k in n:
+		var ang := TAU * k / n + seed_v * 0.01
+		var d := Vector2(cos(ang), sin(ang) * 0.8)
+		var hop := absf(sin(t * 14.0 + k)) * 7.0
+		var fp := p + d * (26.0 + big * 0.72 * ke) + Vector2(0, -hop)
+		if t < 0.7:
+			draw_line(fp - d * 16.0, fp - d * 40.0, Color(INK, 0.45 * (1.0 - t / 0.7)), 2.0)
+		if world:
+			var sx := -1.0 if d.x < 0.0 else 1.0
+			draw_mesh(world.person_mesh(k + seed_v), null, Transform2D(sin(t * 12.0 + k) * 0.12, Vector2(1.5 * sx, 1.5), 0.0, fp),
+				Color(1, 1, 1, a))
+	var tk := _pop(t)
+	if tk > 0.0:
+		draw_set_transform(p + Vector2(0, -70.0 - t * 12.0), -0.06, Vector2(tk, tk))
+		Doodle.text(self, tr("HUD_ULT_FLASHMOB"), Vector2.ZERO, 40, Color(ULT_FLASH, a), _hand, 8, Color(1, 1, 1, a))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+## Antrag gestellt: a burst of forms out of the caster's folder, plus a shout.
+func _ult_antrag(u: Dictionary, t: float, a: float) -> void:
+	var p: Vector2 = u["pos"]
+	var seed_v: int = u["seed"]
+	if t < 1.4:
+		var k := t / 1.4
+		var fa := 1.0 - k * k
+		for i in 12:
+			var ang := TAU * i / 12.0 + seed_v * 0.1
+			var d := Vector2(cos(ang), sin(ang) * 0.8)
+			var sp := p + d * (20.0 + 220.0 * (1.0 - pow(1.0 - k, 2.0))) + Vector2(0, -30.0 + 60.0 * k * k)
+			draw_set_transform(sp, ang + t * 8.0 * (1.0 if i % 2 else -1.0), Vector2(1.0, 0.5 + 0.5 * absf(sin(t * 9.0 + i))))
+			var r := Rect2(-8, -10, 16, 20)
+			draw_rect(r, Color(1, 1, 1, fa))
+			for j in 4:
+				draw_line(Vector2(-5, -6 + j * 4), Vector2(4, -6 + j * 4), Color(0.3, 0.35, 0.55, fa), 1.0)
+			draw_rect(r, Color(INK, fa), false, 1.2)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+	_shout(tr("HUD_ULT_ANTRAG"), _ult_anchor(u), t, a, ULT_BLUE, 26, false)
+
+
+## Straßenblockade: protest signs pop up along the glue strip, "BLOCKADE!" banner.
+func _ult_blockade(u: Dictionary, t: float, a: float) -> void:
+	var p: Vector2 = u["pos"]
+	var x := 75.0
+	var idx := 0
+	while x < WorldView.ARENA.x - 40.0:
+		if absf(x - p.x) > 60.0:
+			var k := _pop(t - absf(x - p.x) / 1400.0)
+			if k > 0.0:
+				_sign(Vector2(x, p.y + 6.0 + float(idx % 2) * 10.0), k, a, idx)
+		x += 150.0
+		idx += 1
+	if t < 2.6:
+		var ba := clampf((2.6 - t) / 0.4, 0.0, 1.0)
+		var k := _pop(t)
+		var txt := tr("HUD_ULT_BLOCKADE")
+		var w := _hand.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 34).x + 44.0
+		draw_set_transform(p + Vector2(0, -92), sin(t * 3.0) * 0.03 - 0.03, Vector2(k, k))
+		var pole := Color("8a5a35")
+		draw_line(Vector2(-w * 0.5 - 6, 40), Vector2(-w * 0.5 - 6, -26), Color(pole, ba), 4.0)
+		draw_line(Vector2(w * 0.5 + 6, 40), Vector2(w * 0.5 + 6, -26), Color(pole, ba), 4.0)
+		var cloth := PackedVector2Array()
+		var n := 10
+		for i in n + 1:
+			var fx_ := -w * 0.5 + w * i / n
+			cloth.append(Vector2(fx_, -24 + sin(t * 6.0 + i * 0.9) * 2.5))
+		for i in range(n, -1, -1):
+			var fx_ := -w * 0.5 + w * i / n
+			cloth.append(Vector2(fx_, 20 + sin(t * 6.0 + i * 0.9 + 0.6) * 2.5))
+		draw_colored_polygon(cloth, Color(0.94, 0.54, 0.14, ba))
+		cloth.append(cloth[0])
+		draw_polyline(cloth, Color(INK, ba), 2.5)
+		Doodle.text(self, txt, Vector2(0, 11), 34, Color(1, 1, 1, ba), _hand, 4, Color(INK, ba))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+func _sign(base: Vector2, k: float, a: float, idx: int) -> void:
+	var sway := sin(_t * 2.5 + idx * 1.3) * 0.08
+	draw_set_transform(base, sway, Vector2(k, k))
+	draw_line(Vector2(0, 0), Vector2(0, -48), Color(Color("8a5a35"), a), 3.0)
+	var txt := tr("HUD_ULT_SIGN_%d" % (idx % 3 + 1))
+	var w := maxf(_hand.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x + 16.0, 50.0)
+	var r := Rect2(-w * 0.5, -78, w, 32)
+	var bgs := [Color("fffbea"), Color("f7e27a"), Color("cfe8c4")]
+	var bg: Color = bgs[idx % 3]
+	draw_rect(r, Color(bg, a))
+	draw_polyline(Doodle.rect_pts(r, (idx + Doodle.frame) % 3, 1.2), Color(INK, a), 2.0)
+	var tc := ULT_GREEN if idx % 3 != 1 else ULT_RED
+	Doodle.text(self, txt, Vector2(0, -55), 18, Color(tc, a), _hand)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+## Kaffee und Kuchen: coffee pot + cake slice pop over every player, hearts rise.
+func _ult_kaffee(u: Dictionary, t: float, a: float) -> void:
+	var spots := PackedVector2Array()
+	var vs: ViewState = world.get_view() if world else null
+	if vs:
+		for pl in vs.players:
+			if int(pl.get("state", 0)) != 2:
+				spots.append(pl.get("pos", Vector2.ZERO))
+	if spots.is_empty():
+		spots.append(u["pos"])
+	for i in spots.size():
+		var s := spots[i]
+		var k := _pop(t - i * 0.12)
+		if k <= 0.0:
+			continue
+		var rise := minf(t, 0.6) * 10.0
+		_coffee_pot(s + Vector2(-20, -84 - rise), k, a)
+		_cake(s + Vector2(20, -78 - rise), k, a)
+		for j in 4:
+			var ph := fmod(t * 0.8 + j * 0.25 + i * 0.1, 1.0)
+			var hp := s + Vector2(-30.0 + j * 20.0 + sin(t * 3.0 + j) * 6.0, -20.0 - ph * 70.0)
+			_heart(hp, 5.0 + (j % 2) * 2.0, Color(0.88, 0.22, 0.35, a * sin(ph * PI)))
+
+
+func _coffee_pot(c: Vector2, k: float, a: float) -> void:
+	draw_set_transform(c, sin(_t * 3.0) * 0.06 - 0.05, Vector2(k, k))
+	var body := PackedVector2Array([Vector2(-10, 11), Vector2(-12, -1), Vector2(-7, -12), Vector2(7, -12), Vector2(12, -1), Vector2(10, 11)])
+	# handle and spout first (body covers their ends)
+	draw_arc(Vector2(-12, 0), 7.0, PI * 0.5, PI * 1.5, 10, Color(INK, a), 3.0)
+	draw_polyline(PackedVector2Array([Vector2(9, -1), Vector2(18, -9), Vector2(22, -12)]), Color(INK, a), 5.0)
+	draw_polyline(PackedVector2Array([Vector2(9, -1), Vector2(18, -9), Vector2(22, -12)]), Color(1, 1, 1, a), 2.5)
+	draw_colored_polygon(body, Color(1, 1, 1, a))
+	draw_circle(Vector2(-4, 1), 2.4, Color(0.2, 0.4, 0.8, a))
+	draw_circle(Vector2(4, 5), 2.0, Color(0.2, 0.4, 0.8, a))
+	draw_circle(Vector2(3, -5), 1.6, Color(0.2, 0.4, 0.8, a))
+	var bl := body.duplicate()
+	bl.append(bl[0])
+	draw_polyline(bl, Color(INK, a), 2.0)
+	var lid := PackedVector2Array([Vector2(-7, -12), Vector2(-5, -16), Vector2(5, -16), Vector2(7, -12)])
+	draw_colored_polygon(lid, Color(1, 1, 1, a))
+	draw_polyline(lid, Color(INK, a), 2.0)
+	draw_circle(Vector2(0, -18), 2.5, Color(INK, a))
+	for j in 2:
+		var sx := 21.0 + j * 5.0
+		var ph := _t * 3.0 + j
+		draw_polyline(PackedVector2Array([Vector2(sx, -16), Vector2(sx + 3 * sin(ph), -22), Vector2(sx - 2 * sin(ph), -28), Vector2(sx + 2, -34)]),
+			Color(0.55, 0.5, 0.45, a * 0.6), 1.5)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+func _cake(c: Vector2, k: float, a: float) -> void:
+	draw_set_transform(c, 0.06, Vector2(k, k))
+	var plate := PackedVector2Array()
+	for i in 17:
+		var ang := TAU * i / 16.0
+		plate.append(Vector2(cos(ang) * 20.0, 9.5 + sin(ang) * 3.5))
+	draw_colored_polygon(plate, Color(1, 1, 1, a))
+	draw_polyline(plate, Color(INK, a * 0.8), 1.5)
+	var slice := PackedVector2Array([Vector2(-15, 8), Vector2(14, 8), Vector2(14, -9), Vector2(-15, 3)])
+	draw_colored_polygon(slice, Color(0.95, 0.8, 0.5, a))
+	draw_line(Vector2(-14, 5.5), Vector2(13, 0.5), Color(0.98, 0.95, 0.9, a), 3.0)
+	draw_line(Vector2(-14, 3), Vector2(14, -9), Color(1, 1, 1, a), 4.0)
+	var sl := slice.duplicate()
+	sl.append(sl[0])
+	draw_polyline(sl, Color(INK, a), 2.0)
+	draw_circle(Vector2(9, -13), 4.0, Color(0.85, 0.15, 0.2, a))
+	draw_line(Vector2(9, -17), Vector2(11, -19), Color(0.25, 0.6, 0.25, a), 2.0)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+## Fragen Sie mal uns: big shout and a megaphone shockwave rolling over the arena.
+func _ult_fragen(u: Dictionary, t: float, a: float) -> void:
+	var p := _ult_anchor(u)
+	for j in 4:
+		var r := t * 900.0 - j * 120.0
+		if r > 12.0 and r < 1500.0:
+			var ra := clampf(1.0 - r / 1500.0, 0.0, 1.0) * a
+			draw_polyline(Doodle.circle_pts(p, r, Doodle.frame % Doodle.VARIANTS + j), Color(ULT_PURPLE, 0.75 * ra), maxf(1.5, 6.0 - j * 1.2))
+	var mk := _pop(t)
+	if mk > 0.0:
+		draw_set_transform(p + Vector2(26, -44), -0.6, Vector2(mk, mk) * 1.6)
+		var cone := PackedVector2Array([Vector2(-8, -2.5), Vector2(2, -3), Vector2(10, -8), Vector2(10, 8), Vector2(2, 3), Vector2(-8, 2.5)])
+		draw_colored_polygon(cone, Color(0.9, 0.27, 0.23, a))
+		cone.append(cone[0])
+		draw_polyline(cone, Color(INK, a), 1.5)
+		draw_line(Vector2(10, -7), Vector2(10, 7), Color(1, 1, 1, a), 2.0)
+		for j in 3:
+			draw_arc(Vector2(12, 0), 6.0 + j * 5.0 + fmod(t * 30.0, 5.0), -0.7, 0.7, 6, Color(ULT_PURPLE, a), 1.5)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+	_shout(tr("HUD_ULT_FRAGEN"), p + Vector2(0, -10), t, a, ULT_PURPLE, 34, true)

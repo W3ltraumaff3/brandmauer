@@ -38,16 +38,16 @@ const CHAR_ORDER: Array[String] = [
 ]
 
 const CHARACTERS := {
-	"stadtbild": {"mods": {"max_hp": 2.0}, "weapon": "doener", "locked": false, "quote": "merz-01"},
-	"sozialtourist": {"mods": {"max_hp": -3.0}, "weapon": "pfandflasche", "locked": false, "quote": "merz-06",
+	"stadtbild": {"ult": "flashmob", "mods": {"max_hp": 2.0}, "weapon": "doener", "locked": false, "quote": "merz-01"},
+	"sozialtourist": {"ult": "urlaubsantrag", "mods": {"max_hp": -3.0}, "weapon": "pfandflasche", "locked": false, "quote": "merz-06",
 		"start_pfand": 30, "free_rerolls": 2},
-	"buergergeld": {"mods": {"income": 8.0, "damage": -20.0}, "weapon": "gendersternchen", "locked": false, "quote": ""},
-	"klimakleber": {"mods": {"speed": -20.0}, "weapon": "kleber", "locked": false, "quote": ""},
-	"lastenrad": {"mods": {"speed": 25.0}, "weapon": "megafon", "locked": false, "quote": "", "max_weapons": 7},
-	"gewerkschaft": {"mods": {"summon": 2.0}, "weapon": "infostand", "locked": false, "quote": ""},
-	"antifa": {"mods": {"speed": 10.0, "damage": 10.0}, "weapon": "farbbeutel", "locked": false, "quote": ""},
-	"oma": {"mods": {"speed": -20.0, "max_hp": 15.0, "armor": 4.0}, "weapon": "stricknadeln", "locked": false, "quote": ""},
-	"toechter": {"mods": {}, "weapon": "transparent", "locked": true, "quote": "merz-02", "unlock": "ach_aufsichtsrat"},
+	"buergergeld": {"ult": "antrag_gestellt", "mods": {"income": 8.0, "damage": -20.0}, "weapon": "gendersternchen", "locked": false, "quote": ""},
+	"klimakleber": {"ult": "strassenblockade", "mods": {"speed": -20.0}, "weapon": "kleber", "locked": false, "quote": ""},
+	"lastenrad": {"ult": "critical_mass", "mods": {"speed": 25.0}, "weapon": "megafon", "locked": false, "quote": "", "max_weapons": 7},
+	"gewerkschaft": {"ult": "tarifrunde", "mods": {"summon": 2.0}, "weapon": "infostand", "locked": false, "quote": ""},
+	"antifa": {"ult": "schwarzer_block", "mods": {"speed": 10.0, "damage": 10.0}, "weapon": "farbbeutel", "locked": false, "quote": ""},
+	"oma": {"ult": "kaffee_und_kuchen", "mods": {"speed": -20.0, "max_hp": 15.0, "armor": 4.0}, "weapon": "stricknadeln", "locked": false, "quote": ""},
+	"toechter": {"ult": "fragen_sie_uns", "mods": {}, "weapon": "transparent", "locked": true, "quote": "merz-02", "unlock": "ach_aufsichtsrat"},
 }
 
 # --- Weapons (GDD §11) -------------------------------------------------------
@@ -198,7 +198,25 @@ const HAZARD_ORDER: Array[String] = [
 	"kleber", "mietzone", "kerosin", "lob_marker", "sitzblockade", "explosion", "abschiebezone",
 	"push_ring", "farbklecks",
 ]
-const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine"]
+const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse"]
+
+# --- Ultimates (GDD §9a): Space, once per wave ----------------------------------
+
+const ULT_ORDER: Array[String] = [
+	"flashmob", "urlaubsantrag", "antrag_gestellt", "strassenblockade", "critical_mass",
+	"tarifrunde", "schwarzer_block", "kaffee_und_kuchen", "fragen_sie_uns",
+]
+const ULTS := {
+	"flashmob": {"radius": 240.0, "stun": 2.0, "dmg": 20.0, "dmg_per_follower": 5.0, "knock": 260.0},
+	"urlaubsantrag": {"time": 4.0, "heal_per_s": 0.08},
+	"antrag_gestellt": {"time": 6.0, "slow": 0.6},
+	"strassenblockade": {"time": 6.0, "slow": 0.85, "radius": 46.0, "spacing": 70.0, "dps": 4.0},
+	"critical_mass": {"dash_time": 0.4, "dash_speed": 1250.0, "ram_mult": 3.0, "boost_time": 5.0, "boost": 2.0},
+	"tarifrunde": {"time": 8.0, "damage": 0.5},
+	"schwarzer_block": {"count": 6, "time": 6.0, "dmg": 6.0, "radius": 60.0},
+	"kaffee_und_kuchen": {"regen_time": 10.0, "regen": 3.0, "revive_hp": 0.5},
+	"fragen_sie_uns": {"stun": 2.0, "vuln_time": 6.0, "vuln": 2.0},
+}
 
 # --- Waves (GDD §4) ----------------------------------------------------------
 

@@ -294,3 +294,22 @@ SUMMON_OMA_NAME,Oma
 SUMMON_TURBINE_NAME,Windrad
 CURRENCY_PFAND,Pfand
 CURRENCY_AKTIEN,Aktien
+ULT_FLASHMOB_NAME,Flashmob
+ULT_FLASHMOB_DESC,"Die Menge stürmt los: Gegner:innen im Umkreis sind 2 s lang baff, kriegen 20 Schaden (+5 pro Passant:in im Schlepptau) und fliegen zurück. Spontan, aber gut organisiert."
+ULT_URLAUBSANTRAG_NAME,Urlaubsantrag
+ULT_URLAUBSANTRAG_DESC,"4 s auf der Sonnenliege: unverwundbar, unbeweglich, heilt 8 % Solidarität pro Sekunde. Genehmigt ist genehmigt."
+ULT_ANTRAG_GESTELLT_NAME,Antrag gestellt
+ULT_ANTRAG_GESTELLT_DESC,Papierkrieg! Alle Gegner:innen sind 6 s lang 60 % langsamer. Bitte füllen Sie das Formular in dreifacher Ausfertigung aus.
+ULT_STRASSENBLOCKADE_NAME,Straßenblockade
+ULT_STRASSENBLOCKADE_DESC,"Eine Kleberspur quer durch die ganze Arena, auf deiner Höhe: Gegner:innen kleben 6 s lang fest (85 % langsamer, 4 Schaden pro Sekunde). Hier geht's nicht weiter."
+ULT_CRITICAL_MASS_NAME,Critical Mass
+ULT_CRITICAL_MASS_DESC,"Wir sind der Verkehr! Ein Sprint rammt alles auf dem Weg (3-facher Schaden), danach 5 s lang doppeltes Tempo. Radweg? Ist jetzt die ganze Straße."
+ULT_TARIFRUNDE_NAME,Tarifrunde
+ULT_TARIFRUNDE_DESC,"+50 % Schaden für alle Spieler:innen und alles, was sie aufgestellt haben – 8 s lang. Mehr Lohn, mehr Wumms."
+ULT_SCHWARZER_BLOCK_NAME,Schwarzer Block
+ULT_SCHWARZER_BLOCK_DESC,"6 Genoss:innen stürmen 6 s lang los, schieben Gegner:innen zurück und teilen 6 Schaden aus. Einheitlich gekleidet, einig im Handeln."
+ULT_KAFFEE_UND_KUCHEN_NAME,Kaffee und Kuchen
+ULT_KAFFEE_UND_KUCHEN_DESC,"Heilt das ganze Team voll, holt Gestürzte mit 50 % Solidarität zurück und gibt 10 s lang +3 Krankenschein. Mit Sahne."
+ULT_FRAGEN_SIE_UNS_NAME,Fragen Sie mal uns
+ULT_FRAGEN_SIE_UNS_DESC,"Alle alten Männer in Anzügen (Union, Kapital, Sauerländer) sind 2 s lang sprachlos und nehmen 6 s lang doppelten Schaden. Wir hätten da ein paar Fragen."
+SUMMON_GENOSSE_NAME,Genoss:in

@@ -53,3 +53,6 @@ Format: **ID · date · decision** — rationale. A decision is never edited; a 
 | D-047 | 2026-11-01 | Ranged damage stat renamed **Durchschlagskraft** (was Lautstärke) | Fits all ranged weapons, not only the Megafon |
 | D-048 | 2026-11-01 | All our own person-related generic terms are gendered with a colon (Schwarzfahrer:innen-Mütze, Sozialtourist:in, Besorgte:r Bürger:in …). Real quotes are never changed; named parody figures stay as they are | User decision |
 | D-049 | 2026-11-01 | Character insult quotes may also appear on the start screen | User decision; supersedes the 'unlock card only' rule |
+| D-050 | 2026-11-01 | Ultimates: one per character, Space, once per wave (GDD §9a); Lastenrad's is "Critical Mass" | User decision |
+| D-051 | 2026-11-01 | Targeting: no lead aiming; option Zielauswahl (closest/most HP/least HP, default closest); enemies behind the wall are targetable through holes | Genre standard; user feedback |
+| D-052 | 2026-11-01 | Boss intro card pauses the game until every player presses W/A/S/D or Space | Time to read the quote |
