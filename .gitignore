@@ -1,0 +1,21 @@
+# Godot 4
+.godot/
+/android/
+*.translation
+
+# Exports
+/build/
+/export/
+*.exe
+*.pck
+*.zip
+
+# Downloaded third-party originals (keep license proof, not huge raw dumps)
+/assets_raw/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+*.tmp
