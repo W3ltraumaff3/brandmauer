@@ -211,8 +211,118 @@ func test_dedicated_empty_lobby_ends_run() -> void:
 	net.lobby = {300: {"name": "A", "char": "stadtbild", "ready": true}}
 	fake_game.config = {"seed": 1}
 	var left := []
+	var away := []
 	net.peer_left.connect(func(p): left.append(p))
+	net.peer_away.connect(func(p): away.append(p))
 	net._on_peer_disconnected(300)
-	assert_eq(left, [300], "peer_left emitted")
+	assert_eq(away, [300], "mid-run: peer_away, not removed")
+	assert_true(net.lobby.has(300), "kept during the grace period")
+	assert_eq(fake_game.back, 0, "run keeps waiting")
+	net._tick_away(NetScript._now() + NetScript.GRACE_S + 1.0)
+	assert_eq(left, [300], "peer_left after the grace period")
 	assert_true(net.lobby.is_empty(), "removed from lobby")
 	assert_eq(fake_game.back, 1, "Game.back_to_lobby called when the server is empty")
+
+
+func test_disconnect_in_lobby_removes_at_once() -> void:
+	net._mode = NetScript.Mode.SERVER
+	net.lobby = {300: {"name": "A", "char": "stadtbild", "ready": false}}
+	var left := []
+	net.peer_left.connect(func(p): left.append(p))
+	net._on_peer_disconnected(300)
+	assert_eq(left, [300], "no run: removed at once")
+	assert_false(net.is_away(300), "no grace period in the lobby")
+
+
+func test_player_peer_mapping() -> void:
+	net._mode = NetScript.Mode.SERVER
+	net.lobby = {300: {"name": "A", "char": "stadtbild", "ready": false},
+			400: {"name": "B", "char": "oma", "ready": false}}
+	assert_eq(net.player_for_peer(300), 300, "first join: player id = peer id")
+	assert_eq(net.player_for_peer(999), 0, "unknown peer")
+	net._peer_of[300] = 777          # reconnected with a new peer id
+	assert_eq(net.player_for_peer(777), 300, "new peer maps to the old player")
+	assert_eq(net.player_for_peer(300), 0, "old peer no longer maps")
+	assert_eq(net.peer_for_player(300), 777, "sends go to the new peer")
+	assert_eq(net.peer_for_player(400), 400, "others unchanged")
+	net._peer_of[300] = 0            # away
+	assert_eq(net.peer_for_player(300), 0, "away: no peer")
+	assert_eq(net.player_for_peer(777), 0, "away: the dead peer maps to nobody")
+
+
+func test_check_resume_needs_valid_token_and_running_run() -> void:
+	net._mode = NetScript.Mode.SERVER
+	net.lobby = {300: {"name": "A", "char": "stadtbild", "ready": false}}
+	net._tokens = {300: "secret"}
+	var v: String = NetScript.game_version()
+	var out := {}
+	assert_eq(net.check_resume(NetScript.PROTOCOL_VERSION, v, "secret", out), "NET_ERR_SESSION", "no run: no resume")
+	fake_game.config = {"seed": 1}
+	assert_eq(net.check_join(NetScript.PROTOCOL_VERSION, v), "NET_ERR_RUNNING", "plain join still refused mid-run")
+	assert_eq(net.check_resume(NetScript.PROTOCOL_VERSION, v, "wrong", out), "NET_ERR_SESSION", "bad token")
+	assert_eq(net.check_resume(NetScript.PROTOCOL_VERSION, v, "", out), "NET_ERR_SESSION", "empty token")
+	assert_eq(net.check_resume(NetScript.PROTOCOL_VERSION, v, 5, out), "NET_ERR_SESSION", "wrong type")
+	assert_eq(net.check_resume(NetScript.PROTOCOL_VERSION + 1, v, "secret", out), "NET_ERR_VERSION", "version")
+	assert_true(out.is_empty(), "no player on failure")
+	assert_eq(net.check_resume(NetScript.PROTOCOL_VERSION, v, "secret", out), "", "valid token mid-run")
+	assert_eq(out.get("player", 0), 300, "maps to the old player")
+	assert_eq(NetScript._new_token().length(), 32, "128-bit hex token")
+	assert_true(NetScript._new_token() != NetScript._new_token(), "tokens are random")
+
+
+func test_return_to_lobby_drops_away_players() -> void:
+	net._mode = NetScript.Mode.SERVER
+	net.lobby = {300: {"name": "A", "char": "stadtbild", "ready": true},
+			400: {"name": "B", "char": "oma", "ready": true}}
+	net._tokens = {300: "a", 400: "b"}
+	fake_game.config = {"seed": 1}
+	net._on_peer_disconnected(400)
+	assert_true(net.is_away(400), "away")
+	net.return_to_lobby()
+	assert_false(net.lobby.has(400), "away player dropped")
+	assert_false(net._tokens.has(400), "token invalidated")
+	assert_true(net.lobby.has(300), "present player stays")
+	assert_eq(fake_game.back, 0, "no recursive back_to_lobby")
+
+
+func test_client_reconnect_state_machine() -> void:
+	var lost := []
+	var gone := []
+	net.connection_lost.connect(func(): lost.append(true))
+	net.disconnected.connect(func(r): gone.append(r))
+	# No token (or no run): losing the host ends the session at once, as before.
+	net._mode = NetScript.Mode.CLIENT
+	net._on_server_disconnected()
+	assert_eq(gone, ["NET_ERR_LOST"], "no token: straight to the menu")
+	assert_true(lost.is_empty(), "no reconnect without a token")
+	# Mid-run with a token: reconnect in the background, keep the player id.
+	gone.clear()
+	net._mode = NetScript.Mode.CLIENT
+	net._token = "secret"
+	net._player_id = 4242
+	net._server_ip = "127.0.0.1"
+	net._server_port = 24713
+	fake_game.config = {"seed": 1}
+	net._on_server_disconnected()
+	assert_eq(lost.size(), 1, "connection_lost emitted")
+	assert_true(net.is_reconnecting(), "reconnecting")
+	assert_true(gone.is_empty(), "not disconnected yet")
+	assert_eq(net.local_player_id(), 4242, "player id kept while reconnecting")
+	assert_near(net.reconnect_time_left(), NetScript.RECONNECT_S, 0.5, "60 s budget")
+	# The budget runs out: give up with NET_ERR_LOST.
+	net._tick_reconnect(NetScript._now() + NetScript.RECONNECT_S + 1.0)
+	assert_eq(gone, ["NET_ERR_LOST"], "gave up")
+	assert_false(net.is_reconnecting(), "no longer reconnecting")
+	assert_eq(net._token, "", "session forgotten")
+
+
+func test_bye_and_reconnect_flags_are_solo_safe() -> void:
+	net.start_solo("A")
+	assert_false(net.is_reconnecting(), "solo never reconnects")
+	assert_eq(net.reconnect_time_left(), 0.0, "no timer in solo")
+	assert_eq(net.local_player_id(), 1, "solo player id")
+	net.debug_drop_connection()      # no-op outside client mode
+	assert_true(net.is_host(), "still solo")
+	net._tick_away(NetScript._now() + 999.0)
+	net._tick_reconnect(NetScript._now() + 999.0)
+	assert_eq(net.lobby.keys(), [1], "nothing removed")

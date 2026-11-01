@@ -45,7 +45,8 @@ class SimPlayer:
 	var items: Array[String] = []
 	var flags := {}                  # item flags
 	var pfand := 0
-	var state := 0                   # 0 alive, 1 downed, 2 gone
+	var state := 0                   # 0 alive, 1 downed, 2 gone, 3 away (connection lost, see set_away)
+	var away_state := 0              # state to restore when an away player comes back
 	var iframes := 0.0
 	var aim := 0.0
 	var still_time := 0.0
@@ -61,6 +62,7 @@ class SimPlayer:
 	var rerolls_done := 0
 	var free_rerolls := 0
 	var spent := 0
+	var buys := 0                      # purchases this Späti visit (Genossenschaftsanteil limit)
 	var levelups := 0
 	var levelup_options: Array = []
 	var ready := false
@@ -78,11 +80,22 @@ class SimPlayer:
 	var target_mode := 0               # Sim.Target
 	var last_fire := -10.0             # sim time of the last shot (aim follows shots)
 	var ult_ready := true              # ultimate: once per wave
+	var second_round_used := false     # Zweiter Wahlgang (once per run)
+	var cumex_audited := false
+	var puma_down := false
 	var ult_t := 0.0                   # Urlaubsantrag: lying on the sun lounger
 	var dash_t := 0.0                  # Critical Mass dash
 	var dash_dir := Vector2.ZERO
 	var boost_t := 0.0                 # Critical Mass speed boost
 	var regen_boost_t := 0.0           # Kaffee und Kuchen
+	var next_wuid := 1                 # weapon instance ids (for damage stats)
+	var dmg_total := {}                # source key -> damage dealt this run
+	var dmg_wave := {}                 # source key -> damage dealt this wave
+	var sources := {}                  # source key -> {"kind", "id", "tier", "sold"}
+	var log := {
+		"lifesteal": 0.0, "regen": 0.0, "dmg_taken": 0.0, "dmg_blocked": 0.0, "dodges": 0,
+		"crits": 0, "pfand_collected": 0, "pfand_income": 0, "pfand_spent": 0, "ults": 0,
+	}
 
 
 class SimEnemy:
@@ -122,11 +135,14 @@ class SimEnemy:
 	var hit_cd := {}
 	var stun_t := 0.0
 	var vuln_t := 0.0
+	var poison_key := ""               # stats source of the poison/glue ticking on this enemy
+	var expose_t := 0.0                # Enthüllungs-Scheinwerfer: extra crit chance against this enemy
 	var no_reward := false
 	var encounter := ""
 
 
 class SimProj:
+	var source := ""                   # stats key of the weapon that fired it
 	var type := 0
 	var pos := Vector2.ZERO
 	var vel := Vector2.ZERO
@@ -170,6 +186,7 @@ class SimHazard:
 
 
 class SimSummon:
+	var source := ""
 	var type := 0
 	var pos := Vector2.ZERO
 	var life := -1.0
@@ -211,6 +228,7 @@ var streik_available := false
 var streik_active := 0.0
 var streik_discount := false
 var effects := {}                    # team/global ultimate effects: id -> seconds left
+var _last_source := ""               # damage source of the current hit (Doppelwumms must not chain)
 var encounter := ""
 var encounter_pending := -1.0
 var intro_wait := false              # boss card shown, world paused until everyone continues
@@ -257,7 +275,7 @@ func start_run(cfg: Dictionary) -> void:
 		if not Content.CHARACTERS.has(p.char_id):
 			p.char_id = "stadtbild"
 		var c: Dictionary = Content.CHARACTERS[p.char_id]
-		p.weapons.append({"id": c["weapon"], "tier": 1, "cd": 0.5, "angle": 0.0})
+		_add_weapon(p, c["weapon"], 1)
 		p.pfand = int(c.get("start_pfand", 0))
 		p.max_weapons = int(c.get("max_weapons", Content.MAX_WEAPONS))
 		p.db_timer = rng.randf_range(8.0, 15.0)
@@ -272,7 +290,57 @@ func remove_player(id: int) -> void:
 		players[id].state = 2
 		meta_dirty = true
 		_check_intro_done()
+		_check_all_ready()
 		_check_game_over()
+
+
+## Co-op: a client lost its connection (networking.md §7.4). An away player
+## (state 3) keeps its character, frozen and invulnerable; enemies ignore it,
+## it doesn't block the Späti ready check or the boss intro, and going away never
+## causes a game over (see _check_game_over). If it doesn't come back, the host
+## calls remove_player().
+func set_away(id: int, away: bool) -> void:
+	var p: SimPlayer = players.get(id)
+	if p == null or p.state == 2 or (p.state == 3) == away:
+		return
+	if away:
+		p.away_state = p.state
+		p.state = 3
+		p.input = Vector2.ZERO
+		p.knock = Vector2.ZERO
+		p.reviving = false
+		p.revive_progress = 0.0
+		_event(["away", id])
+	else:
+		p.state = p.away_state
+		if p.state == 0:
+			p.iframes = maxf(p.iframes, 1.5)
+		_event(["back", id])
+	meta_dirty = true
+	_check_intro_done()
+	_check_all_ready()
+	_check_game_over()
+
+
+## True while nobody is alive but at least one player is away: the world waits
+## for the reconnect (or for remove_player, which then ends the run).
+func waiting_for_away() -> bool:
+	var away := false
+	for p in players.values():
+		if p.state == 0:
+			return false
+		if p.state == 3:
+			away = true
+	return away
+
+
+## Players who are in the game right now: alive or downed (not gone, not away).
+func _present_count() -> int:
+	var n := 0
+	for p in players.values():
+		if p.state == 0 or p.state == 1:
+			n += 1
+	return n
 
 
 func set_input(id: int, dir: Vector2, seq := 0) -> void:
@@ -316,7 +384,10 @@ func _recompute(p: SimPlayer) -> void:
 	s["xp"] += v.get("xp", 0.0)
 	if org == "omas":
 		s["hp_regen"] += 1.0
+	if p.flags.has("dodge_build"):
+		s["armor"] = 0.0
 	s["max_hp"] = maxf(1.0, s["max_hp"])
+	p.max_weapons = int(Content.CHARACTERS[p.char_id].get("max_weapons", Content.MAX_WEAPONS)) + p.items.count("lastenrad_anhaenger")
 	p.stats = s
 	p.hp = minf(p.hp, s["max_hp"])
 	meta_dirty = true
@@ -345,7 +416,7 @@ static func clamp_player(pos: Vector2) -> Vector2:
 
 func step(dt: float) -> void:
 	time += dt
-	if phase != Phase.WAVE or intro_wait:
+	if phase != Phase.WAVE or intro_wait or waiting_for_away():
 		return
 	_dmg_events = 0
 	wave_time += dt
@@ -427,7 +498,10 @@ func _begin_wave(n: int) -> void:
 	var alive := players.values().filter(func(p): return p.state != 2)
 	var i := 0
 	for p in alive:
-		p.state = 0
+		if p.state == 3:
+			p.away_state = 0
+		else:
+			p.state = 0
 		_recompute(p)
 		p.hp = p.stats["max_hp"]
 		var ang := TAU * i / maxf(1, alive.size())
@@ -436,6 +510,7 @@ func _begin_wave(n: int) -> void:
 		p.reversed = 0.0
 		p.stunned = 0.0
 		p.pending_shots.clear()
+		p.dmg_wave.clear()
 		p.ult_ready = true
 		p.ult_t = 0.0
 		p.dash_t = 0.0
@@ -491,6 +566,24 @@ func _end_wave() -> void:
 			income = int(income * v["income_mult"])
 		if income > 0:
 			_give_pfand(p, income)
+			p.log["pfand_income"] += income
+		if p.flags.has("treuhand") and rng.randf() < Content.RED_BUILD["treuhand_chance"] + p.stats["luck"] / 200.0:
+			_give_pfand(p, Content.RED_BUILD["treuhand_pfand"])
+			p.log["pfand_income"] += Content.RED_BUILD["treuhand_pfand"]
+		if p.flags.has("maut"):
+			p.pfand = maxi(0, p.pfand - Content.RED_BUILD["maut_wave"])
+		if p.flags.has("cumex"):
+			var refund := mini(Content.RED_BUILD["cumex_max"], p.pfand)
+			_give_pfand(p, refund)
+			p.log["pfand_income"] += refund
+			if wave >= Content.RED_BUILD["cumex_audit_wave"] and not p.cumex_audited:
+				p.cumex_audited = true
+				p.pfand = p.pfand / 2
+				_event(["say", p.pos, "SAY_BETRIEBSPRUEFUNG", ""])
+		if p.flags.has("coop_economy"):
+			var interest := mini(Content.RED_BUILD["coop_interest_max"], int(p.pfand * Content.RED_BUILD["coop_interest"]))
+			_give_pfand(p, interest)
+			p.log["pfand_income"] += interest
 		if p.flags.has("streikkasse"):
 			_give_pfand(p, mini(20, int(p.pfand * 0.1)))
 		if blackrock:
@@ -499,8 +592,12 @@ func _end_wave() -> void:
 			var stat: String = Content.STATS[rng.randi_range(0, Content.STATS.size() - 1)]
 			p.levelup_stats[stat] = p.levelup_stats.get(stat, 0.0) + Content.LEVELUP_AMOUNTS[stat]
 			_recompute(p)
-		p.state = 0
+		if p.state == 3:
+			p.away_state = 0
+		else:
+			p.state = 0
 		p.spent = 0
+		p.buys = 0
 		p.rerolls_done = 0
 		p.free_rerolls = int(Content.CHARACTERS[p.char_id].get("free_rerolls", 0))
 		p.ready = false
@@ -534,24 +631,25 @@ func _resolve_vertrag() -> void:
 		return
 	var ids := players.values().filter(func(p): return p.state != 2).map(func(p): return p.id)
 	var chosen := resolve_votes(opts, vertrag["votes"], ids)
-	vertrag = {"options": [], "votes": {}, "active": chosen, "waves_left": 4}
+	vertrag = {"options": [], "votes": {}, "active": chosen, "waves_left": 4 if chosen != "" else 0}
 	for p in players.values():
 		_recompute(p)
-	_event(["say", Vector2(800, 500), "VERTRAG_%s_NAME" % chosen.to_upper(), ""])
+	if chosen != "":
+		_event(["say", Vector2(800, 500), "VERTRAG_%s_NAME" % chosen.to_upper(), ""])
 
 
 ## Unanimous vote picks that option, otherwise the worst one (exposed for tests).
+## Abstentions (-1) and missing votes don't count. Nobody voted -> no contract.
+## All votes equal -> that option. Otherwise the worst option wins.
 static func resolve_votes(options: Array, votes: Dictionary, voters: Array) -> String:
-	var first := -1
+	var cast := []
 	for v in voters:
-		if not votes.has(v) or (first != -1 and votes[v] != first):
-			first = -2
-			break
-		first = votes[v]
-	if voters.is_empty():
-		first = -2
-	if first >= 0 and first < options.size():
-		return options[first]
+		if votes.has(v) and int(votes[v]) >= 0 and int(votes[v]) < options.size():
+			cast.append(int(votes[v]))
+	if cast.is_empty():
+		return ""
+	if cast.all(func(c): return c == cast[0]):
+		return options[cast[0]]
 	var chosen := ""
 	var worst := -1
 	for o in options:
@@ -678,7 +776,7 @@ func _step_encounter_spawn(dt: float) -> void:
 			_place_turbines()
 	var q := Quotes.random_for("boss_ruf:" + encounter, rng)
 	if q != "":
-		_say_quote(Vector2(800, 380), q)
+		shown_quotes[q] = true   # collected for the Album; not shown as a bubble mid-fight
 	meta_dirty = true
 
 
@@ -750,7 +848,10 @@ func _step_players(dt: float) -> void:
 			p.knock = p.knock.move_toward(Vector2.ZERO, 1400.0 * dt)
 		# regen
 		if not v.get("no_regen", false) and p.stats["hp_regen"] > 0.0:
-			p.hp = minf(p.stats["max_hp"], p.hp + p.stats["hp_regen"] * 0.12 * dt)
+			if not p.flags.has("lifesteal_build"):
+				_heal(p, p.stats["hp_regen"] * 0.12 * dt, "regen")
+		if p.flags.has("aufhoeren") and p.still_time >= Content.RED_BUILD["aufhoeren_after"] and not p.flags.has("lifesteal_build"):
+			_heal(p, Content.RED_BUILD["aufhoeren_regen"] * 0.12 * dt, "regen")
 		# damage multiplier for this frame
 		var m := 1.0
 		match p.char_id:
@@ -811,7 +912,7 @@ func _ram(p: SimPlayer) -> void:
 		var key := "ram%d" % p.id
 		if e.hit_cd.get(key, 0.0) <= time:
 			e.hit_cd[key] = time + 0.4
-			_damage_enemy(e, dmg, p, false, (e.pos - p.pos).normalized(), 80.0)
+			_damage_enemy(e, dmg, p, false, (e.pos - p.pos).normalized(), 80.0, "ram")
 
 
 func _antifa_repair(p: SimPlayer, dt: float) -> void:
@@ -862,17 +963,29 @@ func _step_revives(dt: float) -> void:
 func damage_player(p: SimPlayer, amount: float, source_pos := Vector2.INF) -> void:
 	if p.state != 0 or p.iframes > 0.0 or amount <= 0.0:
 		return
-	if rng.randf() * 100.0 < minf(p.stats["dodge"], Content.DODGE_CAP):
+	if rng.randf() * 100.0 < minf(p.stats["dodge"], Content.RED_BUILD["dodge_cap"] if p.flags.has("dodge_build") else Content.DODGE_CAP):
 		_event(["say", p.pos, "SAY_DODGE", ""])
+		p.log["dodges"] += 1
 		p.iframes = 0.2
 		return
 	var armor: float = p.stats["armor"]
+	if p.flags.has("aufhoeren") and p.still_time >= Content.RED_BUILD["aufhoeren_after"]:
+		armor += Content.RED_BUILD["aufhoeren_armor"]
 	var dmg := amount * (15.0 / (15.0 + armor) if armor >= 0.0 else 1.0 - armor * 0.05)
 	dmg = maxf(1.0, dmg)
+	p.log["dmg_taken"] += dmg
+	p.log["dmg_blocked"] += maxf(0.0, amount - dmg)
 	p.hp -= dmg
 	p.iframes = IFRAMES
 	_event(["dmg", p.pos, int(round(dmg)), false, true])
 	_event(["sfx", "hurt", p.pos])
+	if p.hp <= 0.0 and p.flags.has("zweiter_wahlgang") and not p.second_round_used:
+		p.second_round_used = true
+		p.hp = p.stats["max_hp"] * Content.RED_BUILD["second_round_hp"]
+		p.iframes = 1.5
+		_event(["say", p.pos, "SAY_ZWEITER_WAHLGANG", ""])
+		meta_dirty = true
+		return
 	if p.hp <= 0.0:
 		p.hp = 0.0
 		if num_players() > 1:
@@ -889,8 +1002,10 @@ func damage_player(p: SimPlayer, amount: float, source_pos := Vector2.INF) -> vo
 func _check_game_over() -> void:
 	if phase == Phase.OVER:
 		return
+	# A lost connection alone never ends the run: while someone is away the world
+	# waits (waiting_for_away); only remove_player after the grace period counts.
 	for p in players.values():
-		if p.state == 0:
+		if p.state == 0 or p.state == 3:
 			return
 	_finish(false)
 
@@ -901,7 +1016,15 @@ func _step_weapons(dt: float) -> void:
 	for p in players.values():
 		if p.state != 0:
 			continue
-		var as_mult := maxf(0.2, 1.0 + p.stats["attack_speed"] / 100.0)
+		var as_mult := maxf(0.2, 1.0 + (p.stats["attack_speed"] + dyn_attack_speed(p)) / 100.0)
+		# Puma: every 18 s all weapons fail for 3 s.
+		if p.flags.has("puma"):
+			var down: bool = fmod(wave_time, Content.RED_BUILD["puma_period"]) >= Content.RED_BUILD["puma_period"] - Content.RED_BUILD["puma_down"]
+			if down and not p.puma_down:
+				_event(["say", p.pos, "SAY_PUMA_AUSFALL", ""])
+			p.puma_down = down
+			if down:
+				continue
 		for wi in p.weapons.size():
 			var w: Dictionary = p.weapons[wi]
 			var def: Dictionary = Content.WEAPONS[w["id"]]
@@ -928,6 +1051,23 @@ func _step_weapons(dt: float) -> void:
 				_fire(p, w, dir, aim_at)
 
 
+## Wahlversprechen and BER-Eröffnungstermin change Wut over time.
+func dyn_damage(p: SimPlayer) -> float:
+	var b := Content.RED_BUILD
+	var d := 0.0
+	if p.flags.has("wahlversprechen"):
+		d += b["wahl_early"] if wave_time < b["wahl_time"] else b["wahl_late"]
+	if p.flags.has("ber"):
+		d += b["ber_early"] if wave < b["ber_wave"] else b["ber_late_dmg"]
+	return d
+
+
+func dyn_attack_speed(p: SimPlayer) -> float:
+	if p.flags.has("ber") and wave >= Content.RED_BUILD["ber_wave"]:
+		return Content.RED_BUILD["ber_late_as"]
+	return 0.0
+
+
 func _weapon_range(p: SimPlayer, def: Dictionary) -> float:
 	var bonus: float = p.stats["range"]
 	if def.get("melee", false):
@@ -940,8 +1080,25 @@ func weapon_damage(p: SimPlayer, w: Dictionary) -> float:
 	var d := Content.weapon_damage(w["id"], w["tier"])
 	for s in def["scale"]:
 		d += p.stats[s] * def["scale"][s]
-	d *= maxf(0.1, 1.0 + p.stats["damage"] / 100.0) * p.dmg_mult
+	d *= maxf(0.1, 1.0 + (p.stats["damage"] + dyn_damage(p)) / 100.0) * p.dmg_mult
+	d *= _build_mult(p, def)
 	return maxf(1.0, d)
+
+
+## Red build items (GDD §12): big boost for one build, malus for everything else.
+func _build_mult(p: SimPlayer, def: Dictionary) -> float:
+	var b := Content.RED_BUILD
+	var m := 1.0
+	var melee: bool = def.get("melee", false)
+	if p.flags.has("melee_build"):
+		m *= b["melee"] if melee else b["melee_other"]
+	if p.flags.has("ranged_build") and melee:
+		m *= b["ranged_other"]
+	if p.flags.has("summon_build"):
+		m *= b["summon"] if def["kind"] == "turret" else b["summon_other"]
+	if p.flags.has("status_build"):
+		m *= b["status_direct"]
+	return m
 
 
 func _roll_crit(p: SimPlayer) -> bool:
@@ -966,8 +1123,12 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			pr.crit = crit
 			pr.owner = p.id
 			pr.weapon = w["id"]
+			pr.source = _wkey(w)
 			pr.life = _weapon_range(p, def) / def["speed"] * (2.2 if def.get("boomerang", false) else 1.15)
 			pr.pierce = def.get("pierce", 0)
+			if p.flags.has("ranged_build"):
+				pr.pierce += Content.RED_BUILD["ranged_pierce"]
+				pr.vel *= Content.RED_BUILD["ranged_speed"]
 			pr.bounce = def.get("bounce", 0) + (w["tier"] - 1 if w["id"] == "gendersternchen" else 0)
 			pr.boomerang = def.get("boomerang", false)
 			projectiles.append(pr)
@@ -980,7 +1141,9 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 					continue
 				var to: Vector2 = e.pos - p.pos
 				if def["arc"] >= 360.0 or absf(angle_difference(dir.angle(), to.angle())) <= half + 0.15:
-					_damage_enemy(e, dmg, p, crit, to.normalized(), def.get("knock", 0.0))
+					_damage_enemy(e, dmg, p, crit, to.normalized(), def.get("knock", 0.0), _wkey(w))
+					if def.has("stun") and not e.elite:
+						e.stun_t = maxf(e.stun_t, def["stun"])
 			_event(["swing", p.pos, dir.angle(), r, def["arc"], w["id"]])
 			_event(["sfx", "melee", p.pos])
 		"puddle":
@@ -990,11 +1153,132 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			h.radius = def["radius"]
 			h.life = def["life"]
 			h.max_life = h.life
-			h.dps = dmg
+			h.dps = dmg * (Content.RED_BUILD["status"] / Content.RED_BUILD["status_direct"] if p.flags.has("status_build") else 1.0)
 			h.slow = def["slow"]
 			h.owner = p.id
+			h.data = {"src": _wkey(w)}
 			hazards.append(h)
 			_event(["sfx", "shoot", p.pos])
+		"lob":
+			var at: Vector2 = target_pos if target_pos != Vector2.INF else p.pos + dir * def["range"]
+			var h := SimHazard.new()
+			h.type = Content.idx(Content.HAZARD_ORDER, "brei_marker")
+			h.pos = at
+			h.radius = def["radius"]
+			h.life = def["delay"]
+			h.max_life = def["delay"]
+			h.owner = p.id
+			h.data = {"dmg": dmg, "crit": crit, "src": _wkey(w)}
+			hazards.append(h)
+			var pr := SimProj.new()
+			pr.type = Content.idx(Content.PROJ_ORDER, def["proj"])
+			pr.pos = p.pos
+			pr.vel = (at - p.pos) / def["delay"]
+			pr.life = def["delay"]
+			pr.harmless = true
+			pr.owner = p.id
+			projectiles.append(pr)
+			_event(["sfx", "shoot", p.pos])
+		"wall":
+			var at: Vector2 = target_pos if target_pos != Vector2.INF else p.pos + dir * def["range"]
+			var wid := _wkey(w)
+			var old := hazards.filter(func(x): return x.data.get("src", "") == wid and x.type == Content.idx(Content.HAZARD_ORDER, "ziegel"))
+			var walls := {}
+			for x in old:
+				walls[x.data.get("wall", 0)] = true
+			if walls.size() >= int(def["max"]):
+				var oldest: int = walls.keys().min()
+				for x in old:
+					if x.data.get("wall", 0) == oldest:
+						x.alive = false
+			var wall_id := int(time * 1000.0)
+			var across := dir.orthogonal()
+			for k in 5:
+				var h := SimHazard.new()
+				h.type = Content.idx(Content.HAZARD_ORDER, "ziegel")
+				h.pos = at + across * (k - 2) * (def["width"] / 4.0)
+				h.radius = 20.0
+				h.life = def["life"]
+				h.max_life = def["life"]
+				h.dps = dmg * 2.0
+				h.slow = def["slow"]
+				h.owner = p.id
+				h.data = {"src": wid, "wall": wall_id}
+				hazards.append(h)
+			_event(["sfx", "melee", p.pos])
+		"mark":
+			var strongest := _pick_target(p.pos, _weapon_range(p, def), Target.MOST_HP)
+			if strongest:
+				var h := SimHazard.new()
+				h.type = Content.idx(Content.HAZARD_ORDER, "paragraf")
+				h.pos = strongest.pos
+				h.radius = strongest.radius + 10.0
+				h.life = def["delay"]
+				h.max_life = def["delay"]
+				h.owner = p.id
+				h.data = {"dmg": dmg, "crit": crit, "src": _wkey(w), "enemy": strongest.id}
+				hazards.append(h)
+				_event(["sfx", "vote", strongest.pos])
+		"chain":
+			var hit := {}
+			var cur := _nearest_enemy(p.pos, _weapon_range(p, def))
+			var pts := [p.pos]
+			var d := dmg
+			for k in int(def["jumps"]) + 1:
+				if cur == null:
+					break
+				hit[cur.id] = true
+				pts.append(cur.pos)
+				_damage_enemy(cur, d, p, crit, Vector2.ZERO, 0.0, _wkey(w))
+				d *= 1.0 - def["falloff"]
+				cur = _nearest_enemy(cur.pos, def["jump_range"], hit)
+			_event(["chain", pts])
+			_event(["sfx", "shoot", p.pos])
+		"beam":
+			var to: Vector2 = p.pos + dir * _weapon_range(p, def)
+			for e in _query((p.pos + to) * 0.5, _weapon_range(p, def) * 0.5 + def["width"]):
+				if e.behind and shot_blocked(p.pos, e.pos):
+					continue
+				var closest := Geometry2D.get_closest_point_to_segment(e.pos, p.pos, to)
+				if closest.distance_to(e.pos) <= def["width"] + e.radius:
+					_damage_enemy(e, dmg, p, crit, dir, 10.0, _wkey(w))
+					e.expose_t = def["expose"]
+			_event(["beam", p.pos, to])
+			_event(["sfx", "shoot", p.pos])
+		"fan":
+			var count: int = def["count_late"] if wave >= int(def["late_wave"]) else def["count"]
+			var half := deg_to_rad(def["arc"]) / 2.0
+			for k in count:
+				var a := dir.angle() - half + (2.0 * half) * k / maxf(1, count - 1)
+				var pr := SimProj.new()
+				pr.type = Content.idx(Content.PROJ_ORDER, def["proj"])
+				pr.pos = p.pos + Vector2.RIGHT.rotated(a) * 18.0
+				pr.vel = Vector2.RIGHT.rotated(a) * def["speed"]
+				pr.dmg = dmg
+				pr.crit = crit
+				pr.owner = p.id
+				pr.weapon = w["id"]
+				pr.source = _wkey(w)
+				pr.life = _weapon_range(p, def) / def["speed"]
+				projectiles.append(pr)
+			_event(["sfx", "shoot", p.pos])
+		"swarm":
+			var picked := {}
+			for k in int(def["count"]):
+				var t := _nearest_enemy(p.pos, _weapon_range(p, def), picked)
+				if t == null:
+					break
+				picked[t.id] = true
+				var s := SimSummon.new()
+				s.type = Content.idx(Content.SUMMON_ORDER, "overall")
+				s.pos = p.pos + Vector2.RIGHT.rotated(TAU * k / def["count"]) * 20.0
+				s.owner = p.id
+				s.life = 4.0
+				s.dmg = dmg
+				s.cd = float(t.id)          # target enemy id
+				s.source = _wkey(w)
+				summons.append(s)
+			_event(["sfx", "melee", p.pos])
 		"turret":
 			var mine := summons.filter(func(s): return s.owner == p.id and s.weapon_index == p.weapons.find(w))
 			if mine.size() >= def["max"]:
@@ -1005,9 +1289,12 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			s.owner = p.id
 			s.life = def["life"]
 			s.dmg = dmg
+			if p.flags.has("summon_build"):
+				s.life *= 2.0
 			s.reach = def["range"] + p.stats["range"]
 			s.fire_cd = def["fire_cd"] / maxf(0.2, 1.0 + p.stats["attack_speed"] / 100.0)
 			s.weapon_index = p.weapons.find(w)
+			s.source = _wkey(w)
 			summons.append(s)
 
 
@@ -1021,7 +1308,7 @@ func _step_orbit(p: SimPlayer, w: Dictionary, def: Dictionary, dt: float) -> voi
 			var key := "orb%d" % p.id
 			if e.hit_cd.get(key, 0.0) <= time:
 				e.hit_cd[key] = time + def["cd"]
-				_damage_enemy(e, dmg, p, _roll_crit(p), (e.pos - p.pos).normalized(), 50.0)
+				_damage_enemy(e, dmg, p, _roll_crit(p), (e.pos - p.pos).normalized(), 50.0, _wkey(w))
 		for pr in projectiles:
 			if pr.alive and pr.owner == 0 and not pr.harmless and pr.pos.distance_to(pt) < 24.0:
 				pr.alive = false
@@ -1080,7 +1367,7 @@ func _nearest_player(pos: Vector2, include_downed := false) -> SimPlayer:
 	var best: SimPlayer = null
 	var bd := INF
 	for p in players.values():
-		if p.state == 2 or (p.state == 1 and not include_downed):
+		if p.state == 2 or p.state == 3 or (p.state == 1 and not include_downed):
 			continue
 		var d: float = p.pos.distance_to(pos)
 		if d < bd:
@@ -1091,7 +1378,7 @@ func _nearest_player(pos: Vector2, include_downed := false) -> SimPlayer:
 
 # --- Damage to enemies -------------------------------------------------------
 
-func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kdir := Vector2.ZERO, knock := 0.0) -> void:
+func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kdir := Vector2.ZERO, knock := 0.0, source := "") -> void:
 	if not e.alive:
 		return
 	if src:
@@ -1102,6 +1389,14 @@ func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kd
 				amount *= 1.2
 	if e.vuln_t > 0.0:
 		amount *= Content.ULTS["fragen_sie_uns"]["vuln"]
+	if src and e.expose_t > 0.0 and not crit and rng.randf() * 100.0 < Content.WEAPONS["scheinwerfer"]["expose_crit"]:
+		crit = true
+		amount *= 1.5
+	if src and crit and src.flags.has("entlassung") and not e.elite and e.hp < e.max_hp * Content.RED_BUILD["entlassung_hp"]:
+		amount = maxf(amount, e.hp + e.shield)
+		_event(["say", e.pos, "SAY_ENTLASSEN", ""])
+	if src and src.flags.has("crit_build") and source.begins_with("w"):
+		amount *= Content.RED_BUILD["crit_extra"] if crit else Content.RED_BUILD["crit_other"]
 	if e.armored:
 		amount *= 0.7
 	if e.shield > 0.0:
@@ -1112,26 +1407,51 @@ func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kd
 			_event(["say", e.pos, "SAY_SHIELD_BROKEN", ""])
 		else:
 			amount = 0.0
+	var applied := clampf(amount, 0.0, maxf(0.0, e.hp))
 	e.hp -= amount
 	e.hit_flash = 0.1
 	if knock > 0.0 and not e.elite:
 		e.knock += kdir * knock * 4.0
 	if src:
 		src.damage += amount
+		_log_dmg(src, source, applied)
+		if crit:
+			src.log["crits"] += 1
 		if src.stats["lifesteal"] > 0.0 and src.lifesteal_cd <= 0.0 and rng.randf() * 100.0 < src.stats["lifesteal"] * 5.0:
-			src.hp = minf(src.stats["max_hp"], src.hp + 1.0)
+			_heal(src, Content.RED_BUILD["lifesteal_heal"] if src.flags.has("lifesteal_build") else 1.0, "lifesteal")
 			src.lifesteal_cd = 0.1
 	if _dmg_events < DMG_EVENTS_PER_FRAME and amount > 0.0:
 		_dmg_events += 1
 		_event(["dmg", e.pos, int(round(amount)), crit, false])
 	if e.hp <= 0.0:
+		_last_source = source
 		_kill_enemy(e, src)
+		_last_source = ""
 
 
 func _kill_enemy(e: SimEnemy, killer: SimPlayer) -> void:
 	e.alive = false
+	# Kompost: poison jumps to nearby enemies when a poisoned enemy dies.
+	var poisoner: SimPlayer = players.get(e.poison_src)
+	if e.poison_t > 0.0 and poisoner and poisoner.flags.has("status_build"):
+		for o in _query(e.pos, Content.RED_BUILD["status_spread"]):
+			if o != e and o.poison_t <= 0.0:
+				_apply_poison(o, e.poison, 3.0, e.poison_src)
+				o.poison_key = e.poison_key
 	if killer:
 		killer.kills += 1
+		# Doppelwumms: kills explode twice (the explosions themselves don't chain).
+		if killer.flags.has("doppelwumms") and _last_source != "wumms":
+			_wumms(killer, e.pos)
+			var h := SimHazard.new()
+			h.type = Content.idx(Content.HAZARD_ORDER, "explosion")
+			h.pos = e.pos
+			h.radius = Content.RED_BUILD["wumms_radius"]
+			h.life = Content.RED_BUILD["wumms_delay"]
+			h.max_life = h.life
+			h.owner = killer.id
+			h.data = {"wumms": true}
+			hazards.append(h)
 	if e.def["ai"] == "bomb" or e.no_reward:
 		_event(["kill", e.pos, e.type])
 		return
@@ -1203,6 +1523,61 @@ func _drop(type: int, pos: Vector2, value: int, life := -1.0) -> void:
 	k.value = value
 	k.life = life
 	pickups.append(k)
+
+
+# --- Run statistics --------------------------------------------------------------
+
+func _add_weapon(p: SimPlayer, id: String, tier: int) -> void:
+	var w := {"id": id, "tier": tier, "cd": 0.5, "angle": 0.0, "uid": p.next_wuid}
+	p.next_wuid += 1
+	p.weapons.append(w)
+	p.sources[_wkey(w)] = {"kind": "weapon", "id": id, "tier": tier, "sold": false}
+
+
+static func _wkey(w: Dictionary) -> String:
+	return "w%d" % int(w.get("uid", 0))
+
+
+func _log_dmg(p: SimPlayer, source: String, amount: float) -> void:
+	if amount <= 0.0:
+		return
+	var key := source if source != "" else "other"
+	if not p.sources.has(key):
+		p.sources[key] = {"kind": key, "id": key, "tier": 0, "sold": false}
+	p.dmg_total[key] = p.dmg_total.get(key, 0.0) + amount
+	p.dmg_wave[key] = p.dmg_wave.get(key, 0.0) + amount
+
+
+## Heals and records how much actually landed (no overheal).
+func _heal(p: SimPlayer, amount: float, kind: String) -> void:
+	var before := p.hp
+	p.hp = minf(p.stats["max_hp"], p.hp + amount)
+	p.log[kind] += p.hp - before
+
+
+func run_stats(p: SimPlayer) -> Dictionary:
+	var rows := []
+	for key in p.sources:
+		var info: Dictionary = p.sources[key]
+		rows.append({
+			"key": key, "kind": info["kind"], "id": info["id"], "tier": info["tier"], "sold": info["sold"],
+			"merged": info.get("merged", false),
+			"total": int(round(p.dmg_total.get(key, 0.0))), "wave": int(round(p.dmg_wave.get(key, 0.0))),
+		})
+	rows.sort_custom(func(a, b): return a["total"] > b["total"])
+	var out := p.log.duplicate()
+	for k in ["lifesteal", "regen", "dmg_taken", "dmg_blocked"]:
+		out[k] = int(round(out[k]))
+	out["damage"] = rows
+	out["kills"] = p.kills
+	return out
+
+
+func _wumms(p: SimPlayer, pos: Vector2) -> void:
+	var dmg: float = (10.0 + 2.0 * p.stats["ranged"]) * maxf(0.1, 1.0 + p.stats["damage"] / 100.0)
+	for o in _query(pos, Content.RED_BUILD["wumms_radius"]):
+		_damage_enemy(o, dmg, p, false, (o.pos - pos).normalized(), 60.0, "wumms")
+	_event(["sfx", "explosion", pos])
 
 
 func _give_pfand(p: SimPlayer, amount: int) -> void:
@@ -1292,6 +1667,7 @@ func _step_summons(dt: float) -> void:
 	var oma_t := Content.idx(Content.SUMMON_ORDER, "oma")
 	var info_t := Content.idx(Content.SUMMON_ORDER, "infostand")
 	var genosse_t := Content.idx(Content.SUMMON_ORDER, "genosse")
+	var overall_t := Content.idx(Content.SUMMON_ORDER, "overall")
 	for s in summons:
 		if not s.alive:
 			continue
@@ -1314,10 +1690,13 @@ func _step_summons(dt: float) -> void:
 					pr.dmg = s.dmg * _team_dmg()
 					pr.owner = s.owner
 					pr.weapon = "infostand"
+					pr.source = s.source
 					pr.life = s.reach / 520.0 * 1.2
 					projectiles.append(pr)
 		elif s.type == genosse_t:
 			_step_genosse(s, dt)
+		elif s.type == overall_t:
+			_step_overall(s, dt)
 		elif s.type == oma_t:
 			var lead := _nearest_player(s.pos)
 			if lead:
@@ -1358,7 +1737,7 @@ func _activate_ult(p: SimPlayer) -> void:
 				if e.behind and shot_blocked(p.pos, e.pos):
 					continue
 				e.stun_t = maxf(e.stun_t, u["stun"])
-				_damage_enemy(e, dmg, p, false, (e.pos - p.pos).normalized(), u["knock"])
+				_damage_enemy(e, dmg, p, false, (e.pos - p.pos).normalized(), u["knock"], "ult")
 		"urlaubsantrag":
 			p.ult_t = u["time"]
 			p.stunned = u["time"]
@@ -1377,6 +1756,7 @@ func _activate_ult(p: SimPlayer) -> void:
 				h.slow = u["slow"]
 				h.dps = u["dps"] * (1.0 + p.stats["status"] * 0.1) * power
 				h.owner = p.id
+				h.data = {"src": "ult"}
 				hazards.append(h)
 				x += u["spacing"]
 		"critical_mass":
@@ -1391,7 +1771,7 @@ func _activate_ult(p: SimPlayer) -> void:
 				s.pos = clamp_player(p.pos + Vector2.RIGHT.rotated(TAU * i / u["count"]) * 50.0)
 				s.owner = p.id
 				s.life = u["time"]
-				s.dmg = u["dmg"] * (1.0 + p.stats["summon"] * 0.1) * power
+				s.dmg = u["dmg"] * (1.0 + p.stats["summon"] * 0.1) * power * (Content.RED_BUILD["summon"] if p.flags.has("summon_build") else 1.0)
 				s.reach = u["radius"]
 				summons.append(s)
 		"kaffee_und_kuchen":
@@ -1410,6 +1790,7 @@ func _activate_ult(p: SimPlayer) -> void:
 				if e.alive and not e.behind and (e.def["faction"] in Content.SUIT_FACTIONS or e.tid == "sauerlaender"):
 					e.stun_t = maxf(e.stun_t, u["stun"])
 					e.vuln_t = u["vuln_time"]
+	p.log["ults"] += 1
 	_event(["ult", p.id, ult, p.pos])
 	_event(["sfx", "streik", p.pos])
 	meta_dirty = true
@@ -1424,7 +1805,26 @@ func _step_dash(p: SimPlayer, dt: float) -> void:
 	for e in _query(p.pos, Content.PLAYER_RADIUS + 10.0):
 		if e.hit_cd.get(key, 0.0) <= time:
 			e.hit_cd[key] = time + 1.0
-			_damage_enemy(e, dmg, p, false, p.dash_dir, 120.0)
+			_damage_enemy(e, dmg, p, false, p.dash_dir, 120.0, "ult")
+
+
+## Weißer Overall: runs to its assigned enemy, hits once, leaves.
+func _step_overall(s: SimSummon, dt: float) -> void:
+	var t: SimEnemy = null
+	for e in enemies:
+		if e.alive and e.id == int(s.cd):
+			t = e
+			break
+	if t == null:
+		t = _nearest_enemy(s.pos, 400.0)
+		if t == null:
+			s.alive = false
+			return
+		s.cd = float(t.id)
+	s.pos = s.pos.move_toward(t.pos, 340.0 * dt)
+	if s.pos.distance_to(t.pos) <= t.radius + 10.0:
+		_damage_enemy(t, s.dmg * _team_dmg(), players.get(s.owner), false, (t.pos - s.pos).normalized(), 80.0, s.source)
+		s.alive = false
 
 
 func _step_genosse(s: SimSummon, dt: float) -> void:
@@ -1438,7 +1838,7 @@ func _step_genosse(s: SimSummon, dt: float) -> void:
 	var owner: SimPlayer = players.get(s.owner)
 	for e in _query(s.pos, s.reach):
 		var away: Vector2 = (e.pos - s.pos).normalized()
-		_damage_enemy(e, s.dmg * _team_dmg(), owner, false, away, 90.0)
+		_damage_enemy(e, s.dmg * _team_dmg(), owner, false, away, 90.0, "ult")
 
 
 # --- Enemies -----------------------------------------------------------------
@@ -1480,6 +1880,7 @@ func _step_enemies(dt: float) -> void:
 			if e.slow_t <= 0.0:
 				e.slow = 0.0
 		e.vuln_t = maxf(0.0, e.vuln_t - dt)
+		e.expose_t = maxf(0.0, e.expose_t - dt)
 		if e.stun_t > 0.0:
 			e.stun_t -= dt
 			continue
@@ -1519,9 +1920,11 @@ func _step_enemies(dt: float) -> void:
 
 func _damage_poison(e: SimEnemy, amount: float) -> void:
 	var src: SimPlayer = players.get(e.poison_src)
+	var applied := clampf(amount, 0.0, maxf(0.0, e.hp))
 	e.hp -= amount
 	if src:
 		src.damage += amount
+		_log_dmg(src, e.poison_key, applied)
 	if e.hp <= 0.0:
 		_kill_enemy(e, src)
 
@@ -1549,6 +1952,8 @@ func _contact(e: SimEnemy) -> void:
 		if p.state == 0 and p.pos.distance_to(e.pos) < e.radius + Content.PLAYER_RADIUS:
 			if p.iframes <= 0.0:
 				damage_player(p, dmg)
+				if p.flags.has("fertigputz") and not e.elite:
+					e.knock += (e.pos - p.pos).normalized() * Content.RED_BUILD["fertigputz_knock"]
 				if e.def.has("push_up"):
 					p.knock = Vector2(0, -e.def["push_up"]) * 2.0
 
@@ -1808,7 +2213,7 @@ func _boss_phase(e: SimEnemy) -> void:
 		e.state = 0
 		var q := Quotes.random_for("boss_ruf:" + e.tid, rng)
 		if q != "":
-			_say_quote(e.pos, q)
+			shown_quotes[q] = true
 		meta_dirty = true
 
 
@@ -2034,17 +2439,18 @@ func _proj_hit_enemies(pr: SimProj) -> void:
 			continue
 		pr.hit_ids[e.id] = true
 		var def: Dictionary = Content.WEAPONS.get(pr.weapon, {})
-		_damage_enemy(e, pr.dmg, src, pr.crit, pr.vel.normalized(), 20.0)
+		_damage_enemy(e, pr.dmg, src, pr.crit, pr.vel.normalized(), 20.0, pr.source)
 		if def.has("poison") and src:
 			var tier := 1
 			for w in src.weapons:
 				if w["id"] == pr.weapon:
 					tier = w["tier"]
-			_apply_poison(e, def["poison"][tier - 1] * (1.0 + src.stats["status"] * 0.1), def["poison_time"], src.id)
+			_apply_poison(e, def["poison"][tier - 1] * (1.0 + src.stats["status"] * 0.1) * (Content.RED_BUILD["status"] if src.flags.has("status_build") else 1.0), def["poison_time"], src.id)
+			e.poison_key = pr.source
 		if def.has("splash"):
 			for o in _query(pr.pos, def["splash"]):
 				if o != e:
-					_damage_enemy(o, pr.dmg * 0.5, src)
+					_damage_enemy(o, pr.dmg * 0.5, src, false, Vector2.ZERO, 0.0, pr.source)
 				_apply_slow(o, def["slow"], def["slow_time"])
 			var h := SimHazard.new()
 			h.type = Content.idx(Content.HAZARD_ORDER, "farbklecks")
@@ -2078,6 +2484,9 @@ func _step_hazards(dt: float) -> void:
 	var t_miet := Content.idx(Content.HAZARD_ORDER, "mietzone")
 	var t_ker := Content.idx(Content.HAZARD_ORDER, "kerosin")
 	var t_lob := Content.idx(Content.HAZARD_ORDER, "lob_marker")
+	var t_brei := Content.idx(Content.HAZARD_ORDER, "brei_marker")
+	var t_ziegel := Content.idx(Content.HAZARD_ORDER, "ziegel")
+	var t_paragraf := Content.idx(Content.HAZARD_ORDER, "paragraf")
 	var t_sitz := Content.idx(Content.HAZARD_ORDER, "sitzblockade")
 	var t_absch := Content.idx(Content.HAZARD_ORDER, "abschiebezone")
 	var t_ring := Content.idx(Content.HAZARD_ORDER, "push_ring")
@@ -2098,6 +2507,7 @@ func _step_hazards(dt: float) -> void:
 				_apply_slow(e, h.slow, 0.3)
 				if not e.def.get("immune", false):
 					e.poison_src = h.owner
+					e.poison_key = h.data.get("src", "")
 					_damage_poison(e, h.dps * dt)
 		elif h.type == t_miet:
 			for p in players.values():
@@ -2117,6 +2527,41 @@ func _step_hazards(dt: float) -> void:
 					inside = p.pos.y < WALL_BOTTOM + 70.0
 				if inside and p.iframes <= 0.0:
 					damage_player(p, h.dps * 0.5)
+		elif h.type == t_brei and h.life <= 0.0:
+			var owner: SimPlayer = players.get(h.owner)
+			for e in _query(h.pos, h.radius):
+				_damage_enemy(e, h.data["dmg"], owner, h.data.get("crit", false), (e.pos - h.pos).normalized(), 40.0, h.data.get("src", ""))
+			var boom := SimHazard.new()
+			boom.type = Content.idx(Content.HAZARD_ORDER, "explosion")
+			boom.pos = h.pos
+			boom.radius = h.radius
+			boom.life = 0.4
+			boom.max_life = 0.4
+			hazards.append(boom)
+			_event(["sfx", "explosion", h.pos])
+		elif h.type == t_ziegel:
+			for e in _query(h.pos, h.radius):
+				_apply_slow(e, h.slow, 0.3)
+				e.poison_src = h.owner
+				e.poison_key = h.data.get("src", "")
+				_damage_poison(e, h.dps * dt)
+		elif h.type == t_paragraf:
+			var target: SimEnemy = null
+			for e in enemies:
+				if e.alive and e.id == int(h.data.get("enemy", -1)):
+					target = e
+					break
+			if target == null:
+				h.alive = false
+				continue
+			h.pos = target.pos
+			if h.life <= 0.0:
+				_damage_enemy(target, h.data["dmg"], players.get(h.owner), h.data.get("crit", false), Vector2.ZERO, 0.0, h.data.get("src", ""))
+				_event(["say", target.pos, "SAY_NICHTIG", ""])
+		elif h.data.get("wumms", false) and h.life <= 0.0:
+			var wp: SimPlayer = players.get(h.owner)
+			if wp:
+				_wumms(wp, h.pos)
 		elif h.type == t_lob and h.life <= 0.0:
 			_explode(h.pos, h.radius, h.data.get("dmg", 5.0))
 		elif h.type == t_sitz:
@@ -2171,6 +2616,7 @@ func _step_pickups(dt: float) -> void:
 			k.alive = false
 			if k.type == t_pfand or k.type == t_geld:
 				_give_pfand(best, k.value)
+				best.log["pfand_collected"] += k.value
 				_event(["sfx", "pickup", k.pos])
 			elif k.type == t_passant:
 				best.followers = mini(12, best.followers + 1)
@@ -2212,11 +2658,7 @@ func _step_say(dt: float) -> void:
 		var e: SimEnemy = enemies[rng.randi_range(0, enemies.size() - 1)]
 		if not e.alive or e.behind or e.elite:
 			continue
-		var quotes := Quotes.ids_for("sprechblase:" + e.tid)
 		var lines: Array = e.def.get("say", [])
-		if not quotes.is_empty() and (lines.is_empty() or rng.randf() < 0.5):
-			_say_quote(e.pos, quotes[rng.randi_range(0, quotes.size() - 1)])
-			return
 		if not lines.is_empty():
 			_event(["say", e.pos, lines[rng.randi_range(0, lines.size() - 1)], ""])
 			return
@@ -2281,12 +2723,9 @@ func _roll_offer(p: SimPlayer) -> Dictionary:
 		var d: Dictionary = Content.ITEMS[id]
 		if d.get("no_shop", false) or (d.get("coop_only", false) and num_players() <= 1):
 			continue
-		var w := 0.0
-		match int(d["rarity"]):
-			1: w = 10.0
-			2: w = 6.0 * (1.0 + luck / 200.0)
-			3: w = 3.0 * (1.0 + luck / 100.0)
-			_: w = 0.25
+		var w := 0.25 if d.get("hidden", false) else Content.rarity_weight(int(d["rarity"]), next_wave, luck)
+		if w <= 0.0:
+			continue
 		pool.append([id, w])
 		total_w += w
 	var r2 := rng.randf() * total_w
@@ -2296,7 +2735,8 @@ func _roll_offer(p: SimPlayer) -> Dictionary:
 		if r2 <= 0.0:
 			pick = entry[0]
 			break
-	return {"kind": "item", "id": pick, "tier": 1, "price": _price(Content.item_price(pick, next_wave)), "sold": false}
+	return {"kind": "item", "id": pick, "tier": 1, "rarity": int(Content.ITEMS[pick]["rarity"]),
+		"price": _price(Content.item_price(pick, next_wave)), "sold": false}
 
 
 func _price(base: int) -> int:
@@ -2330,7 +2770,7 @@ func _deny(p: SimPlayer, key: String) -> bool:
 ## Applies a request from a player (architecture §5). Returns true on success.
 func request(peer: int, action: String, arg = null) -> bool:
 	var p: SimPlayer = players.get(peer)
-	if p == null or p.state == 2:
+	if p == null or p.state == 2 or p.state == 3:
 		return false
 	if action == "ultimate":
 		if phase != Phase.WAVE or intro_wait or p.state != 0 or not p.ult_ready:
@@ -2369,18 +2809,27 @@ func request(peer: int, action: String, arg = null) -> bool:
 			var limit := _spend_limit(p)
 			if limit >= 0 and p.spent + o["price"] > limit:
 				return _deny(p, "DENY_SPEND_LIMIT")
+			if p.flags.has("coop_economy") and p.buys >= Content.RED_BUILD["coop_buys"]:
+				return _deny(p, "DENY_BUY_LIMIT")
 			if o["kind"] == "weapon":
-				if p.weapons.size() >= p.max_weapons:
+				var twin := find_twin(p, o["id"], o["tier"], -1)
+				if twin < 0 and p.weapons.size() >= p.max_weapons:
 					return _deny(p, "DENY_SLOTS_FULL")
-				p.weapons.append({"id": o["id"], "tier": o["tier"], "cd": 0.5, "angle": 0.0})
+				_add_weapon(p, o["id"], o["tier"])
 				p.bought_weapons += 1
+				if twin >= 0:
+					_combine(p, twin, p.weapons.size() - 1)
 			else:
 				p.items.append(o["id"])
+				if o["id"] == "maut_vertrag":
+					_give_pfand(p, Content.RED_BUILD["maut_now"])
 				if o["id"] == "vogelschiss":
 					_grant(p, "ach_vogelschiss")
 				_recompute(p)
 			p.pfand -= o["price"]
 			p.spent += o["price"]
+			p.buys += 1
+			p.log["pfand_spent"] += o["price"]
 			o["sold"] = true
 			_event(["sfx", "buy", Vector2.INF])
 			return true
@@ -2403,8 +2852,34 @@ func request(peer: int, action: String, arg = null) -> bool:
 				return _deny(p, "DENY_LAST_WEAPON")
 			var w: Dictionary = p.weapons[i]
 			p.pfand += Content.sell_price(w["id"], w["tier"], wave + 1)
+			if p.sources.has(_wkey(w)):
+				p.sources[_wkey(w)]["sold"] = true
 			p.weapons.remove_at(i)
 			summons = summons.filter(func(s): return not (s.owner == p.id and s.weapon_index == i))
+			return true
+		"combine":
+			var i := int(arg)
+			if i < 0 or i >= p.weapons.size():
+				return false
+			var j := find_twin(p, p.weapons[i]["id"], p.weapons[i]["tier"], i)
+			if j < 0:
+				return _deny(p, "DENY_NO_TWIN")
+			_combine(p, i, j)
+			return true
+		"discard_item":
+			# arg: {"id": item id, "count": n} (count < 0 = all of them). No refund.
+			var spec: Dictionary = arg if arg is Dictionary else {}
+			var id := str(spec.get("id", ""))
+			var count := int(spec.get("count", 1))
+			var removed := 0
+			for i in range(p.items.size() - 1, -1, -1):
+				if p.items[i] == id and (count < 0 or removed < count):
+					p.items.remove_at(i)
+					removed += 1
+			if removed == 0:
+				return false
+			_recompute(p)
+			_event(["sfx", "ui_click", Vector2.INF])
 			return true
 		"levelup":
 			var i := int(arg)
@@ -2448,8 +2923,8 @@ func request(peer: int, action: String, arg = null) -> bool:
 			_repair_one_hole()
 			return true
 		"vote":
-			var i := int(arg)
-			if vertrag["options"].is_empty() or i < 0 or i >= vertrag["options"].size():
+			var i := int(arg)   # -1 = abstain
+			if vertrag["options"].is_empty() or i < -1 or i >= vertrag["options"].size():
 				return false
 			vertrag["votes"][p.id] = i
 			_event(["sfx", "vote", Vector2.INF])
@@ -2464,6 +2939,8 @@ func request(peer: int, action: String, arg = null) -> bool:
 			_repair_one_hole()
 			return true
 		"ready":
+			if bool(arg) and not vertrag["options"].is_empty() and not vertrag["votes"].has(p.id):
+				return _deny(p, "DENY_VOTE_FIRST")
 			p.ready = bool(arg)
 			_check_all_ready()
 			return true
@@ -2483,6 +2960,29 @@ func kasse_repair_price() -> int:
 	return int(round(Content.repair_price(wave) * (1.0 - KASSE_REPAIR_DISCOUNT)))
 
 
+## Index of another weapon with the same id and tier (< 4) than `skip`, or -1.
+static func find_twin(p: SimPlayer, id: String, tier: int, skip: int) -> int:
+	if tier >= 4:
+		return -1
+	for i in p.weapons.size():
+		if i != skip and p.weapons[i]["id"] == id and int(p.weapons[i]["tier"]) == tier:
+			return i
+	return -1
+
+
+func _combine(p: SimPlayer, a: int, b: int) -> void:
+	var w: Dictionary = p.weapons[a]
+	for i in [maxi(a, b), mini(a, b)]:
+		var old: Dictionary = p.weapons[i]
+		if p.sources.has(_wkey(old)):
+			p.sources[_wkey(old)]["merged"] = true
+		summons = summons.filter(func(s): return s.source != _wkey(old))
+		p.weapons.remove_at(i)
+	_add_weapon(p, w["id"], int(w["tier"]) + 1)
+	_event(["combine", p.id, w["id"], int(w["tier"]) + 1])
+	_event(["sfx", "levelup", Vector2.INF])
+
+
 func _repair_one_hole() -> void:
 	for i in WALL_SEGMENTS:
 		if not wall[i]:
@@ -2494,8 +2994,11 @@ func _repair_one_hole() -> void:
 func _check_intro_done() -> void:
 	if not intro_wait:
 		return
+	# Away players don't block the boss intro; with nobody present it keeps waiting.
+	if _present_count() == 0:
+		return
 	for p in players.values():
-		if p.state != 2 and not intro_done.has(p.id):
+		if (p.state == 0 or p.state == 1) and not intro_done.has(p.id):
 			meta_dirty = true
 			return
 	intro_wait = false
@@ -2505,8 +3008,11 @@ func _check_intro_done() -> void:
 func _check_all_ready() -> void:
 	if phase != Phase.SHOP:
 		return
+	# Away players don't block the Späti; with nobody present it keeps waiting.
+	if _present_count() == 0:
+		return
 	for p in players.values():
-		if p.state != 2 and not p.ready:
+		if (p.state == 0 or p.state == 1) and not p.ready:
 			return
 	streik_discount = false
 	_begin_wave(wave + 1)
@@ -2521,15 +3027,16 @@ func build_meta() -> Dictionary:
 		for w in p.weapons:
 			weapons.append({"id": w["id"], "tier": w["tier"]})
 		pm[p.id] = {
-			"name": p.name, "char": p.char_id, "pfand": p.pfand, "alive": p.state == 0,
+			"name": p.name, "char": p.char_id, "pfand": p.pfand, "alive": p.state == 0, "away": p.state == 3,
 			"stats": p.stats.duplicate(), "weapons": weapons, "max_weapons": p.max_weapons,
 			"items": Array(p.items), "offers": p.offers.duplicate(true),
 			"reroll_price": Content.reroll_price(wave, p.rerolls_done), "free_rerolls": p.free_rerolls,
 			"spend_left": (_spend_limit(p) - p.spent) if _spend_limit(p) >= 0 else -1,
-			"levelups": p.levelups, "levelup_options": p.levelup_options.duplicate(true),
+			"levelups": p.levelups, "levelup_options": p.levelup_options.duplicate(true), "buys": p.buys,
 			"ready": p.ready, "paid_in": p.paid_in, "taken_out": p.taken_out,
 			"kills": p.kills, "damage": int(p.damage),
 			"ult": Content.CHARACTERS[p.char_id].get("ult", ""), "ult_ready": p.ult_ready,
+			"run_stats": run_stats(p),
 		}
 	return {
 		"wave": wave, "phase": phase, "org": org, "difficulty": difficulty, "blackrock": blackrock,

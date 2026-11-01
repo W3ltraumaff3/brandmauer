@@ -15,9 +15,38 @@ const WALL_SEGMENTS := 12
 const SEG_W := 1600.0 / 12.0
 const REVIVE_RANGE := 60.0
 
-enum { K_ENEMY = 1, K_PROJ, K_PICK, K_SUMMON, K_PLAYER, K_WEAPON, K_MISC, K_FOLLOWER }
+enum { K_ENEMY = 1, K_PROJ, K_PICK, K_SUMMON, K_PLAYER, K_WEAPON, K_MISC, K_FOLLOWER, K_BIKE, K_WHEEL, K_WALL }
 enum { M_BG, M_WALL, M_RUBBLE, M_URNE, M_BLADES, M_YACHT, M_SCHIRM, M_FLAG, M_CHALET, M_CIRCUS, M_SITTER,
-	M_LOUNGER, M_SHEET, M_STAMP, M_NOTE }
+	M_LOUNGER, M_SHEET, M_STAMP, M_NOTE, M_DESK, M_HIT, M_POTATO, M_ZIEGEL, M_ZIEGEL_V, M_DROP }
+
+## Friendly ink for our own ground markers (Kartoffelbrei target), so they never
+## read like the red enemy lob marker.
+const FRIEND := Color("2f8a5a")
+const MASH := Color("f3e2a0")
+## Ballpoint blue (Unterschriftenliste) and stamp red (Normenkontrolle).
+const BIC := Color("1f3a9a")
+const STAMP_RED := Color("c0262d")
+
+## Lastenrad (Long John) geometry, facing +x, ground at y = 22. The body mesh
+## (frame, box, rider) is baked in BIKE_FRAMES pedal phases; both wheels are
+## separate meshes so their spokes can roll with the distance travelled.
+const BIKE_FRAMES := 6
+const BIKE_GHOST := 8                  # type offset for the Critical Mass ghost riders
+const BIKE_RW := Vector2(-26, 13)
+const BIKE_RW_R := 9.0
+const BIKE_FW := Vector2(29, 16)
+const BIKE_FW_R := 6.0
+const BIKE_BB := Vector2(-9, 13)
+const BIKE_HIP := Vector2(-16, 0)
+const BIKE_GRIP := Vector2(1, -8.5)
+const BIKE_CRANK := 4.5
+const BIKE_BLUE := Color("2a8fbd")
+const WOOD := Color("c98f55")
+const GHOST_TINT := Color("bfe9cb")
+## Spray-painted tags on the Brandmauer: [segment, text, paint color, angle].
+## Language-neutral on purpose (no translation keys needed).
+const GRAFFITI := [[1, "FCK AfD", Color("f4f1e6"), -0.05], [5, "NO PASARAN", Color("f2c418"), 0.04],
+	[9, "FCK AfD", Color("ff8fc8"), 0.03]]
 
 const INK := Color("222222")
 const FACE := Color("f7e4cc")
@@ -57,6 +86,7 @@ var draw_usec := 0               # duration of the last _draw() in microseconds
 var anim_time := 0.0
 
 var _cache := {}
+var _tables := {}
 var _etop := PackedFloat32Array()
 var _boss_idx := {}
 var _prev := {}
@@ -76,6 +106,19 @@ var _eff_antrag := 0.0
 var antrag_vis := 0.0             # 0..1 paper storm visibility (public for the preview)
 var _p_prev := {}                 # player id -> last position (Critical Mass heading)
 var _p_heading := {}
+var _p_roll := {}                 # player id -> distance ridden (Lastenrad wheels + pedals)
+var _p_face := {}                 # player id -> facing (+1 / -1) of the Lastenrad
+var _p_speed := {}                # player id -> smoothed px per frame (Lastenrad speed lines)
+var _t_brei := -1                 # Kartoffelbrei projectile type (drawn on a lob arc)
+var _t_overall := -1
+var _s_prev := PackedVector2Array()   # summon positions last frame (Weißer Overall facing)
+var _s_face := PackedFloat32Array()
+var _brei_seen := {}              # Vector2i(target) -> anim_time a Kartoffelbrei marker was last seen
+var _ziegel := PackedInt32Array() # hazard indices of wall bricks, drawn in a y-sorted second pass
+
+## Lobby / Späti portraits (CharPortrait): baked player meshes, shared by all
+## portraits. Static so no WorldView has to live in the UI tree.
+static var _preview_cache := {}
 
 
 func _ready() -> void:
@@ -98,6 +141,8 @@ func _ready() -> void:
 	_t_startup = Content.ENEMY_ORDER.find("startup")
 	for id in ["stern", "flasche", "bierdeckel", "zirkusball", "farbe", "flugblatt"]:
 		_t_spin[Content.PROJ_ORDER.find(id)] = true
+	_t_brei = Content.PROJ_ORDER.find("kartoffelbrei")
+	_t_overall = Content.SUMMON_ORDER.find("overall")
 
 
 # --- Data access ----------------------------------------------------------------
@@ -213,6 +258,17 @@ func _mesh(kind: int, type: int, st: int, v: int, white := false) -> ArrayMesh:
 	return m
 
 
+## Per-stage lookup table for one mesh kind (index = type * VARIANTS + variant),
+## filled lazily by the hot loops. Skips key hashing and a call per entity.
+func _table(kind: int, count: int, st: int, white := false) -> Array:
+	var key := (kind * 8 + st) * 2 + (1 if white else 0)
+	var tab: Array = _tables.get(key, [])
+	if tab.is_empty():
+		tab.resize(count * Doodle.VARIANTS)
+		_tables[key] = tab
+	return tab
+
+
 ## A cached passer-by doodle (Fx: Flashmob crowd). Full colour, boils over time.
 func person_mesh(k: int) -> ArrayMesh:
 	return _mesh(K_FOLLOWER, posmod(k, 6), 4, Doodle.variant(k))
@@ -229,9 +285,53 @@ func prewarm(st: int) -> void:
 	for t in Content.PICKUP_ORDER.size():
 		for v in Doodle.VARIANTS:
 			_mesh(K_PICK, t, st, v)
+	for t in WALL_SEGMENTS:
+		for v in Doodle.VARIANTS:
+			_mesh(K_WALL, t, st, v)
+	# Lastenrad pedal phases + wheels, only when someone rides one
+	var vs := get_view()
+	var t_rad := Content.CHAR_ORDER.find("lastenrad")
+	if vs != null:
+		for p in vs.players:
+			if int(p.get("char", -1)) == t_rad:
+				for v in Doodle.VARIANTS:
+					_mesh(K_WHEEL, 0, st, v)
+					_mesh(K_WHEEL, 1, st, v)
+					for f in BIKE_FRAMES:
+						_mesh(K_BIKE, f, st, v)
+				break
 	for t in Content.SUMMON_ORDER.size():
 		for v in Doodle.VARIANTS:
 			_mesh(K_SUMMON, t, st, v)
+	# weapon-made ground pieces (Kartoffelbrei marker, Brandmauer-Ziegel)
+	for v in Doodle.VARIANTS:
+		_mesh(K_MISC, M_POTATO, st, v)
+		_mesh(K_MISC, M_ZIEGEL, st, v)
+		_mesh(K_MISC, M_ZIEGEL_V, st, v)
+	_mesh(K_MISC, M_DROP, st, 0)
+
+
+## A character exactly as drawn in the arena (GDD §6: lobby and Späti portraits),
+## baked once and shared. `grey` = fully desaturated (locked characters).
+## Feet are at about y = +22, the figure faces +x.
+static func character_preview(char_idx: int, stage: int, v := 0, grey := false) -> ArrayMesh:
+	var ci := clampi(char_idx, 0, Content.CHAR_ORDER.size() - 1)
+	var st := clampi(stage, 0, 4)
+	var key := ((ci * 8 + st) * 4 + posmod(v, Doodle.VARIANTS)) * 2 + (1 if grey else 0)
+	var m: ArrayMesh = _preview_cache.get(key)
+	if m != null:
+		return m
+	var wv := WorldView.new()
+	if grey:
+		var sk := Doodle.Sketch.new(K_PLAYER * 7919 + ci * 131 + posmod(v, Doodle.VARIANTS) * 977 + 7, st)
+		sk.amt = 1.0
+		wv._b_player(sk, Content.CHAR_ORDER[ci], st)
+		m = sk.build()
+	else:
+		m = wv._mesh(K_PLAYER, ci, st, posmod(v, Doodle.VARIANTS))
+	wv.free()
+	_preview_cache[key] = m
+	return m
 
 
 func _build(kind: int, type: int, st: int, v: int, white: bool) -> ArrayMesh:
@@ -253,14 +353,38 @@ func _build(kind: int, type: int, st: int, v: int, white: bool) -> ArrayMesh:
 			_b_follower(sk, type, st)
 		K_MISC:
 			_b_misc(sk, type)
+		K_BIKE:
+			if type >= BIKE_GHOST:
+				_ghostify(sk)
+			_b_bike(sk, st, type % BIKE_GHOST, type < BIKE_GHOST)
+		K_WHEEL:
+			if type >= 2:
+				_ghostify(sk)
+			if type % 2 == 0:
+				_b_wheel(sk, Vector2.ZERO, BIKE_RW_R)
+			else:
+				_b_wheel(sk, Vector2.ZERO, BIKE_FW_R)
+		K_WALL:
+			_b_wall(sk, type)
 	return sk.build()
+
+
+## Critical Mass ghost riders: a pale mint wash over every color.
+func _ghostify(sk: Doodle.Sketch) -> void:
+	sk.tint = GHOST_TINT
+	sk.tint_fill = 0.72
+	sk.tint_ink = 0.45
 
 
 # --- Ground, wall, circus ------------------------------------------------------
 
 func _draw_ground(vs: ViewState, st: int) -> void:
 	draw_rect(Rect2(-1400, -1200, ARENA.x + 2800, ARENA.y + 2400), Doodle.desat(DESK, st))
-	draw_rect(Rect2(10, 14, ARENA.x, ARENA.y), Color(0, 0, 0, 0.35))
+	draw_mesh(_mesh(K_MISC, M_DESK, st, 0), null)
+	# soft drop shadow of the paper sheet on the desk
+	for k in 3:
+		var o := 4.0 + k * 5.0
+		draw_rect(Rect2(o, o + 2.0, ARENA.x + 2.0 - k * 2.0, ARENA.y), Color(0, 0, 0, 0.16))
 	draw_mesh(_mesh(K_MISC, M_BG, st, 0), null)
 	var b := vs.boss
 	if not b.is_empty() and int(b.get("enc", -1)) == Content.ENCOUNTER_ORDER.find("sauerlaender") and int(b.get("phase", 0)) >= 2:
@@ -276,17 +400,33 @@ func _draw_wall(vs: ViewState, st: int) -> void:
 		var x := i * SEG_W
 		var v := Doodle.variant(i)
 		if vs.wall & (1 << i):
-			draw_mesh(_mesh(K_MISC, M_WALL, st, v), null, Transform2D(0.0, Vector2(x, 0)))
+			draw_mesh(_mesh(K_WALL, i, st, v), null, Transform2D(0.0, Vector2(x, 0)))
 		else:
 			draw_mesh(_mesh(K_MISC, M_RUBBLE, st, v), null, Transform2D(0.0, Vector2(x, 0)))
 			draw_set_transform(Vector2(x + SEG_W * 0.5, WALL_TOP + 17), -0.12 + 0.02 * Doodle.noise(v + i), Vector2.ONE)
 			Doodle.text(self, tr("HUD_WALL_ABGESTIMMT"), Vector2.ZERO, 17, red, _hand, 4)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
+	# spray-painted tags on intact segments (a little boil wobble in the angle)
+	for g in GRAFFITI:
+		var seg: int = g[0]
+		if not (vs.wall & (1 << seg)):
+			continue
+		var v := Doodle.variant(seg + 5)
+		var ang: float = g[3]
+		draw_set_transform(Vector2((seg + 0.5) * SEG_W, WALL_TOP + 20.0), ang + 0.012 * Doodle.noise(v * 3 + seg), Vector2.ONE)
+		var col: Color = g[2]
+		Doodle.text(self, g[1], Vector2.ZERO, 18, Doodle.desat(col, maxi(st, 1)), _hand, 4, Color(0.13, 0.1, 0.12, 0.9))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 # --- Hazards (immediate, few) ---------------------------------------------------
 
 func _draw_hazards(vs: ViewState, st: int) -> void:
+	_ziegel.clear()
+	if not _brei_seen.is_empty():
+		for key in _brei_seen.keys():
+			if anim_time - float(_brei_seen[key]) > 1.0:
+				_brei_seen.erase(key)
 	for i in vs.h_pos.size():
 		var id: String = Content.HAZARD_ORDER[vs.h_type[i]] if vs.h_type[i] < Content.HAZARD_ORDER.size() else ""
 		var pos := vs.h_pos[i]
@@ -333,7 +473,17 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 					var sp := pos + Vector2(cos(ang), sin(ang) * 0.8) * r * 0.62
 					draw_mesh(_mesh(K_MISC, M_SITTER, st, Doodle.variant(k)), null,
 						Transform2D(0.0, Vector2(-1.0 if k % 2 else 1.0, 1.0), 0.0, sp))
+			"brei_marker":
+				_draw_brei_marker(pos, r, life, st, v, amt)
+				_brei_seen[Vector2i(pos.round())] = anim_time
+			"ziegel":
+				_ziegel.append(i)
+			"paragraf":
+				_draw_paragraf(pos, r, life, amt)
 			"explosion":
+				if not _brei_seen.is_empty() and _brei_seen.has(Vector2i(pos.round())):
+					_draw_mash_splat(pos, r, life, v, i, amt)
+					continue
 				var k := 1.0 - life
 				var pts := PackedVector2Array()
 				for j in 16:
@@ -376,6 +526,101 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 					draw_circle(pos + Vector2(cos(ang), sin(ang)) * r * (0.9 + 0.1 * (k % 2)), 4.0 + k % 3, c)
 			_:
 				_dashed_circle(pos, r, Color(INK, 0.5), 2.0, 12)
+	if not _ziegel.is_empty():
+		_draw_ziegel(vs, st)
+
+
+# --- Weapon hazards (GDD §11 "New weapons") -------------------------------------------
+
+## Kartoffelbrei target: friendly green ring that fills with mash until impact,
+## a potato in the middle. Deliberately unlike the red enemy lob marker (X).
+func _draw_brei_marker(pos: Vector2, r: float, life: float, st: int, v: int, amt: float) -> void:
+	var k := clampf(1.0 - life, 0.0, 1.0)
+	var g := Doodle.desat_amt(FRIEND, amt)
+	draw_colored_polygon(Doodle.blob_pts(pos, maxf(4.0, r * k), v, 3, 0.08), Doodle.desat_amt(Color(MASH, 0.45), amt))
+	_dashed_circle(pos, r, Color(g, 0.85), 2.5, 16, -anim_time * 1.5)
+	draw_arc(pos, r + 6.0, -PI / 2, -PI / 2 + TAU * k, 32, Color(g, 0.9), 3.5)
+	var hop := absf(sin(anim_time * 9.0)) * 3.0 * (1.0 - k)
+	var sc := 1.0 + 0.25 * k
+	draw_mesh(_mesh(K_MISC, M_POTATO, st, v), null, Transform2D(sin(anim_time * 4.0) * 0.12, Vector2(sc, sc), 0.0, pos + Vector2(0, -hop)))
+
+
+## Kartoffelbrei impact: a lumpy mash splat with flying blobs (replaces the
+## orange explosion when it lands where a Kartoffelbrei marker just was).
+func _draw_mash_splat(pos: Vector2, r: float, life: float, v: int, i: int, amt: float) -> void:
+	var k := 1.0 - life
+	var a := clampf(life * 2.2, 0.0, 1.0)
+	var mash := Doodle.desat_amt(MASH, amt)
+	var pts := Doodle.blob_pts(pos, r * (0.45 + 0.4 * k), v, i + 11, 0.3)
+	draw_colored_polygon(pts, Color(mash, 0.92 * a))
+	draw_colored_polygon(Doodle.blob_pts(pos + Vector2(-4, -3), r * (0.22 + 0.15 * k), v, i + 5, 0.2), Color(1, 1, 0.92, 0.8 * a))
+	draw_polyline(Doodle.blob_pts(pos, r * (0.45 + 0.4 * k), v, i + 11, 0.3, true), Color(INK, 0.85 * a), 2.5)
+	# butter melting on top
+	var bp := pos + Vector2(6, -5)
+	draw_colored_polygon(PackedVector2Array([bp + Vector2(-5, -4), bp + Vector2(5, -5), bp + Vector2(6, 4), bp + Vector2(-5, 4)]),
+		Doodle.desat_amt(Color(1.0, 0.85, 0.25, a), amt))
+	# blobs flying outward
+	for j in 9:
+		var ang := TAU * j / 9.0 + i * 0.7
+		var d := Vector2(cos(ang), sin(ang) * 0.8)
+		var bpos := pos + d * r * (0.55 + 0.6 * k) + Vector2(0, -18.0 * sin(k * PI))
+		var br := (4.0 + 2.0 * (j % 3)) * (1.0 - 0.4 * k)
+		draw_circle(bpos, br, Color(mash, a))
+		draw_arc(bpos, br, 0, TAU, 8, Color(INK, 0.7 * a), 1.5)
+	# a bit of steam
+	for j in 3:
+		var sx := pos.x - 14.0 + j * 14.0
+		var y0 := pos.y - 14.0 - k * 20.0
+		draw_polyline(PackedVector2Array([Vector2(sx, y0), Vector2(sx + 4, y0 - 8), Vector2(sx - 2, y0 - 16), Vector2(sx + 3, y0 - 24)]),
+			Color(0.55, 0.52, 0.48, 0.5 * a), 2.0)
+
+
+## Normenkontrolle: a "§" stamp hovering over the marked enemy; the ring
+## around it runs down until the law is declared void.
+func _draw_paragraf(pos: Vector2, r: float, life: float, amt: float) -> void:
+	var red := Doodle.desat_amt(STAMP_RED, amt * 0.5)
+	_dashed_circle(pos, r, Color(red, 0.7), 2.5, 12, anim_time * 2.5)
+	var urgent := life < 0.3
+	var c := pos + Vector2(0, -maxf(54.0, r * 1.9) + sin(anim_time * 3.0) * 2.5)
+	var sc := 1.0 + (0.14 * absf(sin(anim_time * 18.0)) if urgent else 0.0)
+	draw_set_transform(c, -0.12 + (sin(anim_time * 40.0) * 0.06 if urgent else 0.0), Vector2(sc, sc))
+	draw_line(Vector2(0, 17), Vector2(0, maxf(54.0, r * 1.9) - r - 8.0), Color(red, 0.35), 1.5)
+	draw_circle(Vector2.ZERO, 16.0, Color(1.0, 0.98, 0.92))
+	draw_polyline(Doodle.circle_pts(Vector2.ZERO, 16.0, Doodle.frame % Doodle.VARIANTS), red, 2.5)
+	draw_arc(Vector2.ZERO, 12.5, 0, TAU, 20, Color(red, 0.45), 1.0)
+	draw_arc(Vector2.ZERO, 21.0, -PI / 2, -PI / 2 + TAU * clampf(life, 0.0, 1.0), 28, red, 4.0)
+	Doodle.text(self, "§", Vector2(0, 8), 24, red, _type)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+## Brandmauer-Ziegel: five brick blocks per wall, back to front so a wall that
+## runs down the screen overlaps correctly. Blocks rise out of the ground when
+## the wall is built and crumble (fade) at the end.
+func _draw_ziegel(vs: ViewState, st: int) -> void:
+	var n := _ziegel.size()
+	if n > 1:
+		var order := Array(_ziegel)
+		order.sort_custom(func(x, y): return vs.h_pos[x].y < vs.h_pos[y].y)
+		_ziegel = PackedInt32Array(order)
+	for idx in _ziegel:
+		var pos := vs.h_pos[idx]
+		# a wall running down the screen is seen end-on: brick tops, front only at the near end
+		var vertical := false
+		var best := 45.0 * 45.0
+		for j in _ziegel:
+			if j != idx:
+				var d := vs.h_pos[j] - pos
+				if d.length_squared() < best:
+					best = d.length_squared()
+					vertical = absf(d.y) > absf(d.x)
+		var life := vs.h_life[idx] if idx < vs.h_life.size() else 1.0
+		var rise := clampf((1.0 - life) / 0.06, 0.0, 1.0)
+		var a := clampf(life / 0.08, 0.0, 1.0)
+		var sy := rise * (1.0 + 0.12 * sin(rise * PI))
+		var v := Doodle.variant(idx)
+		var base := 17.5 if vertical else 6.0
+		draw_mesh(_mesh(K_MISC, M_ZIEGEL_V if vertical else M_ZIEGEL, st, v), null,
+			Transform2D(0.0, Vector2(1.0, sy), 0.0, pos + Vector2(0, base * (1.0 - sy))), Color(1, 1, 1, a))
 
 
 func _dashed_circle(c: Vector2, r: float, col: Color, w: float, n: int, rot := 0.0) -> void:
@@ -391,17 +636,27 @@ func _dashed_circle(c: Vector2, r: float, col: Color, w: float, n: int, rot := 0
 # --- Pickups / summons / projectiles ----------------------------------------------
 
 func _draw_pickups(vs: ViewState, st: int) -> void:
-	var t := anim_time
+	var t4 := anim_time * 4.0
+	var fr := Doodle.frame
+	var tab := _table(K_PICK, Content.PICKUP_ORDER.size(), st)
 	for i in vs.k_pos.size():
-		var ty: int = vs.k_type[i]
-		var v := Doodle.variant(i)
-		var bob := sin(t * 4.0 + i * 1.3) * 2.0
-		draw_mesh(_mesh(K_PICK, ty, st, v), null, Transform2D(0.0, vs.k_pos[i] + Vector2(0, bob)))
+		var idx: int = vs.k_type[i] * Doodle.VARIANTS + posmod(fr + i, Doodle.VARIANTS)
+		var m: ArrayMesh = tab[idx]
+		if m == null:
+			m = _mesh(K_PICK, vs.k_type[i], st, idx % Doodle.VARIANTS)
+			tab[idx] = m
+		# bob and breathe (bigger at the top of the bob) so pickups catch the eye
+		var bob := sin(t4 + i * 1.3) * 2.0
+		var sc := 1.0 - 0.035 * bob
+		draw_mesh(m, null, Transform2D(0.0, Vector2(sc, sc), 0.0, vs.k_pos[i] + Vector2(0, bob)))
 
 
 func _draw_summons(vs: ViewState, st: int) -> void:
 	var t_turb := Content.SUMMON_ORDER.find("turbine")
 	var t_gen := Content.SUMMON_ORDER.find("genosse")
+	var face := PackedFloat32Array()
+	face.resize(vs.s_pos.size())
+	face.fill(1.0)
 	for i in vs.s_pos.size():
 		var ty: int = vs.s_type[i]
 		if ty >= Content.SUMMON_ORDER.size():
@@ -423,20 +678,93 @@ func _draw_summons(vs: ViewState, st: int) -> void:
 					best = d
 					sx = -1.0 if _ppos[k].x > pos.x else 1.0
 			draw_polyline(Doodle.ellipse_pts(vs.s_pos[i] + Vector2(0, 19), 13, 4, v), Color(0.75, 0.12, 0.12, 0.5), 2.0)
+		elif ty == _t_overall:
+			# Weißer Overall: sprinting at the nearest enemy, little dust dashes behind
+			var ph := anim_time * 16.0 + i * 1.9
+			rot = sin(ph) * 0.09
+			pos.y -= absf(sin(ph)) * 4.0
+			# face where it runs (last frame's position at the same index)
+			sx = _s_face[i] if i < _s_face.size() else 1.0
+			if i < _s_prev.size():
+				var dx := vs.s_pos[i].x - _s_prev[i].x
+				if absf(dx) > 0.2 and absf(dx) < 40.0:
+					sx = signf(dx)
+			var dc := Color(0.35, 0.33, 0.3, 0.4)
+			for k in 3:
+				var y := vs.s_pos[i].y + 4.0 + k * 6.0
+				var x0 := vs.s_pos[i].x - sx * (14.0 + fmod(anim_time * 60.0 + k * 7.0, 10.0))
+				draw_line(Vector2(x0, y), Vector2(x0 - sx * (8.0 + k * 3.0), y), dc, 2.0)
 		draw_mesh(_mesh(K_SUMMON, ty, st, v), null, Transform2D(rot, Vector2(sx, 1.0), 0.0, pos))
+		if ty == _t_overall:
+			face[i] = sx
 		if ty == t_turb:
 			draw_mesh(_mesh(K_MISC, M_BLADES, st, v), null, Transform2D(anim_time * 2.2 + i, pos + Vector2(0, -78)))
+	_s_prev = vs.s_pos.duplicate()
+	_s_face = face
 
 
 func _draw_projectiles(vs: ViewState, st: int) -> void:
 	var n := vs.p_pos.size()
-	var t := anim_time
+	var t9 := anim_time * 9.0
+	var fr := Doodle.frame
+	var tab := _table(K_PROJ, Content.PROJ_ORDER.size(), st)
+	var na := vs.p_ang.size()
+	var brei_marks := PackedInt32Array()   # filled on the first Kartoffelbrei blob
 	for i in n:
 		var ty: int = vs.p_type[i]
-		var ang := vs.p_ang[i] if i < vs.p_ang.size() else 0.0
+		var ang := vs.p_ang[i] if i < na else 0.0
+		var pos := vs.p_pos[i]
 		if _t_spin.has(ty):
-			ang += t * 9.0 + i
-		draw_mesh(_mesh(K_PROJ, ty, st, Doodle.variant(i)), null, Transform2D(ang, vs.p_pos[i]))
+			ang += t9 + i
+		elif ty == _t_brei:
+			# Kartoffelbrei flies on a lob arc: shadow on the ground, blob above it
+			if brei_marks.is_empty():
+				brei_marks = _brei_marks(vs)
+			var h := _brei_height(vs, brei_marks, pos, ang)
+			var ss := 1.0 - h * 0.004
+			draw_mesh(_mesh(K_MISC, M_DROP, st, 0), null, Transform2D(0.0, Vector2(ss, ss), 0.0, pos + Vector2(0, 8)))
+			pos.y -= h
+			ang = sin(anim_time * 7.0 + i) * 0.25
+		var idx := ty * Doodle.VARIANTS + posmod(fr + i, Doodle.VARIANTS)
+		var m: ArrayMesh = tab[idx]
+		if m == null:
+			m = _mesh(K_PROJ, ty, st, idx % Doodle.VARIANTS)
+			tab[idx] = m
+		draw_mesh(m, null, Transform2D(ang, pos))
+
+
+## Hazard indices of all Kartoffelbrei target markers ([-1] when there are none,
+## so the caller doesn't search again this frame).
+func _brei_marks(vs: ViewState) -> PackedInt32Array:
+	var t_mark := Content.HAZARD_ORDER.find("brei_marker")
+	var out := PackedInt32Array()
+	for j in vs.h_type.size():
+		if vs.h_type[j] == t_mark:
+			out.append(j)
+	if out.is_empty():
+		out.append(-1)
+	return out
+
+
+## Height of a Kartoffelbrei blob above the ground: its target marker (the
+## brei_marker ahead of it along the flight direction) tells the flight progress.
+func _brei_height(vs: ViewState, marks: PackedInt32Array, pos: Vector2, ang: float) -> float:
+	var dir := Vector2(cos(ang), sin(ang))
+	var best := -1
+	var best_dot := 0.8
+	for j in marks:
+		if j < 0:
+			continue
+		var d := vs.h_pos[j] - pos
+		var l := d.length()
+		var dot := 1.0 if l < 4.0 else d.dot(dir) / l
+		if dot > best_dot:
+			best_dot = dot
+			best = j
+	if best < 0:
+		return 0.0
+	var k := 1.0 - (vs.h_life[best] if best < vs.h_life.size() else 1.0)
+	return sin(PI * clampf(k, 0.0, 1.0)) * 70.0
 
 
 # --- Enemies ----------------------------------------------------------------------
@@ -448,14 +776,26 @@ func _draw_enemies(vs: ViewState, st: int) -> void:
 	var new_prev := {}
 	var np := _ppos.size()
 	var excl := Color(0.85, 0.1, 0.1)
+	var fr := Doodle.frame
+	var nt := Content.ENEMY_ORDER.size()
+	var tab := _table(K_ENEMY, nt, st)
+	var tab_hit := _table(K_ENEMY, nt, st, true)
+	var nfl := vs.e_flags.size()
 	for i in n:
 		var ty: int = vs.e_type[i]
 		var pos := vs.e_pos[i]
-		var fl: int = vs.e_flags[i] if i < vs.e_flags.size() else 0
+		var fl: int = vs.e_flags[i] if i < nfl else 0
 		var id: int = vs.e_id[i] if has_ids else i
-		var v := Doodle.variant(id)
+		var v := posmod(fr + id, Doodle.VARIANTS)
 		var hit := (fl & ViewState.EF_HIT) != 0
-		var mesh := _mesh(K_ENEMY, ty, st, v, hit)
+		var idx := ty * Doodle.VARIANTS + v
+		var mesh: ArrayMesh = tab_hit[idx] if hit else tab[idx]
+		if mesh == null:
+			mesh = _mesh(K_ENEMY, ty, st, v, hit)
+			if hit:
+				tab_hit[idx] = mesh
+			else:
+				tab[idx] = mesh
 		var mod := Color.WHITE
 		if not hit:
 			if fl & ViewState.EF_POISONED:
@@ -500,10 +840,16 @@ func _draw_enemies(vs: ViewState, st: int) -> void:
 		if fl & ViewState.EF_BUFFED:
 			var rr := float(Content.ENEMIES[Content.ENEMY_ORDER[ty]]["radius"]) + 8.0
 			draw_polyline(Doodle.circle_pts(pos + Vector2(0, -rr * 0.3), rr, v), Color(0.9, 0.15, 0.1, 0.55), 4.0)
-		if fl & ViewState.EF_ELITE:
-			draw_mesh(mesh, null, Transform2D(rot, Vector2(sx * 1.09, 1.07), 0.0, at + Vector2(0, 1)), Color(0, 0, 0, 1))
-		draw_mesh(mesh, null, Transform2D(rot, Vector2(sx, 1.0), 0.0, at), mod)
 		var top := _etop[ty] if ty < _etop.size() else -30.0
+		var scl := Vector2(sx, 1.0)
+		if hit:
+			# hit flash: comic "POW" burst behind a white, squashed figure
+			var bs := clampf(-top / 30.0, 0.8, 2.6)
+			draw_mesh(_mesh(K_MISC, M_HIT, st, v), null, Transform2D(ph, Vector2(bs, bs), 0.0, at + Vector2(0, top * 0.45)))
+			scl = Vector2(sx * 1.1, 0.93)
+		if fl & ViewState.EF_ELITE:
+			draw_mesh(mesh, null, Transform2D(rot, scl * Vector2(1.09, 1.07), 0.0, at + Vector2(0, 1)), Color(0, 0, 0, 1))
+		draw_mesh(mesh, null, Transform2D(rot, scl, 0.0, at), mod)
 		if fl & ViewState.EF_WINDUP:
 			var p := at + Vector2(0, top - 6)
 			draw_line(p + Vector2(0, -16), p + Vector2(0, -5), excl, 4.0)
@@ -573,21 +919,38 @@ func _draw_players(vs: ViewState, st: int) -> void:
 			hd = hd.lerp((pos - prev).normalized(), 0.35).normalized()
 			_p_heading[pid] = hd
 		new_prev[pid] = pos
+		var bike := ci == t_rad
+		var face := sx
+		var roll := 0.0
+		if bike:
+			# the cargo bike faces where it rides (aim only until it first moves)
+			face = float(_p_face.get(pid, sx))
+			if absf(hd.x) > 0.25:
+				face = signf(hd.x)
+			_p_face[pid] = face
+			var moved := minf(pos.distance_to(prev), 24.0)
+			roll = float(_p_roll.get(pid, 0.0)) + moved
+			_p_roll[pid] = roll
+			_p_speed[pid] = lerpf(float(_p_speed.get(pid, 0.0)), moved, 0.25)
 		var ult := (flags & ViewState.PF_ULT) != 0 and state == 0
 		var lounging := ult and ci == t_sozial
-		if ult and ci == t_rad:
-			_draw_critical_mass(pos, hd, ci, st, v, pid)
+		if ult and bike:
+			_draw_critical_mass(pos, hd, st, v, pid, roll)
 		if _eff_tarif > 0.0 and state == 0:
 			_draw_tarif_glow(pos, pid)
 		# ground marker
 		var mc := Color(col, 0.75) if pid == me else Color(col, 0.45)
 		draw_polyline(Doodle.ellipse_pts(pos + Vector2(0, 22), 20, 7, v), mc, 3.0 if pid == me else 2.0)
-		if state == 1:
+		if state == 3:
+			# Away (connection lost, networking.md §7.4): frozen and greyed out.
+			draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(0.0, Vector2(face, 1), 0.0, pos), Color(0.55, 0.55, 0.55, 0.5))
+			Doodle.text(self, tr("HUD_AWAY_TAG"), pos + Vector2(0, -50), 18, Color(0.45, 0.45, 0.45, 0.5 + 0.4 * absf(sin(t * 3.0))), _hand, 4)
+		elif state == 1:
 			_dashed_circle(pos, REVIVE_RANGE, Color(col, 0.6), 2.5, 20, t * 0.8)
 			var prog: float = p.get("revive", -1.0)
 			if prog > 0.0:
 				draw_arc(pos, REVIVE_RANGE - 6.0, -PI / 2, -PI / 2 + TAU * prog, 32, Color(0.25, 0.7, 0.3), 6.0)
-			draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(PI / 2 * sx, pos + Vector2(0, 6)), Color(0.85, 0.85, 0.85))
+			draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(PI / 2 * face, pos + Vector2(0, 6)), Color(0.85, 0.85, 0.85))
 			var hp := pos + Vector2(0, -34 - absf(sin(t * 3.0)) * 6.0)
 			draw_rect(Rect2(hp - Vector2(3, 10), Vector2(6, 20)), Color(0.25, 0.7, 0.3))
 			draw_rect(Rect2(hp - Vector2(10, 3), Vector2(20, 6)), Color(0.25, 0.7, 0.3))
@@ -602,6 +965,12 @@ func _draw_players(vs: ViewState, st: int) -> void:
 				mod = Color(1, 1, 1, 0.45)
 			if lounging:
 				_draw_lounger(pos, sx, st, v, pid)
+			elif bike:
+				var spd := float(_p_speed.get(pid, 0.0))
+				if spd > 0.6 and not ult:
+					_draw_bike_lines(pos, face, clampf(spd / 4.0, 0.0, 1.0), pid)
+				_draw_bike(pos, face, roll, st, v, mod)
+				_draw_weapons(p.get("weapons", PackedByteArray()), pos, aim, st, v, 44.0)
 			else:
 				var bob := -absf(sin(t * 8.0 + pid)) * 2.0
 				draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(sin(t * 8.0 + pid) * 0.04, Vector2(sx, 1), 0.0, pos + Vector2(0, bob)), mod)
@@ -628,6 +997,11 @@ func _draw_players(vs: ViewState, st: int) -> void:
 	for k in _p_heading.keys():
 		if not new_prev.has(k):
 			_p_heading.erase(k)
+	for k in _p_roll.keys():
+		if not new_prev.has(k):
+			_p_roll.erase(k)
+			_p_face.erase(k)
+			_p_speed.erase(k)
 
 
 # --- Ultimates (architecture §9) ------------------------------------------------------
@@ -653,17 +1027,18 @@ func _draw_lounger(pos: Vector2, sx: float, st: int, v: int, pid: int) -> void:
 		draw_line(hp + Vector2(0, -r), hp + Vector2(0, r), Color(heal, a), 2.5)
 
 
-## Critical Mass: ghost bikes trailing behind, plus speed lines.
-func _draw_critical_mass(pos: Vector2, hd: Vector2, ci: int, st: int, v: int, pid: int) -> void:
+## Critical Mass: a pack of pale ghost cargo bikes riding behind (staggered in
+## two lanes, pedalling out of step), plus speed lines.
+func _draw_critical_mass(pos: Vector2, hd: Vector2, st: int, v: int, pid: int, roll: float) -> void:
 	var t := anim_time
 	var dir := hd.normalized() if hd.length_squared() > 0.01 else Vector2.RIGHT
-	var sx := -1.0 if dir.x < -0.05 else 1.0
+	var sx := float(_p_face.get(pid, -1.0 if dir.x < -0.05 else 1.0))
 	var nrm := dir.orthogonal()
-	var mesh := _mesh(K_PLAYER, ci, st, v)
 	for k in range(4, 0, -1):
-		var off := -dir * (34.0 * k) + nrm * sin(t * 9.0 + k * 1.3 + pid) * 5.0 * k * 0.5
-		var a := 0.5 - k * 0.1
-		draw_mesh(mesh, null, Transform2D(0.0, Vector2(sx, 1.0), 0.0, pos + off), Color(0.55, 0.95, 0.6, a))
+		var lane := (1.0 if k % 2 == 1 else -1.0) * 14.0
+		var off := -dir * (14.0 + 34.0 * k) + nrm * (lane + sin(t * 7.0 + k * 1.3 + pid) * 3.0)
+		var a := 1.18 - k * 0.18
+		_draw_bike(pos + off, sx, roll + k * 11.0, st, v + k, Color(1, 1, 1, a), true)
 	var lc := Color(0.25, 0.55, 0.3, 0.6)
 	for k in 6:
 		var lane := (float(k) - 2.5) * 9.0
@@ -671,6 +1046,29 @@ func _draw_critical_mass(pos: Vector2, hd: Vector2, ci: int, st: int, v: int, pi
 		var a0 := pos - dir * (30.0 + ph * 120.0) + nrm * lane
 		var a1 := a0 - dir * (24.0 + 16.0 * Doodle.noise(k))
 		draw_line(a0, a1, Color(lc, lc.a * (1.0 - ph)), 2.5)
+
+
+## Lastenrad: two rolling wheels plus the body baked in the current pedal phase.
+func _draw_bike(pos: Vector2, face: float, roll: float, st: int, v: int, mod: Color, ghost := false) -> void:
+	var crank := roll / 11.0
+	var fr := posmod(int(floor(crank / TAU * BIKE_FRAMES)), BIKE_FRAMES)
+	var g := 2 if ghost else 0
+	var vv := posmod(v, Doodle.VARIANTS)
+	var base := Transform2D(0.0, Vector2(face, 1.0), 0.0, pos)
+	draw_mesh(_mesh(K_WHEEL, g, st, vv), null, base * Transform2D(roll / BIKE_RW_R, BIKE_RW), mod)
+	draw_mesh(_mesh(K_WHEEL, 1 + g, st, vv), null, base * Transform2D(roll / BIKE_FW_R, BIKE_FW), mod)
+	draw_mesh(_mesh(K_BIKE, fr + (BIKE_GHOST if ghost else 0), st, vv), null, base, mod)
+
+
+## Three pencil speed dashes behind a moving Lastenrad (k = 0..1 strength).
+func _draw_bike_lines(pos: Vector2, face: float, k: float, pid: int) -> void:
+	var c := Color(0.2, 0.2, 0.25, 0.45 * k)
+	for i in 3:
+		var ph := fmod(anim_time * 4.0 + i * 0.33 + pid * 0.2, 1.0)
+		var y := -4.0 + i * 9.0
+		var x0 := -38.0 - ph * 10.0
+		var ln := (10.0 + 6.0 * Doodle.noise(i + pid)) * k
+		draw_line(pos + Vector2(x0 * face, y), pos + Vector2((x0 - ln) * face, y), Color(c, c.a * (1.0 - ph * 0.6)), 2.0)
 
 
 ## Tarifrunde: soft red union-vest glow behind a player.
@@ -762,7 +1160,7 @@ func _draw_followers(n: int, pos: Vector2, st: int, pid: int) -> void:
 			Transform2D(sin(t * 9.0 + k) * 0.06, Vector2(fs, 1), 0.0, fp + Vector2(0, -absf(sin(t * 9.0 + k)) * 2.0)))
 
 
-func _draw_weapons(wb, pos: Vector2, aim: float, st: int, v: int) -> void:
+func _draw_weapons(wb, pos: Vector2, aim: float, st: int, v: int, radius := 36.0) -> void:
 	if not (wb is PackedByteArray):
 		return
 	var n: int = wb.size()
@@ -775,7 +1173,7 @@ func _draw_weapons(wb, pos: Vector2, aim: float, st: int, v: int) -> void:
 			continue
 		var off := (float(i) - (n - 1) * 0.5) * 0.8
 		var a := aim + off
-		var wp := pos + Vector2(0, -8) + Vector2(cos(a), sin(a) * 0.85) * 36.0
+		var wp := pos + Vector2(0, -8) + Vector2(cos(a), sin(a) * 0.85) * radius
 		draw_mesh(_mesh(K_WEAPON, wi, st, v), null, Transform2D(aim, flip, 0.0, wp))
 
 
@@ -869,7 +1267,9 @@ func _person(sk: Doodle.Sketch, o: Dictionary) -> Dictionary:
 	var sh := y - 29.0 * k
 	# legs
 	var legs: String = o.get("legs", "stand")
-	if legs == "sit":
+	if legs == "none":
+		pass  # drawn by the caller (Lastenrad: pedalling legs)
+	elif legs == "sit":
 		sk.stroke(Vector2(x - 3 * s, hip), Vector2(x + 7 * s, hip + 2 * k), 3.4 * s, pants)
 		sk.stroke(Vector2(x + 7 * s, hip + 2 * k), Vector2(x + 6 * s, y), 3.4 * s, pants)
 		sk.line2(Vector2(x + 5 * s, y), Vector2(x + 10 * s, y), 3.0 * s, o.get("shoes", INK))
@@ -956,6 +1356,20 @@ func _person(sk: Doodle.Sketch, o: Dictionary) -> Dictionary:
 		"offer":
 			er = shr + Vector2(4 * s, 9 * k)
 			hrr = shr + Vector2(12 * s, 6 * k)
+		"bars", "bars_mug", "bars_fist":
+			# riding: far hand (and near hand unless busy) on the handlebar grip
+			var g: Vector2 = o.get("grip", Vector2(x + 14 * s, sh + 12 * k))
+			hl = g + Vector2(-1.5 * s, 0.4 * s)
+			el = shl.lerp(hl, 0.5) + Vector2(-0.5 * s, 3.5 * k)
+			if arms == "bars":
+				hrr = g
+				er = shr.lerp(g, 0.5) + Vector2(0, 3.5 * k)
+			elif arms == "bars_mug":
+				er = shr + Vector2(2 * s, 9 * k)
+				hrr = shr + Vector2(7 * s, 5 * k)
+			else:
+				hrr = shr + Vector2(3 * s, -16 * k)
+				fist = true
 	var aw := 3.2 * s
 	if el != Vector2.INF:
 		sk.stroke(shl, el, aw, sleeve)
@@ -1197,14 +1611,15 @@ func _face(sk: Doodle.Sketch, o: Dictionary, hc: Vector2, rx: float, ry: float, 
 		sk.dot(hc + Vector2(rx * 0.6 + fx, ry * 0.3), 1.4 * s, Color(0.95, 0.5, 0.5, 0.7))
 
 
-## Scribbled pencil shadow under feet.
+## Soft smudge shadow under feet with a light pencil scribble on top.
 func _shadow(sk: Doodle.Sketch, c: Vector2, w: float) -> void:
+	sk.soft_shadow(c, w * 0.6, maxf(3.0, w * 0.17))
 	var pts := PackedVector2Array()
-	var n := int(w / 4.0) + 2
+	var n := int(w / 5.0) + 2
 	for i in n:
-		var fx := -w * 0.5 + w * i / (n - 1)
-		pts.append(c + Vector2(fx, -2.0 if i % 2 == 0 else 2.0))
-	sk.line(pts, 1.2, Color(0.2, 0.2, 0.2, 0.35))
+		var fx := -w * 0.4 + w * 0.8 * i / (n - 1)
+		pts.append(c + Vector2(fx, -1.5 if i % 2 == 0 else 1.5))
+	sk.line(pts, 1.0, Color(0.2, 0.2, 0.2, 0.22))
 
 
 # --- Enemies -----------------------------------------------------------------------
@@ -1522,31 +1937,75 @@ func _b_proj(sk: Doodle.Sketch, id: String) -> void:
 			sk.circle(Vector2.ZERO, 7.0, Color("bfe3f2"), true, 1.8)
 			sk.line2(Vector2(-3.5, -1.5), Vector2(-0.5, -4.5), 1.4, WHITE)
 			sk.line2(Vector2(1, 3), Vector2(3.5, 0.5), 1.0, WHITE)
+		"kartoffelbrei":
+			# a lumpy dollop of mash with a butter flake and a wisp of steam (drawn upright)
+			var blob := PackedVector2Array()
+			for i in 12:
+				var a := TAU * i / 12.0
+				var rr := 8.5 + (1.6 if i % 3 == 0 else 0.0) + sk.rng.randf_range(-0.6, 0.6)
+				blob.append(Vector2(cos(a) * rr * 1.1, sin(a) * rr * 0.85))
+			sk.shape(blob, MASH, true, 1.7)
+			sk.fill(sk.ellipse_pts(Vector2(-2.5, -2.5), 4.5, 3.0, 8), Color(1, 1, 0.94), false)
+			sk.line(PackedVector2Array([Vector2(-6, 2), Vector2(-2, 3.5), Vector2(3, 2.5)]), 0.9, Color("c9b06a"))
+			sk.shape(PackedVector2Array([Vector2(2, -6), Vector2(6.5, -7), Vector2(7, -3.5), Vector2(2.5, -3)]), Color("f7d23a"), true, 0.9)
+			sk.line(PackedVector2Array([Vector2(-3, -10), Vector2(-1, -13), Vector2(-3.5, -16), Vector2(-1.5, -19)]), 1.1, Color(0.55, 0.55, 0.55, 0.7))
+			sk.line(PackedVector2Array([Vector2(3, -10), Vector2(5, -13), Vector2(2.5, -16)]), 1.0, Color(0.55, 0.55, 0.55, 0.6))
+		"ticket":
+			# 9-Euro-Ticket: small paper ticket, red stripe, punched hole, a few printed lines
+			var card := PackedVector2Array([Vector2(-8, -5), Vector2(8, -5), Vector2(8, 5), Vector2(-8, 5)])
+			sk.line(card, 3.6, WHITE, true)
+			sk.shape(card, Color("fbf6e6"), true, 1.3)
+			sk.fill(PackedVector2Array([Vector2(-7.4, -4.4), Vector2(-3, -4.4), Vector2(-3, 4.4), Vector2(-7.4, 4.4)]), Color("d8262e"), false)
+			sk.line2(Vector2(-5.2, -2.5), Vector2(-5.2, 2.5), 1.2, WHITE)
+			sk.line2(Vector2(-6.4, -1.0), Vector2(-4.2, -1.0), 1.0, WHITE)
+			sk.line2(Vector2(-1, -2.3), Vector2(6, -2.3), 0.8, INK)
+			sk.line2(Vector2(-1, 0.3), Vector2(4, 0.3), 0.8, INK)
+			sk.line2(Vector2(-1, 2.7), Vector2(5.5, 2.7), 0.8, Color("2e6db4"))
+			sk.dot(Vector2(6, 0.3), 1.0, Color(0.5, 0.45, 0.4))
 		_:
 			sk.circle(Vector2.ZERO, 5.0, RED)
 
 
 # --- Pickups ---------------------------------------------------------------------------
 
+## Pickups pop off the paper: a warm glow, a thin sparkle ring and (for the
+## simple shapes) a white sticker edge around the item.
+func _pickup_glow(sk: Doodle.Sketch, c: Vector2, r: float, col: Color) -> void:
+	for k in 2:
+		sk.fill(sk.ellipse_pts(c, r * (1.0 - 0.35 * k), r * (0.82 - 0.3 * k), 14), Color(col, 0.2), false)
+	var ring := sk.ellipse_pts(c, r * 1.02, r * 0.84, 16, 0.4, TAU * 0.3)
+	sk.line(ring, 1.1, Color(col.darkened(0.15), 0.55))
+	ring = sk.ellipse_pts(c, r * 1.02, r * 0.84, 16, PI + 0.4, TAU * 0.3)
+	sk.line(ring, 1.1, Color(col.darkened(0.15), 0.55))
+
+
 func _b_pickup(sk: Doodle.Sketch, id: String) -> void:
 	sk.lw = 1.6
 	match id:
 		"pfand":
+			_pickup_glow(sk, Vector2(0, 1), 13.0, Color("f2c418"))
 			_shadow(sk, Vector2(0, 9), 10)
-			sk.shape(PackedVector2Array([Vector2(-3.5, 8), Vector2(-3.5, -1), Vector2(-1.6, -4), Vector2(-1.6, -9),
-				Vector2(1.6, -9), Vector2(1.6, -4), Vector2(3.5, -1), Vector2(3.5, 8)]), Color("6a4a22"))
+			var bottle := PackedVector2Array([Vector2(-3.5, 8), Vector2(-3.5, -1), Vector2(-1.6, -4), Vector2(-1.6, -9),
+				Vector2(1.6, -9), Vector2(1.6, -4), Vector2(3.5, -1), Vector2(3.5, 8)])
+			sk.line(bottle, 4.6, WHITE, true)
+			sk.shape(bottle, Color("6a4a22"))
 			sk.fill(PackedVector2Array([Vector2(-3.2, 1), Vector2(3.2, 1), Vector2(3.2, 5), Vector2(-3.2, 5)]), Color("e8dfb8"), false)
-			sk.line2(Vector2(-2, -2), Vector2(-2, 6), 0.9, Color(1, 1, 1, 0.5))
+			sk.line2(Vector2(-2, -2), Vector2(-2, 6), 0.9, Color(1, 1, 1, 0.6))
 			sk.rect(Rect2(-1.8, -10.5, 3.6, 2), GOLD, true, 0.8)
 		"passant":
+			_pickup_glow(sk, Vector2(0, 0), 15.0, Color("6ccf8a"))
 			_b_follower_body(sk, 0, 2, 0.62, "wave", Vector2(0, 11))
 		"geldschein":
-			sk.shape(PackedVector2Array([Vector2(-10, -5), Vector2(10, -6), Vector2(11, 5), Vector2(-10, 6)]), Color("8fcf8a"))
+			_pickup_glow(sk, Vector2(0, 0), 15.0, Color("6ccf5a"))
+			var note := PackedVector2Array([Vector2(-10, -5), Vector2(10, -6), Vector2(11, 5), Vector2(-10, 6)])
+			sk.line(note, 4.6, WHITE, true)
+			sk.shape(note, Color("8fcf8a"))
 			sk.circle(Vector2(0, 0), 3.2, Color("d6f0c8"), true, 0.9)
 			sk.line2(Vector2(-1.6, -1), Vector2(1.4, -1.2), 0.8, INK)
 			sk.line2(Vector2(-1.6, 1), Vector2(1.4, 0.8), 0.8, INK)
 			sk.line(PackedVector2Array([Vector2(1.6, -2.4), Vector2(-1.2, -1.6), Vector2(-1.4, 1.6), Vector2(1.6, 2.4)]), 0.9)
 		"stulle":
+			_pickup_glow(sk, Vector2(0, -1), 15.0, Color("f08a24"))
 			_shadow(sk, Vector2(0, 7), 16)
 			sk.shape(PackedVector2Array([Vector2(-10, 4), Vector2(10, 4), Vector2(10, 1), Vector2(-10, 1)]), Color("d8a868"))
 			sk.line(PackedVector2Array([Vector2(-10, 0), Vector2(-6, -2), Vector2(-2, 0), Vector2(2, -2), Vector2(6, 0), Vector2(10, -2)]), 2.4, Color("5aa83a"))
@@ -1555,6 +2014,7 @@ func _b_pickup(sk: Doodle.Sketch, id: String) -> void:
 			sk.dot(Vector2(-3, -5.5), 0.7, Color("8a6030"))
 			sk.dot(Vector2(4, -6), 0.7, Color("8a6030"))
 		"reichsausweis":
+			_pickup_glow(sk, Vector2(0, 0), 13.0, Color("a8a090"))
 			sk.shape(PackedVector2Array([Vector2(-9, -6), Vector2(9, -6), Vector2(9, 6), Vector2(-9, 6)]), Color("b8a878"))
 			sk.rect(Rect2(-7, -4, 5, 7), Color("e8e0c8"), true, 0.8)
 			for i in 3:
@@ -1612,6 +2072,27 @@ func _b_summon(sk: Doodle.Sketch, id: String) -> void:
 					k.fill(f, Color("d63a2e"), false)
 					k.fill(PackedVector2Array([f[0], f[1], f[3]]), Color("26262b"), false)
 					k.line(f, 1.1, INK, true)})
+		"overall":
+			# Weißer Overall: friendly activist in a white overall with the hood up,
+			# face visible and smiling, sprinting forward (legs wide, arm reaching).
+			_shadow(sk, Vector2(0, 19), 20)
+			var suit := Color("f6f5ef")
+			_person(sk, {"x": 0.0, "y": 18.0, "s": 0.92, "body": suit, "pants": suit, "sleeve": suit,
+				"hair": "none", "hat": "hood", "hat_c": Color("ecebe4"), "eyes": "dots", "mouth": "grin", "blush": true,
+				"brows": "raised", "arms": "point", "lean": 3.2, "spread": 6.5, "wb": 6.8, "wt": 7.6,
+				"shoes": Color("3f8f4f"), "shoe_w": 4.0,
+				"deco": func(k: Doodle.Sketch, a: Dictionary):
+					var n: Vector2 = a["neck"]
+					var hp: Vector2 = a["hip"]
+					# zip, a colourful patch and a painted sun on the chest
+					k.line2(n + Vector2(0, 1), hp + Vector2(0.5, -1), 0.8, Color(0.6, 0.6, 0.62))
+					k.circle(a["chest"] + Vector2(-3.2, 1.0), 2.2, Color("f2c418"), true, 0.7)
+					k.line(PackedVector2Array([hp + Vector2(-6, -1), hp + Vector2(6, -1)]), 1.0, Color(0.72, 0.72, 0.7)),
+				"after": func(k: Doodle.Sketch, a: Dictionary):
+					var hl: Vector2 = a["hl"]
+					k.circle(hl, 2.0, Color("6ccf8a"), true, 0.8)
+					var hr: Vector2 = a["hr"]
+					k.circle(hr, 2.0, Color("6ccf8a"), true, 0.8)})
 		"turbine":
 			_shadow(sk, Vector2(0, 2), 30)
 			sk.shape(PackedVector2Array([Vector2(-5, 0), Vector2(5, 0), Vector2(2, -76), Vector2(-2, -76)]), WHITE)
@@ -1628,6 +2109,7 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 			sk.seg = 60.0
 			sk.misreg = 0.0
 			sk.fill(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), ARENA, Vector2(0, ARENA.y)]), PAPER, false)
+			_b_paper_grain(sk)
 			sk.fill(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), Vector2(ARENA.x, WALL_TOP), Vector2(0, WALL_TOP)]), Color("a89c84"), false)
 			var x := 40.0
 			while x < ARENA.x:
@@ -1647,9 +2129,10 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 				sk.line(sk.ellipse_pts(p, 6 + absf(Doodle.noise(i + 9)) * 6, 3, 6), 1.0, Color(0.2, 0.18, 0.12, 0.3), true)
 			sk.seg = 9.0
 			var faint := Color(0.25, 0.25, 0.3, 0.18)
-			sk.line(sk.ellipse_pts(Vector2(1380, 820), 46, 44, 20, 0.4, TAU * 0.85), 5.0, Color(0.55, 0.35, 0.15, 0.13))
-			sk.line(sk.ellipse_pts(Vector2(1384, 824), 40, 38, 18, 1.0, TAU * 0.7), 2.0, Color(0.55, 0.35, 0.15, 0.12))
-			sk.line(sk.ellipse_pts(Vector2(240, 300), 30, 28, 16, 2.0, TAU * 0.8), 4.0, Color(0.55, 0.35, 0.15, 0.1))
+			_coffee_stain(sk, Vector2(1380, 820), 45.0, 0.85)
+			_coffee_stain(sk, Vector2(240, 300), 29.0, 0.6)
+			_coffee_stain(sk, Vector2(1545, 150), 34.0, 0.7)
+			_margin_doodles(sk)
 			for p in [Vector2(520, 880), Vector2(1180, 230), Vector2(150, 640), Vector2(900, 520), Vector2(1500, 420)]:
 				sk.line(sk.star_pts(p, 12, 5, 5), 1.4, faint, true)
 			sk.line(PackedVector2Array([Vector2(700, 940), Vector2(760, 930), Vector2(820, 945), Vector2(880, 928)]), 1.6, faint)
@@ -1665,25 +2148,35 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 			sk.seg = 30.0
 			sk.line(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), ARENA, Vector2(0, ARENA.y)]), 4.0, INK, true)
 		M_WALL:
-			sk.jit = 0.6
-			var w := SEG_W
-			sk.rect(Rect2(0, WALL_TOP, w, WALL_BOTTOM - WALL_TOP), BRICK, false)
-			var rows := 3
-			var rh := (WALL_BOTTOM - WALL_TOP) / rows
-			for r in rows:
-				var yy := WALL_TOP + r * rh
-				if r > 0:
-					sk.line2(Vector2(0, yy), Vector2(w, yy), 1.2, Color("6a3a2a"))
-				var bx := -11.0 if r % 2 else 0.0
-				while bx < w:
-					if bx > 0.0:
-						sk.line2(Vector2(bx, yy), Vector2(bx, yy + rh), 1.2, Color("6a3a2a"))
-					if sk.rng.randf() < 0.3:
-						sk.fill(PackedVector2Array([Vector2(bx + 2, yy + 1.5), Vector2(bx + 20, yy + 1.5), Vector2(bx + 20, yy + rh - 1.5), Vector2(bx + 2, yy + rh - 1.5)]),
-							Color("c9785a") if sk.rng.randf() < 0.6 else Color("9a5040"), false)
-					bx += 22.0
-			sk.line(PackedVector2Array([Vector2(-1, WALL_TOP), Vector2(w + 1, WALL_TOP)]), 3.0)
-			sk.line(PackedVector2Array([Vector2(-1, WALL_BOTTOM), Vector2(w + 1, WALL_BOTTOM)]), 3.0)
+			_b_wall(sk, 0)
+		M_DESK:
+			# wood grain of the desk around the sheet (only the visible border band)
+			sk.misreg = 0.0
+			sk.seg = 40.0
+			sk.jit = 1.2
+			var grain := Color(DESK.darkened(0.3), 0.55)
+			var light := Color(DESK.lightened(0.12), 0.45)
+			var y := -260.0
+			var i := 0
+			while y < ARENA.y + 260.0:
+				var pts := PackedVector2Array()
+				var ph := Doodle.noise(i) * 3.0
+				var x := -300.0
+				while x <= ARENA.x + 300.0:
+					pts.append(Vector2(x, y + sin(x * 0.004 + ph) * 6.0 + sin(x * 0.013 + ph * 2.0) * 2.0))
+					x += 80.0
+				sk.line(pts, 1.4 if i % 3 else 2.2, grain if i % 2 == 0 else light)
+				y += 11.0 + absf(Doodle.noise(i + 40)) * 9.0
+				i += 1
+			for c in PackedVector2Array([Vector2(-120, -110), Vector2(1720, 300), Vector2(400, -130), Vector2(1200, 1120),
+					Vector2(-150, 820), Vector2(1750, -90)]):
+				sk.line(sk.ellipse_pts(c, 22, 7, 12), 1.6, grain, true)
+				sk.line(sk.ellipse_pts(c, 12, 3.5, 10), 1.2, grain, true)
+		M_HIT:
+			sk.lw = 1.6
+			sk.misreg = 0.0
+			sk.shape(sk.star_pts(Vector2.ZERO, 18.0, 9.5, 9, 0.2), Color("fff3a6"), true, 1.6)
+			sk.fill(sk.star_pts(Vector2.ZERO, 11.0, 6.0, 9, 0.5), Color(1.0, 0.62, 0.2, 0.75), false)
 		M_RUBBLE:
 			sk.jit = 0.8
 			var w := SEG_W
@@ -1801,6 +2294,380 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 			sk.shape(PackedVector2Array([Vector2(-23, -8), Vector2(23, -9), Vector2(24, 8), Vector2(-22, 9)]), Color("fffbe0"))
 			sk.line2(Vector2(-19, 6), Vector2(19, 5.5), 0.7, Color(0.75, 0.2, 0.2, 0.7))
 			sk.rect(Rect2(-25, -11, 5, 9), Color("a5abb3"), true, 0.8)
+		M_DROP:
+			# ground shadow under a flying Kartoffelbrei blob
+			sk.soft_shadow(Vector2.ZERO, 9.0, 3.5, 0.2)
+		M_POTATO:
+			# Kartoffelbrei target icon: one friendly potato with eyes (sprouts)
+			sk.lw = 1.6
+			sk.misreg = 0.5
+			var pot := PackedVector2Array()
+			for i in 14:
+				var a := TAU * i / 14.0
+				pot.append(Vector2(cos(a) * 11.0, sin(a) * 7.5 + sin(a * 2.0) * 0.8))
+			sk.shape(pot, Color("c9995a"), true, 1.6)
+			sk.fill(sk.ellipse_pts(Vector2(-3, -2.5), 5.0, 2.4, 8), Color("e2bf86"), false)
+			for d in [Vector2(-5, 2), Vector2(2, -1), Vector2(6, 3), Vector2(-1, 4)]:
+				sk.dot(d, 0.9, Color("6a4a22"))
+			sk.line(PackedVector2Array([Vector2(6, -6), Vector2(8, -10), Vector2(11, -11)]), 1.2, FRIEND)
+		M_ZIEGEL:
+			# Brandmauer-Ziegel block: brick front face in mortar, concrete coping on
+			# top; base at y = +6, 36 px wide so five blocks (35 px apart) form a wall.
+			sk.lw = 1.8
+			sk.misreg = 0.6
+			sk.soft_shadow(Vector2(0, 7), 22.0, 4.5, 0.18)
+			var mortar := Color("e3d6bf")
+			var front := PackedVector2Array([Vector2(-18, -14), Vector2(18, -14), Vector2(18, 6), Vector2(-18, 6)])
+			sk.fill(front, mortar, false)
+			var rows := [[-14.0, -7.4, 0.0], [-7.4, -0.8, 6.0], [-0.8, 5.6, 0.0]]
+			for row in rows:
+				var y0: float = row[0]
+				var y1: float = row[1]
+				var off: float = row[2]
+				var x := -18.0 - off
+				var bi := 0
+				while x < 18.0:
+					var xa := maxf(x, -18.0) + 0.8
+					var xb := minf(x + 12.0, 18.0) - 0.8
+					if xb - xa > 1.5:
+						var shade := BRICK.darkened(0.12) if (bi + int(off)) % 3 == 0 else (BRICK.lightened(0.08) if bi % 2 else BRICK)
+						sk.fill(PackedVector2Array([Vector2(xa, y0 + 0.8), Vector2(xb, y0 + 0.8), Vector2(xb, y1 - 0.6), Vector2(xa, y1 - 0.6)]), shade, false)
+					x += 12.0
+					bi += 1
+			sk.line(front, 1.8, INK, true)
+			var cap := PackedVector2Array([Vector2(-19.5, -14), Vector2(19.5, -14), Vector2(18, -19.5), Vector2(-18, -19.5)])
+			sk.shape(cap, Color("c4bcae"), true, 1.6)
+			sk.line2(Vector2(-14, -17), Vector2(10, -17.4), 0.8, Color(1, 1, 1, 0.5))
+		M_ZIEGEL_V:
+			# The same wall piece seen end-on (wall running down the screen): the
+			# brick tops along the wall, the brick end face at the near side. Ground
+			# footprint y = -17.5..17.5 (one 35 px step), so consecutive pieces join.
+			sk.lw = 1.8
+			sk.misreg = 0.6
+			sk.soft_shadow(Vector2(4, 4), 13.0, 18.0, 0.16)
+			var mortar := Color("e3d6bf")
+			var top := PackedVector2Array([Vector2(-8, -37.5), Vector2(8, -37.5), Vector2(8, -2.5), Vector2(-8, -2.5)])
+			sk.fill(top, mortar, false)
+			for col in 2:
+				var x0 := -8.0 + col * 8.0
+				var y := -37.5 - (5.5 if col == 1 else 0.0)
+				var bi := 0
+				while y < -2.5:
+					var ya := maxf(y, -37.5) + 0.8
+					var yb := minf(y + 11.0, -2.5) - 0.8
+					if yb - ya > 1.5:
+						var shade := BRICK.lightened(0.2) if (bi + col) % 3 else BRICK.lightened(0.08)
+						sk.fill(PackedVector2Array([Vector2(x0 + 0.8, ya), Vector2(x0 + 7.2, ya), Vector2(x0 + 7.2, yb), Vector2(x0 + 0.8, yb)]), shade, false)
+					y += 11.0
+					bi += 1
+			# shaded side and the end face
+			sk.fill(PackedVector2Array([Vector2(8, -37.5), Vector2(10.5, -35), Vector2(10.5, 17.5), Vector2(8, 17.5)]), BRICK.darkened(0.35), false)
+			var front := PackedVector2Array([Vector2(-8, -2.5), Vector2(8, -2.5), Vector2(8, 17.5), Vector2(-8, 17.5)])
+			sk.fill(front, mortar, false)
+			for row in 3:
+				var y0 := -2.5 + row * 6.6
+				var xs := [[-8.0, 8.0]] if row % 2 == 0 else [[-8.0, 0.0], [0.0, 8.0]]
+				for seg in xs:
+					var xa: float = seg[0] + 0.8
+					var xb: float = seg[1] - 0.8
+					sk.fill(PackedVector2Array([Vector2(xa, y0 + 0.8), Vector2(xb, y0 + 0.8), Vector2(xb, y0 + 6.0), Vector2(xa, y0 + 6.0)]),
+						BRICK if row != 1 else BRICK.darkened(0.1), false)
+			sk.line(PackedVector2Array([Vector2(-8, -2.5), Vector2(-8, -37.5), Vector2(8, -37.5), Vector2(10.5, -35), Vector2(10.5, 17.5),
+				Vector2(-8, 17.5), Vector2(-8, -2.5), Vector2(8, -2.5), Vector2(8, 17.5)]), 1.8, INK)
+			sk.line2(Vector2(8, -37.5), Vector2(8, -2.5), 1.2, INK)
+
+
+## Paper texture: aged edges, grain specks and fibres.
+## Everything is very low contrast so the play area stays calm.
+func _b_paper_grain(sk: Doodle.Sketch) -> void:
+	var rng := sk.rng
+	var w := ARENA.x
+	var h := ARENA.y
+	var e := Color(0.5, 0.4, 0.25, 0.11)
+	var z := Color(0.5, 0.4, 0.25, 0.0)
+	var d := 60.0
+	sk.grad_quad(Vector2(0, 0), Vector2(w, 0), Vector2(w, d), Vector2(0, d), e, z)
+	sk.grad_quad(Vector2(0, h), Vector2(w, h), Vector2(w, h - d), Vector2(0, h - d), e, z)
+	sk.grad_quad(Vector2(0, 0), Vector2(0, h), Vector2(d, h), Vector2(d, 0), e, z)
+	sk.grad_quad(Vector2(w, 0), Vector2(w, h), Vector2(w - d, h), Vector2(w - d, 0), e, z)
+	for i in 2200:
+		var p := Vector2(rng.randf() * w, WALL_BOTTOM + rng.randf() * (h - WALL_BOTTOM))
+		var r := rng.randf_range(0.5, 1.3)
+		var a := rng.randf_range(0.05, 0.13)
+		var c := Color(0.42, 0.35, 0.25, a) if i % 4 else Color(1, 1, 1, a * 2.5)
+		var ang := rng.randf() * TAU
+		sk.tri(p + Vector2(cos(ang), sin(ang)) * r, p + Vector2(cos(ang + 2.1), sin(ang + 2.1)) * r,
+			p + Vector2(cos(ang + 4.2), sin(ang + 4.2)) * r, sk.fc(c))
+	var old_seg := sk.seg
+	sk.seg = 30.0
+	for i in 70:
+		var p := Vector2(rng.randf() * w, WALL_BOTTOM + rng.randf() * (h - WALL_BOTTOM))
+		var a0 := rng.randf() * TAU
+		var dir := Vector2(cos(a0), sin(a0))
+		var ln := rng.randf_range(6, 16)
+		sk.line(PackedVector2Array([p, p + dir * ln * 0.5 + dir.orthogonal() * 1.5, p + dir * ln]), 0.7, Color(0.4, 0.33, 0.25, 0.1))
+	sk.seg = old_seg
+
+
+## Coffee ring: faint wash, uneven ring, an inner echo and a drip.
+func _coffee_stain(sk: Doodle.Sketch, c: Vector2, r: float, k: float) -> void:
+	var brown := Color(0.55, 0.35, 0.15)
+	sk.fill(sk.ellipse_pts(c, r * 0.97, r * 0.93, 22), Color(0.62, 0.44, 0.22, 0.045 * k), false)
+	sk.line(sk.ellipse_pts(c, r, r * 0.96, 22, 0.4, TAU * 0.86), 4.5 * k + 1.0, Color(brown, 0.13 * k))
+	sk.line(sk.ellipse_pts(c, r * 1.01, r * 0.97, 22, 3.6, TAU * 0.35), 1.6, Color(brown, 0.12 * k))
+	sk.line(sk.ellipse_pts(c + Vector2(2, 2), r * 0.88, r * 0.85, 20, 1.2, TAU * 0.55), 1.6, Color(brown, 0.1 * k))
+	sk.fill(sk.ellipse_pts(c + Vector2(r * 0.78, r * 0.72), 4.0, 3.0, 8), Color(brown, 0.12 * k), false)
+	sk.fill(sk.ellipse_pts(c + Vector2(r * 0.98, r * 0.86), 2.0, 1.6, 7), Color(brown, 0.12 * k), false)
+
+
+## Faint biro doodles in the margins (left margin and the bottom strip).
+func _margin_doodles(sk: Doodle.Sketch) -> void:
+	var pen := Color(0.22, 0.25, 0.42, 0.2)
+	# spiral
+	var sp := PackedVector2Array()
+	for i in 28:
+		var a := i * 0.55
+		sp.append(Vector2(36, 640) + Vector2(cos(a), sin(a)) * (1.0 + i * 0.5))
+	sk.line(sp, 1.3, pen)
+	# sun
+	sk.line(sk.ellipse_pts(Vector2(35, 200), 7, 7, 10), 1.3, pen, true)
+	for i in 8:
+		var d := Vector2(cos(TAU * i / 8.0), sin(TAU * i / 8.0))
+		sk.line2(Vector2(35, 200) + d * 10.0, Vector2(35, 200) + d * 15.0, 1.2, pen)
+	# peace sign
+	var pc := Vector2(36, 880)
+	sk.line(sk.ellipse_pts(pc, 10, 10, 12), 1.3, pen, true)
+	sk.line2(pc + Vector2(0, -10), pc + Vector2(0, 10), 1.2, pen)
+	sk.line2(pc, pc + Vector2(-7, 7), 1.2, pen)
+	sk.line2(pc, pc + Vector2(7, 7), 1.2, pen)
+	# tiny bike
+	var bc := Vector2(1440, 968)
+	sk.line(sk.ellipse_pts(bc + Vector2(-12, 0), 7, 7, 10), 1.2, pen, true)
+	sk.line(sk.ellipse_pts(bc + Vector2(12, 0), 7, 7, 10), 1.2, pen, true)
+	sk.line(PackedVector2Array([bc + Vector2(-12, 0), bc + Vector2(-2, 0), bc + Vector2(-6, -9), bc + Vector2(7, -9),
+		bc + Vector2(12, 0)]), 1.2, pen)
+	sk.line2(bc + Vector2(-2, 0), bc + Vector2(7, -9), 1.2, pen)
+	sk.line2(bc + Vector2(7, -9), bc + Vector2(6, -14), 1.2, pen)
+	# cube
+	var q := Vector2(230, 958)
+	sk.line(PackedVector2Array([q, q + Vector2(16, 0), q + Vector2(16, 16), q + Vector2(0, 16)]), 1.2, pen, true)
+	sk.line(PackedVector2Array([q, q + Vector2(7, -6), q + Vector2(23, -6), q + Vector2(16, 0)]), 1.2, pen)
+	sk.line(PackedVector2Array([q + Vector2(23, -6), q + Vector2(23, 10), q + Vector2(16, 16)]), 1.2, pen)
+	# hashtag + cloud
+	var hs := Vector2(600, 966)
+	sk.line2(hs + Vector2(-3, -8), hs + Vector2(-5, 8), 1.2, pen)
+	sk.line2(hs + Vector2(4, -8), hs + Vector2(2, 8), 1.2, pen)
+	sk.line2(hs + Vector2(-8, -3), hs + Vector2(8, -3), 1.2, pen)
+	sk.line2(hs + Vector2(-9, 3), hs + Vector2(7, 3), 1.2, pen)
+	var cl := Vector2(1180, 968)
+	sk.line(PackedVector2Array([cl + Vector2(-18, 6), cl + Vector2(-20, -2), cl + Vector2(-10, -6), cl + Vector2(-4, -13),
+		cl + Vector2(7, -10), cl + Vector2(12, -4), cl + Vector2(20, 0), cl + Vector2(16, 6)]), 1.2, pen, true)
+
+
+## One Brandmauer segment: concrete coping, staggered bricks in mortar,
+## occasional cracks and spray doodles, and a soft shadow on the paper below.
+func _b_wall(sk: Doodle.Sketch, seg: int) -> void:
+	sk.jit = 0.45
+	sk.misreg = 0.35
+	var w := SEG_W
+	sk.fill(PackedVector2Array([Vector2(0, WALL_TOP), Vector2(w, WALL_TOP), Vector2(w, WALL_BOTTOM), Vector2(0, WALL_BOTTOM)]),
+		Color("cdbd9f"), false)
+	var cap := 5.0
+	sk.fill(PackedVector2Array([Vector2(-1, WALL_TOP), Vector2(w + 1, WALL_TOP), Vector2(w + 1, WALL_TOP + cap), Vector2(-1, WALL_TOP + cap)]),
+		Color("a39e94"), false)
+	sk.line2(Vector2(0, WALL_TOP + cap), Vector2(w, WALL_TOP + cap), 1.0, Color(0.25, 0.22, 0.2, 0.6))
+	for x in [w * 0.33, w * 0.71]:
+		sk.line2(Vector2(x, WALL_TOP + 0.5), Vector2(x + 0.5, WALL_TOP + cap), 0.8, Color(0.3, 0.28, 0.25, 0.5))
+	var top := WALL_TOP + cap + 0.4
+	var rows := 3
+	var rh := (WALL_BOTTOM - top) / rows
+	var pal := [BRICK, Color("c27052"), Color("a35844"), Color("b8694c"), Color("9a5040"), Color("c9785a")]
+	for r in rows:
+		var yy := top + r * rh
+		var bx := -12.0 if (r + seg) % 2 else -1.0
+		while bx < w:
+			var x0 := maxf(bx + 0.9, 0.0)
+			var x1 := minf(bx + 21.1, w)
+			if x1 - x0 > 2.0:
+				var c: Color = pal[sk.rng.randi() % pal.size()]
+				sk.fill(PackedVector2Array([Vector2(x0, yy + 0.7), Vector2(x1, yy + 0.7), Vector2(x1, yy + rh - 0.5), Vector2(x0, yy + rh - 0.5)]), c)
+				if sk.rng.randf() < 0.55:
+					sk._seg(Vector2(x0 + 1.2, yy + 1.5), Vector2(x1 - 2.5, yy + 1.5), 0.8, sk.fc(c.lightened(0.2)))
+			bx += 22.0
+	if sk.rng.randf() < 0.5:
+		var cx := sk.rng.randf_range(20, w - 20)
+		sk.line(PackedVector2Array([Vector2(cx, top), Vector2(cx + 3, top + 6), Vector2(cx - 1, top + 11), Vector2(cx + 2, top + 17)]),
+			0.9, Color(0.2, 0.12, 0.1, 0.8))
+	match seg:
+		3:
+			var hc := Vector2(w * 0.5, 91)
+			sk.shape(PackedVector2Array([hc + Vector2(0, 7), hc + Vector2(-8, -1), hc + Vector2(-6, -6), hc + Vector2(-2, -6),
+				hc + Vector2(0, -3), hc + Vector2(2, -6), hc + Vector2(6, -6), hc + Vector2(8, -1)]), Color("ff6fa8"), true, 1.2)
+		7:
+			sk.shape(sk.star_pts(Vector2(w * 0.4, 91), 8.0, 3.6, 5), Color("f2c418"), true, 1.2)
+			sk.line(PackedVector2Array([Vector2(w * 0.55, 95), Vector2(w * 0.62, 87), Vector2(w * 0.68, 95), Vector2(w * 0.75, 87)]),
+				2.0, Color("7ad0f0"))
+		11:
+			sk.line(PackedVector2Array([Vector2(w * 0.3, 96), Vector2(w * 0.36, 86), Vector2(w * 0.42, 95), Vector2(w * 0.5, 85),
+				Vector2(w * 0.56, 96), Vector2(w * 0.66, 88)]), 2.2, Color("8fe08a"))
+	sk.line(PackedVector2Array([Vector2(-1, WALL_TOP), Vector2(w + 1, WALL_TOP)]), 3.0)
+	sk.line(PackedVector2Array([Vector2(-1, WALL_BOTTOM), Vector2(w + 1, WALL_BOTTOM)]), 3.0)
+	var sh := Color(0.2, 0.15, 0.1, 0.17)
+	sk.grad_quad(Vector2(0, WALL_BOTTOM + 1), Vector2(w, WALL_BOTTOM + 1), Vector2(w, WALL_BOTTOM + 14), Vector2(0, WALL_BOTTOM + 14),
+		sh, Color(sh, 0.0))
+
+
+# --- Lastenrad ---------------------------------------------------------------------------
+
+## A bike wheel centred at c: tyre, rim, spokes, hub (rotated as a whole when drawn).
+func _b_wheel(sk: Doodle.Sketch, c: Vector2, r: float) -> void:
+	var old_jit := sk.jit
+	sk.jit = 0.3
+	var n := 8 if r > 7.0 else 6
+	for i in n:
+		var a := TAU * i / n + 0.2
+		sk.line2(c, c + Vector2(cos(a), sin(a)) * (r - 1.6), 0.75, Color("5a5f68"))
+	sk.line(sk.ellipse_pts(c, r - 2.0, r - 2.0, 14), 0.9, Color("9aa0a8"), true)
+	sk.jit = 0.45
+	sk.line(sk.ellipse_pts(c, r, r, 16), 2.7, Color("232326"), true)
+	sk.circle(c, 1.6, Color("c0c4ca"), true, 0.9)
+	sk.jit = old_jit
+
+
+## Rider posture per Zusammenhalt stage: hunched with coffee, neutral, racing
+## tuck, cheerful, upright with a raised fist.
+func _bike_posture(st: int) -> Dictionary:
+	match st:
+		0: return {"lean": 4.5, "head_drop": 2.2, "arms": "bars_mug", "eyes": "tired", "mouth": "o", "brows": "worried"}
+		1: return {"lean": 3.0, "arms": "bars", "eyes": "roll", "mouth": "flat", "brows": ""}
+		2: return {"lean": 4.5, "head_drop": 0.8, "arms": "bars", "eyes": "angry", "mouth": "grit", "brows": "angry"}
+		3: return {"lean": 2.5, "arms": "bars", "eyes": "dots", "mouth": "smile", "brows": "thick"}
+		_: return {"lean": 0.5, "arms": "bars_fist", "eyes": "closed", "mouth": "grin", "brows": "raised"}
+
+
+func _bike_crank(sk: Doodle.Sketch, phi: float) -> Vector2:
+	var p := BIKE_BB + Vector2(cos(phi), sin(phi)) * BIKE_CRANK
+	sk.line2(BIKE_BB, p, 1.7, Color("3a3a40"))
+	sk.line2(p + Vector2(-1.9, 0), p + Vector2(1.9, 0), 2.1, INK)
+	return p
+
+
+## Two-bone leg from hip to pedal, knee bending forward.
+func _bike_leg(sk: Doodle.Sketch, hip: Vector2, foot: Vector2, pants: Color, shoe: Color) -> void:
+	var l1 := 9.0
+	var l2 := 9.6
+	var d := hip.distance_to(foot)
+	var dir := (foot - hip) / maxf(d, 0.001)
+	var dd := clampf(d, 2.0, l1 + l2 - 0.2)
+	var a := (l1 * l1 - l2 * l2 + dd * dd) / (2.0 * dd)
+	var h := sqrt(maxf(l1 * l1 - a * a, 0.0))
+	var knee := hip + dir * a + dir.orthogonal() * h
+	var f := hip + dir * dd
+	sk.stroke(hip, knee, 3.5, pants)
+	sk.stroke(knee, f, 3.1, pants)
+	sk.line2(f + Vector2(-1.8, 0.2), f + Vector2(3.4, 0.5), 2.9, shoe)
+
+
+## Wooden cargo box with a potted sunflower, a jute bag and a baguette;
+## from stage 3 a little banner is tied to its front.
+func _bike_box(sk: Doodle.Sketch, st: int) -> void:
+	var leaf := Color("4f9a3a")
+	sk.line2(Vector2(11, 4), Vector2(10, -12), 1.7, leaf)
+	sk.shape(PackedVector2Array([Vector2(10.5, -5), Vector2(4.5, -8.5), Vector2(6, -5.5), Vector2(10, -3.5)]), leaf, true, 1.0)
+	sk.shape(PackedVector2Array([Vector2(10.5, -8), Vector2(16, -11.5), Vector2(14.5, -8), Vector2(11, -6.5)]), leaf, true, 1.0)
+	sk.shape(sk.star_pts(Vector2(10, -15.5), 6.2, 3.6, 9, 0.1), Color("f2c418"), true, 1.1)
+	sk.circle(Vector2(10, -15.5), 2.5, Color("6a4022"), true, 0.8)
+	sk.stroke(Vector2(19.5, 3), Vector2(23.5, -9), 3.0, Color("e0b070"))
+	sk.line2(Vector2(21.6, -5.5), Vector2(23.2, -4.8), 0.7, Color("9a6a30"))
+	sk.line2(Vector2(22.4, -7.8), Vector2(24.0, -7.1), 0.7, Color("9a6a30"))
+	sk.line(PackedVector2Array([Vector2(14, -3), Vector2(15.5, -7.5), Vector2(18.5, -7.5), Vector2(20, -3.5)]), 1.0)
+	sk.shape(PackedVector2Array([Vector2(12.5, -3), Vector2(21, -4), Vector2(21.5, 4), Vector2(12, 4)]), Color("d8c79a"), true, 1.2)
+	var box := PackedVector2Array([Vector2(5.5, -1), Vector2(24.5, -2), Vector2(23.5, 15.5), Vector2(6.5, 15.5)])
+	sk.shape(box, WOOD, true, 1.9)
+	var plank := Color("8a5a35")
+	sk.line2(Vector2(6.5, 4.5), Vector2(24, 4), 0.9, plank)
+	sk.line2(Vector2(6.5, 10), Vector2(23.8, 9.8), 0.9, plank)
+	sk.line2(Vector2(8.5, -0.8), Vector2(9, 15), 1.1, plank)
+	sk.line2(Vector2(21.8, -1.6), Vector2(21.2, 15), 1.1, plank)
+	sk.line2(Vector2(5.2, -1.3), Vector2(24.8, -2.3), 2.0, Color("7a4a26"))
+	if st >= 3:
+		var ban := PackedVector2Array([Vector2(7.5, 2.2), Vector2(23, 1.6), Vector2(22.5, 10.5), Vector2(8, 11)])
+		sk.shape(ban, WHITE, true, 1.1)
+		sk.line(PackedVector2Array([Vector2(9.5, 5), Vector2(12, 4), Vector2(14.5, 5.5), Vector2(17, 4), Vector2(20.5, 5)]), 1.3, Color("3f8f4f"))
+		sk.line(PackedVector2Array([Vector2(10, 8.3), Vector2(15, 8), Vector2(19.5, 8.4)]), 1.0, Color("e8443a"))
+	else:
+		sk.circle(Vector2(15, 7), 2.8, Color("f2c418"), true, 0.8)
+		sk.dot(Vector2(15, 7), 1.1, Color("6a4022"))
+
+
+## The Lastenrad body for one pedal phase (wheels are drawn separately).
+## `full` adds the ground shadow (not on ghost riders).
+func _b_bike(sk: Doodle.Sketch, st: int, fr: int, full: bool) -> void:
+	var s := 0.95
+	var phi := TAU * float(fr) / BIKE_FRAMES
+	var pants := Color("3a4a3a")
+	var shoe := Color("6a4a2a")
+	var frame := BIKE_BLUE
+	var steel := Color("3a3a40")
+	sk.lw = 1.9
+	if full:
+		sk.soft_shadow(Vector2(1, 22), 40.0, 6.0)
+		sk.line(PackedVector2Array([Vector2(-26, 22), Vector2(-14, 23), Vector2(0, 21.5), Vector2(14, 23), Vector2(28, 22)]), 1.0,
+			Color(0.2, 0.2, 0.2, 0.2))
+	# far leg + crank behind the frame
+	var pf := _bike_crank(sk, phi + PI)
+	_bike_leg(sk, BIKE_HIP + Vector2(1.5, 0.5), pf, pants.darkened(0.35), shoe.darkened(0.3))
+	# mudguards
+	sk.line(sk.ellipse_pts(BIKE_RW, BIKE_RW_R + 2.3, BIKE_RW_R + 2.3, 12, PI * 1.02, PI * 0.72), 1.8, frame)
+	sk.line(sk.ellipse_pts(BIKE_FW, BIKE_FW_R + 2.0, BIKE_FW_R + 2.0, 10, PI * 1.35, PI * 0.6), 1.6, frame)
+	# frame
+	var seat := Vector2(-17, 2)
+	var ht_top := Vector2(3, -4)
+	var ht_bot := Vector2(5, 6)
+	var tw := 2.3
+	sk.stroke(BIKE_RW, BIKE_BB, tw, frame)
+	sk.stroke(BIKE_RW, seat + Vector2(1.5, 1.5), tw, frame)
+	sk.stroke(BIKE_BB, seat, tw, frame)
+	sk.stroke(seat + Vector2(1.5, 2.5), ht_top + Vector2(0.4, 3.0), tw, frame)
+	sk.stroke(BIKE_BB, ht_bot, tw + 0.4, frame)
+	sk.stroke(ht_bot, Vector2(8, 16.5), tw + 0.4, frame)
+	sk.stroke(Vector2(8, 16.5), BIKE_FW, tw + 0.4, frame)
+	# rear rack, chain, chainring, saddle
+	var rack := Color("6a6f78")
+	sk.line2(Vector2(-33, 2.5), Vector2(-20, 2.5), 1.2, rack)
+	sk.line2(Vector2(-32, 2.5), BIKE_RW + Vector2(-1, -1), 0.9, rack)
+	sk.line2(BIKE_BB + Vector2(0, -3), BIKE_RW + Vector2(0, -2), 0.8, Color("4a4a50"))
+	sk.line2(BIKE_BB + Vector2(0, 3), BIKE_RW + Vector2(0, 2), 0.8, Color("4a4a50"))
+	sk.circle(BIKE_BB, 3.2, Color("b8bec6"), true, 1.1)
+	sk.shape(PackedVector2Array([seat + Vector2(-4, -1.2), seat + Vector2(3, -1.6), seat + Vector2(3.5, 0), seat + Vector2(-3.5, 0.5)]),
+		Color("6a4028"), true, 1.0)
+	if st >= 4:
+		# pennant on a whippy pole from the rack
+		sk.line(PackedVector2Array([Vector2(-32, 2.5), Vector2(-34, -12), Vector2(-36.5, -27)]), 1.1, steel)
+		sk.shape(PackedVector2Array([Vector2(-36.5, -27), Vector2(-23, -23.5), Vector2(-35.5, -18.5)]), Color("6ccf5a"), true, 1.1)
+		sk.dot(Vector2(-32, -23), 1.4, Color("f2c418"))
+	_bike_box(sk, st)
+	# head tube, stem, handlebar, bell
+	sk.stroke(ht_bot, ht_top, tw + 0.6, frame)
+	sk.line2(ht_top, ht_top + Vector2(-0.5, -4.5), 1.8, steel)
+	sk.line2(ht_top + Vector2(-0.5, -4.5), BIKE_GRIP + Vector2(-1.5, 0), 2.0, steel)
+	sk.dot(ht_top + Vector2(1.0, -3.0), 1.4, GOLD)
+	# rider (legs drawn here, not by _person)
+	var o := {"x": BIKE_HIP.x, "y": BIKE_HIP.y + 12.0 * s, "s": s, "legs": "none", "body": Color("6aa84f"), "pants": pants,
+		"hair": "short", "hair_c": Color("c8a868"), "hat": "helmet", "hat_c": Color("2e6db4"), "wb": 5.8, "wt": 6.8,
+		"grip": BIKE_GRIP,
+		"deco": func(k: Doodle.Sketch, a: Dictionary):
+			var t: PackedVector2Array = a["torso"]
+			var y := lerpf(t[0].y, t[3].y, 0.45)
+			k.line2(Vector2(t[0].x + 0.5, y), Vector2(t[1].x - 0.5, y), 1.6, Color("f4f4b0"))
+			k.dot(a["chest"] + Vector2(2.5, -3.5), 1.3, Color("f2c418"))}
+	o.merge(_bike_posture(st), true)
+	var a := _person(sk, o)
+	if st == 0:
+		_stage_props(sk, a, 0, s)
+	# near leg + crank in front
+	var pn := _bike_crank(sk, phi)
+	_bike_leg(sk, BIKE_HIP, pn, pants, shoe)
 
 
 # --- Players ------------------------------------------------------------------------------
@@ -1835,6 +2702,12 @@ func _b_player(sk: Doodle.Sketch, id: String, st: int) -> void:
 	base.merge(post)
 	var s := 1.12
 	match id:
+		"lastenrad":
+			# static composite (downed / away / previews); riding uses K_BIKE + K_WHEEL
+			_b_wheel(sk, BIKE_RW, BIKE_RW_R)
+			_b_wheel(sk, BIKE_FW, BIKE_FW_R)
+			_b_bike(sk, st, 1, true)
+			return
 		"stadtbild":
 			var crowd := [
 				{"x": -11.0, "y": 13.0, "body": Color("3fa7a0"), "pants": Color("3fa7a0"), "hair": "ponytail", "hair_c": Color("2a1a14"),
@@ -1927,20 +2800,6 @@ func _b_player(sk: Doodle.Sketch, id: String, st: int) -> void:
 					k.line2(Vector2(t[0].x + 1, y1), Vector2(t[1].x - 1, y1), 2.2, Color("f4f4b0"))
 					k.line2(Vector2(t[0].x + 1, y2), Vector2(t[1].x - 1, y2), 2.2, Color("f4f4b0"))
 					k.line2(a["neck"], a["hip"], 1.0, INK)}, true)
-		"lastenrad":
-			sk.circle(Vector2(-16, 13), 9, Color(0, 0, 0, 0), true, 2.2)
-			sk.circle(Vector2(22, 15), 7, Color(0, 0, 0, 0), true, 2.2)
-			sk.line(PackedVector2Array([Vector2(-16, 13), Vector2(-4, 12), Vector2(-8, 0), Vector2(2, 0), Vector2(-4, 12)]), 2.0, Color("2e6db4"))
-			sk.line(PackedVector2Array([Vector2(2, 0), Vector2(8, 14), Vector2(22, 15)]), 2.0, Color("2e6db4"))
-			sk.rect(Rect2(8, -2, 24, 13), Color("6aa84f"), true, 2.0)
-			sk.line2(Vector2(14, -2), Vector2(14, 11), 1.0)
-			sk.line2(Vector2(26, -2), Vector2(26, 11), 1.0)
-			sk.line2(Vector2(-10, 0), Vector2(-5, 0), 3.0)
-			o.merge({"x": -6.0, "y": 8.0, "s": 1.0, "legs": "sit", "body": Color("6aa84f"), "pants": Color("3a4a3a"), "hair": "short",
-				"hair_c": Color("c8a868"), "hat": "helmet", "hat_c": Color("2e6db4")}, true)
-			s = 1.0
-			if o["arms"] == "down" or o["arms"] == "mug":
-				o["arms"] = "hold" if st != 0 else "mug"
 		"gewerkschaft":
 			o.merge({"body": Color("d63a2e"), "sleeve": WHITE, "pants": Color("3a3a48"), "hair": "short", "hair_c": Color("2a1a14"),
 				"hat": "cap", "hat_c": Color("d63a2e"), "mustache": Color("2a1a14"),
@@ -2111,5 +2970,80 @@ func _b_weapon(sk: Doodle.Sketch, id: String) -> void:
 			sk.rect(Rect2(-2.5, -9.5, 5, 3), Color("8a8f98"), true, 0.8)
 			for i in 3:
 				sk.line2(Vector2(-3, -3 + i * 3), Vector2(3, -3 + i * 3), 0.7)
+		"kartoffelbrei":
+			# bowl of mash with a wooden spoon in it
+			sk.line2(Vector2(-2, -1), Vector2(-10, -11), 2.2, Color("b07a40"))
+			sk.ellipse(Vector2(-10.5, -11.5), 2.0, 2.8, Color("b07a40"), true, 0.8)
+			sk.shape(sk.ellipse_pts(Vector2(0, -1), 8.0, 5.5, 10, PI, PI), MASH, true, 1.3)
+			sk.shape(PackedVector2Array([Vector2(-9, -1), Vector2(9, -1), Vector2(6, 6), Vector2(-6, 6)]), Color("4f86c6"), true, 1.5)
+			sk.line2(Vector2(-7, 1.5), Vector2(7, 1.5), 1.0, WHITE)
+			sk.shape(PackedVector2Array([Vector2(1, -5), Vector2(4, -5.5), Vector2(4.5, -3), Vector2(1.5, -2.8)]), Color("f7d23a"), true, 0.7)
+		"trillerpfeife":
+			# referee whistle on a lanyard
+			sk.line(PackedVector2Array([Vector2(-7, -2), Vector2(-11, -7), Vector2(-14, -2), Vector2(-11, 4), Vector2(-7, 2)]), 1.0, Color("2e6db4"))
+			sk.shape(PackedVector2Array([Vector2(-1, -2.5), Vector2(10, -2.5), Vector2(10, 1.5), Vector2(3, 1.5)]), Color("e8742a"), true, 1.3)
+			sk.circle(Vector2(-2, 1.5), 5.5, Color("e8742a"), true, 1.5)
+			sk.dot(Vector2(-2, 1.5), 1.6, INK)
+			sk.line2(Vector2(5, -2.5), Vector2(7, -0.5), 1.0, INK)
+			sk.circle(Vector2(-7.2, -1.5), 1.3, Color("c0c4ca"), true, 0.7)
+		"brandmauer_ziegel":
+			# one brick with a trowel
+			sk.shape(PackedVector2Array([Vector2(-9, -4), Vector2(7, -4), Vector2(7, 5), Vector2(-9, 5)]), BRICK, true, 1.5)
+			sk.shape(PackedVector2Array([Vector2(-9, -4), Vector2(7, -4), Vector2(10, -7), Vector2(-6, -7)]), BRICK.lightened(0.18), true, 1.2)
+			sk.shape(PackedVector2Array([Vector2(7, -4), Vector2(10, -7), Vector2(10, 2), Vector2(7, 5)]), BRICK.darkened(0.2), true, 1.2)
+			sk.line2(Vector2(-7, 0.5), Vector2(5, 0.5), 0.8, Color("e3d6bf"))
+			sk.shape(PackedVector2Array([Vector2(2, -9), Vector2(10, -13), Vector2(13, -9), Vector2(5, -6)]), Color("c0c4ca"), true, 1.0)
+			sk.line2(Vector2(10, -13), Vector2(13, -17), 1.8, Color("8a5a35"))
+		"normenkontrolle":
+			# rubber stamp, red ink, a little "§" scribble on its side
+			sk.shape(PackedVector2Array([Vector2(-8, 3), Vector2(8, 3), Vector2(8, 7), Vector2(-8, 7)]), STAMP_RED, true, 1.3)
+			sk.rect(Rect2(-6, -1, 12, 4), Color("8a5a35"), true, 1.2)
+			sk.stroke(Vector2(0, -1), Vector2(0, -7), 2.6, Color("8a5a35"))
+			sk.circle(Vector2(0, -9.5), 3.6, Color("a8703f"), true, 1.2)
+			sk.line(PackedVector2Array([Vector2(1.5, 0), Vector2(0, -0.6), Vector2(-1.2, 0.4), Vector2(1.2, 1.6), Vector2(0, 2.6), Vector2(-1.5, 2.0)]), 0.8, WHITE)
+		"unterschriftenliste":
+			# a signature sheet full of blue signatures and a ballpoint pen
+			sk.shape(PackedVector2Array([Vector2(-8, -9), Vector2(6, -10), Vector2(7, 9), Vector2(-7, 10)]), WHITE, true, 1.3)
+			for i in 4:
+				var y := -6.0 + i * 4.2
+				sk.line2(Vector2(-6, y + 1.2), Vector2(5, y + 1.0), 0.6, Color(0.6, 0.6, 0.65))
+				sk.line(PackedVector2Array([Vector2(-5, y + 1), Vector2(-3, y - 1), Vector2(-2, y + 1), Vector2(0, y - 0.8), Vector2(2.5, y + 0.6)]), 0.8, BIC)
+			sk.stroke(Vector2(2, 9), Vector2(12, -5), 2.4, BIC)
+			sk.line2(Vector2(1.5, 9.5), Vector2(0.6, 11.4), 1.0, INK)
+		"scheinwerfer":
+			# spotlight: dark drum, bright lens, a short light cone
+			sk.fill(PackedVector2Array([Vector2(8, -4), Vector2(15, -7), Vector2(15, 7), Vector2(8, 4)]), Color(1.0, 0.95, 0.6, 0.45), false)
+			sk.shape(PackedVector2Array([Vector2(-7, -5), Vector2(5, -6), Vector2(7, 0), Vector2(5, 6), Vector2(-7, 5)]), Color("3a3d45"), true, 1.5)
+			sk.ellipse(Vector2(6.5, 0), 2.3, 5.5, Color("fff6c2"), true, 1.2)
+			sk.line2(Vector2(-3.5, -5), Vector2(-3.5, 5), 0.8, Color(0.6, 0.62, 0.68))
+			sk.line2(Vector2(-5, 5), Vector2(-6, 9), 1.8, INK)
+			sk.line2(Vector2(-9, 9), Vector2(-3, 9), 1.8, INK)
+		"neun_euro_ticket":
+			# two fanned tickets
+			for k in 2:
+				var o := Vector2(-2.0 + k * 3.0, -2.0 + k * 3.5)
+				var rot := -0.25 + k * 0.3
+				var corners := [Vector2(-9, -5.5), Vector2(9, -5.5), Vector2(9, 5.5), Vector2(-9, 5.5)]
+				var card := PackedVector2Array()
+				for c in corners:
+					card.append(o + (c as Vector2).rotated(rot))
+				sk.shape(card, Color("fbf6e6"), true, 1.3)
+				var band := PackedVector2Array()
+				for c in [Vector2(-8.4, -4.9), Vector2(-3.5, -4.9), Vector2(-3.5, 4.9), Vector2(-8.4, 4.9)]:
+					band.append(o + (c as Vector2).rotated(rot))
+				sk.fill(band, Color("d8262e"), false)
+				sk.line2(o + Vector2(-1, -1.5).rotated(rot), o + Vector2(6, -1.5).rotated(rot), 0.8, INK)
+				sk.line2(o + Vector2(-1, 1.8).rotated(rot), o + Vector2(4, 1.8).rotated(rot), 0.8, Color("2e6db4"))
+		"weisser_overall":
+			# a white overall with hood, zip and green boots
+			var suit := PackedVector2Array([Vector2(-6, -7), Vector2(6, -7), Vector2(11, 2), Vector2(8, 3), Vector2(5, -2),
+				Vector2(5, 10), Vector2(1, 10), Vector2(0, 4), Vector2(-1, 10), Vector2(-5, 10), Vector2(-5, -2), Vector2(-8, 3),
+				Vector2(-11, 2)])
+			sk.shape(suit, Color("f6f5ef"), true, 1.4)
+			sk.shape(sk.ellipse_pts(Vector2(0, -9.5), 4.6, 4.0, 10), Color("ecebe4"), true, 1.2)
+			sk.ellipse(Vector2(0.6, -9.0), 2.6, 2.4, FACE, false)
+			sk.line2(Vector2(0, -6), Vector2(0, 4), 0.7, Color(0.55, 0.55, 0.58))
+			sk.line2(Vector2(-5.5, 10.5), Vector2(-1, 10.5), 2.0, Color("3f8f4f"))
+			sk.line2(Vector2(1, 10.5), Vector2(5.5, 10.5), 2.0, Color("3f8f4f"))
 		_:
 			sk.circle(Vector2.ZERO, 4, GOLD)

@@ -30,11 +30,11 @@ STAT_SPEED_DESC,"Lauftempo. Fährt sogar, wenn die Bahn nicht fährt. Pro Stufe 
 STAT_LUCK,Eltern
 STAT_LUCK_DESC,Glück. Bei manchen startet der Wert bei 9.000. Pro Stufe +6.
 STAT_INCOME,Nebenjob
-STAT_INCOME_DESC,"Du schiebst nach Feierabend noch eine Schicht: extra Pfand am Ende jeder Woche. Pro Stufe +2."
+STAT_INCOME_DESC,Du schiebst nach Feierabend noch eine Schicht: extra Pfand am Ende jeder Woche. Pro Stufe +2.
 STAT_PICKUP,Pfandradar
 STAT_PICKUP_DESC,Einsammelradius. Du hörst jede Flasche klirren. Pro Stufe +20.
 STAT_XP,Vernetzung
-STAT_XP_DESC,+8 % Zusammenhalt pro besiegter Gegner:in (Zusammenhalt = Erfahrung des ganzen Teams). Dafür gibt es sogar eine Signal-Gruppe.
+STAT_XP_DESC,"+8 % Zusammenhalt pro besiegter Gegner:in (Zusammenhalt = deine bzw. eure Erfahrung, wirkt auch solo). Dafür gibt es sogar eine Signal-Gruppe."
 CHAR_STADTBILD_NAME,Das Stadtbild
 CHAR_STADTBILD_DESC,"+2 Solidarität, startet mit dem Döner-Spieß. Wächst mit jeder Passant:in. Ohne uns steht hier alles still."
 CHAR_SOZIALTOURIST_NAME,Sozialtourist:in
@@ -313,3 +313,100 @@ ULT_KAFFEE_UND_KUCHEN_DESC,"Heilt das ganze Team voll, holt Gestürzte mit 50 % 
 ULT_FRAGEN_SIE_UNS_NAME,Fragen Sie mal uns
 ULT_FRAGEN_SIE_UNS_DESC,"Alle alten Männer in Anzügen (Union, Kapital, Sauerländer) sind 2 s lang sprachlos und nehmen 6 s lang doppelten Schaden. Wir hätten da ein paar Fragen."
 SUMMON_GENOSSE_NAME,Genoss:in
+ITEM_ISOMATTE_NAME,Isomatte
+ITEM_ISOMATTE_DESC,+1 Kündigungsschutz. Schon viele Mahnwachen überstanden.
+ITEM_CLUB_MATE_NAME,Club-Mate (eine Flasche)
+ITEM_CLUB_MATE_DESC,+6 Akkord. Koffein mit Haltung.
+ITEM_FAHRRADHELM_NAME,Fahrradhelm
+ITEM_FAHRRADHELM_DESC,"+4 Solidarität. Sieht doof aus, rettet Leben."
+ITEM_FRISBEE_NAME,Frisbee
+ITEM_FRISBEE_DESC,+2 Durchschlagskraft. Aus dem Park mitgenommen.
+ITEM_TASCHENLAMPE_NAME,Taschenlampe
+ITEM_TASCHENLAMPE_DESC,"+3 Direkte Aktion. Leuchtet dahin, wo es wehtut."
+ITEM_FLUGBLATT_STAPEL_NAME,Flugblatt-Stapel
+ITEM_FLUGBLATT_STAPEL_DESC,+2 Ehrenamt. Frisch aus dem Copyshop.
+ITEM_KIRSCHKERNKISSEN_NAME,Kirschkernkissen
+ITEM_KIRSCHKERNKISSEN_DESC,"+1 Krankenschein. Von Oma, mit Liebe gewärmt."
+ITEM_MEGAFON_AKKU_NAME,Megafon-Akku
+ITEM_MEGAFON_AKKU_DESC,"+5 Durchschlagskraft, −5 Akkord. Lauter, aber muss erst laden."
+ITEM_ARBEITSHANDSCHUHE_NAME,Arbeitshandschuhe
+ITEM_ARBEITSHANDSCHUHE_DESC,"+4 Handarbeit, +2 Kündigungsschutz. Für echte Maloche."
+ITEM_DEMOSANI_WESTE_NAME,Demosani-Weste
+ITEM_DEMOSANI_WESTE_DESC,"+3 Krankenschein, +5 Solidarität. Die Leute mit dem Pflaster."
+ITEM_PFANDRUCKSACK_NAME,Pfandrucksack
+ITEM_PFANDRUCKSACK_DESC,"+60 Pfandradar, +3 Nebenjob. Klirrt bei jedem Schritt."
+ITEM_PROTESTSCHILD_NAME,Protestschild
+ITEM_PROTESTSCHILD_DESC,"+10 Wut, +15 Reichweite, −5 Deutschlandticket. Pappe, aber laut."
+ITEM_KIEZKARTE_NAME,Kiezkarte
+ITEM_KIEZKARTE_DESC,"+8 Eltern, +8 Vernetzung. Du kennst jede:n im Viertel."
+ITEM_LASTENRAD_ANHAENGER_NAME,Lastenrad-Anhänger
+ITEM_LASTENRAD_ANHAENGER_DESC,"+1 Waffenplatz, −10 Deutschlandticket. Passt noch was rein."
+ITEM_TARIFVERTRAG_NAME,Tarifvertrag
+ITEM_TARIFVERTRAG_DESC,"+25 Wut, +5 Kündigungsschutz, −10 Akkord. Hart erkämpft, gut geschützt."
+ITEM_VOLKSKUECHE_NAME,Volksküche
+ITEM_VOLKSKUECHE_DESC,"+5 Krankenschein, +5 Umverteilung. Satt werden alle."
+ITEM_GENERALSCHLUESSEL_NAME,Generalschlüssel
+ITEM_GENERALSCHLUESSEL_DESC,"+20 Direkte Aktion, −10 Solidarität. Öffnet Türen. Auch fremde."
+ITEM_SOLI_KONZERT_NAME,Soli-Konzert
+ITEM_SOLI_KONZERT_DESC,"+30 Akkord, +10 Eltern, −8 Solidarität. Ohrenbetäubend solidarisch."
+ITEM_HAUSBESETZUNG_NAME,Hausbesetzung
+ITEM_HAUSBESETZUNG_DESC,"ROT · Nahkampf-Build: Nahkampfwaffen ×2 Schaden, alle anderen nur ×0,5. Die Häuser denen, die drin kämpfen."
+ITEM_WURFMASCHINE_NAME,Wurfmaschine
+ITEM_WURFMASCHINE_DESC,"ROT · Fernkampf-Build: Geschosse durchschlagen +1 Ziel und fliegen 50 % schneller, Nahkampf nur ×0,5."
+ITEM_GENOSSENSCHAFTSANTEIL_NAME,Genossenschaftsanteil
+ITEM_GENOSSENSCHAFTSANTEIL_DESC,"ROT · Spar-Build: Jede Woche +15 % deines Pfands (max. 50), aber nur 2 Käufe pro Späti-Besuch."
+ITEM_EHRENAMTSKARTE_NAME,Ehrenamtskarte
+ITEM_EHRENAMTSKARTE_DESC,"ROT · Helfer:innen-Build: Infostände und Genoss:innen ×2 Schaden und Dauer, eigene Waffen nur ×0,6."
+ITEM_KOMPOST_NAME,Kompost
+ITEM_KOMPOST_DESC,"ROT · Status-Build: Gift und Kleber ×2, Gift springt beim Tod auf Nachbar:innen über, direkter Schaden ×0,7."
+ITEM_KRITISCHE_MASSE_NAME,Kritische Masse
+ITEM_KRITISCHE_MASSE_DESC,"ROT · Krit-Build: Krits treffen ×1,5 härter, alle anderen Treffer nur ×0,7."
+ITEM_ROBIN_HOOD_NAME,Robin-Hood-Kostüm
+ITEM_ROBIN_HOOD_DESC,"ROT · Umverteilungs-Build: Umverteilung heilt ×3, dafür kein Krankenschein mehr."
+ITEM_TARNKAPPE_NAME,Tarnkappe
+ITEM_TARNKAPPE_DESC,"ROT · Ausweich-Build: Schwarzfahren bis 80 % statt 60 %, aber Kündigungsschutz fällt auf 0."
+RARITY_1,Grün
+RARITY_2,Blau
+RARITY_3,Lila
+RARITY_4,Rot
+WEAPON_KARTOFFELBREI_NAME,Kartoffelbrei
+WEAPON_KARTOFFELBREI_DESC,"Fernkampf · skaliert mit Durchschlagskraft. Großer Platscher nach 0,8 s. Bitte Abstand zu Gemälden halten."
+WEAPON_TRILLERPFEIFE_NAME,Trillerpfeife
+WEAPON_TRILLERPFEIFE_DESC,"Nahkampf · skaliert mit Handarbeit (0,6). Betäubt alles im Kreis 0,6 s. Ein Pfiff, und die Vorstände hören zu."
+WEAPON_BRANDMAUER_ZIEGEL_NAME,Brandmauer-Ziegel
+WEAPON_BRANDMAUER_ZIEGEL_DESC,"Gerät · skaliert mit Ehrenamt. Mauer quer zum Gegnerstrom, bremst 40 %, 6 s. Wenn die Politik sie einreißt, mauern wir nach."
+WEAPON_NORMENKONTROLLE_NAME,Normenkontrolle
+WEAPON_NORMENKONTROLLE_DESC,"Status · skaliert mit Zivilem Ungehorsam. Markiert die stärkste Gegner:in, nach 3 s: nichtig erklärt."
+WEAPON_UNTERSCHRIFTENLISTE_NAME,Unterschriftenliste
+WEAPON_UNTERSCHRIFTENLISTE_DESC,"Fernkampf · skaliert mit Durchschlagskraft (0,9). Springt auf 3 weitere Gegner:innen. Eine Million Unterschriften."
+WEAPON_SCHEINWERFER_NAME,Enthüllungs-Scheinwerfer
+WEAPON_SCHEINWERFER_DESC,Fernkampf · skaliert mit Durchschlagskraft. Strahl durch alles; Getroffene sind 5 s enthüllt (+15 % Krit).
+WEAPON_NEUN_EURO_TICKET_NAME,9-Euro-Ticket
+WEAPON_NEUN_EURO_TICKET_DESC,"Fernkampf · skaliert mit Durchschlagskraft (0,5). Fächer aus 9 Tickets, ab Woche 4 nur noch 5. Läuft halt aus."
+WEAPON_WEISSER_OVERALL_NAME,Weißer Overall
+WEAPON_WEISSER_OVERALL_DESC,Gerät · skaliert mit Ehrenamt. 3 Aktivist:innen stürmen je auf eine Gegner:in. Der Bagger steht still.
+SUMMON_OVERALL_NAME,Aktivist:in im Overall
+ITEM_ERINNERUNGSLUECKE_NAME,Erinnerungslücke
+ITEM_ERINNERUNGSLUECKE_DESC,"+15 Schwarzfahren, −10 Vernetzung. Treffer? Daran kann ich mich gerade nicht erinnern."
+ITEM_TREUHANDKONTO_NAME,Treuhandkonto (Philippinen)
+ITEM_TREUHANDKONTO_DESC,Am Wochenende 50 % Chance auf +30 Pfand (Eltern erhöht sie). Die Prüfer:innen haben nie nachgesehen.
+ITEM_AUFHOEREN_ZU_PRODUZIEREN_NAME,Aufhören zu produzieren
+ITEM_AUFHOEREN_ZU_PRODUZIEREN_DESC,"2 s stillstehen: +8 Krankenschein, +10 Kündigungsschutz. Nicht pleite, nur gerade nicht am Verkaufen."
+ITEM_WAHLVERSPRECHEN_NAME,Wahlversprechen
+ITEM_WAHLVERSPRECHEN_DESC,"Die ersten 10 s jeder Woche +40 Wut, danach −10. Hält exakt bis zum Wahlabend."
+ITEM_MAUT_VERTRAG_NAME,Maut-Vertrag
+ITEM_MAUT_VERTRAG_DESC,"Sofort +60 Pfand, danach jede Woche −8 Pfand Schadenersatz. Unterschrieben vor dem Urteil."
+ITEM_BER_EROEFFNUNGSTERMIN_NAME,BER-Eröffnungstermin
+ITEM_BER_EROEFFNUNGSTERMIN_DESC,"Bis Woche 9: −10 Wut. Ab Woche 10: +40 Wut, +20 Akkord. Wird in Kürze verschoben."
+ITEM_PUMA_NAME,Puma-Schützenpanzer
+ITEM_PUMA_DESC,"+25 Durchschlagskraft, +10 Kündigungsschutz. Alle 18 s fallen alle Waffen 3 s aus. Alle 18 fielen aus."
+ITEM_ZWEITER_WAHLGANG_NAME,Zweiter Wahlgang
+ITEM_ZWEITER_WAHLGANG_DESC,Einmal pro Run: statt umzufallen mit 50 % Solidarität weiter. −10 Wut. Im zweiten Anlauf reicht's. Knapp.
+ITEM_CUMEX_ERSTATTUNG_NAME,Cum-Ex-Erstattung
+ITEM_CUMEX_ERSTATTUNG_DESC,"ROT · Spar-Build: Ungenutztes Pfand wird am Wochenende nochmal erstattet (max. +40). Nach Woche 15: Betriebsprüfung, die Hälfte ist weg."
+ITEM_DOPPELWUMMS_NAME,Doppelwumms
+ITEM_DOPPELWUMMS_DESC,ROT · Fernkampf-Build: Jeder Kill explodiert zweimal (150 px). −15 Kündigungsschutz. Die Rechnung kommt später.
+ITEM_BRANDMAUER_FERTIGPUTZ_NAME,Brandmauer-Fertigputz
+ITEM_BRANDMAUER_FERTIGPUTZ_DESC,"ROT · Panzer-Build: +50 Kündigungsschutz, wer dich berührt, fliegt zurück. −30 Deutschlandticket. Hält allem stand, außer einer Abstimmung."
+ITEM_ENTLASSUNGSURKUNDE_NAME,Entlassungsurkunde
+ITEM_ENTLASSUNGSURKUNDE_DESC,"ROT · Krit-Build: +20 Direkte Aktion, Krit auf Gegner:innen unter 30 % setzt sie sofort ab. −15 Durchschlagskraft."

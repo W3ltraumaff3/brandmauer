@@ -28,6 +28,8 @@ var world: WorldView
 
 ## Freeze the overlay clock for screenshots (preview harness).
 var preview_overlay_t := -1.0
+## Preview harness: >= 0 forces the reconnect indicator with this many seconds left.
+var preview_reconnect_left := -1.0
 
 var _hand: Font
 var _type: Font
@@ -88,14 +90,33 @@ func local_id() -> int:
 
 
 func _local_meta(meta: Dictionary) -> Dictionary:
+	return _player_meta(meta, local_id())
+
+
+func _player_meta(meta: Dictionary, id: int) -> Dictionary:
 	var ps = meta.get("players", {})
 	if ps is Dictionary:
-		var id := local_id()
 		if ps.has(id):
 			return ps[id]
 		if ps.has(str(id)):
 			return ps[str(id)]
 	return {}
+
+
+## Client lost the host and reconnects in the background (Net, networking.md §7.4).
+## Never true in solo or on the host.
+func _reconnecting() -> bool:
+	if preview_reconnect_left >= 0.0:
+		return true
+	var net := get_node_or_null("/root/Net")
+	return net != null and net.has_method("is_reconnecting") and bool(net.call("is_reconnecting"))
+
+
+func _reconnect_left() -> float:
+	if preview_reconnect_left >= 0.0:
+		return preview_reconnect_left
+	var net := get_node_or_null("/root/Net")
+	return float(net.call("reconnect_time_left")) if net != null and net.has_method("reconnect_time_left") else 0.0
 
 
 # --- Events -------------------------------------------------------------------------
@@ -132,6 +153,19 @@ func handle_event(ev: Array) -> void:
 		"ult":
 			if ev.size() >= 2 and int(ev[1]) == local_id():
 				_ult_fire = 0.0
+		"away", "back":
+			# Co-op connection drops (networking.md §7.4).
+			if ev.size() >= 2:
+				var pid := int(ev[1])
+				var nm := str(_player_meta(get_meta_dict(), pid).get("name", "?"))
+				var text: String
+				if ev[0] == "away":
+					text = tr("HUD_PLAYER_AWAY") % nm
+				elif pid == local_id():
+					text = tr("HUD_RECONNECTED")
+				else:
+					text = tr("HUD_PLAYER_BACK") % nm
+				_toasts.append({"text": text, "sub": "", "t": 0.0, "life": 3.5, "kind": "net"})
 
 
 func _overlay(kind: String, life: float, data: Dictionary) -> void:
@@ -148,12 +182,17 @@ func _process(delta: float) -> void:
 	var vs := get_view()
 	if vs and vs.wave >= Content.WAVE_COUNT and vs.wave_time_left < 0.0 and vs.phase == 0:
 		_koal_time += delta / 3.0
-	var holding := bool(get_meta_dict().get("intro_wait", false))
+	var md := get_meta_dict()
+	# Boss card stays while the game waits for *this* player; once they continue it fades out quickly.
+	var holding: bool = bool(md.get("intro_wait", false)) and not (local_id() in md.get("intro_done", []))
 	for i in range(_overlays.size() - 1, -1, -1):
 		_overlays[i]["t"] += delta
-		# Boss card stays fully visible while the game waits for the players.
-		if holding and _overlays[i]["kind"] == "card":
-			_overlays[i]["t"] = minf(_overlays[i]["t"], 1.2)
+		if _overlays[i]["kind"] == "card":
+			if holding:
+				_overlays[i]["t"] = minf(_overlays[i]["t"], 1.2)
+				_overlays[i]["held"] = true
+			elif _overlays[i].get("held", false):
+				_overlays[i]["t"] = maxf(_overlays[i]["t"], _overlays[i]["life"] - 0.3)
 		if _overlays[i]["t"] > _overlays[i]["life"]:
 			_overlays.remove_at(i)
 	for i in range(_toasts.size() - 1, -1, -1):
@@ -172,17 +211,17 @@ func _process(delta: float) -> void:
 		_ult_fire += delta
 		if _ult_fire > 0.6:
 			_ult_fire = -1.0
-	# Funkloch easter egg (only while a wave runs)
-	if vs and vs.phase == 0:
+	# Funkloch easter egg (only while a wave runs, never during a real reconnect)
+	if _reconnecting():
+		_funk_t = -1.0
+		_flicker.clear()
+	elif vs and vs.phase == 0:
 		_funk_next -= delta
 		if _funk_next <= 0.0:
 			_funk_t = 0.0
-			_funk_next = _rng.randf_range(180.0, 240.0)
+			_funk_next = _rng.randf_range(420.0, 600.0)
 	if _funk_t >= 0.0:
 		_funk_t += delta
-		if int(_funk_t * 12.0) != int((_funk_t - delta) * 12.0):
-			for k in ["hp", "wave", "team", "zus", "wall", "vertrag"]:
-				_flicker[k] = _rng.randf() < 0.45
 		if _funk_t > FUNKLOCH_TIME:
 			_funk_t = -1.0
 			_flicker.clear()
@@ -228,6 +267,8 @@ func _draw() -> void:
 		_draw_ult_effects(meta, sz, ult_h)
 	if _funk_t >= 0.0:
 		_draw_funkloch(sz)
+	if _reconnecting():
+		_draw_reconnect(sz)
 	for o in _overlays:
 		_draw_overlay(o, sz)
 	_draw_intro_hint(sz)
@@ -401,6 +442,9 @@ func _draw_team(vs: ViewState, meta: Dictionary) -> void:
 			draw_string(_hand, r.position + Vector2(0, 22), tr("HUD_DOWN_TAG"), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 10, 16, RED)
 		elif state == 2:
 			draw_string(_hand, r.position + Vector2(0, 22), tr("HUD_GONE_TAG"), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 10, 16, Color(0.4, 0.4, 0.4))
+		elif state == 3:
+			var pulse := 0.55 + 0.45 * absf(sin(_t * 3.0))
+			draw_string(_hand, r.position + Vector2(0, 22), tr("HUD_AWAY_TAG"), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 10, 16, Color(0.8, 0.4, 0.05, pulse))
 		var mx: float = maxf(p.get("max_hp", 1.0), 1.0)
 		_bar(Rect2(r.position + Vector2(12, 28), Vector2(r.size.x - 24, 9)), float(p.get("hp", 0.0)) / mx,
 			Color(0.82, 0.2, 0.18) if state == 0 else Color(0.5, 0.5, 0.5), Color(1, 1, 1, 0.6), slot)
@@ -445,7 +489,7 @@ func _draw_streik(meta: Dictionary, sz: Vector2) -> void:
 	if active > 0.0:
 		_txt(tr("HUD_STREIK_ACTIVE") % int(ceil(active)), Vector2(0, y + 26), 24, RED, null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 5)
 	elif bool(s.get("available", false)):
-		var key := _action_key("streik")
+		var key := InputGlyphs.key("streik")
 		var txt := tr("HUD_STREIK_PROMPT") % key
 		var w := _hand.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 40
 		var pulse := 1.0 + 0.04 * sin(_t * 6.0)
@@ -462,17 +506,49 @@ func _draw_down_hint(vs: ViewState, sz: Vector2) -> void:
 	_txt(tr("HUD_YOU_DOWN"), Vector2(0, sz.y * 0.32), 30, INK, null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
 
 
+## Real connection loss (client, mid-run): an unplugged plug with a solid orange
+## frame and a countdown, in the slot the Funkloch joke uses (which is suppressed
+## meanwhile), so the two can never be confused.
+func _draw_reconnect(sz: Vector2) -> void:
+	var text := tr("HUD_RECONNECTING")
+	var sub := tr("HUD_RECONNECT_LEFT") % int(ceil(_reconnect_left()))
+	var w := maxf(_hand.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x,
+			_type.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x) + 82.0
+	var r := Rect2(sz.x - 14 - w, 132, w, 50)
+	var orange := Color(0.85, 0.42, 0.05)
+	_panel(r, Color(1.0, 0.95, 0.86), 9, orange)
+	# plug (left) and socket (right) pulled apart, with a pulsing gap
+	var c := r.position + Vector2(36, 27)
+	var gap := 2.0 + 2.5 * absf(sin(_t * 4.0))
+	var plug := Rect2(c + Vector2(-16 - gap, -7), Vector2(12, 14))
+	draw_line(plug.position + Vector2(0, 7), plug.position + Vector2(-8, 12), INK, 2.5)
+	draw_rect(plug, Color(0.3, 0.3, 0.3))
+	draw_rect(plug, INK, false, 1.5)
+	draw_line(plug.position + Vector2(12, 3.5), plug.position + Vector2(17, 3.5), INK, 2.0)
+	draw_line(plug.position + Vector2(12, 10.5), plug.position + Vector2(17, 10.5), INK, 2.0)
+	var sock := Rect2(c + Vector2(4 + gap, -9), Vector2(12, 18))
+	draw_rect(sock, Color.WHITE)
+	draw_rect(sock, INK, false, 1.5)
+	draw_circle(sock.position + Vector2(4, 6), 1.3, INK)
+	draw_circle(sock.position + Vector2(4, 12), 1.3, INK)
+	draw_line(sock.position + Vector2(12, 9), sock.position + Vector2(18, 14), INK, 2.5)
+	if int(_t * 2.0) % 2 == 0:
+		_sparkle(c + Vector2(0, -14), 4.0, orange)
+	_txt(text, Vector2(r.position.x + 66, r.position.y + 22), 17, orange.darkened(0.3))
+	_txt(sub, Vector2(r.position.x + 66, r.position.y + 41), 13, Color(0.35, 0.33, 0.3), _type)
+
+
+## Funkloch easter egg: a small, harmless joke icon at the right edge (not an error).
 func _draw_funkloch(sz: Vector2) -> void:
-	var r := Rect2(sz.x * 0.5 - 90, sz.y * 0.5 - 150, 180, 44)
-	if int(_funk_t * 8.0) % 4 == 3:
-		return
-	_panel(r, Color(0.15, 0.15, 0.18, 0.9), 9, INK)
-	var base := r.position + Vector2(20, 34)
+	var r := Rect2(sz.x - 236, 132, 220, 30)
+	var a := clampf(minf(_funk_t * 4.0, (FUNKLOCH_TIME - _funk_t) * 4.0), 0.0, 1.0)
+	_panel(r, Color(1, 1, 1, 0.75 * a), 9, Color(INK, a))
+	var base := r.position + Vector2(10, 24)
 	for i in 4:
-		var h := 6.0 + i * 5.0
-		draw_rect(Rect2(base + Vector2(i * 7, -h), Vector2(5, h)), Color(0.5, 0.5, 0.5))
-	draw_line(base + Vector2(-3, 2), base + Vector2(29, -26), RED, 3.0)
-	_txt(tr("HUD_KEIN_NETZ"), Vector2(r.position.x + 56, r.position.y + 30), 22, Color(0.95, 0.95, 0.9))
+		var h := 4.0 + i * 3.5
+		draw_rect(Rect2(base + Vector2(i * 5, -h), Vector2(3, h)), Color(0.5, 0.5, 0.5, a))
+	draw_line(base + Vector2(-2, 1), base + Vector2(20, -17), Color(RED, a), 2.0)
+	_txt(tr("HUD_KEIN_NETZ"), Vector2(r.position.x + 36, r.position.y + 21), 16, Color(INK, a))
 
 
 # --- Ultimate (architecture §9) -----------------------------------------------------------
@@ -509,7 +585,7 @@ func _draw_ult_panel(vs: ViewState, meta: Dictionary, sz: Vector2) -> float:
 		return 0.0
 	var ready := bool(lm.get("ult_ready", false))
 	var name := tr("ULT_%s_NAME" % id.to_upper())
-	var key := "[%s]" % _ult_key()
+	var key := InputGlyphs.label("ultimate")
 	var state := tr("HUD_ULT_READY") if ready else tr("HUD_ULT_USED")
 	var kw := _type.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 14.0
 	var nw := _hand.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
@@ -736,7 +812,8 @@ func _draw_toasts(sz: Vector2) -> void:
 			_txt(o["text"], r.position + Vector2(52, 26), 18, Color(0.4, 0.35, 0.3, a))
 			_txt(o["sub"], r.position + Vector2(52, 52), 24, Color(INK, a))
 		else:
-			_txt(o["text"], r.position + Vector2(0, 27), 20, Color(0.6, 0.12, 0.12, a), null, HORIZONTAL_ALIGNMENT_CENTER, w)
+			var tc := Color(0.6, 0.3, 0.02, a) if o["kind"] == "net" else Color(0.6, 0.12, 0.12, a)
+			_txt(o["text"], r.position + Vector2(0, 27), 20, tc, null, HORIZONTAL_ALIGNMENT_CENTER, w)
 		y -= h + 10.0
 
 
@@ -808,7 +885,7 @@ func _draw_intro_hint(sz: Vector2) -> void:
 		return
 	var me := local_id()
 	var done: Array = m.get("intro_done", [])
-	var text := tr("HUD_INTRO_WAITING") if me in done else tr("HUD_INTRO_CONTINUE")
+	var text := tr("HUD_INTRO_WAITING") if me in done else InputGlyphs.fmt("INPUT_INTRO_CONTINUE", ["move", "ultimate"])
 	var w := 640.0
 	var r := Rect2(Vector2((sz.x - w) * 0.5, 12.0), Vector2(w, 46.0))
 	_panel(r, Color(1.0, 0.96, 0.8), 0, Color(0.75, 0.12, 0.12))

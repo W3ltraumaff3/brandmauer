@@ -13,12 +13,14 @@ This project is **spec-driven**: the documents in this folder are the source of 
 
 | Document | Content | Status |
 |---|---|---|
-| [GDD.md](GDD.md) | Game design: vision, run structure, characters, content, co-op, meta progression | Draft |
-| [specs/networking.md](specs/networking.md) | Multiplayer architecture: hosting, authority, sync | Approved |
+| [GDD.md](GDD.md) | Game design: run structure, Späti, characters, weapons, items, co-op, options, meta progression (synced with v0.2.0-beta) | Draft |
+| [specs/architecture.md](specs/architecture.md) | Code architecture: modules, sim/view split, contracts (ultimates, run statistics, shop additions) | Approved |
+| [specs/networking.md](specs/networking.md) | Multiplayer architecture: hosting, authority, sync | Approved (architecture), implemented |
 | [specs/content-guidelines.md](specs/content-guidelines.md) | Satire rules, red lines, quote handling | Approved |
 | [specs/ci-cd.md](specs/ci-cd.md) | CI/CD, tests, branch protection, release process | Approved |
 | [specs/asset-licensing.md](specs/asset-licensing.md) | Allowed licenses for third-party assets, credits duty | Approved |
 | [../CREDITS.md](../CREDITS.md) | Credits for all third-party assets | living |
+| [status-report.md](status-report.md) | Current status, beta plan, open points | living |
 | [decisions.md](decisions.md) | Decision log | living |
 | [open-questions.md](open-questions.md) | Unresolved questions | living |
-| [../research/](../research/) | Quote research (`zitate_de.md`, `zitate_de.json`) | in progress |
+| [../research/](../research/) | Quote research (`zitate_de.md`, `zitate_de.json`, `auswahl.md`), item ideas (`item_ideen.md`), music candidates | in progress |

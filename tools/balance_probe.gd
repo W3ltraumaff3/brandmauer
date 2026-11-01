@@ -30,6 +30,7 @@ func _run(char_id: String, seed: int, umfrage: int) -> int:
 	while s.phase != Sim.Phase.OVER and steps < 200000:
 		if s.phase == Sim.Phase.SHOP:
 			_shop(s, p)
+			s.request(1, "vote", -1)
 			s.request(1, "ready", true)
 		else:
 			p.input = _kite(s, p)

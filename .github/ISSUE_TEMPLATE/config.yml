@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Sicherheitslücke melden (privat) / Report a vulnerability (private)
+    url: https://github.com/W3ltraumaff3/brandmauer/security/advisories/new
+    about: Bitte Sicherheitsprobleme nicht öffentlich melden, sondern hier. / Please report security issues privately here.

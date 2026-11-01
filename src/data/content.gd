@@ -57,6 +57,8 @@ const CHARACTERS := {
 const WEAPON_ORDER: Array[String] = [
 	"gendersternchen", "pfandflasche", "megafon", "stricknadeln", "doener", "grundgesetz",
 	"transparent", "mietspiegel", "tofu", "farbbeutel", "kleber", "infostand",
+	"kartoffelbrei", "trillerpfeife", "brandmauer_ziegel", "normenkontrolle",
+	"unterschriftenliste", "scheinwerfer", "neun_euro_ticket", "weisser_overall",
 ]
 
 const WEAPONS := {
@@ -84,6 +86,22 @@ const WEAPONS := {
 		"slow": 0.7, "scale": {"status": 1.0}, "price": 24},
 	"infostand": {"kind": "turret", "dmg": [4, 7, 11, 17], "cd": 5.0, "range": 300.0, "fire_cd": 0.6, "life": 10.0,
 		"max": 2, "proj": "flugblatt", "speed": 520.0, "scale": {"summon": 1.0}, "price": 26},
+	"kartoffelbrei": {"kind": "lob", "dmg": [18, 30, 48, 77], "cd": 3.0, "range": 340.0, "radius": 110.0,
+		"delay": 0.8, "proj": "kartoffelbrei", "scale": {"ranged": 1.0}, "price": 26},
+	"trillerpfeife": {"kind": "cone", "dmg": [4, 7, 11, 17], "cd": 2.0, "range": 150.0, "arc": 360.0, "knock": 0.0,
+		"stun": 0.6, "scale": {"melee": 0.6}, "price": 22, "melee": true},
+	"brandmauer_ziegel": {"kind": "wall", "dmg": [3, 5, 8, 13], "cd": 4.0, "range": 220.0, "width": 140.0,
+		"life": 6.0, "slow": 0.4, "max": 2, "scale": {"summon": 1.0}, "price": 26},
+	"normenkontrolle": {"kind": "mark", "dmg": [30, 50, 80, 129], "cd": 4.5, "range": 360.0, "delay": 3.0,
+		"scale": {"status": 1.0}, "price": 28},
+	"unterschriftenliste": {"kind": "chain", "dmg": [5, 8, 13, 21], "cd": 1.4, "range": 260.0, "jumps": 3,
+		"jump_range": 120.0, "falloff": 0.2, "scale": {"ranged": 0.9}, "price": 22},
+	"scheinwerfer": {"kind": "beam", "dmg": [14, 23, 37, 60], "cd": 2.2, "range": 400.0, "width": 22.0,
+		"expose": 5.0, "expose_crit": 15.0, "scale": {"ranged": 1.0}, "price": 26},
+	"neun_euro_ticket": {"kind": "fan", "dmg": [2, 3, 5, 9], "cd": 1.5, "range": 180.0, "count": 9, "count_late": 5,
+		"late_wave": 4, "arc": 60.0, "speed": 520.0, "proj": "ticket", "scale": {"ranged": 0.5}, "price": 18},
+	"weisser_overall": {"kind": "swarm", "dmg": [6, 10, 16, 26], "cd": 4.0, "range": 300.0, "count": 3,
+		"scale": {"summon": 1.0}, "price": 24},
 }
 
 const TIER_PRICE_MULT := [1.0, 1.8, 3.2, 5.5]
@@ -98,14 +116,40 @@ const ITEM_ORDER: Array[String] = [
 	"spendendose", "sekundenkleber", "vereinsheim", "fernglas", "mietendeckel",
 	"erste_hilfe_kurs", "streikkasse", "spaeti_sonnenbrille", "taugenichts", "vogelschiss",
 	"reichsausweis",
+	"isomatte",
+	"club_mate",
+	"fahrradhelm",
+	"frisbee",
+	"taschenlampe",
+	"flugblatt_stapel",
+	"kirschkernkissen",
+	"megafon_akku",
+	"arbeitshandschuhe",
+	"demosani_weste",
+	"pfandrucksack",
+	"protestschild",
+	"kiezkarte",
+	"lastenrad_anhaenger",
+	"tarifvertrag",
+	"volkskueche",
+	"generalschluessel",
+	"soli_konzert",
+	"hausbesetzung",
+	"wurfmaschine",
+	"genossenschaftsanteil",
+	"ehrenamtskarte",
+	"kompost",
+	"kritische_masse",
+	"robin_hood",
+	"tarnkappe",
 ]
 
 const ITEMS := {
 	"schuldenbremse": {"mods": {"damage": 15.0}, "flags": ["schuldenbremse"], "price": 25, "rarity": 2},
 	"sondervermoegen": {"mods": {"income": 5.0}, "flags": ["sondervermoegen"], "price": 45, "rarity": 3},
 	"bierdeckel": {"mods": {}, "flags": [], "price": 5, "rarity": 1},
-	"faxgeraet": {"mods": {"damage": 40.0}, "flags": ["fax"], "price": 30, "rarity": 2},
-	"db_ticket": {"mods": {"speed": 30.0}, "flags": ["db_ticket"], "price": 20, "rarity": 1},
+	"faxgeraet": {"mods": {"damage": 40.0}, "flags": ["fax"], "price": 30, "rarity": 3},
+	"db_ticket": {"mods": {"speed": 30.0}, "flags": ["db_ticket"], "price": 20, "rarity": 2},
 	"thermoskanne": {"mods": {"hp_regen": 2.0}, "price": 16, "rarity": 1},
 	"betriebsrat": {"mods": {"armor": 3.0, "speed": -3.0}, "price": 22, "rarity": 2},
 	"solibutton": {"mods": {"max_hp": 10.0}, "price": 20, "rarity": 1},
@@ -126,13 +170,79 @@ const ITEMS := {
 	"vereinsheim": {"mods": {"summon": 3.0}, "price": 20, "rarity": 1},
 	"fernglas": {"mods": {"range": 50.0}, "price": 18, "rarity": 1},
 	"mietendeckel": {"mods": {"armor": 1.0}, "flags": ["mietendeckel"], "price": 20, "rarity": 2},
-	"erste_hilfe_kurs": {"mods": {"max_hp": 5.0}, "flags": ["erste_hilfe"], "price": 18, "rarity": 1, "coop_only": true},
+	"erste_hilfe_kurs": {"mods": {"max_hp": 5.0}, "flags": ["erste_hilfe"], "price": 18, "rarity": 2, "coop_only": true},
 	"streikkasse": {"mods": {}, "flags": ["streikkasse"], "price": 28, "rarity": 3},
 	"spaeti_sonnenbrille": {"mods": {"crit": 5.0, "luck": 5.0}, "price": 20, "rarity": 2},
 	"taugenichts": {"mods": {"luck": 20.0, "attack_speed": -10.0}, "flags": ["taugenichts"], "price": 30, "rarity": 3},
-	"vogelschiss": {"mods": {"damage": 1.0}, "price": 3, "rarity": 4, "hidden": true},
-	"reichsausweis": {"mods": {}, "price": 0, "rarity": 4, "hidden": true, "no_shop": true},
+	"vogelschiss": {"mods": {"damage": 1.0}, "price": 3, "rarity": 1, "hidden": true},
+	"reichsausweis": {"mods": {}, "price": 0, "rarity": 1, "hidden": true, "no_shop": true},
+	# green: one simple bonus
+	"isomatte": {"mods": {"armor": 1.0}, "price": 12, "rarity": 1},
+	"club_mate": {"mods": {"attack_speed": 6.0}, "price": 14, "rarity": 1},
+	"fahrradhelm": {"mods": {"max_hp": 4.0}, "price": 10, "rarity": 1},
+	"frisbee": {"mods": {"ranged": 2.0}, "price": 12, "rarity": 1},
+	"taschenlampe": {"mods": {"crit": 3.0}, "price": 12, "rarity": 1},
+	"flugblatt_stapel": {"mods": {"summon": 2.0}, "price": 12, "rarity": 1},
+	"kirschkernkissen": {"mods": {"hp_regen": 1.0}, "price": 10, "rarity": 1},
+	# blue: good, sometimes with a malus
+	"megafon_akku": {"mods": {"ranged": 5.0, "attack_speed": -5.0}, "price": 26, "rarity": 2},
+	"arbeitshandschuhe": {"mods": {"melee": 4.0, "armor": 2.0}, "price": 30, "rarity": 2},
+	"demosani_weste": {"mods": {"hp_regen": 3.0, "max_hp": 5.0}, "price": 28, "rarity": 2},
+	"pfandrucksack": {"mods": {"pickup": 60.0, "income": 3.0}, "price": 24, "rarity": 2},
+	"protestschild": {"mods": {"damage": 10.0, "range": 15.0, "speed": -5.0}, "price": 28, "rarity": 2},
+	"kiezkarte": {"mods": {"luck": 8.0, "xp": 8.0}, "price": 22, "rarity": 2},
+	# purple: very good, malus when very very good
+	"lastenrad_anhaenger": {"mods": {"speed": -10.0}, "flags": ["extra_slot"], "price": 55, "rarity": 3},
+	"tarifvertrag": {"mods": {"damage": 25.0, "armor": 5.0, "attack_speed": -10.0}, "price": 60, "rarity": 3},
+	"volkskueche": {"mods": {"hp_regen": 5.0, "lifesteal": 5.0}, "price": 50, "rarity": 3},
+	"generalschluessel": {"mods": {"crit": 20.0, "max_hp": -10.0}, "price": 55, "rarity": 3},
+	"soli_konzert": {"mods": {"attack_speed": 30.0, "luck": 10.0, "max_hp": -8.0}, "price": 65, "rarity": 3},
+	# red: game-changing, only for specific builds
+	"hausbesetzung": {"mods": {}, "flags": ["melee_build"], "price": 90, "rarity": 4},
+	"wurfmaschine": {"mods": {}, "flags": ["ranged_build"], "price": 90, "rarity": 4},
+	"genossenschaftsanteil": {"mods": {}, "flags": ["coop_economy"], "price": 80, "rarity": 4},
+	"ehrenamtskarte": {"mods": {}, "flags": ["summon_build"], "price": 90, "rarity": 4},
+	"kompost": {"mods": {}, "flags": ["status_build"], "price": 85, "rarity": 4},
+	"kritische_masse": {"mods": {}, "flags": ["crit_build"], "price": 90, "rarity": 4},
+	"robin_hood": {"mods": {}, "flags": ["lifesteal_build"], "price": 85, "rarity": 4},
+	"tarnkappe": {"mods": {}, "flags": ["dodge_build"], "price": 85, "rarity": 4},
+	# politics items (GDD §12 "Politics items")
+	"erinnerungsluecke": {"mods": {"dodge": 15.0, "xp": -10.0}, "price": 50, "rarity": 3},
+	"treuhandkonto": {"mods": {}, "flags": ["treuhand"], "price": 26, "rarity": 2},
+	"aufhoeren_zu_produzieren": {"mods": {}, "flags": ["aufhoeren"], "price": 26, "rarity": 2},
+	"wahlversprechen": {"mods": {}, "flags": ["wahlversprechen"], "price": 24, "rarity": 2},
+	"maut_vertrag": {"mods": {}, "flags": ["maut"], "price": 20, "rarity": 3},
+	"ber_eroeffnungstermin": {"mods": {}, "flags": ["ber"], "price": 50, "rarity": 3},
+	"puma": {"mods": {"ranged": 25.0, "armor": 10.0}, "flags": ["puma"], "price": 60, "rarity": 3},
+	"zweiter_wahlgang": {"mods": {"damage": -10.0}, "flags": ["zweiter_wahlgang"], "price": 55, "rarity": 3},
+	"cumex_erstattung": {"mods": {}, "flags": ["cumex"], "price": 80, "rarity": 4},
+	"doppelwumms": {"mods": {"armor": -15.0}, "flags": ["doppelwumms"], "price": 90, "rarity": 4},
+	"brandmauer_fertigputz": {"mods": {"armor": 50.0, "speed": -30.0}, "flags": ["fertigputz"], "price": 90, "rarity": 4},
+	"entlassungsurkunde": {"mods": {"crit": 20.0, "ranged": -15.0}, "flags": ["entlassung"], "price": 85, "rarity": 4},
 }
+
+## Item rarities (GDD §12): 1 green, 2 blue, 3 purple, 4 red.
+const RARITY_COLORS := {1: Color("3f8f4f"), 2: Color("2e6db4"), 3: Color("8e44ad"), 4: Color("c0392b")}
+const RED_BUILD := {"melee": 2.0, "melee_other": 0.5, "ranged_pierce": 1, "ranged_speed": 1.5, "ranged_other": 0.5,
+	"coop_interest": 0.15, "coop_interest_max": 50, "coop_buys": 2, "summon": 2.0, "summon_other": 0.6,
+	"status": 2.0, "status_direct": 0.7, "status_spread": 100.0, "crit_extra": 1.5, "crit_other": 0.7,
+	"lifesteal_heal": 3.0, "dodge_cap": 80.0,
+	"treuhand_chance": 0.5, "treuhand_pfand": 30, "aufhoeren_after": 2.0, "aufhoeren_regen": 8.0, "aufhoeren_armor": 10.0,
+	"wahl_time": 10.0, "wahl_early": 40.0, "wahl_late": -10.0, "maut_now": 60, "maut_wave": 8,
+	"ber_wave": 10, "ber_early": -10.0, "ber_late_dmg": 40.0, "ber_late_as": 20.0,
+	"puma_period": 18.0, "puma_down": 3.0, "second_round_hp": 0.5, "cumex_max": 40, "cumex_audit_wave": 15,
+	"wumms_radius": 150.0, "wumms_delay": 0.35, "fertigputz_knock": 600.0, "entlassung_hp": 0.3}
+
+## Shop weight of an item rarity at a given wave (luck shifts towards rarer tiers).
+static func rarity_weight(rarity: int, wave: int, luck: float) -> float:
+	var w := 0.0
+	match rarity:
+		1: w = 10.0
+		2: w = 3.0 + 0.35 * wave
+		3: w = maxf(0.0, (wave - 3) * 0.35)
+		4: w = maxf(0.0, (wave - 7) * 0.12)
+	return w * (1.0 + maxf(0.0, luck) / 100.0 * (rarity - 1) * 0.5)
+
 
 # --- Enemies (GDD §13, §14) --------------------------------------------------
 # faction: afd (spawns behind the Brandmauer) | union | kapital | elite
@@ -191,14 +301,14 @@ const SUIT_FACTIONS := ["union", "kapital"]
 const PROJ_ORDER: Array[String] = [
 	"stern", "flasche", "nadel", "tofu", "farbe", "flugblatt",
 	"kettenbrief", "golfball", "champagner", "buch", "bierdeckel", "zirkusball",
-	"fluegel", "goldbarren", "spiegel",
+	"fluegel", "goldbarren", "spiegel", "kartoffelbrei", "ticket",
 ]
 const PICKUP_ORDER: Array[String] = ["pfand", "passant", "geldschein", "stulle", "reichsausweis"]
 const HAZARD_ORDER: Array[String] = [
 	"kleber", "mietzone", "kerosin", "lob_marker", "sitzblockade", "explosion", "abschiebezone",
-	"push_ring", "farbklecks",
+	"push_ring", "farbklecks", "brei_marker", "ziegel", "paragraf",
 ]
-const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse"]
+const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse", "overall"]
 
 # --- Ultimates (GDD §9a): Space, once per wave ----------------------------------
 

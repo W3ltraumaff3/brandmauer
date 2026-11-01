@@ -1,0 +1,36 @@
+name: Set up Godot
+description: >-
+  Restores the official Godot Linux build from the cache, or downloads it
+  (SHA-512 checked) on a cache miss. Afterwards Godot is at ~/godot/godot.
+  All jobs share one cache key per version, so they reuse the same download.
+
+inputs:
+  version:
+    description: Godot version without the "-stable" suffix, e.g. "4.7.2"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache Godot
+      id: cache-godot
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/godot
+        key: godot-${{ inputs.version }}-linux-x86_64
+    - name: Download Godot
+      if: steps.cache-godot.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        GODOT_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+        zip="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+        cd "$RUNNER_TEMP"
+        curl -fsSL --retry 3 -O "$base/$zip" -O "$base/SHA512-SUMS.txt"
+        grep " $zip\$" SHA512-SUMS.txt | sha512sum -c -
+        mkdir -p ~/godot
+        unzip -q "$zip" -d ~/godot
+        mv ~/godot/"Godot_v${GODOT_VERSION}-stable_linux.x86_64" ~/godot/godot
+        chmod +x ~/godot/godot

@@ -160,6 +160,8 @@ func _update_overlays() -> void:
 			if _spaeti:
 				overlay_layer.add_child(_spaeti)
 				overlay_layer.move_child(_spaeti, 0)
+				if _spaeti is Control:
+					UINav.block_if_covered(_spaeti as Control)  # pause menu already open
 	elif _spaeti != null:
 		if is_instance_valid(_spaeti):
 			_spaeti.queue_free()

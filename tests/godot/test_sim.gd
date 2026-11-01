@@ -64,8 +64,10 @@ func test_vertrag_unanimous_or_worst() -> void:
 	var opts := ["digitalpakt", "mindestlohn", "sanktionen"]
 	assert_eq(Sim.resolve_votes(opts, {1: 1, 2: 1}, [1, 2]), "mindestlohn", "unanimous")
 	assert_eq(Sim.resolve_votes(opts, {1: 0, 2: 1}, [1, 2]), "sanktionen", "split -> worst")
-	assert_eq(Sim.resolve_votes(opts, {1: 0}, [1, 2]), "sanktionen", "missing vote -> worst")
 	assert_eq(Sim.resolve_votes(opts, {1: 0}, [1]), "digitalpakt", "solo choice")
+	assert_eq(Sim.resolve_votes(opts, {1: 0, 2: -1}, [1, 2]), "digitalpakt", "abstention doesn't count")
+	assert_eq(Sim.resolve_votes(opts, {1: -1, 2: -1}, [1, 2]), "", "everyone abstains -> no contract")
+	assert_eq(Sim.resolve_votes(opts, {}, [1]), "", "nobody voted -> no contract")
 
 
 func test_shop_buy_reroll_sell_deny() -> void:
@@ -424,4 +426,161 @@ func test_ultimate_effects() -> void:
 	assert_true(t.request(2, "ultimate"), "antifa ult")
 	var comrades := t.summons.filter(func(x): return x.type == Content.idx(Content.SUMMON_ORDER, "genosse"))
 	assert_eq(comrades.size(), 6, "Schwarzer Block spawns 6")
+
+
+func test_run_stats_track_damage_per_weapon_and_heals() -> void:
+	var s := _sim(["oma"])
+	var p: Sim.SimPlayer = s.players[1]
+	p.stats["lifesteal"] = 100.0
+	p.hp = 1.0
+	for i in 1800:
+		p.iframes = 10.0
+		s.step(1.0 / 60.0)
+	var st := s.run_stats(p)
+	assert_false(st["damage"].is_empty(), "damage recorded")
+	var row: Dictionary = st["damage"][0]
+	assert_eq(row["kind"], "weapon")
+	assert_eq(row["id"], "stricknadeln")
+	assert_true(row["total"] > 0, "stricknadeln dealt damage")
+	assert_true(st["lifesteal"] > 0, "lifesteal healed")
+	assert_true(st["pfand_collected"] >= 0)
+	var m := s.build_meta()
+	assert_true(m["players"][1].has("run_stats"))
+
+
+func test_ready_needs_vote_when_contract_is_open() -> void:
+	var s := _sim(["oma"])
+	_to_shop(s)
+	s.vertrag["options"] = ["digitalpakt", "tempolimit", "sanktionen"]
+	s.vertrag["votes"] = {}
+	assert_false(s.request(1, "ready", true), "must vote first")
+	assert_true(s.request(1, "vote", -1), "abstain")
+	assert_true(s.request(1, "ready", true), "ready after abstaining")
+	assert_eq(s.vertrag["active"], "", "nobody voted -> no contract")
+
+
+func test_discard_items() -> void:
+	var s := _sim(["oma"])
+	_to_shop(s)
+	var p: Sim.SimPlayer = s.players[1]
+	p.items.append_array(["schuldenbremse", "solibutton", "solibutton", "solibutton"])
+	s._recompute(p)
+	assert_true(s.request(1, "discard_item", {"id": "solibutton", "count": 1}))
+	assert_eq(p.items.count("solibutton"), 2, "one removed")
+	assert_true(s.request(1, "discard_item", {"id": "solibutton", "count": -1}))
+	assert_eq(p.items.count("solibutton"), 0, "all removed")
+	assert_true(s.request(1, "discard_item", {"id": "schuldenbremse", "count": 1}))
+	assert_false(p.flags.has("schuldenbremse"), "curse gone")
+	assert_false(s.request(1, "discard_item", {"id": "schuldenbremse", "count": 1}), "nothing left")
+
+
+func test_item_rarities_and_red_builds() -> void:
+	for id in Content.ITEM_ORDER:
+		var r := int(Content.ITEMS[id]["rarity"])
+		assert_true(r >= 1 and r <= 4, id + " rarity")
+	assert_eq(Content.rarity_weight(4, 3, 0.0), 0.0, "no red items early")
+	assert_true(Content.rarity_weight(4, 15, 0.0) > 0.0, "red items late")
+	var s := _sim(["oma"])
+	var p: Sim.SimPlayer = s.players[1]
+	var melee := {"id": "doener", "tier": 1, "cd": 0.0, "angle": 0.0}
+	var ranged := {"id": "stricknadeln", "tier": 1, "cd": 0.0, "angle": 0.0}
+	var m0 := s.weapon_damage(p, melee)
+	var r0 := s.weapon_damage(p, ranged)
+	p.items.append("hausbesetzung")
+	s._recompute(p)
+	assert_near(s.weapon_damage(p, melee), m0 * 2.0, 0.01, "melee doubled")
+	assert_near(s.weapon_damage(p, ranged), r0 * 0.5, 0.01, "ranged halved")
+	p.items.append("lastenrad_anhaenger")
+	s._recompute(p)
+	assert_eq(p.max_weapons, Content.MAX_WEAPONS + 1, "extra weapon slot")
+	p.items.append("tarnkappe")
+	p.items.append("betriebsrat")
+	s._recompute(p)
+	assert_eq(p.stats["armor"], 0.0, "Tarnkappe zeroes armor")
+
+
+func test_combine_weapons() -> void:
+	var s := _sim(["oma"])
+	_to_shop(s)
+	var p: Sim.SimPlayer = s.players[1]
+	p.pfand = 10000
+	# buying a twin combines automatically, even with full slots
+	while p.weapons.size() < p.max_weapons:
+		s._add_weapon(p, "tofu", 1)
+	p.offers[0] = {"kind": "weapon", "id": "stricknadeln", "tier": 1, "price": 10, "sold": false}
+	assert_true(s.request(1, "buy", 0), "buy twin with full slots")
+	assert_eq(p.weapons.filter(func(w): return w["id"] == "stricknadeln").size(), 1, "merged into one")
+	assert_eq(int(p.weapons.filter(func(w): return w["id"] == "stricknadeln")[0]["tier"]), 2, "tier 2")
+	# manual combine of two tofu I
+	var i := -1
+	for k in p.weapons.size():
+		if p.weapons[k]["id"] == "tofu":
+			i = k
+			break
+	var before := p.weapons.size()
+	assert_true(s.request(1, "combine", i))
+	assert_eq(p.weapons.size(), before - 1)
+	assert_true(p.weapons.any(func(w): return w["id"] == "tofu" and int(w["tier"]) == 2), "tofu II")
+	assert_eq(Sim.find_twin(p, "x", 4, -1), -1, "tier IV never combines")
+
+
+func test_no_real_quote_bubbles_in_waves() -> void:
+	var s := _sim(["oma"])
+	for i in 60 * 40:
+		s.players[1].iframes = 10.0
+		s.step(1.0 / 60.0)
+		for e in s.take_events():
+			if e[0] == "say":
+				assert_eq(str(e[3]), "", "no real quote bubble during a wave")
+
+
+func test_new_weapons_fire_and_hit() -> void:
+	for wid in ["kartoffelbrei", "trillerpfeife", "brandmauer_ziegel", "normenkontrolle", "unterschriftenliste",
+			"scheinwerfer", "neun_euro_ticket", "weisser_overall"]:
+		var s := _sim(["oma"])
+		var p: Sim.SimPlayer = s.players[1]
+		p.pos = Vector2(800, 560)
+		p.weapons.clear()
+		s._add_weapon(p, wid, 1)
+		s.enemies.clear()
+		var targets := []
+		for k in 4:
+			var e := s.spawn_enemy("reichsbuerger", p.pos + Vector2(110 + k * 40, k * 10))
+			e.behind = false
+			e.speed = 0.0
+			targets.append(e)
+		for i in 240:
+			p.iframes = 10.0
+			s.step(1.0 / 60.0)
+		var hurt := targets.filter(func(e): return not e.alive or e.hp < e.max_hp)
+		assert_false(hurt.is_empty(), wid + " damaged enemies")
+		assert_false(s.run_stats(p)["damage"].is_empty(), wid + " recorded damage")
+
+
+func test_politics_items() -> void:
+	var s := _sim(["oma"])
+	_to_shop(s)
+	var p: Sim.SimPlayer = s.players[1]
+	p.pfand = 0
+	p.offers[0] = {"kind": "item", "id": "maut_vertrag", "tier": 1, "price": 0, "sold": false}
+	assert_true(s.request(1, "buy", 0))
+	assert_eq(p.pfand, Content.RED_BUILD["maut_now"], "Maut pays on purchase")
+	p.items.append("zweiter_wahlgang")
+	s._recompute(p)
+	s.request(1, "ready", true)
+	p.stats["dodge"] = 0.0
+	p.iframes = 0.0
+	s.damage_player(p, 9999.0)
+	assert_eq(p.state, 0, "Zweiter Wahlgang saves once")
+	assert_near(p.hp, p.stats["max_hp"] * 0.5, 0.01)
+	p.iframes = 0.0
+	s.damage_player(p, 9999.0)
+	assert_eq(s.phase, Sim.Phase.OVER, "only once per run")
+	var t := _sim(["oma"])
+	var q: Sim.SimPlayer = t.players[1]
+	q.items.append("ber_eroeffnungstermin")
+	t._recompute(q)
+	assert_eq(t.dyn_damage(q), -10.0, "BER early")
+	t.wave = 10
+	assert_eq(t.dyn_damage(q), 40.0, "BER late")
 

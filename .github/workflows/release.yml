@@ -10,40 +10,33 @@ on:
 permissions:
   contents: read
 
+# Never cancel a release mid-way; a second run for the same ref waits instead.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   GODOT_VERSION: "4.7.2"
 
+# Third-party actions are pinned to commit SHAs (Dependabot updates them).
 jobs:
   export:
     name: Export builds
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Cache Godot
-        id: cache-godot
-        uses: actions/cache@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          path: ~/godot
-          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-      - name: Download Godot
-        if: steps.cache-godot.outputs.cache-hit != 'true'
-        run: |
-          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
-          zip="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
-          cd "$RUNNER_TEMP"
-          curl -fsSL --retry 3 -O "$base/$zip" -O "$base/SHA512-SUMS.txt"
-          grep " $zip\$" SHA512-SUMS.txt | sha512sum -c -
-          mkdir -p ~/godot
-          unzip -q "$zip" -d ~/godot
-          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
-          chmod +x ~/godot/godot
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
 
       # The full .tpz is ~1.3 GB; we only keep the four templates we export with.
       - name: Cache export templates
         id: cache-templates
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
           key: godot-templates-${{ env.GODOT_VERSION }}-win-linux-macos
@@ -94,12 +87,16 @@ jobs:
           (cd build/server && zip -q -r "$GITHUB_WORKSPACE/dist/BrandmauerServer-$version-linux.zip" .)
           # The macOS export already is a zip containing Brandmauer.app.
           cp build/macos/Brandmauer.zip "dist/Brandmauer-$version-macos.zip"
+          # Plain Windows exe (pck embedded) for testers: download and double-click.
+          cp build/windows/Brandmauer.exe "dist/Brandmauer-$version-windows.exe"
           ls -la dist
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: brandmauer-builds
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/*.exe
           if-no-files-found: error
           compression-level: 0  # already zipped
 
@@ -108,10 +105,14 @@ jobs:
     needs: export
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (for .github/release-notes.md)
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: brandmauer-builds
           path: dist
@@ -121,9 +122,10 @@ jobs:
         run: |
           extra=()
           [[ "$GITHUB_REF_NAME" == *-* ]] && extra+=(--prerelease)  # e.g. v0.2.0-beta
-          gh release create "$GITHUB_REF_NAME" dist/*.zip \
+          gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*.exe \
             --repo "$GITHUB_REPOSITORY" \
             --title "Brandmauer $GITHUB_REF_NAME" \
+            --notes-file .github/release-notes.md \
             --generate-notes \
             --verify-tag \
             "${extra[@]}"

@@ -107,7 +107,7 @@ SPAETI_REPAIR_KASSE,Aus der Koalitionskasse reparieren (%d %s)
 SPAETI_REPAIR_KASSE_TOOLTIP,Gemeinsame Sache: Die Reparatur wird aus der Koalitionskasse bezahlt und kostet 30 % weniger.
 SPAETI_WALL_OK,Steht. Noch.
 SPAETI_VERTRAG,Koalitionsvertrag
-SPAETI_VERTRAG_HINT,Nicht einstimmig? Die schlechteste Option gewinnt.
+SPAETI_VERTRAG_HINT,Alle einig: gilt. Uneinig: die schlechteste Option gewinnt. Alle enthalten: kein Vertrag.
 SPAETI_VERTRAG_ACTIVE,Gilt: %s (noch %d Wochen)
 SPAETI_VERTRAG_ACTIVE_ONE,Gilt: %s (noch 1 Woche)
 SPAETI_VOTE,Dafür
@@ -117,6 +117,35 @@ SPAETI_STILL_SHOPPING,shoppt noch
 SPAETI_QUOTE,Zitat der Woche (echt):
 SPAETI_READY,Bereit
 SPAETI_READY_ON,Bereit!
+SPAETI_STATS_BUTTON,Statistik
+SPAETI_STATS_BUTTON_TIP,"Wer hat hier was geleistet? Schaden, Heilung, Kohle. %s schließt wieder."
+STATS_TITLE,Statistik
+STATS_SUBTITLE,"Bilanz nach Woche %d. Ohne Gewähr, aber mit Haltung."
+STATS_CLOSE,Zurück zum Späti
+STATS_DAMAGE,Schaden nach Quelle
+STATS_DAMAGE_CAPTION,Wer hier eigentlich die Arbeit macht. Überstunden inklusive.
+STATS_COL_SOURCE,Quelle
+STATS_COL_WAVE,Letzte Woche
+STATS_COL_TOTAL,Gesamt
+STATS_COL_SHARE,Anteil
+STATS_SOLD,(verkauft)
+STATS_SRC_RAM,Rammen (Lastenrad)
+STATS_SRC_OTHER,Sonstiges
+STATS_NO_DAMAGE,Noch kein Schaden. Pazifismus ist auch eine Haltung.
+STATS_SURVIVAL,Überleben
+STATS_SURVIVAL_CAPTION,Der Sozialstaat in Zahlen.
+STATS_HEALED_BY,Geheilt durch %s
+STATS_DMG_TAKEN,Schaden eingesteckt
+STATS_BLOCKED_BY,Abgefedert durch %s
+STATS_DODGES,Entwischt dank %s
+STATS_MISC,Sonstiges
+STATS_MISC_CAPTION,Kleinkram fürs Protokoll.
+STATS_KILLS,Besiegt
+STATS_CRITS,Kritische Treffer
+STATS_ULTS,Ultis gezündet
+STATS_PFAND_COLLECTED,%s eingesammelt
+STATS_PFAND_INCOME,%s aus Nebenjob & Co.
+STATS_PFAND_SPENT,%s im Späti gelassen
 # Request denied (host -> deny event)
 DENY_NO_PFAND,Zu wenig Pfand.
 DENY_NO_PFAND_SHORT,zu wenig Pfand
@@ -140,13 +169,11 @@ PAUSE_CONFIRM,Wirklich? Nochmal drücken.
 OPTIONS_TITLE,Optionen
 OPTIONS_MUSIC,Musik
 OPTIONS_SFX,Geräusche
-OPTIONS_FULLSCREEN,Vollbild
 OPTIONS_TARGET,Zielauswahl
 OPTIONS_TARGET_CLOSEST,Nächste:r Gegner:in
 OPTIONS_TARGET_MOST_HP,Meiste Lebenspunkte
 OPTIONS_TARGET_LEAST_HP,Wenigste Lebenspunkte
 OPTIONS_TARGET_TIP,"Worauf deine Waffen automatisch zielen. Nächste:r = sicher, Meiste = Elites und Bosse zuerst, Wenigste = schnell aufräumen."
-OPTIONS_FULLSCREEN_ON,an
 OPTIONS_HINT,Wird sofort gespeichert. Ganz ohne Formular.
 # End screen
 END_WON,Gewonnen! Die Brandmauer hält.
@@ -164,6 +191,7 @@ END_COL_DAMAGE,Schaden
 END_COL_IN,Eingezahlt
 END_COL_OUT,Entnommen
 END_COL_MORAL,Steuermoral
+END_BEST_DAMAGE,Bester Schaden: %s (%s)
 END_GRADE,Note %d: %s
 END_MORAL_1,"vorbildlich, fast verdächtig"
 END_MORAL_2,solidarisch mit Ausrutschern
@@ -218,4 +246,68 @@ CREDITS_END,Danke fürs Zusammenhalten!
 MAIN_RUN_MISSING,Die Arena wird noch gebaut. Bitte Geduld.
 MAIN_SERVER_STATUS,Brandmauer: dedizierter Server · Port {port} · {players} Leute ({ready} bereit) · UPnP: {upnp}
 LOBBY_ULT,Ulti: %s
-LOBBY_ULT_HINT,Leertaste · einmal pro Sitzungswoche
+LOBBY_ULT_HINT,%s · einmal pro Sitzungswoche
+SPAETI_SLOT_CUT,GESTRICHEN
+SPAETI_SLOT_CUT_WHY,Koalitionsvertrag „%s“: ein Angebot weniger. Steht so im Formular.
+DENY_VOTE_FIRST,"Erst abstimmen (oder enthalten), dann Feierabend."
+DENY_BUY_LIMIT,Genossenschaftsanteil: nur 2 Käufe pro Besuch. Satzung ist Satzung.
+DENY_BUY_LIMIT_SHORT,Satzung!
+DENY_NO_TWIN,Zum Kombinieren brauchst du zwei gleiche Waffen gleicher Stufe.
+MENU_BUG,Bug melden
+# Späti: Seltenheit / Wegwerfen / Kombinieren / Enthalten
+SPAETI_ITEM_RARITY,Item · %s
+SPAETI_RARITY_TIP,Seltenheit: %s
+SPAETI_RED_STAMP,ROT · Build-Item
+SPAETI_RED_STAMP_TIP,"Seltenheit: Rot. Krempelt deinen Build um, aber nur für eine Spielweise."
+SPAETI_ITEM_CLICK_TIP,Klicken: wegwerfen
+SPAETI_DISCARD_TITLE,%s wegwerfen?
+SPAETI_DISCARD_HOW_MANY,Wie viele fliegen raus?
+SPAETI_DISCARD_NO_REFUND,Kein Pfand zurück.
+SPAETI_DISCARD,Wegwerfen
+SPAETI_DISCARD_N,Wegwerfen (%d)
+SPAETI_DISCARD_ALL,Alle wegwerfen (%d)
+SPAETI_COMBINE,Kombinieren → %s
+SPAETI_COMBINE_TIP,Zwei gleiche Waffen gleicher Stufe werden eine Stufe höher. Ein Waffenplatz wird frei.
+SPAETI_OFFER_COMBINES,kombiniert zu %s
+SPAETI_OFFER_COMBINES_TIP,Die hast du schon in dieser Stufe: Kaufen legt beide zusammen. Braucht keinen freien Platz.
+SPAETI_COMBINED,Kombiniert: %s %s!
+SPAETI_SELL_CONFIRM_TITLE,Verkaufen?
+SPAETI_SELL_CONFIRM,%s verkaufen für %d %s?
+SPAETI_SELL_CONFIRM_NOTE,Weg ist weg. Der Späti kauft nicht zurück.
+SPAETI_SELL_CONFIRM_OK,Verkaufen
+SPAETI_COMBINE_CONFIRM_TITLE,Kombinieren?
+SPAETI_COMBINE_CONFIRM,Zwei %s zu %s kombinieren?
+SPAETI_COMBINE_CONFIRM_NOTE,Ein Waffenplatz wird frei. Auseinandernehmen geht nicht.
+SPAETI_COMBINE_CONFIRM_OK,Kombinieren
+SPAETI_ABSTAIN,Enthalten
+SPAETI_ABSTAINED,Enthalten!
+SPAETI_ABSTAIN_TIP,"Keine Option wählen. Zählt als abgestimmt. Enthalten sich alle, gibt's keinen Vertrag."
+SPAETI_ABSTAINED_BY,Enthalten: %s
+SPAETI_VERTRAG_PENDING,Deine Stimme fehlt!
+SPAETI_READY_VOTE_FIRST,Erst abstimmen oder enthalten
+STATS_MERGED,(kombiniert)
+# Optionen: Fenstermodus / Sprechblasen
+OPTIONS_WINDOW_MODE,Fenstermodus
+OPTIONS_WINDOW_FULLSCREEN,Vollbild
+OPTIONS_WINDOW_MAXIMIZED,Maximiertes Fenster
+OPTIONS_WINDOW_WINDOWED,Fenster
+OPTIONS_BUBBLES,Sprechblasen
+OPTIONS_BUBBLES_OFF,aus
+OPTIONS_BUBBLES_TIP,"Wie deutlich die Gegner:innen in der Welle quasseln. Statusblasen wie „Verspätung“ bleiben lesbar, solange es nicht „aus“ ist."
+# Controller support (GDD §19b): input names and prompts
+INPUT_KEY_SPACE,Leertaste
+INPUT_KEY_ESC,Esc
+INPUT_KEY_ENTER,Enter
+INPUT_KEY_PAGEUP,Bild↑
+INPUT_KEY_PAGEDOWN,Bild↓
+INPUT_KEYS_MOVE,"W, A, S, D"
+INPUT_PAD_LSTICK,Linker Stick
+INPUT_PAD_RSTICK,Rechter Stick
+INPUT_INTRO_CONTINUE,Weiter mit %s oder %s
+UI_DIALOG_HINT,%s bestätigen · %s zurück
+PAUSE_KEYS_HINT,%s auswählen · %s weiterspielen
+OPTIONS_KEYS_HINT,Regler und Auswahl mit ← → ändern · %s zurück
+ALBUM_KEYS_HINT,%s blättert im Zitat
+END_SCROLL_HINT,%s blättert
+SPAETI_SECTIONS_HINT,%s %s Abschnitt wechseln
+SPAETI_ITEM_PAD_TIP,%s: wegwerfen

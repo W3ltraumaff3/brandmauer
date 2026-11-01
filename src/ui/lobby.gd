@@ -19,6 +19,7 @@ var _ready_btn: Button
 var _start_btn: Button
 var _wait_label: Label
 var _mode_label: Label
+var _detail_scroll: ScrollContainer
 
 
 func _init() -> void:
@@ -103,6 +104,7 @@ func _build_left() -> Control:
 		_org_pick = OptionButton.new()
 		for id in Content.ORG_ORDER:
 			_org_pick.add_item(UIKit.content_text("ORG", id))
+		_org_pick.name = "org_pick"
 		_org_pick.item_selected.connect(_on_org)
 		org.add_child(_org_pick)
 	else:
@@ -120,6 +122,7 @@ func _build_left() -> Control:
 			if i > max_diff:
 				_diff_pick.set_item_disabled(i, true)
 				_diff_pick.set_item_text(i, _diff_name(i) + "  " + tr("LOBBY_DIFF_LOCKED"))
+		_diff_pick.name = "diff_pick"
 		_diff_pick.item_selected.connect(_on_diff)
 		diff.add_child(_diff_pick)
 	else:
@@ -144,6 +147,7 @@ func _build_grid() -> Control:
 		var id: String = Content.CHAR_ORDER[i]
 		var unlocked := UIApi.char_unlocked(id)
 		var b := Button.new()
+		b.name = "char_" + id
 		b.custom_minimum_size = Vector2(136, 140)
 		b.toggle_mode = true
 		b.clip_text = true
@@ -153,13 +157,18 @@ func _build_grid() -> Control:
 		b.mouse_entered.connect(_show_detail.bind(id))
 		b.mouse_exited.connect(_show_selected)
 		UIKit.tilt(b, UIKit.tilt_for(i, 0.7))
-		var doodle := CharDoodle.new()
-		doodle.char_id = id
-		doodle.locked = not unlocked
-		doodle.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-		doodle.offset_bottom = -28
-		doodle.offset_top = 4
-		b.add_child(doodle)
+		# the real arena drawing at stage 4 (GDD §6), so lobby and arena look alike
+		var portrait := CharPortrait.new()
+		portrait.char_id = id
+		portrait.stage = 4
+		portrait.locked = not unlocked
+		portrait.max_scale = 1.45
+		portrait.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+		portrait.offset_bottom = -28
+		portrait.offset_top = 6
+		portrait.offset_left = 6
+		portrait.offset_right = -6
+		b.add_child(portrait)
 		var name_l := UIKit.label(UIKit.content_text("CHAR", id), 17, UITheme.INK if unlocked else UITheme.GREY, HORIZONTAL_ALIGNMENT_CENTER)
 		UIKit.fit_label(name_l, 124, 12)
 		name_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -186,6 +195,7 @@ func _build_detail() -> Control:
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	c.add_child(scroll)
+	_detail_scroll = scroll
 	_detail = UIKit.vbox(6)
 	_detail.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(_detail)
@@ -292,12 +302,25 @@ func refresh() -> void:
 	_ready_btn.text = tr("LOBBY_READY_ON") if _ready_btn.button_pressed else tr("LOBBY_READY")
 	_start_btn.visible = host
 	_start_btn.disabled = not (solo or all_ready) or my_char == ""
+	UINav.sync_disabled(_start_btn)
 	_wait_label.visible = not host
 	if host and not solo and not all_ready:
 		_wait_label.visible = true
 		_wait_label.text = tr("LOBBY_WAIT_READY")
 	elif not host:
 		_wait_label.text = tr("LOBBY_WAIT_HOST")
+	_link_bottom_row()
+
+
+## Up from the bottom row goes to the character grid (not the narrow left
+## column), so A on "Bereit"/"Los" is one stick flick away from the choice.
+func _link_bottom_row() -> void:
+	var mine := str(_my_entry().get("char", Content.CHAR_ORDER[0]))
+	var target: Button = _char_buttons.get(mine, _char_buttons.get(Content.CHAR_ORDER[0])) as Button
+	if target == null:
+		return
+	for b in [_ready_btn, _start_btn]:
+		(b as Control).focus_neighbor_top = (b as Control).get_path_to(target)
 
 
 func _local_ips() -> Array:
@@ -348,7 +371,9 @@ func _show_detail(id: String) -> void:
 		var ud := UIKit.content_text("ULT", ult, "DESC")
 		if ud != "":
 			_detail.add_child(UIKit.para(ud, 16, UITheme.INK_SOFT))
-		_detail.add_child(UIKit.label(tr("LOBBY_ULT_HINT"), 14, UITheme.GREY))
+		var hint := UIKit.label("", 14, UITheme.GREY)
+		InputGlyphs.bind(hint, "text", func() -> String: return InputGlyphs.fmt("LOBBY_ULT_HINT", ["ultimate"]))
+		_detail.add_child(hint)
 
 	var mods: Dictionary = c.get("mods", {})
 	var flow := HFlowContainer.new()
@@ -372,6 +397,11 @@ func _show_detail(id: String) -> void:
 
 
 # --- Actions ----------------------------------------------------------------
+
+## The character detail scrolls with the right stick.
+func _process(delta: float) -> void:
+	UINav.stick_scroll(_detail_scroll, delta)
+
 
 func _on_char(id: String) -> void:
 	if not UIApi.char_unlocked(id):

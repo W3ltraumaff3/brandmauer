@@ -146,9 +146,6 @@ static func _md_url(s: String) -> String:
 	return m.get_string(2) if m else ""
 
 
+## Up/down (keys, D-pad, left stick) and the right stick scroll the notice.
 func _process(delta: float) -> void:
-	if _scroll == null:
-		return
-	var axis := Input.get_axis("ui_up", "ui_down")
-	if absf(axis) > 0.1:
-		_scroll.scroll_vertical += int(axis * SCROLL_SPEED * delta)
+	UINav.stick_scroll(_scroll, delta, true, SCROLL_SPEED)

@@ -20,7 +20,10 @@ func build() -> void:
 	var row := UIKit.hbox(12)
 	row.alignment = BoxContainer.ALIGNMENT_END
 	var go := UIKit.button(tr("HOST_START"), _on_go)
-	row.add_child(UIKit.button(tr("UI_CANCEL"), close))
+	go.name = "start"
+	var cancel := UIKit.button(tr("UI_CANCEL"), close)
+	cancel.name = "cancel"
+	row.add_child(cancel)
 	row.add_child(go)
 	content.add_child(row)
 	UIKit.focus_later(go)

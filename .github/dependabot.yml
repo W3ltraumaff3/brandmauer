@@ -1,0 +1,43 @@
+# Dependabot version updates (docs/specs/ci-cd.md §5).
+# Security updates are enabled separately in the repository settings.
+version: 2
+updates:
+  # Actions used in the workflows and in the local composite action(s).
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Berlin
+    # Don't pick up a release in its first days (supply-chain safety margin).
+    cooldown:
+      default-days: 5
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "ci"
+    labels: [dependencies, github-actions]
+    open-pull-requests-limit: 5
+
+  # Hash-pinned Python tooling for the "GDScript lint" job (tools/requirements-lint.*).
+  # The game's own Python scripts use only the standard library.
+  - package-ecosystem: pip
+    directory: "/tools"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Berlin
+    cooldown:
+      default-days: 5
+    groups:
+      lint-tools-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "ci"
+    labels: [dependencies, python]
+    open-pull-requests-limit: 5

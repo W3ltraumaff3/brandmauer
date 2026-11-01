@@ -2,6 +2,11 @@ extends Node
 ## Entry point (scenes/main.tscn). Applies the shared theme, owns the toast
 ## layer and switches screens on Game.screen_requested:
 ## "menu" | "lobby" | "run" | "end". A dedicated server only shows a status line.
+## Caps the frame rate: 144 FPS in a run, 60 in menus (GDD §4 Performance), and
+## installs the gamepad helpers (UINav: InputGlyphs, FocusTips; GDD §19b).
+
+const FPS_RUN := 144
+const FPS_MENU := 60
 
 const RUN_SCREEN_PATH := "res://src/view/run_screen.gd"
 
@@ -15,7 +20,7 @@ func _ready() -> void:
 	get_tree().root.theme = UITheme.get_theme()
 	_toasts = ToastLayer.new()
 	add_child(_toasts)
-	OptionsScreen.apply_fullscreen(bool(UIApi.option("fullscreen", false)))
+	OptionsScreen.apply_window_mode(OptionsScreen.saved_window_mode())
 	var g := UIApi.game()
 	UIApi.connect_opt(g, "screen_requested", show_screen)
 	UIApi.connect_opt(g, "message", _on_message)
@@ -23,6 +28,7 @@ func _ready() -> void:
 	if _is_dedicated():
 		_show_server_status()
 	else:
+		UINav.install(self)
 		show_screen("menu")
 
 
@@ -51,7 +57,14 @@ func show_screen(screen: String) -> void:
 		_:
 			push_warning("main: unknown screen '%s'" % screen)
 			return
+	Engine.max_fps = fps_for(screen)
 	_swap(next, screen)
+
+
+## Frame cap per screen (GDD §4): 144 during a run (incl. the Späti), 60 for
+## the menu, lobby and end screen.
+static func fps_for(screen: String) -> int:
+	return FPS_RUN if screen == "run" else FPS_MENU
 
 
 func _swap(next: Node, screen: String) -> void:
