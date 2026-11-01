@@ -215,6 +215,8 @@ func _check_glyphs() -> void:
 	await _button(JOY_BUTTON_X, 1)
 	if not InputGlyphs.using_pad():
 		_fail("gamepad input not detected")
+	# Pin the Xbox style: a real PlayStation pad plugged into this PC would otherwise switch the labels.
+	InputGlyphs.set_device(InputGlyphs.Device.PAD, "xbox")
 	var pad := [InputGlyphs.label("ultimate"), InputGlyphs.label("streik"), InputGlyphs.label("pause"),
 		InputGlyphs.label("ui_accept"), InputGlyphs.label("ui_cancel"), InputGlyphs.label("ui_page_left"),
 		InputGlyphs.label("ui_page_right")]

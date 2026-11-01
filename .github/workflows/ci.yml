@@ -54,6 +54,8 @@ jobs:
         run: ~/godot/godot --headless --path . --import
       - name: Run tests
         run: ~/godot/godot --headless --path . -s res://tests/godot/run_tests.gd
+      - name: Späti layout over a full run (Bereit always on screen)
+        run: ~/godot/godot --headless --path . -s res://tools/spaeti_layout_check.gd
 
   net-smoke:
     name: Net smoke

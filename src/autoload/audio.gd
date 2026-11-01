@@ -36,7 +36,7 @@ const EVENT_SFX := {
 var enabled := false            # false under a headless DisplayServer
 var playlist := {}              # category -> Array of res:// paths
 var category := ""              # current music category ("" = none)
-var music_volume := 0.7
+var music_volume := 0.5
 var sfx_volume := 0.8
 
 var _music: Array[AudioStreamPlayer] = []
@@ -77,6 +77,7 @@ func _ready() -> void:
 	var save = get_node_or_null("/root/Save")
 	if save and save.has_method("option"):
 		set_volumes(float(save.option("music", music_volume)), float(save.option("sfx", sfx_volume)))
+		set_master_volume(float(save.option("master", master_volume)))
 	else:
 		set_volumes(music_volume, sfx_volume)
 	# Game is autoloaded after us, so hook its signals once the tree is complete.
@@ -127,6 +128,16 @@ func play_sfx(id: String, pos := Vector2.INF) -> void:
 	p.volume_db = linear_to_db(vol)
 	p.pitch_scale = 1.0 + _rng.randf_range(-PITCH_JITTER, PITCH_JITTER)
 	p.play()
+
+
+## Overall volume (Master bus), linear 0..1.
+var master_volume := 0.7
+
+
+func set_master_volume(v: float) -> void:
+	master_volume = clampf(v, 0.0, 1.0)
+	if enabled:
+		_apply_bus("Master", master_volume)
 
 
 ## Linear 0..1 per bus.

@@ -508,7 +508,8 @@ Saved immediately.
 
 | Option | Values |
 |---|---|
-| **Musik** | volume |
+| **Gesamtlautstärke** | master volume (default 70 %) |
+| **Musik** | volume (default 50 %) |
 | **Geräusche** | volume (sound effects) |
 | **Zielauswahl** | Nächste:r Gegner:in (default) / Meiste Lebenspunkte / Wenigste Lebenspunkte |
 | **Fenstermodus** | Vollbild / Maximiertes Fenster / Fenster (default) |
