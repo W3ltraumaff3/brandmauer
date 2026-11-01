@@ -8,6 +8,7 @@ const PF_STUNNED := 2
 const PF_STILL := 4
 const PF_INVULNERABLE := 8
 const PF_REVIVING := 16
+const PF_ULT := 32
 
 const EF_ELITE := 1
 const EF_POISONED := 2

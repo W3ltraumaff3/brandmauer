@@ -340,6 +340,16 @@ func _show_detail(id: String) -> void:
 		if wd != "":
 			_detail.add_child(UIKit.para(wd, 16, UITheme.INK_SOFT))
 
+	var ult := str(c.get("ult", ""))
+	if ult != "":
+		var ul := UIKit.label(tr("LOBBY_ULT") % UIKit.content_text("ULT", ult), 19, UITheme.RED)
+		ul.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_detail.add_child(ul)
+		var ud := UIKit.content_text("ULT", ult, "DESC")
+		if ud != "":
+			_detail.add_child(UIKit.para(ud, 16, UITheme.INK_SOFT))
+		_detail.add_child(UIKit.label(tr("LOBBY_ULT_HINT"), 14, UITheme.GREY))
+
 	var mods: Dictionary = c.get("mods", {})
 	var flow := HFlowContainer.new()
 	flow.add_theme_constant_override("h_separation", 12)

@@ -293,15 +293,19 @@ func _reset_run() -> void:
 
 
 func _process(_dt: float) -> void:
+	if not is_running() or mode == Mode.SERVER or _paused:
+		return
 	# Boss card: the world waits until every player pressed W/A/S/D or Space.
-	if not is_running() or mode == Mode.SERVER or not bool(meta.get("intro_wait", false)):
-		return
-	if local_id() in meta.get("intro_done", []):
-		return
-	for action in ["move_left", "move_right", "move_up", "move_down", "ultimate"]:
-		if Input.is_action_just_pressed(action):
-			request("continue_intro")
+	if bool(meta.get("intro_wait", false)):
+		if local_id() in meta.get("intro_done", []):
 			return
+		for action in ["move_left", "move_right", "move_up", "move_down", "ultimate"]:
+			if Input.is_action_just_pressed(action):
+				request("continue_intro")
+				return
+		return
+	if int(meta.get("phase", -1)) == Sim.Phase.WAVE and Input.is_action_just_pressed("ultimate"):
+		request("ultimate")
 
 
 func _physics_process(dt: float) -> void:

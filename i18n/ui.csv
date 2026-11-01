@@ -217,3 +217,5 @@ CREDITS_END,Danke fürs Zusammenhalten!
 # main.gd
 MAIN_RUN_MISSING,Die Arena wird noch gebaut. Bitte Geduld.
 MAIN_SERVER_STATUS,Brandmauer: dedizierter Server · Port {port} · {players} Leute ({ready} bereit) · UPnP: {upnp}
+LOBBY_ULT,Ulti: %s
+LOBBY_ULT_HINT,Leertaste · einmal pro Sitzungswoche

@@ -16,7 +16,8 @@ const SEG_W := 1600.0 / 12.0
 const REVIVE_RANGE := 60.0
 
 enum { K_ENEMY = 1, K_PROJ, K_PICK, K_SUMMON, K_PLAYER, K_WEAPON, K_MISC, K_FOLLOWER }
-enum { M_BG, M_WALL, M_RUBBLE, M_URNE, M_BLADES, M_YACHT, M_SCHIRM, M_FLAG, M_CHALET, M_CIRCUS, M_SITTER }
+enum { M_BG, M_WALL, M_RUBBLE, M_URNE, M_BLADES, M_YACHT, M_SCHIRM, M_FLAG, M_CHALET, M_CIRCUS, M_SITTER,
+	M_LOUNGER, M_SHEET, M_STAMP, M_NOTE }
 
 const INK := Color("222222")
 const FACE := Color("f7e4cc")
@@ -69,6 +70,12 @@ var _t_porsche := -1
 var _t_ju := -1
 var _t_startup := -1
 var _t_spin := {}
+# Ultimates (architecture §9): global effects from meta, eased for fading.
+var _eff_tarif := 0.0
+var _eff_antrag := 0.0
+var antrag_vis := 0.0             # 0..1 paper storm visibility (public for the preview)
+var _p_prev := {}                 # player id -> last position (Critical Mass heading)
+var _p_heading := {}
 
 
 func _ready() -> void:
@@ -152,7 +159,19 @@ func _process(delta: float) -> void:
 		if _exits[i]["t"] > 5.5:
 			_exits.remove_at(i)
 		i -= 1
+	_read_effects()
+	antrag_vis = move_toward(antrag_vis, 1.0 if _eff_antrag > 0.0 else 0.0, delta * 2.5)
 	queue_redraw()
+
+
+## Global ultimate effects from meta (seconds left, absent when inactive).
+func _read_effects() -> void:
+	var eff = get_meta_dict().get("effects", {})
+	_eff_tarif = 0.0
+	_eff_antrag = 0.0
+	if eff is Dictionary:
+		_eff_tarif = float(eff.get("tarifrunde", 0.0))
+		_eff_antrag = float(eff.get("antrag_gestellt", 0.0))
 
 
 func _draw() -> void:
@@ -161,6 +180,7 @@ func _draw() -> void:
 		return
 	var t0 := Time.get_ticks_usec()
 	var st := clampi(vs.stage, 0, 4)
+	_read_effects()
 	_ppos.clear()
 	for p in vs.players:
 		if int(p.get("state", 0)) == 0:
@@ -171,8 +191,12 @@ func _draw() -> void:
 	_draw_pickups(vs, st)
 	_draw_summons(vs, st)
 	_draw_enemies(vs, st)
+	if antrag_vis > 0.0:
+		_draw_formular_notes(vs, st)
 	_draw_players(vs, st)
 	_draw_projectiles(vs, st)
+	if antrag_vis > 0.0:
+		_draw_paper_storm(st)
 	_draw_exits(st)
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	draw_usec = Time.get_ticks_usec() - t0
@@ -189,6 +213,11 @@ func _mesh(kind: int, type: int, st: int, v: int, white := false) -> ArrayMesh:
 	return m
 
 
+## A cached passer-by doodle (Fx: Flashmob crowd). Full colour, boils over time.
+func person_mesh(k: int) -> ArrayMesh:
+	return _mesh(K_FOLLOWER, posmod(k, 6), 4, Doodle.variant(k))
+
+
 ## Bake every enemy/projectile/pickup mesh for a stage up front (avoids hitches).
 func prewarm(st: int) -> void:
 	for t in Content.ENEMY_ORDER.size():
@@ -200,6 +229,9 @@ func prewarm(st: int) -> void:
 	for t in Content.PICKUP_ORDER.size():
 		for v in Doodle.VARIANTS:
 			_mesh(K_PICK, t, st, v)
+	for t in Content.SUMMON_ORDER.size():
+		for v in Doodle.VARIANTS:
+			_mesh(K_SUMMON, t, st, v)
 
 
 func _build(kind: int, type: int, st: int, v: int, white: bool) -> ArrayMesh:
@@ -369,14 +401,29 @@ func _draw_pickups(vs: ViewState, st: int) -> void:
 
 func _draw_summons(vs: ViewState, st: int) -> void:
 	var t_turb := Content.SUMMON_ORDER.find("turbine")
+	var t_gen := Content.SUMMON_ORDER.find("genosse")
 	for i in vs.s_pos.size():
 		var ty: int = vs.s_type[i]
+		if ty >= Content.SUMMON_ORDER.size():
+			continue
 		var pos := vs.s_pos[i]
 		var v := Doodle.variant(i)
 		var rot := 0.0
+		var sx := 1.0
 		if Content.SUMMON_ORDER[ty] == "oma":
 			rot = sin(anim_time * 6.0 + i) * 0.08
-		draw_mesh(_mesh(K_SUMMON, ty, st, v), null, Transform2D(rot, pos))
+		elif ty == t_gen:
+			# marching comrades: brisk step, face the nearest player's side outward
+			rot = sin(anim_time * 10.0 + i * 1.7) * 0.07
+			pos.y -= absf(sin(anim_time * 10.0 + i * 1.7)) * 3.0
+			var best := 1e12
+			for k in _ppos.size():
+				var d := _ppos[k].distance_squared_to(pos)
+				if d < best:
+					best = d
+					sx = -1.0 if _ppos[k].x > pos.x else 1.0
+			draw_polyline(Doodle.ellipse_pts(vs.s_pos[i] + Vector2(0, 19), 13, 4, v), Color(0.75, 0.12, 0.12, 0.5), 2.0)
+		draw_mesh(_mesh(K_SUMMON, ty, st, v), null, Transform2D(rot, Vector2(sx, 1.0), 0.0, pos))
 		if ty == t_turb:
 			draw_mesh(_mesh(K_MISC, M_BLADES, st, v), null, Transform2D(anim_time * 2.2 + i, pos + Vector2(0, -78)))
 
@@ -503,6 +550,9 @@ func _draw_players(vs: ViewState, st: int) -> void:
 	var slot := 0
 	var t_stadt := Content.CHAR_ORDER.find("stadtbild")
 	var t_klima := Content.CHAR_ORDER.find("klimakleber")
+	var t_sozial := Content.CHAR_ORDER.find("sozialtourist")
+	var t_rad := Content.CHAR_ORDER.find("lastenrad")
+	var new_prev := {}
 	for p in vs.players:
 		var col: Color = SLOT_COLORS[slot % SLOT_COLORS.size()]
 		slot += 1
@@ -516,6 +566,19 @@ func _draw_players(vs: ViewState, st: int) -> void:
 		var pid := int(p.get("id", 0))
 		var v := Doodle.variant(pid * 3)
 		var sx := -1.0 if cos(aim) < -0.05 else 1.0
+		# movement heading (Critical Mass trail); falls back to the aim direction
+		var prev: Vector2 = _p_prev.get(pid, pos)
+		var hd: Vector2 = _p_heading.get(pid, Vector2(cos(aim), sin(aim)))
+		if pos.distance_squared_to(prev) > 1.0:
+			hd = hd.lerp((pos - prev).normalized(), 0.35).normalized()
+			_p_heading[pid] = hd
+		new_prev[pid] = pos
+		var ult := (flags & ViewState.PF_ULT) != 0 and state == 0
+		var lounging := ult and ci == t_sozial
+		if ult and ci == t_rad:
+			_draw_critical_mass(pos, hd, ci, st, v, pid)
+		if _eff_tarif > 0.0 and state == 0:
+			_draw_tarif_glow(pos, pid)
 		# ground marker
 		var mc := Color(col, 0.75) if pid == me else Color(col, 0.45)
 		draw_polyline(Doodle.ellipse_pts(pos + Vector2(0, 22), 20, 7, v), mc, 3.0 if pid == me else 2.0)
@@ -535,11 +598,16 @@ func _draw_players(vs: ViewState, st: int) -> void:
 			if ci == t_stadt:
 				_draw_followers(int(p.get("followers", 0)), pos, st, pid)
 			var mod := Color.WHITE
-			if flags & ViewState.PF_INVULNERABLE and int(t * 14.0) % 2 == 0:
+			if flags & ViewState.PF_INVULNERABLE and int(t * 14.0) % 2 == 0 and not lounging:
 				mod = Color(1, 1, 1, 0.45)
-			var bob := -absf(sin(t * 8.0 + pid)) * 2.0
-			draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(sin(t * 8.0 + pid) * 0.04, Vector2(sx, 1), 0.0, pos + Vector2(0, bob)), mod)
-			_draw_weapons(p.get("weapons", PackedByteArray()), pos, aim, st, v)
+			if lounging:
+				_draw_lounger(pos, sx, st, v, pid)
+			else:
+				var bob := -absf(sin(t * 8.0 + pid)) * 2.0
+				draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(sin(t * 8.0 + pid) * 0.04, Vector2(sx, 1), 0.0, pos + Vector2(0, bob)), mod)
+				_draw_weapons(p.get("weapons", PackedByteArray()), pos, aim, st, v)
+			if _eff_tarif > 0.0:
+				_draw_tarif_tag(pos + Vector2(32, -40 if not lounging else -46), pid)
 			if st >= 4:
 				for k in 3:
 					var a := t * 1.5 + TAU * k / 3.0
@@ -556,6 +624,128 @@ func _draw_players(vs: ViewState, st: int) -> void:
 			var nm := str(mplayers.get(pid, {}).get("name", ""))
 			if nm != "":
 				Doodle.text(self, nm, pos + Vector2(0, 42 if state == 0 else 72), 16, col.darkened(0.2), _hand, 4)
+	_p_prev = new_prev
+	for k in _p_heading.keys():
+		if not new_prev.has(k):
+			_p_heading.erase(k)
+
+
+# --- Ultimates (architecture §9) ------------------------------------------------------
+
+## Urlaubsantrag: on the sun lounger with parasol and cocktail, Zzz and heal sparkles.
+func _draw_lounger(pos: Vector2, sx: float, st: int, v: int, pid: int) -> void:
+	var t := anim_time
+	var breathe := 1.0 + sin(t * 2.2 + pid) * 0.015
+	draw_mesh(_mesh(K_MISC, M_LOUNGER, st, v), null, Transform2D(0.0, Vector2(sx, breathe), 0.0, pos))
+	var head := pos + Vector2(-30.0 * sx, -22.0)
+	for k in 3:
+		var ph := fmod(t * 0.55 + k / 3.0, 1.0)
+		var zp := head + Vector2((-6.0 - ph * 20.0 + sin(ph * 6.0 + k) * 4.0) * sx, -10.0 - ph * 40.0)
+		var za := sin(ph * PI)
+		Doodle.text(self, "Z", zp, int(13 + ph * 12), Color(0.2, 0.35, 0.7, za), _hand, 3, Color(PAPER, za))
+	var heal := Color(0.25, 0.72, 0.35)
+	for k in 4:
+		var ph := fmod(t * 0.7 + k * 0.27, 1.0)
+		var hp := pos + Vector2((-6.0 + k * 13.0 + sin(t * 2.0 + k) * 5.0) * sx, 6.0 - ph * 46.0)
+		var a := sin(ph * PI)
+		var r := 3.5 + 1.5 * (k % 2)
+		draw_line(hp + Vector2(-r, 0), hp + Vector2(r, 0), Color(heal, a), 2.5)
+		draw_line(hp + Vector2(0, -r), hp + Vector2(0, r), Color(heal, a), 2.5)
+
+
+## Critical Mass: ghost bikes trailing behind, plus speed lines.
+func _draw_critical_mass(pos: Vector2, hd: Vector2, ci: int, st: int, v: int, pid: int) -> void:
+	var t := anim_time
+	var dir := hd.normalized() if hd.length_squared() > 0.01 else Vector2.RIGHT
+	var sx := -1.0 if dir.x < -0.05 else 1.0
+	var nrm := dir.orthogonal()
+	var mesh := _mesh(K_PLAYER, ci, st, v)
+	for k in range(4, 0, -1):
+		var off := -dir * (34.0 * k) + nrm * sin(t * 9.0 + k * 1.3 + pid) * 5.0 * k * 0.5
+		var a := 0.5 - k * 0.1
+		draw_mesh(mesh, null, Transform2D(0.0, Vector2(sx, 1.0), 0.0, pos + off), Color(0.55, 0.95, 0.6, a))
+	var lc := Color(0.25, 0.55, 0.3, 0.6)
+	for k in 6:
+		var lane := (float(k) - 2.5) * 9.0
+		var ph := fmod(t * 3.0 + k * 0.37, 1.0)
+		var a0 := pos - dir * (30.0 + ph * 120.0) + nrm * lane
+		var a1 := a0 - dir * (24.0 + 16.0 * Doodle.noise(k))
+		draw_line(a0, a1, Color(lc, lc.a * (1.0 - ph)), 2.5)
+
+
+## Tarifrunde: soft red union-vest glow behind a player.
+func _draw_tarif_glow(pos: Vector2, pid: int) -> void:
+	var a := clampf(_eff_tarif / 0.5, 0.0, 1.0)
+	var pulse := 0.5 + 0.5 * sin(anim_time * 6.0 + pid)
+	var c := Color(0.85, 0.12, 0.1)
+	var v := Doodle.frame % Doodle.VARIANTS
+	var ctr := pos + Vector2(0, -4)
+	var squash := Transform2D(0.0, Vector2(0.85, 1.0), 0.0, ctr) * Transform2D(0.0, -ctr)
+	draw_colored_polygon(squash * Doodle.blob_pts(ctr, 36.0 + 3.0 * pulse, v, pid, 0.03), Color(c, (0.1 + 0.05 * pulse) * a))
+	draw_colored_polygon(squash * Doodle.blob_pts(ctr, 26.0, v, pid + 1, 0.03), Color(c, 0.1 * a))
+	draw_polyline(Doodle.ellipse_pts(ctr, 31.0 + 3.0 * pulse, 37.0 + 3.0 * pulse, v), Color(c, 0.5 * a), 2.5)
+
+
+## Tarifrunde: small red "+50 %" badge next to a player.
+func _draw_tarif_tag(p: Vector2, pid: int) -> void:
+	var a := clampf(_eff_tarif / 0.5, 0.0, 1.0)
+	var pct := int(round(float(Content.ULTS["tarifrunde"]["damage"]) * 100.0))
+	var s := tr("HUD_ULT_TARIF_BONUS") % pct
+	var bob := sin(anim_time * 4.0 + pid) * 2.0
+	var w := _hand.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 12.0
+	var r := Rect2(p + Vector2(-w * 0.5, -11 + bob), Vector2(w, 20))
+	draw_set_transform(r.get_center(), -0.12, Vector2.ONE)
+	var rr := Rect2(-r.size * 0.5, r.size)
+	draw_rect(rr, Color(0.82, 0.12, 0.1, a))
+	draw_polyline(Doodle.rect_pts(rr, Doodle.frame % 3, 1.0), Color(INK, a), 1.5)
+	Doodle.text(self, s, Vector2(0, 6), 15, Color(1, 1, 1, a), _hand)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+## Antrag gestellt: every enemy carries a little form clipped to it.
+func _draw_formular_notes(vs: ViewState, st: int) -> void:
+	var n := vs.e_pos.size()
+	var a := antrag_vis
+	var label := tr("HUD_ULT_FORMULAR")
+	var lw := _hand.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
+	var with_text := n <= 140
+	var note := _mesh(K_MISC, M_NOTE, st, Doodle.frame % Doodle.VARIANTS)
+	var col := Color(1, 1, 1, a)
+	var tcol := Color(0.15, 0.2, 0.45, a)
+	var xf: Array[Transform2D] = []
+	for i in n:
+		var ty: int = vs.e_type[i]
+		var top := _etop[ty] if ty < _etop.size() else -30.0
+		var id: int = vs.e_id[i] if i < vs.e_id.size() else i
+		var sway := sin(anim_time * 3.0 + id * 0.9) * 0.12
+		var tr2 := Transform2D(-0.15 + sway, vs.e_pos[i] + Vector2(14, top - 8))
+		draw_mesh(note, null, tr2, col)
+		if with_text:
+			xf.append(tr2)
+	for tr2 in xf:
+		draw_set_transform_matrix(tr2)
+		draw_string(_hand, Vector2(-lw * 0.5, 4), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, tcol)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+## Antrag gestellt: sheets of paper and rubber stamps drift across the arena.
+func _draw_paper_storm(st: int) -> void:
+	var t := anim_time
+	var a := antrag_vis
+	var span := ARENA.x + 240.0
+	var sheet := _mesh(K_MISC, M_SHEET, st, Doodle.frame % Doodle.VARIANTS)
+	var stamp := _mesh(K_MISC, M_STAMP, st, Doodle.frame % Doodle.VARIANTS)
+	for k in 46:
+		var sp := 110.0 + 70.0 * (0.5 + 0.5 * Doodle.noise(k * 3))
+		var x := fmod(Doodle.noise(k) * 2000.0 + 2000.0 + t * sp, span) - 120.0
+		var y := WALL_BOTTOM + 20.0 + (0.5 + 0.5 * Doodle.noise(k + 77)) * (ARENA.y - WALL_BOTTOM - 40.0)
+		y += sin(t * (1.1 + 0.4 * Doodle.noise(k + 5)) + k) * 26.0
+		var rot := t * (1.5 + Doodle.noise(k + 9)) + k
+		var flip := 0.35 + 0.65 * absf(sin(t * 2.3 + k * 0.7))
+		if k % 7 == 3:
+			draw_mesh(stamp, null, Transform2D(sin(t * 2.0 + k) * 0.5, Vector2(1.0, 1.0), 0.0, Vector2(x, y)), Color(1, 1, 1, a))
+		else:
+			draw_mesh(sheet, null, Transform2D(rot, Vector2(1.0, flip), 0.0, Vector2(x, y)), Color(1, 1, 1, a * 0.95))
 
 
 func _draw_followers(n: int, pos: Vector2, st: int, pid: int) -> void:
@@ -898,6 +1088,15 @@ func _hat(sk: Doodle.Sketch, hat: String, hc: Vector2, rx: float, ry: float, c: 
 			sk.shape(dome, c)
 			sk.circle(hc + Vector2(rx * 0.7, -ry * 0.85), rx * 0.32, Color("e05a8a"))
 			sk.dot(hc + Vector2(rx * 0.7, -ry * 0.85), rx * 0.12, GOLD)
+		"hood":
+			# hoodie hood framing the (visible) face
+			var outer := sk.ellipse_pts(hc + Vector2(-rx * 0.08, 0), rx * 1.38, ry * 1.32, 14, PI * 0.62, PI * 1.76)
+			var inner := sk.ellipse_pts(hc + Vector2(rx * 0.14, ry * 0.18), rx * 0.92, ry * 0.86, 12, PI * 0.62, PI * 1.76)
+			inner.reverse()
+			var hood := outer.duplicate()
+			hood.append_array(inner)
+			sk.shape(hood, c)
+			sk.line(PackedVector2Array([hc + Vector2(-rx * 1.1, -ry * 0.2), hc + Vector2(-rx * 0.7, -ry * 0.9)]), 0.8 * s, Color(1, 1, 1, 0.35))
 		"helmet":
 			var dome := sk.ellipse_pts(hc + Vector2(0, -ry * 0.42), rx * 1.12, ry * 0.9, 10, PI, PI)
 			sk.shape(dome, c)
@@ -1394,6 +1593,25 @@ func _b_summon(sk: Doodle.Sketch, id: String) -> void:
 					k.shape(PackedVector2Array([h + Vector2(-3, -14), h + Vector2(0, -22), h + Vector2(3, -14), h + Vector2(0, -2)]), Color("2e6db4"), true, 1.2)
 					k.line(PackedVector2Array([h + Vector2(0, 4), h + Vector2(1, 7), h + Vector2(3, 7)]), 1.6)})
 			_shadow(sk, Vector2(0, 19), 20)
+		"genosse":
+			# Schwarzer Block comrade: black hoodie, face visible and smiling, small flag.
+			_shadow(sk, Vector2(0, 19), 20)
+			_person(sk, {"x": 0.0, "y": 18.0, "s": 0.92, "body": Color("26262b"), "pants": Color("33333a"),
+				"hair": "none", "hat": "hood", "hat_c": Color("2e2e34"), "eyes": "dots", "mouth": "smile", "blush": true,
+				"arms": "wave", "wb": 6.8, "wt": 7.8, "shoes": Color("8a1e1e"),
+				"deco": func(k: Doodle.Sketch, a: Dictionary):
+					var n: Vector2 = a["neck"]
+					k.line2(n + Vector2(-2, 1), n + Vector2(-2.5, 7), 0.9, WHITE)
+					k.line2(n + Vector2(2, 1), n + Vector2(2.5, 7), 0.9, WHITE)
+					var hp: Vector2 = a["hip"]
+					k.line(PackedVector2Array([hp + Vector2(-5, -3), hp + Vector2(5, -3)]), 1.0, Color(0.5, 0.5, 0.55)),
+				"after": func(k: Doodle.Sketch, a: Dictionary):
+					var h: Vector2 = a["hr"]
+					k.line2(h + Vector2(0, 5), h + Vector2(0, -20), 1.6, Color("8a5a35"))
+					var f := PackedVector2Array([h + Vector2(1, -20), h + Vector2(15, -19), h + Vector2(14, -10), h + Vector2(1, -11)])
+					k.fill(f, Color("d63a2e"), false)
+					k.fill(PackedVector2Array([f[0], f[1], f[3]]), Color("26262b"), false)
+					k.line(f, 1.1, INK, true)})
 		"turbine":
 			_shadow(sk, Vector2(0, 2), 30)
 			sk.shape(PackedVector2Array([Vector2(-5, 0), Vector2(5, 0), Vector2(2, -76), Vector2(-2, -76)]), WHITE)
@@ -1559,6 +1777,30 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 					k2.line2(h + Vector2(0, 2), h + Vector2(0, -14), 1.2)
 					k2.rect(Rect2(h + Vector2(-6, -22), Vector2(12, 8)), WHITE, true, 1.0)
 					k2.line2(h + Vector2(-4, -18), h + Vector2(4, -18), 1.0, RED)})
+		M_LOUNGER:
+			_b_lounger(sk)
+		M_SHEET:
+			sk.lw = 1.3
+			sk.misreg = 0.6
+			sk.shape(PackedVector2Array([Vector2(-8, -10), Vector2(6, -10), Vector2(8, -8), Vector2(8, 10), Vector2(-8, 10)]), WHITE)
+			sk.fill(PackedVector2Array([Vector2(6, -10), Vector2(8, -8), Vector2(6, -8)]), Color("d8d2c0"), false)
+			for i in 5:
+				sk.line2(Vector2(-5, -6 + i * 3.2), Vector2(4 - (i % 2) * 3, -6 + i * 3.2), 0.8, Color(0.3, 0.35, 0.55))
+			sk.circle(Vector2(3, 6), 2.6, Color(0, 0, 0, 0), true, 0.9)
+			sk.line(sk.ellipse_pts(Vector2(3, 6), 2.6, 2.6, 8), 0.9, RED, true)
+		M_STAMP:
+			sk.lw = 1.5
+			sk.rect(Rect2(-9, 2, 18, 5), RED)
+			sk.rect(Rect2(-7, -2, 14, 4), Color("8a5a35"))
+			sk.stroke(Vector2(0, -2), Vector2(0, -9), 3.0, Color("8a5a35"))
+			sk.circle(Vector2(0, -12), 4.2, Color("a8703f"))
+			sk.line2(Vector2(-6, 8.5), Vector2(6, 8.5), 1.2, Color(0.8, 0.15, 0.1, 0.8))
+		M_NOTE:
+			sk.lw = 1.1
+			sk.misreg = 0.5
+			sk.shape(PackedVector2Array([Vector2(-23, -8), Vector2(23, -9), Vector2(24, 8), Vector2(-22, 9)]), Color("fffbe0"))
+			sk.line2(Vector2(-19, 6), Vector2(19, 5.5), 0.7, Color(0.75, 0.2, 0.2, 0.7))
+			sk.rect(Rect2(-25, -11, 5, 9), Color("a5abb3"), true, 0.8)
 
 
 # --- Players ------------------------------------------------------------------------------
@@ -1752,6 +1994,65 @@ func _b_follower_body(sk: Doodle.Sketch, type: int, _seed: int, s: float, arms: 
 	o.merge({"x": at.x, "y": at.y, "s": s, "mouth": "smile", "eyes": "dots", "arms": arms if arms != "" else ("wave" if type % 2 else "down")}, true)
 	_shadow(sk, at + Vector2(0, 1), 14 * s)
 	_person(sk, o)
+
+
+## Urlaubsantrag: Sozialtourist:in reclining on a sun lounger under a parasol,
+## cocktail in hand. Head left, feet right (mirror for facing left). Ground y = 21.
+func _b_lounger(sk: Doodle.Sketch) -> void:
+	sk.lw = 1.8
+	_shadow(sk, Vector2(2, 22), 66)
+	# parasol behind
+	sk.line2(Vector2(-42, 22), Vector2(-33, -58), 2.2, Color("8a5a35"))
+	var dome := sk.ellipse_pts(Vector2(-30, -56), 38, 20, 12, PI, PI)
+	sk.shape(dome, Color("e8443a"))
+	for i in 3:
+		var x0 := -30.0 - 38.0 + 76.0 * (i * 2 + 1) / 6.0
+		var x1 := x0 + 76.0 / 6.0
+		sk.fill(PackedVector2Array([Vector2(-30, -75), Vector2(x0, -56), Vector2(x1, -56)]), WHITE, false)
+	sk.line(dome, 1.8, INK, true)
+	for i in 6:
+		var x := -68.0 + i * 76.0 / 5.0
+		sk.line(sk.ellipse_pts(Vector2(x + 6.5, -56), 6.5, 3.5, 6, 0.0, PI), 1.2)
+	# lounger frame + fabric
+	sk.line2(Vector2(-26, 21), Vector2(-20, 9), 2.2)
+	sk.line2(Vector2(30, 21), Vector2(27, 9), 2.2)
+	sk.line2(Vector2(4, 21), Vector2(6, 9), 2.2)
+	var seat := PackedVector2Array([Vector2(-18, 6), Vector2(34, 6), Vector2(34, 11), Vector2(-18, 11)])
+	sk.shape(seat, Color("2e9be0"))
+	var back := PackedVector2Array([Vector2(-18, 6), Vector2(-36, -16), Vector2(-31, -19), Vector2(-14, 4)])
+	sk.shape(back, Color("2e9be0"))
+	for i in 5:
+		var x := -12.0 + i * 10.0
+		sk.fill(PackedVector2Array([Vector2(x, 6.5), Vector2(x + 4, 6.5), Vector2(x + 4, 10.5), Vector2(x, 10.5)]), WHITE, false)
+	# person: legs (knees up), torso along the backrest, head with sunglasses
+	var hip := Vector2(-2, 2)
+	sk.stroke(hip, Vector2(13, -5), 4.0, CHINO)
+	sk.stroke(Vector2(13, -5), Vector2(27, 3), 3.8, CHINO)
+	sk.line2(Vector2(26, 3), Vector2(31, 2), 3.4, Color("c87a3a"))
+	var torso := PackedVector2Array([hip + Vector2(2, 4), hip + Vector2(-2, -6), Vector2(-24, -14), Vector2(-27, -5)])
+	sk.shape(torso, Color("31b3a3"))
+	for d in [Vector2(-8, -2), Vector2(-15, -7), Vector2(-20, -4), Vector2(-11, -8)]:
+		sk.dot(d, 1.3, Color("f7d14a"))
+	sk.dot(Vector2(-6, -5), 1.1, Color("e05a8a"))
+	# arm behind the head
+	sk.stroke(Vector2(-23, -12), Vector2(-33, -22), 3.0, Color("31b3a3"))
+	sk.stroke(Vector2(-33, -22), Vector2(-26, -27), 3.0, FACE)
+	var hc := Vector2(-28, -18)
+	sk.ellipse(hc, 7.5, 7.5, FACE)
+	sk.shape(PackedVector2Array([hc + Vector2(-7, -2), hc + Vector2(-5, -7), hc + Vector2(2, -8.5), hc + Vector2(7, -5), hc + Vector2(1, -5)]), Color("2a1a14"))
+	sk.shape(PackedVector2Array([hc + Vector2(-1, -1.5), hc + Vector2(7.5, -1.8), hc + Vector2(7, 1.6), hc + Vector2(3.5, 1.4), hc + Vector2(2, 0.4), hc + Vector2(0, 1.6)]),
+		Color("1d1d22"), true, 0.8)
+	sk.line(PackedVector2Array([hc + Vector2(1, 4), hc + Vector2(3.5, 5.5), hc + Vector2(6, 3.5)]), 1.0)
+	# arm with cocktail
+	sk.stroke(Vector2(-19, -8), Vector2(-10, -14), 3.0, Color("31b3a3"))
+	sk.stroke(Vector2(-10, -14), Vector2(-4, -22), 3.0, FACE)
+	var g := Vector2(-3, -30)
+	sk.shape(PackedVector2Array([g + Vector2(-6, -5), g + Vector2(6, -5), g + Vector2(0, 3)]), Color("f5a33a"), true, 1.2)
+	sk.line2(g + Vector2(0, 3), g + Vector2(0, 8), 1.2)
+	sk.line2(g + Vector2(2, -4), g + Vector2(6, -12), 1.0, Color("e05a8a"))
+	sk.shape(sk.ellipse_pts(g + Vector2(-4, -8), 5, 3, 7, PI, PI), Color("f2c418"), true, 0.9)
+	sk.line2(g + Vector2(-4, -8), g + Vector2(-3, -4), 0.8)
+	sk.circle(g + Vector2(5, -5), 2.0, Color("b6e05a"), true, 0.8)
 
 
 # --- Weapons (icons pointing +x) -------------------------------------------------------

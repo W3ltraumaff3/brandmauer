@@ -4,7 +4,8 @@ extends Control
 ##
 ## Panels: Solidarität (HP), Pfand/Aktien, Sitzungswoche + timer (wave 20:
 ## "Koalitionsverhandlungen", counting up 3x slower than real time), Zusammenhalt,
-## Brandmauer holes, co-op team, boss bar, Streik prompt, Koalitionsvertrag.
+## Brandmauer holes, co-op team, boss bar, Streik prompt, Koalitionsvertrag,
+## the local ultimate (bottom left) and global ultimate effects with countdowns.
 ## Overlays from events: encounter card, Wende, Streik stamp, stage banner,
 ## level-up, wave start/end, achievement and deny toasts, run over.
 ## Funkloch easter egg: every 3–4 min the HUD loses its signal for 2 s.
@@ -40,6 +41,9 @@ var _funk_t := -1.0
 var _flicker := {}
 var _last_xp := 0.0
 var _rng := RandomNumberGenerator.new()
+var _ult_ready_prev := false
+var _ult_pop := -1.0         # seconds since the local ultimate became ready (pop)
+var _ult_fire := -1.0        # seconds since the local player fired it (squash)
 
 
 func _ready() -> void:
@@ -125,6 +129,9 @@ func handle_event(ev: Array) -> void:
 		"deny":
 			if ev.size() >= 3 and int(ev[1]) == local_id():
 				_toasts.append({"text": tr(str(ev[2])), "sub": "", "t": 0.0, "life": 2.5, "kind": "deny"})
+		"ult":
+			if ev.size() >= 2 and int(ev[1]) == local_id():
+				_ult_fire = 0.0
 
 
 func _overlay(kind: String, life: float, data: Dictionary) -> void:
@@ -153,6 +160,18 @@ func _process(delta: float) -> void:
 		_toasts[i]["t"] += delta
 		if _toasts[i]["t"] > _toasts[i]["life"]:
 			_toasts.remove_at(i)
+	var ult_ready := bool(_local_meta(get_meta_dict()).get("ult_ready", false))
+	if ult_ready and not _ult_ready_prev:
+		_ult_pop = 0.0
+	_ult_ready_prev = ult_ready
+	if _ult_pop >= 0.0:
+		_ult_pop += delta
+		if _ult_pop > 1.2:
+			_ult_pop = -1.0
+	if _ult_fire >= 0.0:
+		_ult_fire += delta
+		if _ult_fire > 0.6:
+			_ult_fire = -1.0
 	# Funkloch easter egg (only while a wave runs)
 	if vs and vs.phase == 0:
 		_funk_next -= delta
@@ -205,6 +224,8 @@ func _draw() -> void:
 		_draw_boss(vs, sz)
 		_draw_streik(meta, sz)
 		_draw_down_hint(vs, sz)
+		var ult_h := _draw_ult_panel(vs, meta, sz)
+		_draw_ult_effects(meta, sz, ult_h)
 	if _funk_t >= 0.0:
 		_draw_funkloch(sz)
 	for o in _overlays:
@@ -452,6 +473,132 @@ func _draw_funkloch(sz: Vector2) -> void:
 		draw_rect(Rect2(base + Vector2(i * 7, -h), Vector2(5, h)), Color(0.5, 0.5, 0.5))
 	draw_line(base + Vector2(-3, 2), base + Vector2(29, -26), RED, 3.0)
 	_txt(tr("HUD_KEIN_NETZ"), Vector2(r.position.x + 56, r.position.y + 30), 22, Color(0.95, 0.95, 0.9))
+
+
+# --- Ultimate (architecture §9) -----------------------------------------------------------
+
+## Local player's ultimate id: meta "ult", falling back to the character's.
+static func ult_id_for(lm: Dictionary) -> String:
+	var id := str(lm.get("ult", ""))
+	if id == "":
+		var ch := str(lm.get("char", ""))
+		if Content.CHARACTERS.has(ch):
+			id = str(Content.CHARACTERS[ch].get("ult", ""))
+	return id
+
+
+static func _ult_key() -> String:
+	var k := _action_key("ultimate")
+	if k == "?" or k == "Space":
+		return String(TranslationServer.translate("HUD_ULT_SPACE"))
+	return k
+
+
+## Bottom-left panel: name, [key], ready / used. Returns the height it took (0 if hidden).
+func _draw_ult_panel(vs: ViewState, meta: Dictionary, sz: Vector2) -> float:
+	if bool(meta.get("intro_wait", false)):
+		return 0.0
+	var lm := _local_meta(meta)
+	if lm.is_empty():
+		return 0.0
+	var id := ult_id_for(lm)
+	if id == "":
+		return 0.0
+	var me := vs.find_player(local_id())
+	if not me.is_empty() and int(me.get("state", 0)) == 2:
+		return 0.0
+	var ready := bool(lm.get("ult_ready", false))
+	var name := tr("ULT_%s_NAME" % id.to_upper())
+	var key := "[%s]" % _ult_key()
+	var state := tr("HUD_ULT_READY") if ready else tr("HUD_ULT_USED")
+	var kw := _type.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 14.0
+	var nw := _hand.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
+	var stw := _hand.get_string_size(state, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+	var w := maxf(kw + nw + 72.0, stw + 30.0)   # room for the sparkle / cross on the right
+	var h := 72.0
+	var r := Rect2(14, sz.y - 16 - h, w, h)
+	var sc := Vector2.ONE
+	var rot := 0.0
+	if ready:
+		var s := 1.0 + 0.02 * sin(_t * 5.0)
+		if _ult_pop >= 0.0:
+			var k := clampf(_ult_pop / 0.5, 0.0, 1.0)
+			s += 0.35 * sin(k * PI) * (1.0 - k * 0.5)
+			rot = sin(_ult_pop * 30.0) * 0.06 * (1.0 - k)
+		sc = Vector2(s, s)
+		rot += -0.015
+	elif _ult_fire >= 0.0:
+		var k := _ult_fire / 0.6
+		sc = Vector2(1.0 + 0.12 * (1.0 - k), 1.0 - 0.12 * (1.0 - k))
+	# pivot at the bottom-left corner so the pop never leaves the screen
+	var pivot := Vector2(r.position.x, r.end.y)
+	draw_set_transform(pivot, rot, sc)
+	var rr := Rect2(Vector2(0, -h), r.size)
+	var ink := RED if ready else Color(0.45, 0.43, 0.4)
+	if ready:
+		var glow := 0.25 + 0.15 * sin(_t * 5.0)
+		draw_rect(rr.grow(6), Color(1.0, 0.75, 0.15, glow))
+		_panel(rr, Color("fbe3a0"), 11, RED)
+	else:
+		_panel(rr, Color(0.9, 0.88, 0.84), 11, Color(0.45, 0.43, 0.4))
+	var kr := Rect2(rr.position + Vector2(12, 11), Vector2(kw, 26))
+	draw_rect(kr, Color(1, 1, 1, 0.9 if ready else 0.5))
+	draw_polyline(Doodle.rect_pts(kr, 2 + int(_t / 0.3) % 3, 1.0), ink, 1.5)
+	_txt(key, Vector2(kr.position.x, kr.position.y + 19), 16, ink, _type, HORIZONTAL_ALIGNMENT_CENTER, kw)
+	_txt(name, Vector2(kr.end.x + 10, rr.position.y + 34), 26, RED if ready else Color(0.4, 0.38, 0.36))
+	_txt(state, Vector2(rr.position.x + 14, rr.end.y - 10), 21 if ready else 18, GREEN if ready else Color(0.45, 0.43, 0.4))
+	if ready:
+		for i in 3:
+			var a := _t * 2.0 + TAU * i / 3.0
+			var p := Vector2(rr.end.x - 18 + cos(a) * 8.0, rr.position.y + 16 + sin(a) * 6.0)
+			_sparkle(p, 4.0 + 2.0 * absf(sin(_t * 6.0 + i)), Color(1.0, 0.6, 0.05))
+	else:
+		# crossed-out "used" tick
+		draw_line(Vector2(rr.end.x - 30, rr.position.y + 12), Vector2(rr.end.x - 12, rr.position.y + 30), Color(RED, 0.6), 3.0)
+		draw_line(Vector2(rr.end.x - 12, rr.position.y + 12), Vector2(rr.end.x - 30, rr.position.y + 30), Color(RED, 0.6), 3.0)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+	return h + 16.0
+
+
+## Global ultimate effects (Tarifrunde, Antrag gestellt) with a countdown, above the panel.
+func _draw_ult_effects(meta: Dictionary, sz: Vector2, below: float) -> void:
+	var eff = meta.get("effects", {})
+	if not (eff is Dictionary) or eff.is_empty():
+		return
+	var y := sz.y - 16.0 - below - 8.0
+	for id in ["tarifrunde", "antrag_gestellt"]:
+		var left := float(eff.get(id, 0.0))
+		if left <= 0.0:
+			continue
+		var name := tr("ULT_%s_NAME" % id.to_upper())
+		if id == "tarifrunde":
+			name += " " + tr("HUD_ULT_TARIF_BONUS") % int(round(float(Content.ULTS["tarifrunde"]["damage"]) * 100.0))
+		var s := tr("HUD_ULT_EFFECT") % [name, int(ceil(left))]
+		var w := _hand.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x + 52.0
+		var r := Rect2(14, y - 38, w, 38)
+		var col := RED if id == "tarifrunde" else BLUE
+		_panel(r, Color(1.0, 0.95, 0.9) if id == "tarifrunde" else Color(0.92, 0.95, 1.0), 12, col)
+		var ic := r.position + Vector2(20, 18)
+		if id == "tarifrunde":
+			draw_line(ic + Vector2(-5, 10), ic + Vector2(-5, -11), INK, 2.0)
+			var fl := PackedVector2Array([ic + Vector2(-4, -11), ic + Vector2(9, -8 + sin(_t * 6.0)), ic + Vector2(8, 0), ic + Vector2(-4, -2)])
+			draw_colored_polygon(fl, RED)
+			fl.append(fl[0])
+			draw_polyline(fl, INK, 1.5)
+		else:
+			for k in 2:
+				var o := Vector2(k * 4.0 - 4.0, -k * 3.0)
+				var pr := Rect2(ic + o + Vector2(-6, -9), Vector2(12, 16))
+				draw_rect(pr, Color.WHITE)
+				draw_rect(pr, INK, false, 1.2)
+			draw_line(ic + Vector2(-2, -5), ic + Vector2(4, -5), BLUE, 1.0)
+			draw_line(ic + Vector2(-2, -2), ic + Vector2(4, -2), BLUE, 1.0)
+		_txt(s, Vector2(r.position.x + 38, r.position.y + 25), 19, col.darkened(0.15))
+		var total := maxf(float(Content.ULTS[id].get("time", 1.0)), 0.1)
+		var bar := Rect2(r.position + Vector2(38, 30), Vector2(r.size.x - 50, 3))
+		draw_rect(bar, Color(col, 0.2))
+		draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(left / total, 0.0, 1.0), 3)), col)
+		y -= 46.0
 
 
 # --- Overlays ---------------------------------------------------------------------------
