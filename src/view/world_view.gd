@@ -625,25 +625,20 @@ func _draw_exits(st: int) -> void:
 					var np := p + Vector2(-30 + k * 30, -80 - fmod(t * 30.0 + k * 20.0, 60.0))
 					Doodle.text(self, "♪", np, 26, Color(0.1, 0.3, 0.7, alpha), _hand, 3)
 				Doodle.text(self, tr("SAY_SYLT_HUM"), p + Vector2(0, -110), 22, Color(INK, alpha), _hand, 5)
-			"geschichtslehrer", "sauerlaender":
-				var et := Content.ENEMY_ORDER.find(enc)
-				var fly_t := t
-				if enc == "sauerlaender":
-					if t < 1.8:
-						var jp := pos + Vector2(t * t * 160.0, -t * t * 90.0)
-						var js := 1.0 + t * 0.5
-						draw_mesh(_mesh(K_ENEMY, _t_jet, st, v), null, Transform2D(-0.45, Vector2(js, js), 0.0, jp), fade)
-						for k in 4:
-							draw_circle(jp - Vector2(40 + k * 18, -12 - k * 10), 6.0 + k * 3, Color(0.7, 0.7, 0.7, 0.5 * alpha))
-						_exit_text(enc, pos + Vector2(0, 70), alpha)
-						continue
-					fly_t = t - 1.8
-				var fp := pos + Vector2(sin(fly_t * 2.0) * 16.0, -fly_t * fly_t * 26.0 - fly_t * 30.0)
-				if enc == "sauerlaender":
-					fp = pos + Vector2(220 + sin(fly_t * 2.0) * 16.0, -40 - fly_t * 40.0)
-				draw_mesh(_mesh(K_MISC, M_SCHIRM, st, v), null, Transform2D(sin(fly_t * 2.0) * 0.12, fp + Vector2(0, -50)), fade)
-				draw_mesh(_mesh(K_ENEMY, et, st, v), null, Transform2D(sin(fly_t * 2.0) * 0.08, Vector2(0.7, 0.7), 0.0, fp), fade)
+			"sauerlaender":
+				var jp := pos + Vector2(t * t * 160.0, -t * t * 90.0)
+				var js := 1.0 + t * 0.5
+				draw_mesh(_mesh(K_ENEMY, _t_jet, st, v), null, Transform2D(-0.45, Vector2(js, js), 0.0, jp), fade)
+				for k in 4:
+					draw_circle(jp - Vector2(40 + k * 18, -12 - k * 10), 6.0 + k * 3, Color(0.7, 0.7, 0.7, 0.5 * alpha))
 				_exit_text(enc, pos + Vector2(0, 70), alpha)
+			"geschichtslehrer":
+				# walks off to the sideline: into the political wilderness
+				var et := Content.ENEMY_ORDER.find(enc)
+				var wp := pos + Vector2(-t * 80.0, -absf(sin(t * 7.0)) * 4.0)
+				draw_mesh(_mesh(K_ENEMY, et, st, v), null, Transform2D(sin(t * 7.0) * 0.06, Vector2(0.8, 0.8), 0.0, wp), fade)
+				Doodle.text(self, "ABSEITS →", wp + Vector2(-60, -70), 20, Color(0.75, 0.12, 0.12, alpha), _hand, 4)
+				_exit_text(enc, pos + Vector2(0, 80), alpha)
 			"eidgenossin":
 				var et := Content.ENEMY_ORDER.find(enc)
 				var wp := pos + Vector2(t * 70.0, -absf(sin(t * 8.0)) * 4.0)

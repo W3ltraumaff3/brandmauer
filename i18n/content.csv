@@ -155,14 +155,14 @@ ENEMY_PRIVATJET_NAME,Privatjet
 ENEMY_SYLT_MEMBER_NAME,Sylt-Schnösel
 ENEMY_GESCHICHTSLEHRER_NAME,Der Geschichtslehrer
 ENEMY_SAUERLAENDER_NAME,Der Sauerländer
-ENEMY_EIDGENOSSIN_NAME,Die Eidgenossin
+ENEMY_EIDGENOSSIN_NAME,Die Remigrantin
 ENC_SYLT_CLIQUE_NAME,Die Sylt-Clique
 ENC_SYLT_CLIQUE_EXIT,segelt davon.
 ENC_GESCHICHTSLEHRER_NAME,Der Geschichtslehrer
-ENC_GESCHICHTSLEHRER_EXIT,wird in den Aufsichtsrat befördert.
+ENC_GESCHICHTSLEHRER_EXIT,wird ins politische Abseits gestellt.
 ENC_SAUERLAENDER_NAME,Der Sauerländer
-ENC_SAUERLAENDER_EXIT,fliegt mit dem Privatjet davon und landet per goldenem Fallschirm im Aufsichtsrat.
-ENC_EIDGENOSSIN_NAME,Die Eidgenossin
+ENC_SAUERLAENDER_EXIT,fliegt mit dem Privatjet ins politische Abseits.
+ENC_EIDGENOSSIN_NAME,Die Remigrantin
 ENC_EIDGENOSSIN_EXIT,remigriert in die Schweiz.
 ORG_GEWERKSCHAFT_NAME,Gewerkschaft
 ORG_GEWERKSCHAFT_DESC,"Jede 5. Welle ein Streik: Gegner frieren 5 s ein, der Späti wird billiger. Einkommen steigt (Tarifvertrag)."
@@ -192,14 +192,14 @@ ACH_ACH_180_NAME,180 Grad
 ACH_ACH_180_DESC,Besiege den Geschichtslehrer. Danach geht es nur noch vorwärts.
 ACH_180_NAME,180 Grad
 ACH_180_DESC,Besiege den Geschichtslehrer. Danach geht es nur noch vorwärts.
-ACH_ACH_AUFSICHTSRAT_NAME,Aufsichtsrat
+ACH_ACH_AUFSICHTSRAT_NAME,Abgesetzt
 ACH_ACH_AUFSICHTSRAT_DESC,Besiege den Sauerländer. Schaltet Die Töchter frei.
-ACH_AUFSICHTSRAT_NAME,Aufsichtsrat
+ACH_AUFSICHTSRAT_NAME,Abgesetzt
 ACH_AUFSICHTSRAT_DESC,Besiege den Sauerländer. Schaltet Die Töchter frei.
 ACH_ACH_REMIGRATION_NAME,Remigration
-ACH_ACH_REMIGRATION_DESC,Besiege die Eidgenossin. Sie geht freiwillig.
+ACH_ACH_REMIGRATION_DESC,Besiege die Remigrantin. Sie geht freiwillig.
 ACH_REMIGRATION_NAME,Remigration
-ACH_REMIGRATION_DESC,Besiege die Eidgenossin. Sie geht freiwillig.
+ACH_REMIGRATION_DESC,Besiege die Remigrantin. Sie geht freiwillig.
 ACH_ACH_UNMOEGLICH_NAME,Unmöglich
 ACH_ACH_UNMOEGLICH_DESC,Beende einen Run mit intakter Brandmauer.
 ACH_UNMOEGLICH_NAME,Unmöglich

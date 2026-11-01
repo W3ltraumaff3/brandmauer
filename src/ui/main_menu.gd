@@ -75,7 +75,9 @@ func build() -> void:
 	sv.add_child(UIKit.label(tr("MENU_RECORD_UMFRAGE") % umfrage, 20))
 	side.add_child(stat_card)
 
-	var qid := UIKit.pick_quote("ladebildschirm", 230)
+	var qid := UIKit.pick_quote("startbildschirm", 230)
+	if qid == "":
+		qid = UIKit.pick_quote("ladebildschirm", 230)
 	if qid != "":
 		var clip := UIKit.clipping(qid, tr("MENU_QUOTE_HEADER"), -0.6, 16)
 		clip.custom_minimum_size.x = 880

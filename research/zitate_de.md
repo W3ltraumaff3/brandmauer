@@ -4,7 +4,7 @@ Recherche für Ladebildschirme, Boss-Intros, Sprechblasen und das Zitat-Album. S
 
 ## Überblick
 
-- **121 Einträge** in der JSON: 110 `verifiziert`, 4 `umstritten`, 2 `sinngemäß`, 5 `unverifiziert` (nicht verwenden). **116 sind verwendbar**, davon 67 mit `kurz: ja` (Sprechblasen-tauglich).
+- **135 Einträge** in der JSON: 124 `verifiziert`, 4 `umstritten`, 2 `sinngemäß`, 5 `unverifiziert` (nicht verwenden). **130 sind verwendbar**, davon 78 mit `kurz: ja` (Sprechblasen-tauglich).
 - **26** häufig falsch zitierte Sätze mit korrekter Fassung und **38** nicht verwendbare (unverifizierte) Zitate am Ende des Dokuments.
 - Primärquellen wurden wo immer möglich genutzt: Bundestags-Plenarprotokolle 19/32, 19/155, 20/209, 21/3, 21/15, 21/17 (Text per `pdftotext` aus den amtlichen PDFs), Gerichtsentscheidungen (VG Köln 13 K 326/21, BGH 3 StR 484/24 und 519/24, LG Hamburg 324 O 103/20).
 
@@ -56,7 +56,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 
 | Person | Partei | verwendbar | davon verifiziert | kurz | unverifiziert (weggelassen) |
 |---|---|---|---|---|---|
-| Friedrich Merz | CDU | 37 | 35 | 20 | 2 |
+| Friedrich Merz | CDU | 37 | 35 | 21 | 2 |
 | Markus Söder | CSU | 6 | 6 | 6 | 2 |
 | Carsten Linnemann | CDU | 5 | 5 | 1 | 0 |
 | Jens Spahn | CDU | 5 | 5 | 3 | 0 |
@@ -67,17 +67,25 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 | Katherina Reiche | CDU | 2 | 2 | 1 | 0 |
 | Andreas Scheuer | CSU | 1 | 1 | 0 | 0 |
 | Alice Weidel | AfD | 8 | 8 | 6 | 0 |
-| Björn Höcke | AfD | 10 | 10 | 4 | 0 |
+| Björn Höcke | AfD | 11 | 11 | 5 | 0 |
 | Alexander Gauland | AfD | 7 | 6 | 5 | 0 |
 | Tino Chrupalla | AfD | 4 | 4 | 4 | 0 |
 | Beatrix von Storch | AfD | 4 | 4 | 2 | 0 |
 | Maximilian Krah | AfD | 4 | 4 | 2 | 0 |
 | Stephan Brandner | AfD | 2 | 2 | 2 | 0 |
 | André Poggenburg | AfD | 1 | 0 | 0 | 0 |
-| Frauke Petry | AfD | 1 | 1 | 1 | 0 |
-| Jens Maier | AfD | 1 | 1 | 0 | 0 |
+| Frauke Petry | AfD | 2 | 2 | 1 | 0 |
+| Jens Maier | AfD | 2 | 2 | 1 | 0 |
 | Gottfried Curio | AfD | 1 | 1 | 0 | 0 |
 | Matthias Helferich | AfD | 1 | 0 | 1 | 0 |
+| Ulrich Thomas (gemeinsam mit Lars-Jörn Zimmer) | CDU | 1 | 1 | 1 | 0 |
+| Hans-Georg Maaßen | CDU | 1 | 1 | 1 | 0 |
+| Saskia Ludwig | CDU | 1 | 1 | 0 | 0 |
+| Alexander Räuscher | früher CDU | 2 | 2 | 1 | 0 |
+| Clara von Nathusius | CDU | 1 | 1 | 1 | 0 |
+| Horst Seehofer | CSU | 2 | 2 | 2 | 0 |
+| Ulrich Siegmund | AfD | 2 | 2 | 1 | 0 |
+| Marc Vallendar | AfD | 1 | 1 | 1 | 0 |
 
 ### Die 15 besten Highlights fürs Spiel
 
@@ -95,7 +103,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 | 10 | Friedrich Merz | „Ich suche in diesem Deutschen Bundestag keine anderen Mehrheiten als die in der demokratischen Mitte unseres Parlaments. […] Und wenn es hier heute eine solche Mehrheit gegeben hat, dann bedaure ich das.“ | 2025-01-29 | 'Bedauern' wenige Stunden nach merz-12 – Kombi im Album (`merz-13`) |
 | 11 | Alice Weidel | „Nieder mit diesen Windmühlen der Schande!“ | 2025-01-11 | Windkraft-Boss; Wortlaut sicher, spätere Einschränkung im Album nennen (`weidel-05`) |
 | 12 | Alice Weidel | „Und ich muss Ihnen ganz ehrlich sagen, wenn es dann Remigration heißen soll, dann heißt es eben Remigration.“ | 2025-01-11 | Parteitag Riesa, wörtlich belegt (`weidel-04`) |
-| 13 | Alexander Gauland | „Wir werden sie jagen. […] Wir werden uns unser Land und unser Volk zurückholen.“ | 2017-09-24 | kurze Fassung 'Wir werden sie jagen.' verwenden (`gauland-04`) |
+| 13 | Alexander Gauland | „Wir werden sie jagen! […] und wir werden uns unser Land und unser Volk zurückholen!“ | 2017-09-24 | kurze Fassung 'Wir werden sie jagen.' verwenden (`gauland-04`) |
 | 14 | Tino Chrupalla | „Mir hat er nichts getan. Ich sehe keine Gefahr für Deutschland aktuell durch Russland.“ | 2025-11-11 | Putin-Verharmlosung, wörtlich belegt (`chrupalla-01`) |
 | 15 | Jens Spahn | „[…] dass wir nämlich miteinander in ein paar Monaten wahrscheinlich viel werden verzeihen müssen“ | 2020-04-22 | Plenarprotokoll statt geglätteter Buchtitel-Fassung (`spahn-02`) |
 
@@ -160,14 +168,14 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Quellen:** <https://www.zm-online.de/artikel/2023/zm-2023-20/pauschalaussagen-bei-komplexen-lagen-sind-problematisch> · <https://taz.de/Asyl-Aussage-von-CDU-Chef/!5963129/> · <https://correctiv.org/faktencheck/2023/10/05/nein-zahnarztbesuche-von-gefluechteten-kosteten-2022-keine-690-millionen-euro/>
 - **Notizen:** Kurzform: 'Die sitzen beim Arzt und lassen sich die Zähne neu machen.' Faktenlage: Abgelehnte Asylbewerber haben in den ersten 18 Monaten nur eingeschränkten Leistungsanspruch; die Zahl 300.000 bezieht sich auf alle Ausreisepflichtigen, die meisten davon geduldet. Bundeszahnärztekammer: 'keinen Zusammenhang' mit Terminknappheit. Merz sah 'keinen Grund' für eine Entschuldigung. Die taz datiert die Sendung auf Donnerstag, 28.09.; die Mehrzahl der Berichte nennt Mittwoch, 27.09.2023. Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender.
 
-#### `merz-01` – „[…] aber wir haben natürlich immer im Stadtbild noch dieses Problem, und deswegen ist der Bundesinnenminister ja auch dabei, jetzt in sehr großem Umfang Rückführungen zu ermöglichen und durchzuführen.“
+#### `merz-01` – „[…] aber wir haben natürlich immer im Stadtbild noch dieses Problem“
 
 - **Sprecher:** Friedrich Merz (CDU), damals: Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender
 - **Datum:** 2025-10-14
 - **Kontext:** Pressekonferenz beim Antrittsbesuch in Brandenburg (Potsdam), auf die Frage eines Journalisten nach den hohen AfD-Umfragewerten und Merz' früherem Ziel, die AfD zu halbieren.
-- **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** nein
+- **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
 - **Quellen:** <https://www.stuttgarter-zeitung.de/politik/friedrich-merz-stadtbild-aussage-wortlaut-mhsd-79036257.html> · <https://www.berliner-zeitung.de/news/ich-habe-gar-nichts-zurueckzunehmen-bundeskanzler-merz-verteidigt-stadtbild-aussage-li.10001647> · <https://www.zdfheute.de/politik/deutschland/merz-stadtbild-selbstkritik-100.html>
-- **Notizen:** Vollständige Passage (Stuttgarter Zeitung, Wortlaut nach Video): 'Bei der Migration sind wir sehr weit. Wir haben in dieser Bundesregierung die Zahlen August 24, August 25 im Vergleich um 60 % nach unten gebracht, aber wir haben natürlich immer im Stadtbild noch dieses Problem, und deswegen ist der Bundesinnenminister ja auch dabei, jetzt in sehr großem Umfang Rückführungen zu ermöglichen und durchzuführen. Das muss beibehalten werden, das ist in der Koalition verabredet.' Für Sprechblasen: '…im Stadtbild noch dieses Problem…' (mit Auslassungszeichen). Folge: bundesweite Proteste, Petition 'Wir sind die Töchter'. Merz legte die Aussage später auf ausreisepflichtige Migranten ohne Arbeit aus und nannte Migranten laut zdfheute-Überschrift einen 'unverzichtbaren Bestandteil' (https://www.zdfheute.de/politik/deutschland/merz-stadtbild-migration-konkretisiert-100.html). Siehe merz-02 bis merz-04. Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender.
+- **Notizen:** Vollständige Passage (Stuttgarter Zeitung, Wortlaut nach Video): 'Bei der Migration sind wir sehr weit. Wir haben in dieser Bundesregierung die Zahlen August 24, August 25 im Vergleich um 60 % nach unten gebracht, aber wir haben natürlich immer im Stadtbild noch dieses Problem, und deswegen ist der Bundesinnenminister ja auch dabei, jetzt in sehr großem Umfang Rückführungen zu ermöglichen und durchzuführen. Das muss beibehalten werden, das ist in der Koalition verabredet.' Für Sprechblasen: '…im Stadtbild noch dieses Problem…' (mit Auslassungszeichen). Folge: bundesweite Proteste, Petition 'Wir sind die Töchter'. Merz legte die Aussage später auf ausreisepflichtige Migranten ohne Arbeit aus und nannte Migranten laut zdfheute-Überschrift einen 'unverzichtbaren Bestandteil' (https://www.zdfheute.de/politik/deutschland/merz-stadtbild-migration-konkretisiert-100.html). Siehe merz-02 bis merz-04. Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender. VERIFIKATION 11/2026: Auf das gesicherte Fragment gekürzt. Der Rest des Satzes ist in den Quellen uneinheitlich (Stuttgarter Zeitung nach Video: 'in sehr großem Umfang Rückführungen', zdfheute und andere: 'in sehr großem Umfang auch Rückführungen'); ohne Video nicht entscheidbar.
 
 #### `merz-02` – „Fragen Sie mal Ihre Töchter“
 
@@ -304,11 +312,11 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 #### `merz-19` – „Wer von euch würde denn gerne hierbleiben? Da hat keiner die Hand gehoben“
 
 - **Sprecher:** Friedrich Merz (CDU), damals: Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender
-- **Datum:** 2025-11
+- **Datum:** 2025-11-13
 - **Kontext:** Rede beim Handelskongress in Berlin nach seiner Rückkehr von der Weltklimakonferenz COP30 in Belém (Brasilien); er berichtete, er habe mitgereiste Journalisten so gefragt, und betonte, Deutschland sei 'eines der schönsten Länder der Welt'.
 - **Status:** `verifiziert` · **Kategorien:** Klima, Sonstiges/Absurd · **kurz:** ja
-- **Quellen:** <https://www.zdfheute.de/politik/deutschland/merz-brasilien-belem-lula-klimakonferenz-100.html> · <https://web.de/magazine/politik/merz-loest-empoerung-brasilien-41602516> · <https://www.zdfheute.de/politik/merz-lula-brasilien-cop30-klimakonferenz-100.html>
-- **Notizen:** Genaues Rededatum nicht gesichert (Mitte November 2025, berichtet bis 17.11.). Varianten: 'gerne'/'gern'. Belémer Bürgermeister: 'unglücklich, arrogant und voreingenommen'; Präsident Lula empfahl Merz, in Belém tanzen zu gehen. Keine Entschuldigung; beim G20 in Johannesburg versöhnten sich beide ('Nächstes Mal gehen wir zusammen tanzen', t-online). Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender.
+- **Quellen:** <https://www.zdfheute.de/politik/deutschland/merz-brasilien-belem-lula-klimakonferenz-100.html> · <https://web.de/magazine/politik/merz-loest-empoerung-brasilien-41602516> · <https://www.zdfheute.de/politik/merz-lula-brasilien-cop30-klimakonferenz-100.html> · <https://www.bundesregierung.de/breg-de/aktuelles/rede-kanzler-handelskongress-2393818>
+- **Notizen:** Genaues Rededatum nicht gesichert (Mitte November 2025, berichtet bis 17.11.). Varianten: 'gerne'/'gern'. Belémer Bürgermeister: 'unglücklich, arrogant und voreingenommen'; Präsident Lula empfahl Merz, in Belém tanzen zu gehen. Keine Entschuldigung; beim G20 in Johannesburg versöhnten sich beide ('Nächstes Mal gehen wir zusammen tanzen', t-online). Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender. VERIFIKATION 11/2026: Rede beim Handelskongress am 13.11.2025, Wortlaut laut Bundesregierung-Transkript. Brasilien-Reise, aber keine Stadt (nicht 'Belém') nennen.
 
 ### Gender/Familie
 
@@ -419,10 +427,10 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 
 - **Sprecher:** Friedrich Merz (CDU), damals: Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender
 - **Datum:** 2026-09-07
-- **Kontext:** Pressekonferenz im Konrad-Adenauer-Haus am Tag nach der Landtagswahl in Sachsen-Anhalt (AfD stärkste Kraft knapp unter absoluter Mehrheit, CDU historisches Tief).
+- **Kontext:** Pressekonferenz im Konrad-Adenauer-Haus am Tag nach der Landtagswahl in Sachsen-Anhalt (AfD stärkste Kraft mit über 40 %, CDU historisches Tief).
 - **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** ja
 - **Quellen:** <https://www.apotheke-adhoc.de/nachrichten/detail/politik/merz-das-ergebnis-hat-uns-schockiert/> · <https://orf.at/stories/3441415/> · <https://de.euronews.com/2026/09/07/merz-wahlschlappe-wird-konsequenzen-haben> · <https://www.news.at/politik/merz-wegen-wahl-in-sachsen-anhalt-zutiefst-schockiert>
-- **Notizen:** ORF bestätigt aus derselben PK: 'Das ist die schwerste Wahlniederlage, die die CDU seit Jahren, seit Jahrzehnten auch eingefahren hat' und '…meine Entschlossenheit, den Reformkurs fortzusetzen, ungebrochen.' Weiter: 'Das Grundgesetz gilt auch in Sachsen-Anhalt – auch in einer AfD-geführten Landesregierung'. Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender.
+- **Notizen:** ORF bestätigt aus derselben PK: 'Das ist die schwerste Wahlniederlage, die die CDU seit Jahren, seit Jahrzehnten auch eingefahren hat' und '…meine Entschlossenheit, den Reformkurs fortzusetzen, ungebrochen.' Weiter: 'Das Grundgesetz gilt auch in Sachsen-Anhalt – auch in einer AfD-geführten Landesregierung'. Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender. VERIFIKATION 11/2026: Kontext präzisiert; nach apotheke adhoc lag die AfD bei rund 44 %, die CDU bei 17,2 %.
 
 #### `merz-34` – „Aufgeben ist für mich keine Option.“
 
@@ -518,8 +526,8 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Datum:** 2018-04-24
 - **Kontext:** Nach dem Kabinettsbeschluss, in allen bayerischen Landesbehörden ein Kreuz im Eingangsbereich aufzuhängen (Kreuzerlass), hängte Söder in der Staatskanzlei demonstrativ ein Kreuz auf.
 - **Status:** `verifiziert` · **Kategorien:** Sonstiges/Absurd, Migration · **kurz:** ja
-- **Quellen:** <https://www.bpb.de/shop/zeitschriften/apuz/272097/ein-kreuz/?p=all> · <https://www.taz.de/!5506490/>
-- **Notizen:** Laut bpb-Essay (F. W. Graf) relativierte Söder die Aussage nach Kritik u. a. aus den Kirchen später. Der BayVGH sah im Erlass einen Verstoß gegen die Neutralitätspflicht, wies die Klagen aber ab; das BVerwG bestätigte die Abweisung (Dez. 2023). Söder sprach danach vom Kreuz als 'Zeichen unserer christlichen und kulturellen Prägung' (nur in Suchzusammenfassung gesehen). Aktuell (Stand Nov. 2026): Bayerischer Ministerpräsident und CSU-Vorsitzender.
+- **Quellen:** <https://www.bpb.de/shop/zeitschriften/apuz/272097/ein-kreuz/?p=all> · <https://www.taz.de/!5506490/> · <https://www.perlentaucher.de/9punkt/2018-04-25.html>
+- **Notizen:** Laut bpb-Essay (F. W. Graf) relativierte Söder die Aussage nach Kritik u. a. aus den Kirchen später. Der BayVGH sah im Erlass einen Verstoß gegen die Neutralitätspflicht, wies die Klagen aber ab; das BVerwG bestätigte die Abweisung (Dez. 2023). Söder sprach danach vom Kreuz als 'Zeichen unserer christlichen und kulturellen Prägung' (nur in Suchzusammenfassung gesehen). Aktuell (Stand Nov. 2026): Bayerischer Ministerpräsident und CSU-Vorsitzender. VERIFIKATION 11/2026: Ganzer Satz bei bpb (Graf) und perlentaucher wiedergegeben; Originalvideo/Pressekonferenz nicht eingesehen. Begründung laut perlentaucher: 'Bekenntnis zur Identität' und zur 'kulturellen Prägung'.
 
 #### `soeder-06` – „Besonders die Rote Heidi, die sozialistische Tiktok-Tante, die Rosa Luxemburg für Arme, liebe Freundinnen und Freunde.“
 
@@ -595,10 +603,10 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 
 - **Sprecher:** Jens Spahn (CDU), damals: Designierter Bundesgesundheitsminister (noch Parl. Staatssekretär im Bundesfinanzministerium)
 - **Datum:** 2018-03
-- **Kontext:** Äußerung gegenüber der Funke-Mediengruppe (Berliner Morgenpost, ca. 10.03.2018) in der Debatte um den Aufnahmestopp für Ausländer bei der Essener Tafel; er sagte auch: 'Damit hat jeder das, was er zum Leben braucht.'
+- **Kontext:** Äußerung in der Debatte um den Aufnahmestopp für Ausländer bei der Essener Tafel (März 2018); er sagte auch: 'Damit hat jeder das, was er zum Leben braucht.'
 - **Status:** `verifiziert` · **Kategorien:** Sozialstaat/Arbeit · **kurz:** ja
 - **Quellen:** <https://www.tagesspiegel.de/politik/olaf-scholz-weist-spahns-hartz-iv-ausserungen-zuruck-5517976.html> · <https://www.aerzteblatt.de/news/debatte-um-armutsbekaempfung-entbrannt-0e8fb5a0-8932-460c-9203-fe2fb214cca3> · <https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_83385430/jens-spahn-rudert-in-hartz-iv-debatte-zurueck-natuerlich-ist-es-schwierig-.html>
-- **Notizen:** Das berühmte 'Hartz IV bedeutet nicht Armut' ist in den geprüften Quellen NUR als indirekte Rede belegt ('Hartz IV bedeute nicht Armut, sondern sei die Antwort der Solidargemeinschaft auf Armut') – siehe falschzitate. Walk-back bei n-tv (März 2018): 'Natürlich ist es schwierig, mit so einem kleinen Einkommen umgehen zu müssen, wie es Hartz IV bedeutet.' Aktuell (Stand Nov. 2026): Bundestagsabgeordneter, Mitglied im Haushaltsausschuss; trat am 18.07.2026 als Vorsitzender der CDU/CSU-Fraktion zurück, Nachfolger ist Thorsten Frei. Anlass war eine Debatte um eine private Familienangelegenheit – im Spiel aus Persönlichkeitsrechtsgründen nicht thematisieren.
+- **Notizen:** Das berühmte 'Hartz IV bedeutet nicht Armut' ist in den geprüften Quellen NUR als indirekte Rede belegt ('Hartz IV bedeute nicht Armut, sondern sei die Antwort der Solidargemeinschaft auf Armut') – siehe falschzitate. Walk-back bei n-tv (März 2018): 'Natürlich ist es schwierig, mit so einem kleinen Einkommen umgehen zu müssen, wie es Hartz IV bedeutet.' Aktuell (Stand Nov. 2026): Bundestagsabgeordneter, Mitglied im Haushaltsausschuss; trat am 18.07.2026 als Vorsitzender der CDU/CSU-Fraktion zurück, Nachfolger ist Thorsten Frei. Anlass war eine Debatte um eine private Familienangelegenheit – im Spiel aus Persönlichkeitsrechtsgründen nicht thematisieren. VERIFIKATION 11/2026: Der Wortlaut ist bei Tagesspiegel, Ärzteblatt und t-online belegt; das Medium der ursprünglichen Äußerung (Funke/Berliner Morgenpost?) konnte nicht bestätigt werden, daher nicht genannt.
 
 ### Wirtschaft/Kapital
 
@@ -916,14 +924,14 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 
 ### Geschichte/NS-Relativierung
 
-#### `weidel-03` – „Er war ein Kommunist und sah sich selbst als Sozialisten.“
+#### `weidel-03` – „Er war dieser kommunistische, sozialistische Typ. Punkt.“
 
 - **Sprecher:** Alice Weidel (AfD), damals: Co-Bundessprecherin der AfD und Co-Fraktionsvorsitzende; designierte Kanzlerkandidatin
 - **Datum:** 2025-01-09
 - **Kontext:** Live-Gespräch (X Space) mit Elon Musk auf dessen Plattform X, auf Englisch geführt; Weidel sprach über Adolf Hitler.
 - **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung, Sonstiges/Absurd · **kurz:** ja
 - **Quellen:** <https://www.juedische-allgemeine.de/politik/weidel-im-talk-mit-musk-hitler-war-ein-kommunist> · <https://www.stuttgarter-zeitung.de/panorama/alice-weidel-ueber-hitler-er-war-ein-sozialistischer-kommunistischer-typ-79153160.html> · <https://correctiv.org/faktencheck/2025/01/16/anders-als-von-alice-weidel-behauptet-war-hitler-kein-kommunist/> · <https://newrepublic.com/post/190065/elon-musk-german-far-right-afd-hitler-lies>
-- **Notizen:** ACHTUNG ÜBERSETZUNG: Original auf Englisch; die deutsche Fassung ist die dpa-Übersetzung (übereinstimmend in Jüdischer Allgemeiner und Stuttgarter Zeitung). Im Spiel als '(übersetzt)' kennzeichnen. Weitere dpa-übersetzte Sätze: 'Er war dieser kommunistische, sozialistische Typ. Punkt.' und 'Und der größte Erfolg nach dieser schrecklichen Ära in unserer Geschichte war, Adolf Hitler als rechts und konservativ zu bezeichnen.' Englische Wiedergaben variieren je nach Medium (z. B. New Republic: 'He was a Communist socialist guy. Full stop.') – kein offizielles Transkript gefunden. Correctiv bewertete die Behauptung als falsch. Später (RTL/ntv) bekräftigte Weidel: 'Ich bin Ökonomin und für uns ist völlig klar, dass Adolf Hitler ein Linker war' (Stuttgarter Zeitung). Stand 11/2026: Co-Bundesvorsitzende der AfD (beim Bundesparteitag Erfurt am 4./5.7.2026 mit 81,3 % bestätigt) und Co-Vorsitzende der AfD-Bundestagsfraktion.
+- **Notizen:** ACHTUNG ÜBERSETZUNG: Original auf Englisch; die deutsche Fassung ist die dpa-Übersetzung (übereinstimmend in Jüdischer Allgemeiner und Stuttgarter Zeitung). Im Spiel als '(übersetzt)' kennzeichnen. Weitere dpa-übersetzte Sätze: 'Er war dieser kommunistische, sozialistische Typ. Punkt.' und 'Und der größte Erfolg nach dieser schrecklichen Ära in unserer Geschichte war, Adolf Hitler als rechts und konservativ zu bezeichnen.' Englische Wiedergaben variieren je nach Medium (z. B. New Republic: 'He was a Communist socialist guy. Full stop.') – kein offizielles Transkript gefunden. Correctiv bewertete die Behauptung als falsch. Später (RTL/ntv) bekräftigte Weidel: 'Ich bin Ökonomin und für uns ist völlig klar, dass Adolf Hitler ein Linker war' (Stuttgarter Zeitung). Stand 11/2026: Co-Bundesvorsitzende der AfD (beim Bundesparteitag Erfurt am 4./5.7.2026 mit 81,3 % bestätigt) und Co-Vorsitzende der AfD-Bundestagsfraktion. VERIFIKATION 11/2026: Zitat ersetzt. Die frühere Fassung 'Er war ein Kommunist und sah sich selbst als Sozialisten.' steht nur in der Jüdischen Allgemeinen; die jetzige dpa-Übersetzung steht in Jüdischer Allgemeiner und Stuttgarter Zeitung. Weiterhin nur Übersetzung aus dem englischen Gespräch ('(übersetzt)' kennzeichnen), kein offizielles Transkript.
 
 ### Demokratie/Medien
 
@@ -943,7 +951,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Kontext:** In der Riesaer Parteitagsrede über die Gegendemonstranten vor der Halle.
 - **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** ja
 - **Quellen:** <https://taz.de/Remigration-ist-jetzt-Parteiraeson/!6058444/> · <https://www.stuttgarter-zeitung.de/politik/alice-weidel-auf-afd-parteitag-in-riesa-wenn-das-radikale-schleichend-normal-wird-79030329.html> · <https://taz.de/Weidel-zur-AfD-Kanzlerkandidatin-gewaehlt/!6061592>
-- **Notizen:** Nur als Wortfragment belegt (taz, Stuttgarter Zeitung); der vollständige Satz wurde nicht gefunden – im Spiel nur als Fragment in Anführungszeichen verwenden. Stand 11/2026: Co-Bundesvorsitzende der AfD (beim Bundesparteitag Erfurt am 4./5.7.2026 mit 81,3 % bestätigt) und Co-Vorsitzende der AfD-Bundestagsfraktion.
+- **Notizen:** Nur als Wortfragment belegt (taz, Stuttgarter Zeitung); der vollständige Satz wurde nicht gefunden – im Spiel nur als Fragment in Anführungszeichen verwenden. Stand 11/2026: Co-Bundesvorsitzende der AfD (beim Bundesparteitag Erfurt am 4./5.7.2026 mit 81,3 % bestätigt) und Co-Vorsitzende der AfD-Bundestagsfraktion. VERIFIKATION 11/2026: taz schreibt 'rot-lackierte Nazis' (mit Bindestrich), Stuttgarter Zeitung und Transkript ohne; Wortlaut sonst gleich. Nur als Fragment verwenden, nicht als Satz.
 
 ## Björn Höcke (AfD)
 
@@ -1005,7 +1013,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Kontext:** Dieselbe Dresdner Rede; Kernforderung nach einer Umkehr der deutschen Erinnerungskultur.
 - **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** ja
 - **Quellen:** <https://www.tagesspiegel.de/politik/19273518.html> · <https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf> · <https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html>
-- **Notizen:** Wortlaut exakt wie Tagesspiegel-Transkript (ohne 'eine'); das DIMR zitiert mit Ergänzung '[eine]'. Eine zweite Stelle derselben Rede: 'Wir brauchen so dringend wie niemals zuvor diese erinnerungspolitische Wende um 180 Grad, liebe Freunde.' Stand 11/2026: Landessprecher der AfD Thüringen und Vorsitzender der AfD-Fraktion im Thüringer Landtag.
+- **Notizen:** Wortlaut exakt wie Tagesspiegel-Transkript (ohne 'eine'); das DIMR zitiert mit Ergänzung '[eine]'. Eine zweite Stelle derselben Rede: 'Wir brauchen so dringend wie niemals zuvor diese erinnerungspolitische Wende um 180 Grad, liebe Freunde.' Stand 11/2026: Landessprecher der AfD Thüringen und Vorsitzender der AfD-Fraktion im Thüringer Landtag. VERIFIKATION 11/2026: Wortlaut ohne 'eine' bestätigt. Drei voneinander unabhängige Transkripte (Tagesspiegel-Dokumentation, brightsblog-Transkript, geschichte-und-politik.info nach YouTube-Mitschnitt) haben übereinstimmend 'Wir brauchen nichts anderes als erinnerungspolitische Wende um 180 Grad!'; später in der Rede 'diese erinnerungspolitische Wende um 180 Grad'. Das 'eine' stammt aus Überschrift und Anmoderation der Tagesspiegel-Dokumentation, nicht aus der Rede. Das DIMR klammert '[eine]' grammatisch ein. Eine eigene Prüfung am Videoton steht aus.
 
 #### `hoecke-03` – „Und diese dämliche Bewältigungspolitik, die lähmt uns heute noch viel mehr als zu Franz Josef Strauß’ Zeiten.“
 
@@ -1015,6 +1023,15 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** ja
 - **Quellen:** <https://www.tagesspiegel.de/politik/19273518.html> · <https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf>
 - **Notizen:** Tagesspiegel-Volltext; DIMR zitiert gekürzt ('die lähmt uns heute […]'). Stand 11/2026: Landessprecher der AfD Thüringen und Vorsitzender der AfD-Fraktion im Thüringer Landtag.
+
+#### `afd-hoecke-11` – „Bis jetzt ist unsere Geistesverfassung, unser Gemütszustand immer noch der eines total besiegten Volkes.“
+
+- **Sprecher:** Björn Höcke (AfD), damals: AfD-Landes- und Fraktionsvorsitzender in Thüringen
+- **Datum:** 2017-01-17
+- **Kontext:** Rede bei den 'Dresdner Gesprächen' der Jungen Alternative im Ballhaus Watzke, Dresden - dieselbe Rede, in der er das Holocaust-Mahnmal 'Denkmal der Schande' nannte und eine 'erinnerungspolitische Wende um 180 Grad' forderte.
+- **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** ja
+- **Quellen:** <https://www.tagesspiegel.de/politik/19273518.html> · <https://www.tagesspiegel.de/politik/der-totale-hocke-4912966.html>
+- **Notizen:** Wortlaut nach Tagesspiegel (abgerufen: 19273518). ACHTUNG Variante: Die Jüdische Allgemeine zitiert laut Suchzusammenfassung 'brutal besiegten' statt 'total besiegten'; 'total' ist durch die Tagesspiegel-Transkription belegt, Original-Video nicht selbst geprüft. Ergänzt hoecke-01 bis -03 (gleiche Rede, anderer Satz). Zweiter Tagesspiegel-Link nur aus Suchtreffer, nicht abgerufen; vor Release am besten Video gegenprüfen.
 
 #### `hoecke-09` – „Alles für Deutschland“
 
@@ -1111,14 +1128,14 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 
 ### Demokratie/Medien
 
-#### `gauland-04` – „Wir werden sie jagen. […] Wir werden uns unser Land und unser Volk zurückholen.“
+#### `gauland-04` – „Wir werden sie jagen! […] und wir werden uns unser Land und unser Volk zurückholen!“
 
 - **Sprecher:** Alexander Gauland (AfD), damals: Spitzenkandidat der AfD zur Bundestagswahl 2017; stellvertretender Bundessprecher
 - **Datum:** 2017-09-24
 - **Kontext:** Auftritt am Abend der Bundestagswahl 2017 vor Anhängern in Berlin, adressiert an die künftige Bundesregierung.
 - **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** ja
 - **Quellen:** <https://www.spiegel.de/politik/deutschland/afd-alexander-gauland-wir-werden-frau-merkel-jagen-a-1169598.html> · <https://www.heidelberg24.de/politik-und-wirtschaft/bundestagswahl-2017-gauland-kuendigt-an-afd-will-frau-merkel-jagen-zr-8713172.html> · <https://www.revierpassagen.de/46024/jagdszenen-in-deutschland-zum-abend-der-bundestagswahl/20170924_2050> · <https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf>
-- **Notizen:** 'Wir werden sie jagen' (dpa/heidelberg24, Revierpassagen) und 'Wir werden uns unser Land und unser Volk zurückholen' (DIMR; Spiegel/dpa als 'unser Land und unser Volk zurückholen') mehrfach belegt. Die ausgelassene Mitte lautet nach Tagesspiegel/Buchauszug (nur in Suchergebnissen gesehen, nicht selbst abgerufen) 'Wir werden Frau Merkel oder wen auch immer jagen' – erst nach Prüfung verwenden. Davor sagte er laut Buchauszug sinngemäß, die Regierung könne sich 'warm anziehen'. Sicherste Kurzform: 'Wir werden sie jagen.' Die Spiegel-Überschrift 'Wir werden Frau Merkel jagen' ist eine Verkürzung. Frauke Petry kritisierte die Wortwahl. Stand 11/2026: Mitglied des Bundestages (21. WP, Wahlkreis 161 Chemnitz), Ehrenvorsitzender der AfD (seit 2019) und der AfD-Bundestagsfraktion (seit 2021).
+- **Notizen:** 'Wir werden sie jagen' (dpa/heidelberg24, Revierpassagen) und 'Wir werden uns unser Land und unser Volk zurückholen' (DIMR; Spiegel/dpa als 'unser Land und unser Volk zurückholen') mehrfach belegt. Die ausgelassene Mitte lautet nach Tagesspiegel/Buchauszug (nur in Suchergebnissen gesehen, nicht selbst abgerufen) 'Wir werden Frau Merkel oder wen auch immer jagen' – erst nach Prüfung verwenden. Davor sagte er laut Buchauszug sinngemäß, die Regierung könne sich 'warm anziehen'. Sicherste Kurzform: 'Wir werden sie jagen.' Die Spiegel-Überschrift 'Wir werden Frau Merkel jagen' ist eine Verkürzung. Frauke Petry kritisierte die Wortwahl. Stand 11/2026: Mitglied des Bundestages (21. WP, Wahlkreis 161 Chemnitz), Ehrenvorsitzender der AfD (seit 2019) und der AfD-Bundestagsfraktion (seit 2021). VERIFIKATION 11/2026: Zitat näher am Original gesetzt (Buchauszug: 'Wir werden sie jagen! Wir werden Frau Merkel oder wen auch immer jagen und wir werden uns unser Land und unser Volk zurückholen!'); die Auslassung ersetzt 'Wir werden Frau Merkel oder wen auch immer jagen'. Kurzform fürs Spiel bleibt 'Wir werden sie jagen.'
 
 ## Tino Chrupalla (AfD)
 
@@ -1133,7 +1150,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Kontext:** ZDF-Talkshow 'Markus Lanz', auf die Frage, was er an Wladimir Putin kritisiere.
 - **Status:** `verifiziert` · **Kategorien:** Europa, Sonstiges/Absurd · **kurz:** ja
 - **Quellen:** <https://www.berliner-zeitung.de/article/afd-chef-chrupalla-verteidigt-wladimir-putin-keine-gefahr-fuer-deutschland-aktuell-durch-russland-10005205> · <https://www.berliner-kurier.de/article/chrupalla-bei-lanz-10005221> · <https://www.zdfheute.de/politik/deutschland/chrupalla-russland-aussagen-putin-entspannungspolitik-100.html>
-- **Notizen:** Wortgleich bei Berliner Zeitung und Berliner Kurier. Die Berliner Zeitung zitiert zusätzlich: 'Putin hat noch nicht mal gedroht, Deutschland mit der Atombombe anzugreifen' (Kurier nur sinngemäß). Varianten in Überschriften – 'Mir hat Putin nichts getan' (Kurier) bzw. 'Putin hat mir persönlich nichts getan' (ZDF-Frageformulierung) – sind NICHT der Wortlaut. Im ZDF-Morgenmagazin (12./13.11.2025) hielt er daran fest: Er bezwecke 'ganz klar eine Entspannungspolitik'. Kritik auch aus der eigenen Partei. Stand 11/2026: Co-Bundesvorsitzender der AfD (Erfurt, 4./5.7.2026 mit ca. 70 % bestätigt) und Co-Vorsitzender der AfD-Bundestagsfraktion; MdB (Görlitz).
+- **Notizen:** Wortgleich bei Berliner Zeitung und Berliner Kurier. Die Berliner Zeitung zitiert zusätzlich: 'Putin hat noch nicht mal gedroht, Deutschland mit der Atombombe anzugreifen' (Kurier nur sinngemäß). Varianten in Überschriften – 'Mir hat Putin nichts getan' (Kurier) bzw. 'Putin hat mir persönlich nichts getan' (ZDF-Frageformulierung) – sind NICHT der Wortlaut. Im ZDF-Morgenmagazin (12./13.11.2025) hielt er daran fest: Er bezwecke 'ganz klar eine Entspannungspolitik'. Kritik auch aus der eigenen Partei. Stand 11/2026: Co-Bundesvorsitzender der AfD (Erfurt, 4./5.7.2026 mit ca. 70 % bestätigt) und Co-Vorsitzender der AfD-Bundestagsfraktion; MdB (Görlitz). VERIFIKATION 11/2026: Satz 1 und 2 wortgleich bei Berliner Zeitung, Berliner Kurier und web.de. zdfheute formuliert den zweiten Satz anders ('Ich sehe aktuell durch Russland keine Gefahr für Deutschland.'), vermutlich Paraphrase. Sicherste Kurzform: 'Mir hat er nichts getan.'
 
 #### `chrupalla-02` – „Jeder hat sein Kiesewetter und das ist der Herr Kiesewetter Russlands.“
 
@@ -1297,10 +1314,21 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 
 - **Sprecher:** Frauke Petry (AfD), damals: Bundessprecherin (Co-Vorsitzende) der AfD, Fraktionsvorsitzende im Sächsischen Landtag
 - **Datum:** 2016-01-30
-- **Kontext:** Interview mit dem 'Mannheimer Morgen' (Samstagsausgabe) auf die Frage, wie ein Grenzpolizist reagieren solle, wenn ein Flüchtling über einen Zaun klettert.
+- **Kontext:** Interview mit dem 'Mannheimer Morgen' (Samstagsausgabe, 30.01.2016) zum Umgang der Grenzpolizei mit illegalen Grenzübertritten.
 - **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
 - **Quellen:** <https://www.evangelisch.de/inhalte/131288/01-02-2016/petry-relativiert-forderung-nach-schusswaffen-einsatz-grenze> · <https://www.salzburg24.at/news/welt/afd-fordert-schiessbefehl-an-grenze-art-114035>
-- **Notizen:** STATUS 11/2026: von 'umstritten' auf 'verifiziert' umgestellt (Regel 'Gesagt ist gesagt'): Bestätigter Teil des Wortlauts; Relativierung vom 01.02.2016 siehe Notizen. Vollständiger Satz nur in einer Interview-Abschrift (SPD-Zitatesammlung) gefunden; 'notfalls auch von der Schusswaffe Gebrauch machen' und 'So steht es im Gesetz.' bei epd und APA/dpa wörtlich bestätigt. Im selben Interview: 'Kein Polizist will auf einen Flüchtling schießen. Ich will das auch nicht. Aber zur Ultima Ratio gehört der Einsatz von Waffengewalt.' Umstritten, weil relativiert: Petry und Meuthen erklärten am 01.02.2016, die AfD lehne es 'strikt ab, dass auf Menschen geschossen wird, die friedlich Einlass in das Bundesgebiet begehren'. Begriff 'Schießbefehl' stammt aus Medien/Kritik, nicht von Petry. Stand 11/2026: seit 2017 nicht mehr in der AfD; Gründerin des Vereins/der Partei 'Team Freiheit' (2025). PRÜFUNG 11/2026: Der vollständige Satz ('Er muss den illegalen Grenzübertritt verhindern, …') steht nur in einer Interview-Abschrift einer Partei-Zitatesammlung und wird deshalb nicht verwendet. 'So steht es im Gesetz.' wörtlich bei epd; 'notfalls auch von der Schusswaffe Gebrauch machen' bei APA/dpa.
+- **Notizen:** STATUS 11/2026: von 'umstritten' auf 'verifiziert' umgestellt (Regel 'Gesagt ist gesagt'): Bestätigter Teil des Wortlauts; Relativierung vom 01.02.2016 siehe Notizen. Vollständiger Satz nur in einer Interview-Abschrift (SPD-Zitatesammlung) gefunden; 'notfalls auch von der Schusswaffe Gebrauch machen' und 'So steht es im Gesetz.' bei epd und APA/dpa wörtlich bestätigt. Im selben Interview: 'Kein Polizist will auf einen Flüchtling schießen. Ich will das auch nicht. Aber zur Ultima Ratio gehört der Einsatz von Waffengewalt.' Umstritten, weil relativiert: Petry und Meuthen erklärten am 01.02.2016, die AfD lehne es 'strikt ab, dass auf Menschen geschossen wird, die friedlich Einlass in das Bundesgebiet begehren'. Begriff 'Schießbefehl' stammt aus Medien/Kritik, nicht von Petry. Stand 11/2026: seit 2017 nicht mehr in der AfD; Gründerin des Vereins/der Partei 'Team Freiheit' (2025). PRÜFUNG 11/2026: Der vollständige Satz ('Er muss den illegalen Grenzübertritt verhindern, …') steht nur in einer Interview-Abschrift einer Partei-Zitatesammlung und wird deshalb nicht verwendet. 'So steht es im Gesetz.' wörtlich bei epd; 'notfalls auch von der Schusswaffe Gebrauch machen' bei APA/dpa. VERIFIKATION 11/2026: Die frühere Angabe, die Frage habe einem über einen Zaun kletternden Flüchtling gegolten, ist in keiner geprüften Quelle belegt und wurde entfernt. Relativierung von Petry und Meuthen am 01.02.2016 beachten.
+
+### Geschichte/NS-Relativierung
+
+#### `afd-petry-02` – „Wenn er damit zu tun hat, dass es um das Volk geht, was ist daran per se negativ?“
+
+- **Sprecher:** Frauke Petry (AfD), damals: AfD-Bundesvorsitzende
+- **Datum:** 2016-09-11
+- **Kontext:** Interview mit der Welt am Sonntag über den Begriff 'völkisch'; sie sagte auch, der Begriff solle 'wieder positiv besetzt' werden.
+- **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** nein
+- **Quellen:** <https://www.vol.at/afd-chefin-will-begriff-voelkisch-positiv-besetzen/4900717> · <https://correctiv.org/ruhr/faktencheck-ruhr/2017/04/21/frauke-petry-und-das-voelkische-was-stimmt>
+- **Notizen:** vol.at (Wortlaut abgerufen; Interview WamS 11.09.2016). Correctiv-Faktencheck nur über Suchzusammenfassung bestätigt, nicht abgerufen. Weitere Zitate aus demselben Interview: 'Ich sperre mich dagegen, Wörter zu Unwörtern zu erklären' und '[...] dass dieser Begriff wieder positiv besetzt ist'. Petry sagte laut Correctiv auch, sie benutze den Begriff selbst nicht, ihr missfalle aber seine ausschließlich negative Verwendung - Kontext mitliefern.
 
 ## Jens Maier (AfD)
 
@@ -1314,6 +1342,15 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Status:** `verifiziert` · **Kategorien:** Migration, Europa · **kurz:** nein
 - **Quellen:** <https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html> · <https://www.l-iz.de/melder/wortmelder/2017/01/klaus-bartl-linke-afd-mann-maier-nach-assistenz-fuer-hoecke-als-richter-noch-tragbar-164880> · <https://www.lto.de/recht/hintergruende/h/richter-jens-maier-sachsen-afd-justiz-rueckkehr-aussagen-2017-dresden-slomka-zdf-bundestag-mandat>
 - **Notizen:** Vollzitat im VG-Köln-Urteil (aus BfV-Gutachten); 'Herstellung von Mischvölkern' und 'einfach nicht zu ertragen' bei L-IZ/LTO bestätigt. In derselben Rede erklärte er den 'Schuldkult' für 'endgültig beendet' (nur fragmentarisch belegt). Das LG Dresden erteilte 2017 einen Verweis. Maier war 2017–2021 MdB; 2022 Rückkehr in die Justiz untersagt, BGH bestätigte im Oktober 2023 die Versetzung in den vorzeitigen Ruhestand; die Disziplinarklage auf Aberkennung des Ruhegehalts wies das Dienstgericht Leipzig im November 2024 ab (weiterer Verlauf nicht geprüft).
+
+#### `afd-maier-02` – „Dem kleinen Halbneger scheint einfach zu wenig Beachtung geschenkt worden zu sein [...]“
+
+- **Sprecher:** Jens Maier (AfD), damals: AfD-Bundestagsabgeordneter, Richter am Landgericht Dresden (beurlaubt)
+- **Datum:** 2018-01-02
+- **Kontext:** Tweet vom Account Maiers über Noah Becker (Sohn von Boris Becker), nachdem dieser sich beklagt hatte, ständig nur als Sohn gesehen zu werden. Tweet gelöscht; Maier sagte, ein Mitarbeiter habe ihn verfasst.
+- **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
+- **Quellen:** <https://www.lto.de/recht/nachrichten/n/jens-maier-afd-richter-bundestagsabgeordneter-rassistischer-kommentar-noah-becker> · <https://www.t-online.de/nachrichten/deutschland/parteien/id_82996470/afd-der-halbneger-tweet-geht-meuthen-zu-weit.html> · <https://www.vice.com/de/article/jens-maier-urteil-afd-politiker-muss-wegen-rassistischem-tweet-15000-euro-schmerzensgeld-an-noah-becker-zahlen/>
+- **Notizen:** Wortlaut nach LTO (abgerufen; dort geht das Zitat noch weiter, der Rest wurde nicht ausgegeben) - deshalb [...] am Ende, Satzende nicht selbst ergänzen. Die anderen Quellen nur über Suchzusammenfassungen gesehen; 'kleiner Halbneger' ist dort einheitlich. Maier sagte, ein Mitarbeiter habe geschrieben -> 'Tweet vom Account des AfD-Abgeordneten' formulieren. Gerichtsfolgen widersprüchlich berichtet: Vice 15.000 EUR Urteil, t-online 7.500 EUR - im Spiel nicht nennen, solange ungeklärt. LTO nennt es 'rassistischen Kommentar'; Gauland und Meuthen kritisierten ihn.
 
 ## Gottfried Curio (AfD)
 
@@ -1340,6 +1377,139 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Status:** `umstritten` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** ja
 - **Quellen:** <https://taz.de/AfD-Bezuege-zum-Nationalsozialismus/!5790562/> · <https://correctiv.org/aktuelles/afd/2026/07/03/helferich-urteil-gewinn-fuer-das-voelkische-lager-der-afd-in-nrw/> · <https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf>
 - **Notizen:** BLEIBT 'umstritten', weil: Helferich gibt an, eine fremde Zuschreibung ironisch wiedergegeben zu haben – Zuschreibung strittig. Fragment wörtlich belegt (taz, Correctiv). Umstritten: Helferich erklärte, er habe nur die Zuschreibung eines Linken ironisch wiedergegeben; laut taz bestritt er die Aussagen nicht, bestätigte sie aber auch nicht. Das AfD-Bundesschiedsgericht ließ ihn am 26.06.2026 in der Partei (nur sechs Monate Ämtersperre) und wertete diese Äußerung als aus dem Zusammenhang gerissen. Stand 11/2026: MdB (seit 2021), AfD-Mitglied. Nur mit Kontext/Hinweis auf seine Erklärung verwenden.
+
+## Ulrich Thomas (gemeinsam mit Lars-Jörn Zimmer) (CDU)
+
+### Demokratie/Medien
+
+#### `cdu-thomas-01` – „Es muss gelingen, das Soziale wieder mit dem Nationalen zu versöhnen.“
+
+- **Sprecher:** Ulrich Thomas (gemeinsam mit Lars-Jörn Zimmer) (CDU), damals: stellv. CDU-Fraktionsvorsitzender im Landtag von Sachsen-Anhalt (Mitverfasser der 'Denkschrift' mit Lars-Jörn Zimmer)
+- **Datum:** 2019-06
+- **Kontext:** Aus der achtseitigen 'Denkschrift' der beiden CDU-Fraktionsvizes Thomas und Zimmer, die u. a. forderte, Koalitionen mit der AfD künftig nicht auszuschließen und sich von 'multikulturellen Strömungen linker Parteien und Gruppen' abzugrenzen. CDU-Landeschef Holger Stahlknecht lehnte den Vorstoß ab ('Ich warne davor, die CDU nach rechts zu verrücken').
+- **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien, Migration · **kurz:** ja
+- **Quellen:** <https://www.t-online.de/nachrichten/deutschland/id_85958160/cdu-politiker-ueber-koalition-mit-afd-soziales-mit-nationalem-versoehnen-.html> · <https://www.volksstimme.de/sachsen-anhalt/trotz-denkschrift-stahlknecht-sieht-cdu-gut-aufgestellt-986975>
+- **Notizen:** Zitiert nach Mitteldeutscher Zeitung (via t-online, Stand 20.06.2019). Volksstimme/dpa (05.07.2019) gibt die Stelle als 'das Soziale mit dem Nationalen zu versöhnen' wieder (Kernfragment identisch, ohne 'wieder' - ob Kürzung der Zeitung oder Abweichung, nicht geklärt). SICHERSTE Sprechblasen-Fassung: Kernfragment 'das Soziale mit dem Nationalen zu versöhnen'. Das Originaldokument der Denkschrift wurde NICHT eingesehen. Zuschreibung an Thomas folgt der MZ (via t-online); das Papier hat zwei Autoren. Weitere Passage laut Volksstimme/dpa: Kampf gegen den 'linken Mainstream aus gesteuertem Gutmenschentum und Klimaverständnis' (nur 1 Quelle, nicht doppelt belegt).
+
+## Hans-Georg Maaßen (CDU)
+
+### Migration
+
+#### `cdu-maassen-01` – „eliminatorischer Rassismus gegen Weiße“
+
+- **Sprecher:** Hans-Georg Maaßen (CDU), damals: CDU-Mitglied (Thüringen, 2021 Bundestagskandidat), ehem. Präsident des Bundesamts für Verfassungsschutz; Werteunion-Umfeld
+- **Datum:** 2023-01
+- **Kontext:** Twitter-Beitrag Maaßens in der Woche bis 22.01.2023: Die Stoßrichtung der 'treibenden Kräfte im politischen-medialen Raum' sei 'eliminatorischer Rassismus gegen Weiße'. Daraufhin forderte das CDU-Präsidium ihn einstimmig zum Parteiaustritt auf (30.01.2023).
+- **Status:** `verifiziert` · **Kategorien:** Migration, Geschichte/NS-Relativierung · **kurz:** ja
+- **Quellen:** <https://taz.de/Antrag-auf-Parteiausschlussverfahren/!5911309/> · <https://www.juedische-allgemeine.de/allgemein/gebrauch-von-sprache-aus-dem-milieu-der-antisemiten-und-verschwoerungsideologen-zutiefst-verstoerend-und-unertraeglich> · <https://www.lto.de/recht/nachrichten/n/cdu-hans-georg-maassen-parteiaustritt-forderung-partei-praesidium-parteiausschlussverfahren/print.html>
+- **Notizen:** Nur das Fragment 'eliminatorischer Rassismus gegen Weiße' ist in taz, Jüdischer Allgemeiner und LTO übereinstimmend wörtlich zitiert; voller Tweet-Text und exaktes Tweet-Datum wurden NICHT gefunden (Originaltweet nicht abrufbar). Nur als Fragment verwenden, nicht zum Satz ergänzen. Laut taz verdrehte Maaßen damit einen Begriff des Holocaust-Forschers Daniel Goldhagen; RIAS sah Anklänge an NS-Vernichtungsantisemitismus (Wertungen Dritter, nicht als Tatsache darstellen). Die Interview-Formulierung 'Rassenlehre' NICHT verwenden: taz 'grün-roten Rassenlehre', LTO 'rot-grünen Rassenlehre' -> Wortlaut uneinheitlich. Maaßen war zum Zeitpunkt CDU-Mitglied (Jüdische Allgemeine, 22.01.2023).
+
+## Saskia Ludwig (CDU)
+
+### Demokratie/Medien
+
+#### `cdu-ludwig-01` – „Wenn über 50 Prozent Mitte-Rechts wählen, dann muss es auch eine Mitte-Rechts-Regierung geben für die Bürger.“
+
+- **Sprecher:** Saskia Ludwig (CDU), damals: CDU-Politikerin aus Brandenburg (inzwischen Bundestagsabgeordnete), prominente Gegnerin der 'Brandmauer'
+- **Datum:** 2025
+- **Kontext:** Interview mit dem Berliner Lokalsender TV.Berlin vor der Bundestagswahl 2025, in dem sie für eine Regierung rechts der Mitte warb. Im August 2025 sorgte sie zudem mit einem Treffen mit Alice Weidel beim MCC-Festival in Ungarn für Streit in der Union.
+- **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** nein
+- **Quellen:** <https://www.zdfheute.de/politik/saskia-ludwig-cdu-afd-weidel-100.html>
+- **Notizen:** Einzelquelle, aber ZDF (zitiert TV.Berlin-Interview); exaktes Interviewdatum nicht angegeben (vor Bundestagswahl 23.02.2025). Der Satz nennt die AfD nicht; der AfD-Bezug ist Einordnung des ZDF - nicht als 'Ludwig will AfD-Koalition' ausgeben. NICHT verifiziert: 'Die Brandmauer halte ich für einen politischen Irrweg' (nur heidelberg24, 17.03.2026) und 'höchst undemokratisch' (nur Sekundärbericht).
+
+## Alexander Räuscher (früher CDU)
+
+### Demokratie/Medien
+
+#### `cdu-raeuscher-01` – „Das Wahlergebnis verlangt, dass Herr Siegmund Ministerpräsident wird. Die CDU sollte seine Wahl ermöglichen“
+
+- **Sprecher:** Alexander Räuscher (früher CDU), damals: früherer CDU-Landtagsabgeordneter in Sachsen-Anhalt (nicht mehr im 2026 gewählten Landtag); laut Berichten langjähriger Brandmauer-Gegner
+- **Datum:** 2026-10-08
+- **Kontext:** Äußerung gegenüber dem Tagesspiegel nach der Landtagswahl in Sachsen-Anhalt (06.09.2026) zur Frage, ob die CDU den AfD-Spitzenkandidaten Ulrich Siegmund im Dezember zum Ministerpräsidenten wählen soll. CDU-Landesvize Marco Tullner lehnte das klar ab.
+- **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** ja
+- **Quellen:** <https://www.volksstimme.de/deutschland-und-welt/deutschland/cdu-landesvize-tullner-wir-sind-keine-afd-hilfstruppe-4335338>
+- **Notizen:** dpa-Meldung (Volksstimme, 08.10.2026, 12:55) zitiert den Tagesspiegel; Tagesspiegel-Original nicht selbst abgerufen. Parteistatus: dpa nennt ihn 'früheren CDU-Landtagsabgeordneten' - ob er zum Zeitpunkt noch CDU-Mitglied war, ist nicht belegt; im Album daher 'ehem. CDU-Landtagsabgeordneter' schreiben. Satz endet in der dpa-Fassung ohne Punkt.
+
+#### `cdu-raeuscher-02` – „Ich hätte Bauchschmerzen, Siegmund im Landtag zu wählen, aber ich würde es tun. Da müssen wir jetzt durch“
+
+- **Sprecher:** Alexander Räuscher (früher CDU), damals: früherer CDU-Landtagsabgeordneter in Sachsen-Anhalt
+- **Datum:** 2026-10-08
+- **Kontext:** Tagesspiegel-Interview nach der Landtagswahl Sachsen-Anhalt 2026, zur möglichen CDU-Wahl des AfD-Spitzenkandidaten Siegmund zum Ministerpräsidenten.
+- **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** nein
+- **Quellen:** <https://www.volksstimme.de/deutschland-und-welt/deutschland/cdu-landesvize-tullner-wir-sind-keine-afd-hilfstruppe-4335338>
+- **Notizen:** Wie cdu-raeuscher-01: dpa (via Volksstimme), Tagesspiegel-Original nicht selbst gesehen. Kürzer für Sprechblase: 'Ich hätte Bauchschmerzen, [...] aber ich würde es tun.' (mit Auslassungszeichen).
+
+## Clara von Nathusius (CDU)
+
+### Demokratie/Medien
+
+#### `cdu-nathusius-01` – „Ich glaube, dass die Brandmauer ein gescheitertes Projekt ist.“
+
+- **Sprecher:** Clara von Nathusius (CDU), damals: Mitglied im Bundesvorstand der Jungen Union (Schatzmeisterin), ehem. Pressesprecherin bei Kulturstaatsminister Weimer
+- **Datum:** 2026-09-13
+- **Kontext:** ARD 'Bericht aus Berlin' (Sonntag 13.09.2026) nach der Landtagswahl in Sachsen-Anhalt; sie forderte, die Unvereinbarkeitsbeschlüsse 'in der jetzigen bestehenden Form' abzuschaffen, und schloss Sondierungsgespräche mit der AfD nicht aus.
+- **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** ja
+- **Quellen:** <https://www.hessenschau.de/politik/cdu-haelt-an-afd-abgrenzung-fest---doch-das-wort-soll-weg-v1,brandmauerdebatte-cdu-100.html> · <https://www.leinetal24.de/welt/clara-von-nathusius-cdu-fordert-ende-der-brandmauer-und-attackiert-merz-zr-94491000.html>
+- **Notizen:** hessenschau (15.09.2026) zitiert wörtlich; zweiter Bericht (Welt-Text via leinetal24, nur über Suchtreffer-Zusammenfassung gesehen, Seite nicht abgerufen) bestätigt 'ein gescheitertes Projekt' und die Sendung. Sendung/Transkript nicht eingesehen. Sehr kurz, sprechblasentauglich.
+
+## Horst Seehofer (CSU)
+
+### Migration
+
+#### `csu-seehofer-02` – „Herrschaft des Unrechts“
+
+- **Sprecher:** Horst Seehofer (CSU), damals: bayerischer Ministerpräsident und CSU-Vorsitzender
+- **Datum:** 2016-02-09
+- **Kontext:** Seehofer warf der Bundesregierung (Merkel) in der Flüchtlingspolitik eine 'Herrschaft des Unrechts' vor (Interview, Meldungen vom 09./10.02.2016). Es folgte breite Kritik, auch aus der SPD.
+- **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
+- **Quellen:** <https://www.leinetal24.de/welt/seehofer-aeusserungen-herrschaft-unrechts-vergleich-unrechtsstaaten-zr-6112226.html> · <https://web.de/magazine/politik/horst-seehofer-angela-merkels-fluechtlingspolitik-schaden-31345766>
+- **Notizen:** Nur das Fragment 'Herrschaft des Unrechts' selbst abgerufen (leinetal24/dpa, Stand 10.02.2016 13:10). Der volle Satz soll laut Sekundärrecherche lauten 'Wir haben im Moment keinen Zustand von Recht und Ordnung. Es ist eine Herrschaft des Unrechts.' (Passauer Neue Presse) - NICHT selbst im Original bestätigt; vor Nutzung des vollen Satzes gegenprüfen. web.de-Seite nicht abgerufen. Als Fragment verwenden. Datum 09.02. vs. 10.02. nicht eindeutig.
+
+#### `csu-seehofer-01` – „Die Migrationsfrage ist die Mutter aller politischen Probleme in diesem Land.“
+
+- **Sprecher:** Horst Seehofer (CSU), damals: Bundesinnenminister und CSU-Vorsitzender
+- **Datum:** 2018-09-05
+- **Kontext:** Rheinische-Post-Interview, veröffentlicht rund um die Klausur der CSU-Landesgruppe in Neuhardenberg (05./06.09.2018), nach den Ausschreitungen in Chemnitz. Die Kurzform 'Mutter aller Probleme' kam laut Berichten aus dem Teilnehmerkreis der Klausur.
+- **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
+- **Quellen:** <https://www.derstandard.at/story/2000086798388/seehofer-nennt-migration-mutter-aller-probleme> · <https://www.evangelisch.de/inhalte/152105/06-09-2018/seehofer-migration-ist-die-mutter-aller-probleme>
+- **Notizen:** KORREKTUR der häufigen Kurzfassung 'Migration ist die Mutter aller Probleme': belegt ist als Interviewwortlaut 'Die Migrationsfrage ist die Mutter aller politischen Probleme in diesem Land.' Die Kurzform stammt laut epd aus Teilnehmerkreisen der Klausur (Bild/Welt), nicht aus dem Interview. Datum: Äußerung Mittwoch 05.09.2018 laut epd, Artikel 06.09.2018. Seehofer ist kein Hinterbänkler, passt aber als Parteilinien-Zitat.
+
+## Ulrich Siegmund (AfD)
+
+### Migration
+
+#### `afd-siegmund-02` – „[...] weil wir bei späteren Remigrations- und Abschiebeoffensiven natürlich [...] entsprechende Hilfsmittel brauchen.“
+
+- **Sprecher:** Ulrich Siegmund (AfD), damals: AfD-Spitzenkandidat und Fraktionsvorsitzender im Landtag von Sachsen-Anhalt
+- **Datum:** 2026-09-09
+- **Kontext:** Pressekonferenz der AfD Sachsen-Anhalt auf die Frage, ob er sich Produktion von Raketen/Drohnen des israelischen Rüstungskonzerns Elbit in Sangerhausen vorstellen könne. Davor: 'Wir verteufeln nicht pauschal die Produktion von Rüstungsgütern'.
+- **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
+- **Quellen:** <https://correctiv.org/aktuelles/afd/2026/09/11/siegmund-afd-ruestung-remigration-ueberblick/> · <https://www.nordkurier.de/politik/siegmund-verknuepft-das-thema-remigration-und-aufruestung-brauchen-entsprechende-hilfsmittel-4857470>
+- **Notizen:** Zwei Fassungen: Correctiv (nach NTV-Video) 'natürlich auch entsprechende Hilfsmittel', Nordkurier 'natürlich entsprechende Hilfsmittel' -> deshalb Auslassungszeichen; das Wort 'auch' NICHT ins Zitat setzen. Datum: Correctiv-Bildunterschrift 09.09.2026 (Artikel nennt 'Donnerstag', der 09.09.2026 ist aber ein Mittwoch); Tweet dazu 10.09.2026 -> Datum vor Release gegenprüfen. Video nicht selbst gesehen. Folge-Statement über seinen Sprecher: '[...] eine echte Remigrationsoffensive zu ermöglichen' (nur Correctiv).
+
+### Geschichte/NS-Relativierung
+
+#### `afd-siegmund-01` – „Das maße ich mir nicht an zu bewerten, weil ich die gesamte Menschheit nicht aufarbeiten kann [...]“
+
+- **Sprecher:** Ulrich Siegmund (AfD), damals: AfD-Spitzenkandidat und Fraktionsvorsitzender im Landtag von Sachsen-Anhalt
+- **Datum:** 2025-11-21
+- **Kontext:** Auf die Frage von Gordon Repinski 'Würden Sie auch sagen, das war das schlimmste Menschheitsverbrechen?' (zur NS-Zeit/Holocaust) in einem 45-minütigen Interview-Podcast. Der Zentralrat der Juden warf ihm Relativierung vor ('völlige Schamlosigkeit', Schuster).
+- **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** nein
+- **Quellen:** <https://correctiv.org/faktencheck/2025/11/27/zitat-zum-teil-erfunden-was-ulrich-siegmund-zum-holocaust-sagte-und-was-nicht/> · <https://www.juedische-allgemeine.de/politik/voellige-schamlosigkeit-zentralrat-der-juden-kritisiert-afd-spitzenkandidat-fuer-ns-relativierung/>
+- **Notizen:** FALSCHZITAT-WARNUNG: Auf X kursierte eine Fassung mit zwei erfundenen Folgesätzen (Stalinismus, Maoismus, Völkermord an Armeniern, 'verurteile den Holocaust ohne Vorbehalt') - laut Correctiv-Faktencheck NICHT gesagt. Belegt (Correctiv, nach Video): 'Das maße ich mir nicht an zu bewerten, weil ich die gesamte Menschheit nicht aufarbeiten kann und aus allen Verbrechen dieser Menschheit natürlich lernen muss, genauso wie aus dieser, wie aus vielen anderen auch.' Davor sagte er, die NS-Zeit müsse 'über die ganze AfD hinweg gleichsam als Tiefpunkt unserer Geschichte natürlich betrachtet werden' - im Album FAIRNESSHALBER mit diesem Kontext zeigen. Interview-Video nicht selbst gesehen (Correctiv transkribiert; Jüdische Allgemeine nennt es 'Politico-Podcast', Correctiv 'Gespräch mit Welt-Journalist Repinski'). Auslassung nach 'kann' ist mit [...] kenntlich gemacht.
+
+## Marc Vallendar (AfD)
+
+### Geschichte/NS-Relativierung
+
+#### `afd-vallendar-01` – „Mag ja sein, dass es Kriegsverbrechen gegeben hat“
+
+- **Sprecher:** Marc Vallendar (AfD), damals: AfD-Abgeordneter im Berliner Abgeordnetenhaus
+- **Datum:** 2025-01-27
+- **Kontext:** Innenausschuss des Berliner Abgeordnetenhauses am Internationalen Holocaust-Gedenktag, in einem längeren Redebeitrag; Ausschussvorsitzender Dörstelmann (SPD) fragte, ob er sich des Datums bewusst sei. Vallendar korrigierte sich ('Es gab Kriegsverbrechen').
+- **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** ja
+- **Quellen:** <https://de.nachrichten.yahoo.com/unversch%C3%A4mtheit-holocaust-gedenktag-sorgt-afd-163834618.html>
+- **Notizen:** Einzelquelle, aber dpa (via Yahoo Nachrichten). Worauf sich 'Kriegsverbrechen' im Redebeitrag bezog, steht im abgerufenen dpa-Auszug nicht; die Grünen (Franco) warfen ihm vor, den Mord an sechs Millionen Juden zu relativieren (Wertung der Grünen). Selbstkorrektur 'Es gab Kriegsverbrechen.' immer mitnennen. Kein Ausschussprotokoll eingesehen.
 
 ## Häufig falsch zitiert oder falsch zugeschrieben
 

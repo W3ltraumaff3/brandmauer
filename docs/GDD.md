@@ -228,7 +228,7 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 
 - **The Umfrage difficulty** scales every encounter and can unlock harder variants.
 - Elites, minibosses and bosses are **parodies with invented names**, recognizable but never named directly.
-- They **don't die**. When beaten, they make a fitting exit, usually **"in den Aufsichtsrat befördert"** with a golden parachute.
+- They **don't die**. When beaten, they're **"abgesetzt"** and leave **"ins politische Abseits"**, with a fitting exit (yacht, walk-off, private jet, Switzerland).
 - Every encounter has an intro card or speech bubble with a **real, verified quote**, and beating it unlocks the matching Zitat-Album card.
 - **MVP: one encounter per tier** (3 elites/minibosses plus 1 boss). The pools grow after the MVP.
 
@@ -236,11 +236,11 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 | Wave | Encounter | Parody of | Mechanic | Exit |
 |---|---|---|---|---|
 | 5 | **Die Sylt-Clique** | the 2024 Sylt video (anonymous archetypes, no recognizable real people) | a pack of 4 that buff each other while close together; they throw champagne and hum "♪ Döp dödö döp ♪" | sail off in a yacht |
-| 10 | **Der Geschichtslehrer** | Höcke | **"Wende um 180 Grad"**: periodically **reverses the player's controls**. Quote hoecke-02 | in den Aufsichtsrat befördert |
-| 15 | **Der Sauerländer** | Merz | Phase 1 **Bierdeckel** (beer mats as shuriken) → phase 2 **Sondervermögen** (he breaks his own Schuldenbremse, and money rain heals him) → phase 3 **Zirkuszelt** (the arena turns into a circus tent). Unlocks **Die Töchter** | private jet, then golden parachute into the Aufsichtsrat |
-| 20 | **Final boss: Weidel parody** (name still open) | Weidel | see below | **"remigrates" to Switzerland** |
+| 10 | **Der Geschichtslehrer** | Höcke | **"Wende um 180 Grad"**: periodically **reverses the player's controls**. Quote hoecke-02 | walks off "ins politische Abseits" |
+| 15 | **Der Sauerländer** | Merz | Phase 1 **Bierdeckel** (beer mats as shuriken) → phase 2 **Sondervermögen** (he breaks his own Schuldenbremse, and money rain heals him) → phase 3 **Zirkuszelt** (the arena turns into a circus tent). Unlocks **Die Töchter** | flies off in the private jet "ins politische Abseits" |
+| 20 | **Final boss: Die Remigrantin** (Weidel parody) | Weidel | see below | **"remigrates" to Switzerland** |
 
-### Final boss (Weidel parody)
+### Final boss: Die Remigrantin (Weidel parody)
 - **Phase 1 "Windmühlen der Schande":** she tears down the wind turbines in the arena, which are your cover. She charges like Don Quixote. Quote weidel-05.
 - **Phase 2 "Remigration":** push waves drive all players toward the Brandmauer, and the arena edge becomes the danger zone.
 - **Phase 3 "Steuerparadies":** she retreats behind a vault shield of gold bars in a Swiss chalet, and the players have to break the shield.

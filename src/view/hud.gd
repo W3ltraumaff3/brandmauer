@@ -537,7 +537,11 @@ func _draw_card(enc: String, t: float, a: float, sz: Vector2) -> void:
 	var qsz := Vector2.ZERO
 	if qtext != "":
 		qsz = _type.get_multiline_string_size(qtext, HORIZONTAL_ALIGNMENT_LEFT, w - 80, 21)
-	var h := 120.0 + qsz.y + (40.0 if qtext != "" else 30.0)
+	var qctx := Quotes.context_label(q) if not q.is_empty() else ""
+	var csz := Vector2.ZERO
+	if qctx != "":
+		csz = _type.get_multiline_string_size(qctx, HORIZONTAL_ALIGNMENT_LEFT, w - 80, 14)
+	var h := 120.0 + qsz.y + csz.y + (40.0 if qtext != "" else 30.0)
 	var slide := 1.0 - pow(1.0 - minf(t * 3.0, 1.0), 3.0)
 	var c := Vector2(sz.x * 0.5, sz.y * 0.42 + (1.0 - slide) * sz.y * 0.6)
 	draw_set_transform(c, -0.025 + 0.01 * sin(t * 2.0), Vector2.ONE)
@@ -555,7 +559,9 @@ func _draw_card(enc: String, t: float, a: float, sz: Vector2) -> void:
 	draw_line(Vector2(r.position.x + 60, r.position.y + 88), Vector2(r.end.x - 60, r.position.y + 86), Color(INK, a * 0.6), 2.0)
 	if qtext != "":
 		draw_multiline_string(_type, Vector2(r.position.x + 40, r.position.y + 124), qtext, HORIZONTAL_ALIGNMENT_LEFT, w - 80, 21, -1, Color(INK, a))
-		draw_string(_type, Vector2(r.position.x + 40, r.end.y - 22), "– " + Quotes.source_label(q), HORIZONTAL_ALIGNMENT_RIGHT, w - 80, 15, Color(0.35, 0.33, 0.3, a))
+		draw_string(_type, Vector2(r.position.x + 40, r.end.y - 22 - csz.y), "– " + Quotes.source_label(q), HORIZONTAL_ALIGNMENT_RIGHT, w - 80, 15, Color(0.35, 0.33, 0.3, a))
+		if qctx != "":
+			draw_multiline_string(_type, Vector2(r.position.x + 40, r.end.y - csz.y - 4), qctx, HORIZONTAL_ALIGNMENT_RIGHT, w - 80, 14, -1, Color(0.45, 0.42, 0.38, a))
 	elif enc == "sylt_clique":
 		_txt(tr("SAY_SYLT_HUM"), Vector2(r.position.x, r.position.y + 128), 30, Color(0.15, 0.3, 0.7, a), null, HORIZONTAL_ALIGNMENT_CENTER, w)
 	draw_set_transform_matrix(Transform2D.IDENTITY)

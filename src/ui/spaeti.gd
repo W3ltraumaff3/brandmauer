@@ -453,7 +453,8 @@ func _bottom(meta: Dictionary, me: Dictionary) -> Control:
 		var qv := UIKit.vbox(0)
 		qv.size_flags_horizontal = SIZE_EXPAND_FILL
 		qv.add_child(UIKit.label(tr("SPAETI_QUOTE"), 15, UITheme.INK_SOFT))
-		qv.add_child(UIKit.type_label("„%s“ — %s" % [q.get("zitat", ""), Quotes.source_label(q)], 13, UITheme.INK))
+		var ctx := Quotes.context_label(q)
+		qv.add_child(UIKit.type_label("„%s“ — %s%s" % [q.get("zitat", ""), Quotes.source_label(q), (" · " + ctx) if ctx != "" else ""], 13, UITheme.INK))
 		h.add_child(qv)
 	else:
 		h.add_child(UIKit.spacer())

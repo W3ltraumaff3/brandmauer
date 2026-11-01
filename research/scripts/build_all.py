@@ -8,12 +8,13 @@ sys.path.insert(0, HERE)
 from merz_data import MERZ, MERZ_FALSCH, MERZ_UNVERIFIZIERT
 import copy
 from pruefung import apply, NEW_MERZ
+from kontext_kurz import KONTEXT_KURZ
 
 OUT = os.path.dirname(HERE)
 os.makedirs(OUT, exist_ok=True)
 
 FIELDS = ["id", "sprecher", "partei", "rolle_damals", "zitat", "datum", "kontext", "quellen",
-          "status", "kategorien", "kurz", "notizen"]
+          "status", "kategorien", "kurz", "notizen", "kontext_kurz"]
 CATS = ["Migration", "Sozialstaat/Arbeit", "Wirtschaft/Kapital", "Klima", "Gender/Familie",
         "Geschichte/NS-Relativierung", "Demokratie/Medien", "Europa", "Sonstiges/Absurd"]
 
@@ -27,12 +28,15 @@ union = load("union/union_quotes.json")
 afd = load("afd/afd_quotes.json")
 ux = load("union/union_extra.json")
 ax = load("afd/afd_extra.json")
+neu = load("neu/kandidaten.json")   # 2026-11 research: Union/AfD cooperation, NS relativization
 
 
 def norm(q):
     q = dict(q)
     if q.get("typ") == "kontext" and not q["notizen"].startswith("KONTEXT-EINTRAG"):
         q["notizen"] = "KONTEXT-EINTRAG (kein Politikerzitat für Sprechblasen; für Album/Ladebildschirm-Infotext). " + q["notizen"]
+    q.setdefault("kontext_kurz", KONTEXT_KURZ.get(q["id"]))
+    assert q["kontext_kurz"], ("kontext_kurz fehlt", q["id"])
     out = OrderedDict((k, q[k]) for k in FIELDS)
     assert out["status"] in ("verifiziert", "sinngemäß", "umstritten", "unverifiziert"), q["id"]
     assert all(c in CATS for c in out["kategorien"]), (q["id"], out["kategorien"])
@@ -40,7 +44,7 @@ def norm(q):
     return out
 
 
-ALL = [norm(copy.deepcopy(q)) for q in MERZ + NEW_MERZ + union + afd]
+ALL = [norm(copy.deepcopy(q)) for q in MERZ + NEW_MERZ + union + afd + neu]
 CHECK_ROWS = []
 apply(ALL, CHECK_ROWS)
 ALL = [norm(q) for q in ALL]

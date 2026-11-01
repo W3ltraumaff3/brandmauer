@@ -217,7 +217,7 @@ const ENCOUNTER_ORDER: Array[String] = ["sylt_clique", "geschichtslehrer", "saue
 const ENCOUNTERS := {
 	"sylt_clique": {"units": ["sylt_member", "sylt_member", "sylt_member", "sylt_member"], "quote": "", "exit": "yacht",
 		"achievement": "ach_doep"},
-	"geschichtslehrer": {"units": ["geschichtslehrer"], "quote": "hoecke-02", "exit": "aufsichtsrat",
+	"geschichtslehrer": {"units": ["geschichtslehrer"], "quote": "hoecke-02", "exit": "abseits",
 		"achievement": "ach_180"},
 	"sauerlaender": {"units": ["sauerlaender"], "quote": "merz-17", "exit": "jet", "achievement": "ach_aufsichtsrat"},
 	"eidgenossin": {"units": ["eidgenossin"], "quote": "weidel-05", "exit": "schweiz", "achievement": "ach_remigration"},

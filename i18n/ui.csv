@@ -5,7 +5,7 @@ UI_CANCEL,Abbrechen
 UI_NOT_READY,Formular fehlt. Bitte später erneut einreichen.
 QUOTE_MISSING,Zitat nicht gefunden.
 # Main menu
-MENU_SUBTITLE,Ein Arena-Roguelite gegen die da oben.
+MENU_SUBTITLE,Halt die Brandmauer. Sonst macht’s ja keiner.
 MENU_SOLO,Solo
 MENU_HOST,Koop hosten
 MENU_JOIN,Koop beitreten
@@ -39,7 +39,7 @@ JOIN_CONNECTING,Verbinde … bitte nicht auflegen.
 JOIN_FAILED,Verbindung fehlgeschlagen.
 # Lobby
 LOBBY_TITLE,Lobby
-LOBBY_MODE_SOLO,Solo: du gegen die da oben
+LOBBY_MODE_SOLO,Solo: allein gegen alle
 LOBBY_MODE_HOST,Koop: du bist Gastgeber*in
 LOBBY_MODE_CLIENT,Koop: du bist zu Gast
 LOBBY_BACK,Hauptmenü
@@ -130,7 +130,7 @@ PAUSE_LEAVE,Verlassen
 PAUSE_CONFIRM,Wirklich? Nochmal drücken.
 # Options
 OPTIONS_TITLE,Optionen
-OPTIONS_MUSIC,Musik (Ska)
+OPTIONS_MUSIC,Musik
 OPTIONS_SFX,Geräusche
 OPTIONS_FULLSCREEN,Vollbild
 OPTIONS_FULLSCREEN_ON,an
@@ -140,7 +140,7 @@ END_WON,Gewonnen! Die Brandmauer hält.
 END_LOST,Verloren. Diesmal.
 END_NO_RESULT,Kein Ergebnis übermittelt. Vermutlich Funkloch.
 END_SUMMARY,Welle {wave} · {time} Minuten · Umfrage {umfrage} %
-END_PROMOTED,In den Aufsichtsrat befördert: %s
+END_PROMOTED,Abgesetzt und ins politische Abseits gestellt: %s
 END_WALL_INTACT,"Brandmauer intakt. Unmöglich, aber wahr."
 END_TO_LOBBY,Zurück zur Lobby
 END_TO_MENU,Hauptmenü
@@ -169,7 +169,7 @@ ALBUM_TITLE,Zitat-Album
 ALBUM_COUNTER,%d / %d gesammelt
 ALBUM_EMPTY,Keine Zitate geladen.
 ALBUM_CARD,Karte #%d
-ALBUM_LOCKED,"Noch nicht gesammelt. Schick Bosse und Elites in den Aufsichtsrat, dann landet die Karte hier."
+ALBUM_LOCKED,"Noch nicht gesammelt. Setz Bosse und Elites ab, dann landet die Karte hier."
 ALBUM_CONTEXT,Kontext
 ALBUM_SOURCES,Quellen (anklicken öffnet den Browser)
 "# Achievements screen (ACHS_, not ACH_: those are content keys)"
@@ -188,7 +188,7 @@ CREDITS_BESCHEID,Bescheid
 CREDITS_SUBJECT,über die Mitwirkung an der Erstellung eines Computerspiels gemäß § 1 Spaßgesetz (SpaßG) in Verbindung mit der Verordnung über das Zusammenhalten (ZusHaltV)
 CREDITS_P1,"Sehr geehrte Spielende, auf Ihren formlosen Antrag hin (Betätigung der Schaltfläche „Credits“) ergeht folgender Bescheid: Die Mitwirkung der nachstehend aufgeführten Personen und Werke an der Erstellung des Computerspiels „Brandmauer“ wird hiermit festgestellt, anerkannt und, soweit erforderlich, rückwirkend genehmigt."
 CREDITS_P2,"Das Spiel wurde erstellt vom Brandmauer-Team in Tateinheit mit Ska-Musik, Mate und Pfandflaschen. Ein Anspruch auf Erstattung des Pfands besteht nicht (§ 3 Abs. 2 Einwegpfandrückgabeunwilligkeitsverordnung)."
-CREDITS_P3,Ähnlichkeiten der Bossgegner mit lebenden Personen sind beabsichtigt und als Satire im Sinne von Art. 5 GG zu verstehen. Kein Boss wurde verletzt. Alle wurden ordnungsgemäß in den Aufsichtsrat befördert und erhalten einen goldenen Fallschirm nach Besoldungsgruppe B11.
+CREDITS_P3,Ähnlichkeiten der Bossgegner mit lebenden Personen sind beabsichtigt und als Satire im Sinne von Art. 5 GG zu verstehen. Kein Boss wurde verletzt. Alle wurden ordnungsgemäß abgesetzt und ins politische Abseits verbracht.
 CREDITS_P4,"Die im Spiel verwendeten Zitate sind echt, wörtlich und belegt. Für deren Inhalt übernimmt das Amt keine Verantwortung. Die Sprechenden leider auch nicht."
 CREDITS_P5,"Die Schuldenbremse findet auf diesen Bescheid keine Anwendung. Er ergeht gebührenfrei, da sich die Gebührenordnung noch in der Ressortabstimmung befindet (voraussichtlich bis 2049)."
 CREDITS_RECHTSBEHELF,Rechtsbehelfsbelehrung

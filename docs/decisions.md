@@ -45,3 +45,7 @@ Format: **ID · date · decision** — rationale. A decision is never edited; a 
 | D-039 | 2026-11-01 | Curated quotes: 62 of 110 verified quotes in the game (research/auswahl.json); the dropped ones are listed with reasons in research/auswahl.md | User: only really good quotes |
 | D-040 | 2026-11-01 | All art is drawn procedurally in code (doodle style); fonts Patrick Hand + Courier Prime (OFL); music Kevin MacLeod & others (CC BY); SFX synthesized by tools/gen_sfx.py | No image assets needed; fully license-clean |
 | D-041 | 2026-11-01 | Translations: one CSV per module in i18n/, imported as "keep" and loaded at runtime by `Loc` | Raw CSVs must ship in exports |
+| D-042 | 2026-11-01 | Final boss name: **Die Remigrantin**. Supersedes D-038 | User decision |
+| D-043 | 2026-11-01 | Beaten bosses/elites are "abgesetzt" and go "ins politische Abseits" instead of "in den Aufsichtsrat befördert". Supersedes that part of D-018 | User decision |
+| D-044 | 2026-11-01 | Quotes: the most drastic ones are wanted (especially NS/Holocaust relativization, racism), always with speaker, **party**, date and a short context line (`kontext_kurz`). Quotes about groups (e.g. children) are fine: attributed, they always expose the speaker. The start screen always shows one of the strongest quotes | User decision |
+| D-045 | 2026-11-01 | Menu subtitle "Halt die Brandmauer. Sonst macht's ja keiner."; options label just "Musik" | User feedback |
