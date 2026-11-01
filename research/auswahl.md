@@ -2,11 +2,11 @@
 
 ## (a) Überblick
 
-- Verifizierte Zitate gesamt: 124
-- Behalten: 90
+- Verifizierte Zitate gesamt: 129
+- Behalten: 95
 - Verworfen: 34
 
-Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierung und Rassismus stehen auf Startbildschirm, Ladebildschirm, Boss-Rufen und Sprechblasen, nicht nur im Album. Quellenwahrheit: nur `verifiziert`, Fragment- und Übersetzungsvorbehalte aus `verifikation.md` bleiben bestehen (Kennzeichnung im Spiel: "(übersetzt)" bei krah-01 und weidel-03; Fragmente nur als Fragment: hoecke-06, weidel-06, cdu-maassen-01, csu-seehofer-02, merz-29).
+Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierung und Rassismus stehen auf Startbildschirm, Ladebildschirm, Boss-Rufen und Sprechblasen, nicht nur im Album. Quellenwahrheit: nur `verifiziert`, Fragment- und Übersetzungsvorbehalte aus `verifikation.md` bleiben bestehen (Kennzeichnung im Spiel: "(übersetzt)" bei krah-01 und weidel-03; Fragmente nur als Fragment: hoecke-06, weidel-06, weidel-10, cdu-maassen-01, csu-seehofer-02, merz-29).
 
 **Boss-Karten**
 
@@ -51,24 +51,24 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 
 **Ladebildschirm**: 40 (Vorgabe 25–40, am Maximum)
 
-**Startbildschirm**: 11 (Vorgabe 8–12)
+**Startbildschirm**: 13 (Vorgabe 8–12, mit `weidel-01` und `merz-01` um eins über der Obergrenze, auf Nutzerwunsch)
 
-**Nur Album**: 7 (`merz-23`, `hoecke-07`, `hoecke-10`, `storch-03`, `krah-03`, `krah-04`, `brandner-01`)
+**Nur Album**: 11 (`merz-23`, `hoecke-07`, `hoecke-10`, `storch-03`, `krah-03`, `krah-04`, `brandner-01`, `merz-31`, `storch-04`, `weidel-06`, `weidel-10`)
 
 **Hinweise und dünne Stellen**
 
 - `sprechblase:hinterbaenkler`: 12 Zitate, aber **zwei Ausnahmen von der Längenregel**: `spahn-03` (19 Wörter, vom Nutzer ausdrücklich verlangt, beginnt mit "[…]", also Fragment) und `cdu-ludwig-01` (16 Wörter, nicht als `kurz` markiert). Ohne Ausnahmen bleiben 10.
 - Rassistische Union-Zitate sind für Sprechblasen **zu lang** (`scheuer-01` 22 Wörter, `linnemann-01` 23, `merz-05` 40). Sie stehen deshalb als Boss-Rufe des Sauerländers und auf dem Ladebildschirm, `scheuer-01` auch auf dem Startbildschirm. Die Hinterbänkler-Blasen sind überwiegend Brandmauer-/AfD-Kooperationszitate plus Migrationsrhetorik (`soeder-01`, `csu-seehofer-01`, `dobrindt-02`, `merz-19`).
-- `startbildschirm`: `hoecke-01` hat 241 Zeichen (knapp über "etwa 230", nicht kürzbar, weil nichts verkürzt werden darf). Alle anderen liegen bei höchstens 230.
-- **Punch-up-Regel §1 gegen Nutzerwunsch abgewogen:** Zitate, auf denen eine Freischalt-Figur beruht (`merz-01` Stadtbild, `merz-02`, `merz-06`, `merz-08`, `weidel-01` Kopftuchmädchen, `weidel-06`, `linnemann-03`, `dobrindt-01`, `merz-29`, `storch-04`), stehen weiterhin **nur auf der Karte**, weil §1 unverändert gilt. Wenn der Nutzer sie auch auf dem Startbildschirm will (`weidel-01` und `merz-01` wären die stärksten), ist das eine Entscheidung im Spec.
-- `freischalt_karte:oma` (`merz-31`), `freischalt_karte:teilzeit` (`storch-04`) und `freischalt_karte:antifa` (`weidel-06`, nur Fragment) bleiben Notlösungen.
-- `boss_ruf:eidgenossin`: Für Phase 3 (Steuerparadies) gibt es weiterhin kein verifiziertes Zitat.
+- `startbildschirm`: 13 Zitate; `hoecke-01` hat 241 Zeichen (knapp über "etwa 230", nicht kürzbar, weil nichts verkürzt werden darf). Alle anderen liegen bei höchstens 230.
+- **Charakter-Zitate auf dem Startbildschirm:** Der Nutzer erlaubt jetzt, dass Zitate, auf denen eine Freischalt-Figur beruht, auch auf dem Startbildschirm stehen. Aufgenommen: `weidel-01` (Kopftuchmädchen, 171 Zeichen) und `merz-01` (Stadtbild, 67 Zeichen), jeweils zusätzlich zur Karte. `merz-05` ("kleine Paschas") hat 255 Zeichen, liegt über der Grenze von etwa 230 und darf nicht gekürzt werden; es bleibt Boss-Ruf und Ladebildschirm. Die übrigen Karten-Zitate (`merz-02`, `merz-06`, `merz-08`, `linnemann-03`, `dobrindt-01`, `merz-29`) bleiben nur auf der Karte (§1).
+- `freischalt_karte:oma` (`cdu-fraktion-01`, Kleine Anfrage der CDU/CSU-Fraktion, Wortlaut aus der Drucksache 20/15035), `freischalt_karte:teilzeit` (`merz-40`) und `freischalt_karte:antifa` (`merz-41`) sind jetzt echte Vorlagen. Vorbehalt Teilzeit: Merz sagt in Trier nicht das Wort "Teilzeit", sondern "Lifestyle und Vier-Tage-Woche"; ein wörtliches Merz-Zitat mit "Teilzeit" ist nicht belegt (nur die Wirtschaftsflügel-Forderung "Lifestyle-Teilzeit"). Vorbehalt Oma: Fraktionsdokument, kein Einzelsprecher; Merz und Dobrindt unterzeichnen.
+- `boss_ruf:eidgenossin`: Für Phase 3 (Steuerparadies) steht jetzt `weidel-09` (Erbschaftsteuer abschaffen, AfD-Pressemitteilung 2016). Reserve: `weidel-10` ("Ich zahle hier meine Steuern", Schweizer Wohnsitz, RTL-Quadrell 2025), nur Album, weil die vier Ruf-Plätze vergeben sind.
 - `sprechblase:telegram_onkel`, `identitaerer_hipster`, `immobilienerbe`: genau 4, also über dem Ziel von 3, aber ohne Reserve.
 - Einzelquellen, die vor Release gegenzuprüfen sind: `scheuer-01` (epd), `afd-vallendar-01` (dpa), alle `cdu-*` und `csu-*` (nicht gegen Video/Protokoll geprüft, siehe `kandidaten_neu.md`).
 
 ## (b) Behaltene Zitate nach Verwendung
 
-### `startbildschirm` (11)
+### `startbildschirm` (13)
 
 - `scheuer-01` **Andreas Scheuer** (CSU), 2016-09-15: „Das Schlimmste ist ein fußballspielender, ministrierender Senegalese. Der ist drei Jahre hier - als Wirtschaftsflüchtling -, den kriegen wir nie wieder los.“ _(über Flüchtlinge aus dem Senegal, Presseclub Regensburg 2016)_
 - `weidel-03` **Alice Weidel** (AfD), 2025-01-09: „Er war dieser kommunistische, sozialistische Typ. Punkt.“ _(über Adolf Hitler, im Gespräch mit Elon Musk auf X (übersetzt))_
@@ -81,6 +81,8 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 - `storch-02` **Beatrix von Storch** (AfD), 2016-01-30: „Ja.“ _(zu Waffeneinsatz gegen Frauen mit Kindern an der Grenze, Facebook 2016)_
 - `krah-01` **Maximilian Krah** (AfD), 2024-05-18: „Ich werde nie sagen, dass jeder, der eine SS-Uniform trug, automatisch ein Verbrecher war.“ _(über SS-Mitglieder, Interview in La Repubblica (übersetzt), Mai 2024)_
 - `afd-maier-02` **Jens Maier** (AfD), 2018-01-02: „Dem kleinen Halbneger scheint einfach zu wenig Beachtung geschenkt worden zu sein [...]“ _(Tweet von Maiers Account über Noah Becker, 2018; er schob ihn auf einen Mitarbeiter)_
+- `weidel-01` **Alice Weidel** (AfD), 2018-05-16: „Burkas, Kopftuchmädchen, alimentierte Messermänner und sonstige Taugenichtse werden unseren Wohlstand, das Wirtschaftswachstum und vor allem den Sozialstaat nicht sichern.“ _(über Migranten und Sozialstaat, Haushaltsdebatte im Bundestag 2018)_
+- `merz-01` **Friedrich Merz** (CDU), 2025-10-14: „[…] aber wir haben natürlich immer im Stadtbild noch dieses Problem“ _(über das Stadtbild und Migration, Pressekonferenz in Potsdam 2025)_
 
 ### `boss_karte:eidgenossin` (1)
 
@@ -98,7 +100,7 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 
 - `weidel-02` **Alice Weidel** (AfD), 2018-05-16: „Ihre eingewanderten Goldstücke etwa? Das glauben Sie doch wohl nicht im Ernst.“ _(über Migranten als Rentenzahler, Haushaltsdebatte im Bundestag 2018)_
 - `weidel-03` **Alice Weidel** (AfD), 2025-01-09: „Er war dieser kommunistische, sozialistische Typ. Punkt.“ _(über Adolf Hitler, im Gespräch mit Elon Musk auf X (übersetzt))_
-- `weidel-05` **Alice Weidel** (AfD), 2025-01-11: „Nieder mit diesen Windmühlen der Schande!“ _(über Windkraftanlagen, AfD-Parteitag in Riesa 2025)_
+- `weidel-09` **Alice Weidel** (AfD), 2016-02-15: „Eine Steuer, die gegen Null geht, stärkt die Familien, fördert den unternehmerischen Geist, stärkt den Mittelstand und macht nicht zuletzt den Wirtschaftsstandort Deutschland attraktiver.“ _(über die Abschaffung der Erbschaftsteuer, AfD-Pressemitteilung 2016)_
 - `weidel-07` **Alice Weidel** (AfD), 2018-01-01: „Das Jahr beginnt mit dem Zensurgesetz und der Unterwerfung unserer Behörden vor den importierten, marodierenden, grapschenden, prügelnden, Messer stechenden Migrantenmobs, an die wir uns gefälligst gewöhnen sollen.“ _(über Migranten und das NetzDG, Social-Media-Beitrag an Neujahr 2018)_
 
 ### `boss_ruf:geschichtslehrer` (4)
@@ -187,7 +189,7 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 
 ### `freischalt_karte:antifa` (1)
 
-- `weidel-06` **Alice Weidel** (AfD), 2025-01-11: „rot lackierte Nazis“ _(über Gegendemonstranten vor der Halle, AfD-Parteitag in Riesa 2025)_
+- `merz-41` **Friedrich Merz** (CDU), 2025-02-22: „Ich frage mal die Ganzen, die da draußen rumlaufen, Antifa und gegen Rechts: Wo waren die denn, als Walter Lübcke in Kassel ermordet worden ist von einem Rechtsradikalen?“ _(über Antifa-Demonstranten, Wahlkampfabschluss der Union in München 2025)_
 
 ### `freischalt_karte:buergergeld` (1)
 
@@ -215,7 +217,7 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 
 ### `freischalt_karte:oma` (1)
 
-- `merz-31` **Friedrich Merz** (CDU), 2026-04-20: „Die gesetzliche Rentenversicherung allein wird allenfalls noch die Basisabsicherung sein für das Alter.“ _(über die gesetzliche Rente, Rede beim Bankenverband 2026)_
+- `cdu-fraktion-01` **CDU/CSU-Bundestagsfraktion (unterzeichnet von Friedrich Merz und Alexander Dobrindt)** (CDU/CSU), 2025-02-24: „Ein besonders umstrittenes Beispiel ist der Verein „Omas gegen Rechts“, der über das Programm „Demokratie leben!“ Fördermittel erhalten hat.“ _(Kleine Anfrage der CDU/CSU-Fraktion zu NGOs, Bundestag, Feb 2025)_
 
 ### `freischalt_karte:sozialtourist` (1)
 
@@ -231,7 +233,7 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 
 ### `freischalt_karte:teilzeit` (1)
 
-- `storch-04` **Beatrix von Storch** (AfD), 2025-06-27: „Rabenmutter!“ _(Zwischenruf zu Clara Bünger, Bundestagsdebatte zum Familiennachzug 2025)_
+- `merz-40` **Friedrich Merz** (CDU), 2026-02-18: „Lifestyle und Vier-Tage-Woche. Alles schön, kann man alles machen“ _(über Lifestyle und Vier-Tage-Woche, Aschermittwoch in Trier 2026)_
 
 ### `freischalt_karte:toechter` (1)
 
@@ -288,19 +290,23 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 - `afd-vallendar-01` **Marc Vallendar** (AfD), 2025-01-27: „Mag ja sein, dass es Kriegsverbrechen gegeben hat“ _(im Innenausschuss Berlin am Holocaust-Gedenktag 2025)_
 - `afd-petry-02` **Frauke Petry** (AfD), 2016-09-11: „Wenn er damit zu tun hat, dass es um das Volk geht, was ist daran per se negativ?“ _(über das Wort 'völkisch', Welt am Sonntag, Sept 2016)_
 
-### `album` (7)
+### `album` (11)
 
 - `merz-23` **Friedrich Merz** (CDU), 2020-09-20: „Die sexuelle Orientierung geht die Öffentlichkeit nichts an, solange sich das im Rahmen der Gesetze bewegt und solange es nicht Kinder betrifft. An der Stelle ist für mich allerdings eine absolute Grenze erreicht.“ _(auf die Frage nach einem homosexuellen Bundeskanzler, Bild 2020)_
 - `hoecke-07` **Björn Höcke** (AfD), 2018-07: „Wenn alle Stricke reißen, ziehen wir uns wie einst die tapfer-fröhlichen Gallier in unsere ländlichen Refugien zurück und die neuen Römer, die in den verwahrlosten Städten residieren, können sich an den teutonischen Asterixen und Obelixen die Zähne ausbeißen!“ _(über 'gallische Dörfer' als Rückzug, Interviewband 'Nie zweimal in denselben Fluß' 2018)_
-- `hoecke-10` **Verwaltungsgericht Meiningen (zu Björn Höcke)** (Gericht), 2019-09-26: „ihr Werturteil nicht aus der Luft gegriffen ist, sondern auf einer überprüfbaren Tatsachengrundlage beruht“ _(Gericht: Demonstranten durften Höcke 'Faschist' nennen (VG Meiningen 2019))_
+- `hoecke-10` **Verwaltungsgericht Meiningen (zu Björn Höcke)** (—), 2019-09-26: „ihr Werturteil nicht aus der Luft gegriffen ist, sondern auf einer überprüfbaren Tatsachengrundlage beruht“ _(Gericht: Demonstranten durften Höcke 'Faschist' nennen (VG Meiningen 2019))_
 - `storch-03` **Beatrix von Storch** (AfD), 2016-01-31: „Ich bin grundsätzlich gegen Gewalt gegen Kinder, das umfasst auch den Einsatz von Schusswaffen gegen minderjährige Migranten durch die Polizei.“ _(Klarstellung einen Tag nach ihrem 'Ja' zum Waffeneinsatz an der Grenze)_
 - `krah-03` **Maximilian Krah** (AfD), 2023-07: „Lass dir nicht einreden, dass du lieb, soft, schwach und links zu sein hast. Echte Männer sind rechts. Echte Männer haben Ideale. Echte Männer sind Patrioten.“ _(an junge Männer, TikTok-Video 2023)_
 - `krah-04` **Maximilian Krah** (AfD), 2021-11-26: „Deutsche Sprache nicht mehr erforderlich, um deutsche Staatsbürger zu werden. Aber wehe, man unterscheidet das deutsche Volk von der Gemeinschaft der Staatsbürger!“ _(zur Staatsbürgerschaft, Social-Media-Beitrag 2021, zitiert im Urteil des VG Köln)_
 - `brandner-01` **Stephan Brandner** (AfD), 2025-01-29: „Er hat nicht „Fliegenschiss“ gesagt! Herr Gauland hat nie „Fliegenschiss“ gesagt! Ihre Rede ist ein Fliegenschiss!“ _(Zwischenruf zu Merz' Rede, Bundestag 29.01.2025)_
+- `merz-31` **Friedrich Merz** (CDU), 2026-04-20: „Die gesetzliche Rentenversicherung allein wird allenfalls noch die Basisabsicherung sein für das Alter.“ _(über die gesetzliche Rente, Rede beim Bankenverband 2026)_
+- `storch-04` **Beatrix von Storch** (AfD), 2025-06-27: „Rabenmutter!“ _(Zwischenruf zu Clara Bünger, Bundestagsdebatte zum Familiennachzug 2025)_
+- `weidel-06` **Alice Weidel** (AfD), 2025-01-11: „rot lackierte Nazis“ _(über Gegendemonstranten vor der Halle, AfD-Parteitag in Riesa 2025)_
+- `weidel-10` **Alice Weidel** (AfD), 2025-02-16: „Ich zahle hier meine Steuern“ _(über ihre Steuern und ihren Schweizer Wohnsitz, RTL-Quadrell 2025)_
 
 ### Begründung je Zitat
 
-- `merz-01` (freischalt_karte:stadtbild): Das Stadtbild-Zitat: Original der Figur, nur auf der Karte (§1).
+- `merz-01` (freischalt_karte:stadtbild, startbildschirm): Das Stadtbild-Zitat: Original der Figur (Karte) und auf Nutzerwunsch auch Startbildschirm (67 Zeichen).
 - `merz-02` (freischalt_karte:toechter): "Fragen Sie mal Ihre Töchter": Grundlage der Töchter-Figur; nur Karte.
 - `merz-05` (boss_ruf:sauerlaender, ladebildschirm): "Die kleinen Paschas": Kinder aus Migrantenfamilien, Lanz-Talkshow. Vom Nutzer gewünscht, Boss-Ruf und Ladebildschirm.
 - `merz-06` (freischalt_karte:sozialtourist): "Sozialtourismus dieser Flüchtlinge": Ursprung der Figur Sozialtourist; nur Karte.
@@ -320,7 +326,7 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 - `merz-28` (sprechblase:ju_schnoesel): "Links ist vorbei": Schnösel-Hybris, kurz.
 - `merz-29` (freischalt_karte:lastenrad): "Grüne und linke Spinner": Fragment, Vorlage für die Lastenrad-Figur.
 - `merz-30` (freischalt_karte:gewerkschaft): Krankmeldungen als Arbeitsausfall: Vorlage für die Gewerkschafts-Figur.
-- `merz-31` (freischalt_karte:oma): Gesetzliche Rente nur noch "Basisabsicherung": passender für die Oma-Karte als die frühere Notlösung.
+- `merz-31` (album): Gesetzliche Rente nur noch "Basisabsicherung": frühere Notlösung für die Oma-Karte, nach dem Fund von cdu-fraktion-01 nur noch Album (Ladebildschirm ist mit 40 voll).
 - `soeder-01` (sprechblase:hinterbaenkler, sprechblase:besorgter_buerger): "Der Asyltourismus muss beendet werden": Union-Migrationsrhetorik, 5 Wörter.
 - `soeder-04` (sprechblase:ju_schnoesel): "Verbieten und umerziehen": Schnösel-Floskel, kurz.
 - `soeder-06` (sprechblase:ju_schnoesel): "Rote Heidi, sozialistische Tiktok-Tante": herablassend, kurz.
@@ -338,12 +344,12 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 - `scheuer-01` (boss_ruf:sauerlaender, ladebildschirm, startbildschirm): "Fußballspielender, ministrierender Senegalese ... den kriegen wir nie wieder los": rassistisch, vom Nutzer gewünscht. Einzelquelle (epd), Datum erschlossen.
 - `reiche-01` (sprechblase:immobilienerbe): "Die Lebensarbeitszeit muss steigen": 15 Wörter, Erbe-Sprech.
 - `reiche-02` (sprechblase:lobbyist): "Wir müssen mehr und länger arbeiten": ehemalige Energie-Lobbyistin, kurz.
-- `weidel-01` (freischalt_karte:taugenichts): "Kopftuchmädchen, alimentierte Messermänner und sonstige Taugenichtse": Original der Taugenichts-Figur, nur auf der Karte (§1).
+- `weidel-01` (freischalt_karte:taugenichts, startbildschirm): "Kopftuchmädchen, alimentierte Messermänner und sonstige Taugenichtse": Original der Taugenichts-Figur (Karte) und auf Nutzerwunsch auch Startbildschirm (171 Zeichen).
 - `weidel-02` (boss_ruf:eidgenossin, sprechblase:telegram_onkel, sprechblase:besorgter_buerger): "Eingewanderte Goldstücke": höhnisch und kurz, passt als Ruf und als Blase.
 - `weidel-03` (boss_ruf:eidgenossin, sprechblase:telegram_onkel, ladebildschirm, startbildschirm): Hitler als "kommunistischer, sozialistischer Typ": NS-Relativierung, kurz. Übersetzung des englischen Gesprächs, "(übersetzt)" kennzeichnen.
 - `weidel-04` (boss_karte:eidgenossin, sprechblase:identitaerer_hipster): "Dann heißt es eben Remigration": die Parole passt zur Endgegnerin "Die Remigrantin", daher neues Hauptzitat.
-- `weidel-05` (boss_ruf:eidgenossin, sprechblase:telegram_onkel): "Nieder mit diesen Windmühlen der Schande!": kurzer Kampfruf, ideal als Boss-Schrei.
-- `weidel-06` (freischalt_karte:antifa): "Rot lackierte Nazis" über Gegendemonstranten: nur Fragment, Vorlage für den Antifa-Charakter; nur Karte.
+- `weidel-05` (sprechblase:telegram_onkel): "Nieder mit diesen Windmühlen der Schande!": kurzer Kampfruf, jetzt nur noch als Blase (Boss-Ruf-Platz geht an weidel-09).
+- `weidel-06` (album): "Rot lackierte Nazis": nur Fragment, frühere Notlösung für die Antifa-Karte; nur Album.
 - `weidel-07` (boss_ruf:eidgenossin, ladebildschirm): "Importierte, marodierende, grapschende, prügelnde, Messer stechende Migrantenmobs": Neujahrs-Post, drastisch. Vom Nutzer gewünscht.
 - `weidel-08` (sprechblase:besorgter_buerger): "Politische Korrektheit gehört auf den Müllhaufen der Geschichte": passt zum Besorgten Bürger, kurz.
 - `hoecke-01` (boss_karte:geschichtslehrer, ladebildschirm, startbildschirm): Das Holocaust-Mahnmal als "Denkmal der Schande": das härteste und bekannteste NS-Relativierungs-Zitat, Hauptzitat des Geschichtslehrers, sofort verständlich.
@@ -366,7 +372,7 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 - `storch-01` (ladebildschirm, startbildschirm): "Barbarische, muslimische, gruppenvergewaltigende Männerhorden": Silvester-Tweet, pauschal rassistisch, fällt auf Storch zurück. Vom Nutzer gewünscht.
 - `storch-02` (ladebildschirm, startbildschirm): Ein Wort: "Ja." auf die Frage nach Schusswaffen gegen Frauen mit Kindern an der Grenze. Mit Kontextzeile sofort schockierend.
 - `storch-03` (album): Ihre "Klarstellung" einen Tag später, absurd (gegen Gewalt gegen Kinder, auch mit Schusswaffen); als Album-Gegenstück zu storch-02.
-- `storch-04` (freischalt_karte:teilzeit): "Rabenmutter!" als Zwischenruf: passende Vorlage für die Teilzeit-Figur.
+- `storch-04` (album): "Rabenmutter!" als Zwischenruf: frühere Notlösung für die Teilzeit-Karte, ohne Kontext schwach; nur Album.
 - `krah-01` (boss_ruf:geschichtslehrer, ladebildschirm, startbildschirm): SS-Uniform: harte NS-Relativierung, kurz. Übersetzung, "(übersetzt)" kennzeichnen.
 - `krah-02` (ladebildschirm): "Nicht alle waren kriminell": Fortsetzung zum SS-Zitat, zeigt, wie weit die Relativierung geht.
 - `krah-03` (album): "Echte Männer sind rechts": ideologisch, aber weniger drastisch als der Rest; nur Album.
@@ -390,6 +396,11 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 - `afd-maier-02` (ladebildschirm, startbildschirm): Offen rassistischer Tweet ("Halbneger") vom Account eines AfD-Abgeordneten und Richters, später gerichtlich geahndet; er schob ihn auf einen Mitarbeiter. Nur Fragment, Satzende nicht ergänzen.
 - `afd-vallendar-01` (ladebildschirm): "Mag ja sein, dass es Kriegsverbrechen gegeben hat" am Holocaust-Gedenktag. Selbstkorrektur ("Es gab Kriegsverbrechen") im Album mitnennen.
 - `afd-petry-02` (ladebildschirm): "Was ist daran per se negativ?" zum Wort "völkisch": Rehabilitierungsversuch; mit Kontext (sie benutze den Begriff selbst nicht) lesen.
+- `cdu-fraktion-01` (freischalt_karte:oma): Kleine Anfrage der CDU/CSU-Fraktion (551 Fragen, Feb 2025): "Ein besonders umstrittenes Beispiel ist der Verein Omas gegen Rechts". Wortlaut aus der Bundestags-Drucksache 20/15035, echte Vorlage für die Oma-Figur.
+- `merz-40` (freischalt_karte:teilzeit): "Lifestyle und Vier-Tage-Woche. Alles schön, kann man alles machen": Aschermittwoch Trier 2026, mitten in der "Lifestyle-Teilzeit"-Debatte. Merz sagt das Wort Teilzeit nicht; der Bezug kommt aus der Berichterstattung.
+- `merz-41` (freischalt_karte:antifa): Merz an Antifa-Demonstranten: "Wo waren die denn, als Walter Lübcke ... ermordet worden ist". Wahlkampfabschluss München 2025, drei Medien; ersetzt das Fragment weidel-06.
+- `weidel-09` (boss_ruf:eidgenossin): "Eine Steuer, die gegen Null geht ...": Weidel 2016 für die Abschaffung der Erbschaftsteuer, passt zu Phase 3 (Steuerparadies, Goldbarren).
+- `weidel-10` (album): "Ich zahle hier meine Steuern": Weidel im RTL-Quadrell zu ihrem Schweizer Wohnsitz; Reserve für Phase 3, Ruf-Platz (max. 4) ist vergeben; Album.
 
 ## (c) Verworfene verifizierte Zitate (34)
 
@@ -439,3 +450,14 @@ Ausgewählt wurde nach Drastik und Verständlichkeit. NS-/Holocaust-Relativierun
 - `sprechblase:hinterbaenkler` ist auf Union-Rassismus/Brandmauer-Angriffe umgestellt (neue `cdu-*`, `csu-*`, `spahn-03`); `soeder-04` und `soeder-05` wurden aus den Hinterbänkler-Blasen entfernt (`soeder-04` jetzt Schnösel, `soeder-05` gestrichen).
 - Neue Verwendung `startbildschirm`: 11 Zitate.
 - Neue Kandidaten aus `kandidaten_neu.md` sind komplett einsortiert; alle 14 sind `verifiziert`.
+
+### Änderungen 2026-11-01 (Nachrecherche der vier schwachen Plätze)
+
+- Behalten: 90 → 95 (5 neue verifizierte Zitate: `cdu-fraktion-01`, `merz-40`, `merz-41`, `weidel-09`, `weidel-10`). Verworfen: weiter 34.
+- `freischalt_karte:oma`: `cdu-fraktion-01` (Kleine Anfrage der CDU/CSU-Fraktion, Feb 2025) statt `merz-31` (jetzt Album).
+- `freischalt_karte:teilzeit`: `merz-40` (Trier, "Lifestyle und Vier-Tage-Woche", Feb 2026) statt `storch-04` (jetzt Album). Merz sagt "Teilzeit" nicht wörtlich.
+- `freischalt_karte:antifa`: `merz-41` (München, Antifa und Lübcke, Feb 2025) statt `weidel-06` (Fragment, jetzt Album).
+- `boss_ruf:eidgenossin`: `weidel-09` (Erbschaftsteuer) ersetzt `weidel-05` (bleibt Blase `telegram_onkel`). `weidel-10` nur Album.
+- `startbildschirm`: 11 → 13, neu `weidel-01` und `merz-01` (Nutzerwunsch, zusätzlich zur Karte). `merz-05` ist mit 255 Zeichen zu lang und bleibt draußen.
+- Die Ladebildschirm-Liste bleibt bei 40; die alten Notlösungen kamen deshalb ins Album statt auf den Ladebildschirm.
+

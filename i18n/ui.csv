@@ -15,7 +15,7 @@ MENU_OPTIONS,Optionen
 MENU_CREDITS,Credits
 MENU_QUIT,Beenden
 MENU_NAME,Dein Name
-MENU_DEFAULT_NAME,Genoss*in
+MENU_DEFAULT_NAME,Genoss:in
 MENU_RECORD,Deine Bilanz
 MENU_RECORD_LINE,{runs} Runs · {wins} Siege · beste Welle: {wave}
 MENU_RECORD_UMFRAGE,Höchste freie Umfrage: %d %%
@@ -40,10 +40,10 @@ JOIN_FAILED,Verbindung fehlgeschlagen.
 # Lobby
 LOBBY_TITLE,Lobby
 LOBBY_MODE_SOLO,Solo: allein gegen alle
-LOBBY_MODE_HOST,Koop: du bist Gastgeber*in
+LOBBY_MODE_HOST,Koop: du bist Gastgeber:in
 LOBBY_MODE_CLIENT,Koop: du bist zu Gast
 LOBBY_BACK,Hauptmenü
-LOBBY_WAIT_HOST,Der Host wählt Organisation und Umfrage.
+LOBBY_WAIT_HOST,Host wählt Organisation und Umfrage.
 LOBBY_WAIT_READY,"Warten, bis alle bereit sind …"
 LOBBY_READY,Bereit?
 LOBBY_READY_ON,Bereit!
@@ -79,9 +79,10 @@ SPAETI_SPEND_LEFT,Schuldenbremse: noch %d %s
 SPAETI_AKTIEN_TIP,Deine Pfandflaschen sind jetzt Aktien. Sie verlieren an Wert. Du nicht.
 SPAETI_STATS,Werte
 SPAETI_LEVELUP,Level-up! (noch %d)
-SPAETI_LEVELUP_HINT,"Erst stärker werden, dann shoppen. Such dir was aus:"
+SPAETI_LEVELUP_HINT,Euer Zusammenhalt ist gewachsen! Jede Stufe bringt allen eine Verbesserung. Such dir was aus:
+SPAETI_LEVELUP_TOOLTIP,"Zusammenhalt ist die Erfahrung eures Teams. Jede besiegte Gegner:in bringt Zusammenhalt, mehr mit Vernetzung und wenn ihr nah beieinander kämpft. Jede neue Stufe gibt allen eine Verbesserung, und ab bestimmten Stufen wächst das Team sichtbar: von Erschöpft bis Unaufhaltsam."
 SPAETI_OFFERS,Im Angebot
-SPAETI_REROLL,Neu würfeln (%d)
+SPAETI_REROLL,Neu würfeln (%d %s)
 SPAETI_REROLL_FREE,"Neu würfeln (gratis, noch %d)"
 SPAETI_NO_OFFERS,Regale leer. Lieferkette.
 SPAETI_WEAPON_TIER,Waffe %s
@@ -94,17 +95,21 @@ SPAETI_NO_WEAPONS,Keine Waffen. Nur Haltung.
 SPAETI_ITEMS,Items
 SPAETI_NO_ITEMS,Noch nichts in der Tasche.
 SPAETI_KASSE,Koalitionskasse: %d %s
-SPAETI_KASSE_IN,+10 einzahlen
-SPAETI_KASSE_OUT,-10 entnehmen
+SPAETI_KASSE_IN,+%d einzahlen
+SPAETI_KASSE_OUT,−%d entnehmen (du kriegst %d)
 SPAETI_KASSE_MINE,"Du: %d eingezahlt, %d entnommen"
+SPAETI_KASSE_TOOLTIP,"Die Koalitionskasse gehört allen. Jede:r kann einzahlen und damit Mitspielenden aushelfen oder gemeinsam die Brandmauer reparieren (30 % billiger). Wer entnimmt, zahlt 25 % Kapitalertragsteuer an den Fiskus. Am Ende zeigt die Steuermoral, wer eingezahlt und wer abgeräumt hat. Nur im Koop."
 SPAETI_WALL,Brandmauer
 SPAETI_WALL_HOLE_ONE,Ein Loch. Da kommt was durch.
 SPAETI_WALL_HOLES,%d Löcher. Da kommt was durch.
 SPAETI_REPAIR,Reparieren (%d %s)
+SPAETI_REPAIR_KASSE,Aus der Koalitionskasse reparieren (%d %s)
+SPAETI_REPAIR_KASSE_TOOLTIP,Gemeinsame Sache: Die Reparatur wird aus der Koalitionskasse bezahlt und kostet 30 % weniger.
 SPAETI_WALL_OK,Steht. Noch.
 SPAETI_VERTRAG,Koalitionsvertrag
 SPAETI_VERTRAG_HINT,Nicht einstimmig? Die schlechteste Option gewinnt.
 SPAETI_VERTRAG_ACTIVE,Gilt: %s (noch %d Wochen)
+SPAETI_VERTRAG_ACTIVE_ONE,Gilt: %s (noch 1 Woche)
 SPAETI_VOTE,Dafür
 SPAETI_VOTED,Gewählt
 SPAETI_VOTES_BY,Stimmen: %s
@@ -114,6 +119,9 @@ SPAETI_READY,Bereit
 SPAETI_READY_ON,Bereit!
 # Request denied (host -> deny event)
 DENY_NO_PFAND,Zu wenig Pfand.
+DENY_NO_PFAND_SHORT,zu wenig Pfand
+DENY_SPEND_LIMIT_SHORT,Schuldenbremse!
+DENY_SLOTS_FULL_SHORT,Waffenplätze voll
 DENY_SLOTS_FULL,Keine Waffenplätze frei.
 DENY_SPEND_LIMIT,Schuldenbremse! Mehr gibt's diese Woche nicht.
 DENY_LAST_WEAPON,"Ohne Waffe? Mutig, aber nein."
@@ -133,6 +141,11 @@ OPTIONS_TITLE,Optionen
 OPTIONS_MUSIC,Musik
 OPTIONS_SFX,Geräusche
 OPTIONS_FULLSCREEN,Vollbild
+OPTIONS_TARGET,Zielauswahl
+OPTIONS_TARGET_CLOSEST,Nächste:r Gegner:in
+OPTIONS_TARGET_MOST_HP,Meiste Lebenspunkte
+OPTIONS_TARGET_LEAST_HP,Wenigste Lebenspunkte
+OPTIONS_TARGET_TIP,"Worauf deine Waffen automatisch zielen. Nächste:r = sicher, Meiste = Elites und Bosse zuerst, Wenigste = schnell aufräumen."
 OPTIONS_FULLSCREEN_ON,an
 OPTIONS_HINT,Wird sofort gespeichert. Ganz ohne Formular.
 # End screen
@@ -169,7 +182,7 @@ ALBUM_TITLE,Zitat-Album
 ALBUM_COUNTER,%d / %d gesammelt
 ALBUM_EMPTY,Keine Zitate geladen.
 ALBUM_CARD,Karte #%d
-ALBUM_LOCKED,"Noch nicht gesammelt. Setz Bosse und Elites ab, dann landet die Karte hier."
+ALBUM_LOCKED,"Noch nicht gesammelt. Setz Boss:innen und Elites ab, dann landet die Karte hier."
 ALBUM_CONTEXT,Kontext
 ALBUM_SOURCES,Quellen (anklicken öffnet den Browser)
 "# Achievements screen (ACHS_, not ACH_: those are content keys)"
@@ -188,7 +201,7 @@ CREDITS_BESCHEID,Bescheid
 CREDITS_SUBJECT,über die Mitwirkung an der Erstellung eines Computerspiels gemäß § 1 Spaßgesetz (SpaßG) in Verbindung mit der Verordnung über das Zusammenhalten (ZusHaltV)
 CREDITS_P1,"Sehr geehrte Spielende, auf Ihren formlosen Antrag hin (Betätigung der Schaltfläche „Credits“) ergeht folgender Bescheid: Die Mitwirkung der nachstehend aufgeführten Personen und Werke an der Erstellung des Computerspiels „Brandmauer“ wird hiermit festgestellt, anerkannt und, soweit erforderlich, rückwirkend genehmigt."
 CREDITS_P2,"Das Spiel wurde erstellt vom Brandmauer-Team in Tateinheit mit Ska-Musik, Mate und Pfandflaschen. Ein Anspruch auf Erstattung des Pfands besteht nicht (§ 3 Abs. 2 Einwegpfandrückgabeunwilligkeitsverordnung)."
-CREDITS_P3,Ähnlichkeiten der Bossgegner mit lebenden Personen sind beabsichtigt und als Satire im Sinne von Art. 5 GG zu verstehen. Kein Boss wurde verletzt. Alle wurden ordnungsgemäß abgesetzt und ins politische Abseits verbracht.
+CREDITS_P3,Ähnlichkeiten der Bossgegner:innen mit lebenden Personen sind beabsichtigt und als Satire im Sinne von Art. 5 GG zu verstehen. Niemand wurde verletzt. Alle Boss:innen wurden ordnungsgemäß abgesetzt und ins politische Abseits verbracht.
 CREDITS_P4,"Die im Spiel verwendeten Zitate sind echt, wörtlich und belegt. Für deren Inhalt übernimmt das Amt keine Verantwortung. Die Sprechenden leider auch nicht."
 CREDITS_P5,"Die Schuldenbremse findet auf diesen Bescheid keine Anwendung. Er ergeht gebührenfrei, da sich die Gebührenordnung noch in der Ressortabstimmung befindet (voraussichtlich bis 2049)."
 CREDITS_RECHTSBEHELF,Rechtsbehelfsbelehrung
@@ -197,7 +210,7 @@ CREDITS_SIGNED,Im Auftrag: gez. Sachbearbeitung Spaß
 CREDITS_SIGNED_SUB,Dieses Schreiben wurde maschinell erstellt und ist ohne Unterschrift gültig. Leider.
 CREDITS_STAMP,GENEHMIGT
 CREDITS_ATTRIBUTION,Anlage 1: Fremde Werke und Lizenzen
-CREDITS_ATTRIBUTION_INTRO,"Titel — Urheber*in — Lizenz — Quelle. Danke an alle, die ihre Arbeit frei teilen!"
+CREDITS_ATTRIBUTION_INTRO,"Titel — Urheber:in — Lizenz — Quelle. Danke an alle, die ihre Arbeit frei teilen!"
 CREDITS_MISSING,CREDITS.md nicht gefunden. Das Amt ermittelt.
 CREDITS_QUOTES,"Alle Zitate mit Datum, Kontext und Quellen: siehe Zitat-Album."
 CREDITS_END,Danke fürs Zusammenhalten!

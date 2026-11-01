@@ -278,5 +278,109 @@
     "notizen": "vol.at (Wortlaut abgerufen; Interview WamS 11.09.2016). Correctiv-Faktencheck nur über Suchzusammenfassung bestätigt, nicht abgerufen. Weitere Zitate aus demselben Interview: 'Ich sperre mich dagegen, Wörter zu Unwörtern zu erklären' und '[...] dass dieser Begriff wieder positiv besetzt ist'. Petry sagte laut Correctiv auch, sie benutze den Begriff selbst nicht, ihr missfalle aber seine ausschließlich negative Verwendung - Kontext mitliefern.",
     "kontext_kurz": "über das Wort 'völkisch', Welt am Sonntag, Sept 2016",
     "kurz": false
+  },
+  {
+    "id": "cdu-fraktion-01",
+    "sprecher": "CDU/CSU-Bundestagsfraktion (unterzeichnet von Friedrich Merz und Alexander Dobrindt)",
+    "partei": "CDU/CSU",
+    "rolle_damals": "Fraktion der CDU/CSU im Bundestag (Kleine Anfrage, Drucksache 20/15035, unterzeichnet von Fraktionsvorsitzendem Friedrich Merz und Alexander Dobrindt)",
+    "zitat": "Ein besonders umstrittenes Beispiel ist der Verein „Omas gegen Rechts“, der über das Programm „Demokratie leben!“ Fördermittel erhalten hat.",
+    "datum": "2025-02-24",
+    "kontext": "Einleitungstext der Kleinen Anfrage 'Politische Neutralität staatlich geförderter Organisationen' (551 Fragen zu NGOs, Drucksache 20/15035, datiert 24.02.2025, unterzeichnet 21.02.2025), kurz nach den Protesten gegen die CDU vor der Bundestagswahl. Allein 25 Fragen (Nr. 45 bis 69) gelten den Omas gegen Rechts, u. a. Nr. 54: 'Werden staatliche Fördergelder, die der Verein Omas gegen Rechts Deutschland e. V. vereinnahmt hat, nach Einschätzung der Bundesregierung für parteipolitische Zwecke zweckentfremdet?'",
+    "quellen": [
+      "https://dserver.bundestag.de/btd/20/150/2015035.pdf",
+      "https://www.vorwaerts.de/inland/anfrage-zu-omas-gegen-rechts-die-cdu-hat-uns-damit-viele-probleme-bereitet"
+    ],
+    "status": "verifiziert",
+    "kategorien": [
+      "Demokratie/Medien"
+    ],
+    "notizen": "Wortlaut direkt aus dem Original (Bundestags-Drucksache 20/15035, S. 2, Text selbst aus dem PDF extrahiert); Vorwärts (14.03.2025) gibt 'besonders umstrittenes Beispiel' ebenfalls wieder. Der Satz geht weiter: 'Während der Verein betont, dass er sich aus Spenden und Mitgliedsbeiträgen finanziere, gehört die staatliche Förderung ebenfalls zu seinen Finanzierungsquellen' (laut Mimikama/Vorwärts erhält der Verein keine staatliche Förderung; Einordnung, nicht Teil des Zitats). Autorschaft: Fraktionsdokument, kein Einzelsprecher; Merz und Dobrindt zeichnen als Fraktionsvorsitzende. Die Bundesregierung ließ laut Presse ca. 251 der 551 Fragen offen (Antwort März 2025).",
+    "kontext_kurz": "Kleine Anfrage der CDU/CSU-Fraktion zu NGOs, Bundestag, Feb 2025",
+    "kurz": false
+  },
+  {
+    "id": "merz-40",
+    "sprecher": "Friedrich Merz",
+    "partei": "CDU",
+    "rolle_damals": "Bundeskanzler und CDU-Bundesvorsitzender",
+    "zitat": "Lifestyle und Vier-Tage-Woche. Alles schön, kann man alles machen",
+    "datum": "2026-02-18",
+    "kontext": "Rede beim Politischen Aschermittwoch der CDU in Trier, kurz vor dem CDU-Parteitag, mitten im Streit um den Antrag des CDU-Wirtschaftsflügels 'Kein Rechtsanspruch auf Lifestyle-Teilzeit'. Merz forderte einen Mentalitätswechsel und mehr Leistungsbereitschaft; weiter im Text: 'Aber wenn wir unseren Wohlstand erhalten wollen, dann müssen wir jetzt alle mal zusammen ins Rad packen.'",
+    "quellen": [
+      "https://www.zdfheute.de/politik/merz-mentalitaetswechsel-politischer-aschermittwoch-100.html",
+      "https://www.handelsblatt.com/politik/deutschland/vor-cdu-parteitag-zusammen-ins-rad-packen-merz-fordert-mentalitaetswechsel/100201501.html",
+      "https://www.tagesspiegel.de/politik/mussen-zusammen-ins-rad-packen-merz-fordert-mentalitatswechsel-zu-mehr-leistungsbereitschaft-15267745.html",
+      "https://www.lessentiel.lu/de/story/deutschland-merz-teilt-gegen-lifestyle-teilzeit-aus-103509284"
+    ],
+    "status": "verifiziert",
+    "kategorien": [
+      "Sozialstaat/Arbeit"
+    ],
+    "kurz": true,
+    "notizen": "Wortlaut in vier Medien identisch (zdfheute/dpa, Handelsblatt, Tagesspiegel, L'essentiel/dpa). WICHTIG: Merz sagt hier NICHT das Wort 'Teilzeit'; der Bezug zur 'Lifestyle-Teilzeit'-Debatte (Antrag des Wirtschaftsflügels, Januar/Februar 2026) stammt aus der Berichterstattung (L'essentiel-Titel 'Merz teilt in Trier gegen Lifestyle-Teilzeit aus'). Ein wörtliches Merz-Zitat mit 'Teilzeit' wurde in keiner Quelle gefunden. Weitere Zitate derselben Rede: 'wenn unsere Eltern mit dieser Mentalität an die Arbeit gegangen wären, die wir heute zum Teil sehen' (Fragment), 'Nicht mit Zwang, nicht mit Druck, nicht mit neuen Gesetzen, sondern einfach mit Fröhlichkeit an der Arbeit.' Verwandt: merz-09 (Wirtschaftstag Mai 2025).",
+    "kontext_kurz": "über Lifestyle und Vier-Tage-Woche, Aschermittwoch in Trier 2026"
+  },
+  {
+    "id": "merz-41",
+    "sprecher": "Friedrich Merz",
+    "partei": "CDU",
+    "rolle_damals": "Kanzlerkandidat der Union und CDU-Bundesvorsitzender",
+    "zitat": "Ich frage mal die Ganzen, die da draußen rumlaufen, Antifa und gegen Rechts: Wo waren die denn, als Walter Lübcke in Kassel ermordet worden ist von einem Rechtsradikalen?",
+    "datum": "2025-02-22",
+    "kontext": "Rede beim gemeinsamen Wahlkampfabschluss von CDU und CSU im Münchner Löwenbräukeller, gerichtet an die Demonstranten vor dem Gebäude. Die Familie von Walter Lübcke zeigte sich 'sehr befremdet'; Lübckes Witwe widersprach der Unterstellung, nach dem Mord seien Tausende auf die Straße gegangen.",
+    "quellen": [
+      "https://www.nd-aktuell.de/artikel/1189274.wahlkampf-merz-gegen-antifa.html",
+      "https://www.hessenschau.de/politik/witwe-von-walter-luebcke-kritisiert-friedrich-merz-sehr-befremdet-v4,merz-aeusserung-walter-luebcke-100.html",
+      "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_100613614/merz-ueber-luebcke-mord-witwe-kritisiert-seine-aussage-scharf.html"
+    ],
+    "status": "verifiziert",
+    "kategorien": [
+      "Demokratie/Medien"
+    ],
+    "kurz": false,
+    "notizen": "Drei Medien (nd, hessenschau, t-online) geben beide Satzteile übereinstimmend wieder; Abweichungen nur in Groß-/Kleinschreibung und Form ('Ganzen'/'ganzen', 'rumlaufen'/'herumlaufen', 'gegen Rechts'/'Gegen Rechts'). Hier die Schreibweise von t-online ('rumlaufen', auch nd). Datum (Samstag, 22.02.2025) aus hessenschau/nd erschlossen (Artikel 23. bis 27.02.2025; Wahl am 23.02.2025). Tagesspiegel soll laut Suchzusammenfassung zudem berichtet haben, Merz habe 'Antifa und gegen rechts' 'Spinner' genannt: nicht selbst geprüft, nicht verwenden. Video/Protokoll nicht eingesehen. Ersetzt weidel-06 (Fragment) als Antifa-Karte.",
+    "kontext_kurz": "über Antifa-Demonstranten, Wahlkampfabschluss der Union in München 2025"
+  },
+  {
+    "id": "weidel-09",
+    "sprecher": "Alice Weidel",
+    "partei": "AfD",
+    "rolle_damals": "AfD-Bundesvorstandsmitglied",
+    "zitat": "Eine Steuer, die gegen Null geht, stärkt die Familien, fördert den unternehmerischen Geist, stärkt den Mittelstand und macht nicht zuletzt den Wirtschaftsstandort Deutschland attraktiver.",
+    "datum": "2016-02-15",
+    "kontext": "AfD-Pressemitteilung 'Weidel: Reform der Erbschaftsteuer - Eine historische Chance für eine Abschaffung' (Berlin, 15.02.2016) zur Debatte um die Reform der Erbschaftsteuer. Weidel forderte darin, die Erbschaftsteuer ganz abzuschaffen, weil der Staat 'am erarbeiteten Privateinkommen und -vermögen doppelt verdient'.",
+    "quellen": [
+      "https://www.afd.de/weidel-reform-der-erbschaftssteuer-eine-historische-chance-fuer-eine-abschaffung/",
+      "https://www.aktiencheck.de/exklusiv/Artikel-Weidel_AfD_Reform_Erbschaftssteuer_Eine_historische_Chance_fuer_eine_Abschaffung-7021961"
+    ],
+    "status": "verifiziert",
+    "kategorien": [
+      "Wirtschaft/Kapital"
+    ],
+    "kurz": false,
+    "notizen": "Primärquelle: Pressemitteilung auf afd.de, Wortlaut selbst von der Seite abgerufen und im Volltext geprüft. Zweitabdruck bei aktiencheck.de (nur Suchtreffer gesehen, nicht abgerufen). Eigene Erklärung Weidels (Pressemitteilung), keine Rede. Schlusssatz: 'Ich appelliere an die Vernunft aller im Bundestag vertretenen Parteien, diese historische Chance zu nutzen [...] und die Erbschaftsteuer abzuschaffen.' Weidel war 2016 Bundesvorstandsmitglied, noch nicht Parteichefin.",
+    "kontext_kurz": "über die Abschaffung der Erbschaftsteuer, AfD-Pressemitteilung 2016"
+  },
+  {
+    "id": "weidel-10",
+    "sprecher": "Alice Weidel",
+    "partei": "AfD",
+    "rolle_damals": "AfD-Bundessprecherin und Kanzlerkandidatin",
+    "zitat": "Ich zahle hier meine Steuern",
+    "datum": "2025-02-16",
+    "kontext": "RTL-'Quadrell' (Kampf ums Kanzleramt, u. a. mit Günther Jauch) auf die Frage nach ihrem Wohnsitz in der Schweiz (Einsiedeln, wo ihre Partnerin und die Kinder leben) und ihrer Steuerpflicht. Weidel verwies auf das Doppelbesteuerungsabkommen und gab Überlingen als deutschen Wohnsitz an.",
+    "quellen": [
+      "https://www.20min.ch/story/kanzlerduell-keine-steuern-alice-weidel-erklaert-ihre-schweizer-wohnsituation-103283171",
+      "https://politik.watson.de/politik/deutschland/570975740-alice-weidel-bezahlt-sie-in-der-schweiz-doch-steuern",
+      "https://www.blick.ch/ausland/versteuern-sie-alles-in-deutschland-alice-weidel-in-tv-debatte-wegen-schweiz-wohnsitz-unter-druck-id20598804.html"
+    ],
+    "status": "verifiziert",
+    "kategorien": [
+      "Wirtschaft/Kapital"
+    ],
+    "kurz": true,
+    "notizen": "Drei Medien (20 Minuten, watson, Blick) geben 'Ich zahle hier meine Steuern' wörtlich wieder. Längere Fassungen: 20 Minuten 'Ich zahle hier meine Steuern und bin nur als Fraktions- und Parteivorsitzende in Deutschland unterwegs, ich arbeite hier.'; Blick 'Ich habe meinen Wohnsitz in Deutschland. Ich zahle hier meine Steuern.'; watson zusätzlich 'Das ist völlig normal gemäß dem Doppelbesteuerungsabkommen' und 'Meine Frau ist Schweizerin. Dementsprechend hat sie ihren Wohnsitz in der Schweiz.' (nur watson). Sendung am Sonntag, 16.02.2025 (Artikel vom 17.02.2025). Mehrere Medien (CH Media, nume) berichteten später, sie zahle zumindest auf eine Schweizer Immobilie Steuern; das ist nicht Teil des Zitats. Fragment: ohne Video/Transkript nur der Kernsatz gesichert.",
+    "kontext_kurz": "über ihre Steuern und ihren Schweizer Wohnsitz, RTL-Quadrell 2025"
   }
 ]

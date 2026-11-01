@@ -20,7 +20,7 @@ func _defaults() -> Dictionary:
 		"album": [],
 		"max_umfrage": 0,
 		"stats": {"runs": 0, "wins": 0, "best_wave": 0},
-		"options": {"music": 0.7, "sfx": 0.8, "fullscreen": false, "name": "Genoss*in"},
+		"options": {"music": 0.7, "sfx": 0.8, "fullscreen": false, "name": "Genoss:in"},
 	}
 
 
@@ -36,6 +36,9 @@ func load_save() -> void:
 				data[key].merge(parsed[key], true)
 			else:
 				data[key] = parsed[key]
+	# Old default name before the switch to colon gendering.
+	if data["options"].get("name", "") == "Genoss*in":
+		data["options"]["name"] = "Genoss:in"
 
 
 func save() -> void:

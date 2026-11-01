@@ -141,8 +141,12 @@ func _process(delta: float) -> void:
 	var vs := get_view()
 	if vs and vs.wave >= Content.WAVE_COUNT and vs.wave_time_left < 0.0 and vs.phase == 0:
 		_koal_time += delta / 3.0
+	var holding := bool(get_meta_dict().get("intro_wait", false))
 	for i in range(_overlays.size() - 1, -1, -1):
 		_overlays[i]["t"] += delta
+		# Boss card stays fully visible while the game waits for the players.
+		if holding and _overlays[i]["kind"] == "card":
+			_overlays[i]["t"] = minf(_overlays[i]["t"], 1.2)
 		if _overlays[i]["t"] > _overlays[i]["life"]:
 			_overlays.remove_at(i)
 	for i in range(_toasts.size() - 1, -1, -1):
@@ -205,6 +209,7 @@ func _draw() -> void:
 		_draw_funkloch(sz)
 	for o in _overlays:
 		_draw_overlay(o, sz)
+	_draw_intro_hint(sz)
 	_draw_toasts(sz)
 
 
@@ -647,3 +652,19 @@ static func _action_key(action: String) -> String:
 	for e in InputMap.action_get_events(action):
 		return e.as_text()
 	return "?"
+
+
+## Top banner while a boss card pauses the game.
+func _draw_intro_hint(sz: Vector2) -> void:
+	var m := get_meta_dict()
+	if not bool(m.get("intro_wait", false)):
+		return
+	var me := local_id()
+	var done: Array = m.get("intro_done", [])
+	var text := tr("HUD_INTRO_WAITING") if me in done else tr("HUD_INTRO_CONTINUE")
+	var w := 640.0
+	var r := Rect2(Vector2((sz.x - w) * 0.5, 12.0), Vector2(w, 46.0))
+	_panel(r, Color(1.0, 0.96, 0.8), 0, Color(0.75, 0.12, 0.12))
+	var pulse := 0.75 + 0.25 * sin(_t * 4.0)
+	_txt(text, Vector2(r.position.x, r.position.y + 32.0), 26, Color(0.75, 0.12, 0.12, pulse), null, HORIZONTAL_ALIGNMENT_CENTER, w)
+

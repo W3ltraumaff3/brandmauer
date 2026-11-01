@@ -43,6 +43,15 @@ func build() -> void:
 	fs.toggled.connect(_on_fullscreen)
 	grid.add_child(fs)
 
+	grid.add_child(UIKit.label(tr("OPTIONS_TARGET"), 24))
+	var tm := OptionButton.new()
+	for key in ["OPTIONS_TARGET_CLOSEST", "OPTIONS_TARGET_MOST_HP", "OPTIONS_TARGET_LEAST_HP"]:
+		tm.add_item(tr(key))
+	tm.selected = clampi(int(UIApi.option("target_mode", 0)), 0, 2)
+	tm.tooltip_text = tr("OPTIONS_TARGET_TIP")
+	tm.item_selected.connect(_on_target_mode)
+	grid.add_child(tm)
+
 	grid.add_child(UIKit.label(tr("MENU_NAME"), 24))
 	var name_edit := LineEdit.new()
 	name_edit.text = str(UIApi.option("name", tr("MENU_DEFAULT_NAME")))
@@ -103,6 +112,11 @@ static func apply_fullscreen(on: bool) -> void:
 	if DisplayServer.get_name() == "headless":
 		return
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if on else DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+func _on_target_mode(i: int) -> void:
+	UIApi.set_option("target_mode", i)
+	UIApi.call_opt(UIApi.game(), "send_target_mode")
 
 
 func _on_name(t: String) -> void:

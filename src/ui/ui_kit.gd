@@ -147,9 +147,15 @@ static func trk(key: String) -> String:
 
 ## Name/description of a content entry by convention (architecture §2), e.g.
 ## content_text("CHAR", "oma", "NAME"). Falls back to the prettified id.
+const WUT_TAGEBUCH_ENTRIES := 40
+static var _diary_offset := -1
+
+
 static func content_text(kind: String, id: String, suffix := "NAME") -> String:
 	var key := "%s_%s_%s" % [kind, id.to_upper(), suffix]
 	var t := trk(key)
+	if t != "" and key == "ITEM_WUT_TAGEBUCH_DESC":
+		return t % wut_tagebuch_entry()
 	if t != "":
 		return t
 	return pretty(id) if suffix == "NAME" else ""
@@ -286,3 +292,11 @@ static func _first_focusable(n: Node) -> Control:
 			if deep:
 				return deep
 	return null
+
+
+## The Wut-Tagebuch shows a new entry each Späti visit (stable within one visit).
+static func wut_tagebuch_entry() -> String:
+	if _diary_offset < 0:
+		_diary_offset = randi() % WUT_TAGEBUCH_ENTRIES
+	var wave := int(UIApi.meta().get("wave", 0))
+	return trk("WUT_TAGEBUCH_%d" % ((wave + _diary_offset) % WUT_TAGEBUCH_ENTRIES + 1))

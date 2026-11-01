@@ -23,6 +23,12 @@ const REVIVE_RANGE := 60.0
 const SAY_INTERVAL := 3.5
 const STREIK_TIME := 5.0
 const DMG_EVENTS_PER_FRAME := 24
+const KASSE_IN := 10
+## Player targeting preference (options): which enemy in range the weapons pick.
+enum Target { CLOSEST, MOST_HP, LEAST_HP }
+const KASSE_OUT := 20              # taken from the Kasse ...
+const KASSE_TAX := 0.25            # ... minus 25 % Kapitalertragsteuer
+const KASSE_REPAIR_DISCOUNT := 0.3
 
 
 class SimPlayer:
@@ -69,6 +75,8 @@ class SimPlayer:
 	var lifesteal_cd := 0.0
 	var repair_time := 0.0
 	var max_weapons := Content.MAX_WEAPONS
+	var target_mode := 0               # Sim.Target
+	var last_fire := -10.0             # sim time of the last shot (aim follows shots)
 
 
 class SimEnemy:
@@ -196,6 +204,9 @@ var streik_active := 0.0
 var streik_discount := false
 var encounter := ""
 var encounter_pending := -1.0
+var intro_wait := false              # boss card shown, world paused until everyone continues
+var intro_done := {}
+var skip_intro := false              # bots/tests
 var encounters_beaten: Array[String] = []
 var result := {}
 var meta_dirty := true
@@ -223,6 +234,7 @@ func start_run(cfg: Dictionary) -> void:
 	difficulty = int(cfg.get("difficulty", 0))
 	diff = Content.difficulty_mult(difficulty)
 	blackrock = cfg.get("blackrock", false)
+	skip_intro = cfg.get("skip_intro", false)
 	wall.clear()
 	for i in WALL_SEGMENTS:
 		wall.append(true)
@@ -250,6 +262,7 @@ func remove_player(id: int) -> void:
 	if players.has(id):
 		players[id].state = 2
 		meta_dirty = true
+		_check_intro_done()
 		_check_game_over()
 
 
@@ -323,7 +336,7 @@ static func clamp_player(pos: Vector2) -> Vector2:
 
 func step(dt: float) -> void:
 	time += dt
-	if phase != Phase.WAVE:
+	if phase != Phase.WAVE or intro_wait:
 		return
 	_dmg_events = 0
 	wave_time += dt
@@ -420,6 +433,8 @@ func _begin_wave(n: int) -> void:
 		var pool: Array = Content.ENCOUNTER_POOLS[n]
 		encounter = pool[rng.randi_range(0, pool.size() - 1)]
 		encounter_pending = INTRO_DELAY
+		intro_wait = not skip_intro
+		intro_done = {}
 		_event(["card", encounter])
 	if org == "omas" and summons.is_empty():
 		var s := SimSummon.new()
@@ -694,7 +709,8 @@ func _step_players(dt: float) -> void:
 			dir = Vector2.ZERO
 		if dir.length() > 0.05:
 			p.still_time = 0.0
-			p.aim = dir.angle()
+			if time - p.last_fire > 0.6:
+				p.aim = dir.angle()
 		else:
 			p.still_time += dt
 		p.pos = move_player(p.pos, dir, player_speed(p), dt)
@@ -864,17 +880,20 @@ func _step_weapons(dt: float) -> void:
 			if w["cd"] > 0.0:
 				continue
 			var rng_r := _weapon_range(p, def)
-			var target := _nearest_enemy(p.pos, rng_r)
+			var target := _pick_target(p.pos, rng_r, p.target_mode)
 			if target == null:
 				w["cd"] = 0.05
 				continue
 			w["cd"] = def["cd"]
-			var dir = (target.pos - p.pos).normalized()
+			var aim_at: Vector2 = target.pos
+			var dir = (aim_at - p.pos).normalized()
 			w["angle"] = dir.angle()
+			p.aim = dir.angle()
+			p.last_fire = time
 			if p.flags.has("fax"):
 				p.pending_shots.append({"t": 3.0, "w": wi, "dir": dir})
 			else:
-				_fire(p, w, dir, target.pos)
+				_fire(p, w, dir, aim_at)
 
 
 func _weapon_range(p: SimPlayer, def: Dictionary) -> float:
@@ -925,6 +944,8 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			var r := _weapon_range(p, def)
 			var half := deg_to_rad(def["arc"]) / 2.0
 			for e in _query(p.pos, r):
+				if e.behind and shot_blocked(p.pos, e.pos):
+					continue
 				var to: Vector2 = e.pos - p.pos
 				if def["arc"] >= 360.0 or absf(angle_difference(dir.angle(), to.angle())) <= half + 0.15:
 					_damage_enemy(e, dmg, p, crit, to.normalized(), def.get("knock", 0.0))
@@ -986,11 +1007,35 @@ func orbit_points(p: SimPlayer) -> Array:
 	return out
 
 
+## Picks the target for a weapon among enemies in range, by the player's mode.
+func _pick_target(pos: Vector2, r: float, mode: int) -> SimEnemy:
+	if mode == Target.CLOSEST:
+		return _nearest_enemy(pos, r)
+	var best: SimEnemy = null
+	for e in enemies:
+		if not e.alive or (e.behind and shot_blocked(pos, e.pos)) or e.pos.distance_to(pos) - e.radius > r:
+			continue
+		if best == null or (mode == Target.MOST_HP and e.hp > best.hp) or (mode == Target.LEAST_HP and e.hp < best.hp):
+			best = e
+	return best
+
+
+
+## True if an intact Brandmauer segment lies between a and b (shots can pass holes).
+func shot_blocked(a: Vector2, b: Vector2) -> bool:
+	var mid := (WALL_TOP + WALL_BOTTOM) * 0.5
+	if (a.y - mid) * (b.y - mid) > 0.0:
+		return false
+	var t := (mid - a.y) / (b.y - a.y) if b.y != a.y else 0.0
+	var x := a.x + (b.x - a.x) * t
+	return wall[clampi(int(x / SEG_W), 0, WALL_SEGMENTS - 1)]
+
+
 func _nearest_enemy(pos: Vector2, r: float, exclude := {}) -> SimEnemy:
 	var best: SimEnemy = null
 	var bd := r
 	for e in enemies:
-		if not e.alive or e.behind or exclude.has(e.id):
+		if not e.alive or exclude.has(e.id) or (e.behind and shot_blocked(pos, e.pos)):
 			continue
 		var d: float = e.pos.distance_to(pos) - e.radius
 		if d < bd:
@@ -1223,7 +1268,8 @@ func _step_summons(dt: float) -> void:
 		if s.type == info_t:
 			s.cd -= dt
 			if s.cd <= 0.0:
-				var t := _nearest_enemy(s.pos, s.reach)
+				var owner: SimPlayer = players.get(s.owner)
+				var t := _pick_target(s.pos, s.reach, owner.target_mode if owner else Target.CLOSEST)
 				if t:
 					s.cd = s.fire_cd
 					var pr := SimProj.new()
@@ -1838,7 +1884,7 @@ func _step_projectiles(dt: float) -> void:
 func _proj_hit_enemies(pr: SimProj) -> void:
 	var src: SimPlayer = players.get(pr.owner)
 	for e in _query(pr.pos, pr.radius):
-		if e.behind or pr.hit_ids.has(e.id):
+		if pr.hit_ids.has(e.id):
 			continue
 		pr.hit_ids[e.id] = true
 		var def: Dictionary = Content.WEAPONS.get(pr.weapon, {})
@@ -2087,7 +2133,7 @@ func _roll_offer(p: SimPlayer) -> Dictionary:
 	var total_w := 0.0
 	for id in Content.ITEM_ORDER:
 		var d: Dictionary = Content.ITEMS[id]
-		if d.get("no_shop", false):
+		if d.get("no_shop", false) or (d.get("coop_only", false) and num_players() <= 1):
 			continue
 		var w := 0.0
 		match int(d["rarity"]):
@@ -2140,6 +2186,14 @@ func request(peer: int, action: String, arg = null) -> bool:
 	var p: SimPlayer = players.get(peer)
 	if p == null or p.state == 2:
 		return false
+	if action == "continue_intro":
+		if intro_wait:
+			intro_done[p.id] = true
+			_check_intro_done()
+		return true
+	if action == "target_mode":
+		p.target_mode = clampi(int(arg), 0, Target.size() - 1)
+		return true
 	if action == "streik":
 		if phase == Phase.WAVE and streik_available:
 			streik_available = false
@@ -2212,20 +2266,35 @@ func request(peer: int, action: String, arg = null) -> bool:
 			_make_levelup_options(p)
 			return true
 		"kasse_in":
-			if p.pfand < 10:
+			if not kasse_enabled():
+				return false
+			if p.pfand < KASSE_IN:
 				return _deny(p, "DENY_NO_PFAND")
-			p.pfand -= 10
-			kasse += 10
-			p.paid_in += 10
+			p.pfand -= KASSE_IN
+			kasse += KASSE_IN
+			p.paid_in += KASSE_IN
 			if p.paid_in >= 200:
 				_grant(p, "ach_kassenwart")
 			return true
 		"kasse_out":
-			if kasse < 10:
+			if not kasse_enabled():
+				return false
+			if kasse < KASSE_OUT:
 				return _deny(p, "DENY_KASSE_EMPTY")
-			kasse -= 10
-			p.pfand += 10
-			p.taken_out += 10
+			kasse -= KASSE_OUT
+			p.pfand += kasse_payout()
+			p.taken_out += KASSE_OUT
+			return true
+		"repair_wall_kasse":
+			if not kasse_enabled():
+				return false
+			if wall.count(false) == 0:
+				return _deny(p, "DENY_NOTHING_TO_REPAIR")
+			var kprice := kasse_repair_price()
+			if kasse < kprice:
+				return _deny(p, "DENY_KASSE_EMPTY")
+			kasse -= kprice
+			_repair_one_hole()
 			return true
 		"vote":
 			var i := int(arg)
@@ -2250,12 +2319,36 @@ func request(peer: int, action: String, arg = null) -> bool:
 	return false
 
 
+## The Koalitionskasse only exists in co-op.
+func kasse_enabled() -> bool:
+	return num_players() > 1
+
+
+func kasse_payout() -> int:
+	return int(round(KASSE_OUT * (1.0 - KASSE_TAX)))
+
+
+func kasse_repair_price() -> int:
+	return int(round(Content.repair_price(wave) * (1.0 - KASSE_REPAIR_DISCOUNT)))
+
+
 func _repair_one_hole() -> void:
 	for i in WALL_SEGMENTS:
 		if not wall[i]:
 			wall[i] = true
 			meta_dirty = true
 			return
+
+
+func _check_intro_done() -> void:
+	if not intro_wait:
+		return
+	for p in players.values():
+		if p.state != 2 and not intro_done.has(p.id):
+			meta_dirty = true
+			return
+	intro_wait = false
+	meta_dirty = true
 
 
 func _check_all_ready() -> void:
@@ -2288,9 +2381,12 @@ func build_meta() -> Dictionary:
 		}
 	return {
 		"wave": wave, "phase": phase, "org": org, "difficulty": difficulty, "blackrock": blackrock,
-		"kasse": kasse, "wall_holes": wall.count(false), "repair_price": Content.repair_price(wave),
+		"kasse": kasse, "kasse_enabled": kasse_enabled(), "kasse_in": KASSE_IN, "kasse_out": KASSE_OUT,
+		"kasse_payout": kasse_payout(), "repair_price_kasse": kasse_repair_price(),
+		"wall_holes": wall.count(false), "repair_price": Content.repair_price(wave),
 		"streik": {"available": streik_available, "active": streik_active},
 		"vertrag": vertrag.duplicate(true), "encounter": encounter,
+		"intro_wait": intro_wait, "intro_done": intro_done.keys(),
 		"team": {"level": team_level, "xp": team_xp, "need": Content.xp_for_level(team_level), "stage": stage},
 		"num_players": num_players(), "players": pm, "result": result,
 	}

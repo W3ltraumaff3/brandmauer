@@ -61,6 +61,8 @@ func _process(_delta: float) -> bool:
 	if sim.wave != _last_wave:
 		_last_wave = sim.wave
 		print("E2E wave %d (frame %d, enemies %d, errors %d)" % [sim.wave, _frame, sim.enemies.size(), _errors.count])
+	if sim.intro_wait:
+		_game.request("continue_intro")
 	if sim.phase == Sim.Phase.WAVE:
 		for p in sim.players.values():
 			p.iframes = 10.0

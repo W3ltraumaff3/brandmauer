@@ -92,6 +92,25 @@ func _on_events(events: Array) -> void:
 	for e in events:
 		if e is Array and e.size() >= 2 and e[0] == "deny" and str(e[1]) == str(UIApi.local_id()):
 			UIApi.sfx("error")
+			if e.size() >= 3:
+				ToastLayer.show_text(tr(str(e[2])))
+
+
+## Why the local player can't buy this offer right now ("" = buyable).
+static func buy_block_reason(o: Dictionary, me: Dictionary) -> String:
+	if o.get("sold", false):
+		return ""
+	var price := int(o.get("price", 0))
+	if str(o.get("kind", "item")) == "weapon":
+		var weapons: Array = me.get("weapons", [])
+		if weapons.size() >= int(me.get("max_weapons", Content.MAX_WEAPONS)):
+			return "DENY_SLOTS_FULL"
+	var spend := int(me.get("spend_left", -1))
+	if spend >= 0 and price > spend:
+		return "DENY_SPEND_LIMIT"
+	if price > int(me.get("pfand", 0)):
+		return "DENY_NO_PFAND"
+	return ""
 
 
 # --- Build ------------------------------------------------------------------
@@ -200,6 +219,7 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 	if levelups > 0 and not options.is_empty():
 		var lp := _card(tr("SPAETI_LEVELUP") % levelups, 0.5, UITheme.YELLOW.lerp(UITheme.PAPER, 0.7))
 		lp[1].add_child(UIKit.para(tr("SPAETI_LEVELUP_HINT"), 18, UITheme.INK_SOFT))
+		lp[0].tooltip_text = tr("SPAETI_LEVELUP_TOOLTIP")
 		var row := UIKit.hbox(12)
 		row.alignment = BoxContainer.ALIGNMENT_CENTER
 		row.size_flags_vertical = SIZE_EXPAND_FILL
@@ -222,7 +242,7 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 	head.add_child(UIKit.label(tr("SPAETI_OFFERS"), 22, UITheme.RED))
 	head.add_child(UIKit.spacer())
 	var free := int(me.get("free_rerolls", 0))
-	var reroll_text := tr("SPAETI_REROLL_FREE") % free if free > 0 else tr("SPAETI_REROLL") % int(me.get("reroll_price", 0))
+	var reroll_text := tr("SPAETI_REROLL_FREE") % free if free > 0 else tr("SPAETI_REROLL") % [int(me.get("reroll_price", 0)), UIKit.currency(_meta())]
 	head.add_child(UIKit.compact(_btn(reroll_text, "reroll", _on_reroll, 18), 0, 10))
 	parts[1].add_child(head)
 	var grid := GridContainer.new()
@@ -268,11 +288,18 @@ func _offer_card(i: int, o: Dictionary, meta: Dictionary, me: Dictionary) -> Con
 	d.tooltip_text = d.text
 	v.add_child(d)
 	var bottom := UIKit.hbox(6)
-	var affordable := price <= int(me.get("pfand", 0))
-	bottom.add_child(UIKit.label("%d %s" % [price, UIKit.currency(meta)], 19, UITheme.INK if affordable else UITheme.RED))
+	var block := buy_block_reason(o, me)
+	bottom.add_child(UIKit.label("%d %s" % [price, UIKit.currency(meta)], 19, UITheme.INK if block == "" else UITheme.RED))
+	if block != "":
+		var why := UIKit.label(tr(block + "_SHORT"), 14, UITheme.RED)
+		why.tooltip_text = tr(block)
+		why.mouse_filter = MOUSE_FILTER_PASS
+		bottom.add_child(why)
 	bottom.add_child(UIKit.spacer())
 	var b := UIKit.compact(_btn(tr("SPAETI_SOLD") if sold else tr("SPAETI_BUY"), "buy_%d" % i, _on_buy.bind(i), 18), 0, 10)
-	b.disabled = sold
+	b.disabled = sold or block != ""
+	if block != "":
+		b.tooltip_text = tr(block)
 	bottom.add_child(b)
 	v.add_child(bottom)
 	if sold:
@@ -361,19 +388,27 @@ func _side_column(meta: Dictionary, me: Dictionary) -> Control:
 	col.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(col)
 
-	# Koalitionskasse.
+	# Koalitionskasse (co-op only).
 	var cur := UIKit.currency(meta)
+	var kasse_on := bool(meta.get("kasse_enabled", false))
 	var k := _card(tr("SPAETI_KASSE") % [int(meta.get("kasse", 0)), cur], 0.8)
 	var kr := UIKit.hbox(8)
-	var bin := _btn(tr("SPAETI_KASSE_IN"), "kasse_in", _on_kasse_in, 17)
-	var bout := _btn(tr("SPAETI_KASSE_OUT"), "kasse_out", _on_kasse_out, 17)
+	var bin := _btn(tr("SPAETI_KASSE_IN") % int(meta.get("kasse_in", 10)), "kasse_in", _on_kasse_in, 17)
+	var bout := _btn(tr("SPAETI_KASSE_OUT") % [int(meta.get("kasse_out", 20)), int(meta.get("kasse_payout", 15))], "kasse_out", _on_kasse_out, 17)
 	bin.size_flags_horizontal = SIZE_EXPAND_FILL
 	bout.size_flags_horizontal = SIZE_EXPAND_FILL
 	kr.add_child(bin)
 	kr.add_child(bout)
 	k[1].add_child(kr)
 	k[1].add_child(UIKit.label(tr("SPAETI_KASSE_MINE") % [int(me.get("paid_in", 0)), int(me.get("taken_out", 0))], 16, UITheme.INK_SOFT))
-	col.add_child(k[0])
+	# Mouseover explanation on the whole card and its buttons.
+	var kasse_tip := tr("SPAETI_KASSE_TOOLTIP")
+	for c in [k[0], bin, bout]:
+		c.tooltip_text = kasse_tip
+	if kasse_on:
+		col.add_child(k[0])
+	else:
+		k[0].queue_free()
 
 	# Brandmauer.
 	var holes := int(meta.get("wall_holes", 0))
@@ -383,6 +418,10 @@ func _side_column(meta: Dictionary, me: Dictionary) -> Control:
 		w[1].add_child(UIKit.label(holes_text, 18, UITheme.RED))
 		var rb := _btn(tr("SPAETI_REPAIR") % [int(meta.get("repair_price", 0)), cur], "repair", _on_repair, 18)
 		w[1].add_child(rb)
+		if kasse_on:
+			var kb := _btn(tr("SPAETI_REPAIR_KASSE") % [int(meta.get("repair_price_kasse", 0)), cur], "repair_kasse", _on_repair_kasse, 16)
+			kb.tooltip_text = tr("SPAETI_REPAIR_KASSE_TOOLTIP")
+			w[1].add_child(kb)
 	else:
 		w[1].add_child(UIKit.label(tr("SPAETI_WALL_OK"), 18, UITheme.GREEN))
 	col.add_child(w[0])
@@ -394,8 +433,10 @@ func _side_column(meta: Dictionary, me: Dictionary) -> Control:
 		col.add_child(_vertrag_card(meta, me, vertrag, opts))
 	elif str(vertrag.get("active", "")) != "":
 		var a := _card(tr("SPAETI_VERTRAG"), 0.5)
-		a[1].add_child(UIKit.para(tr("SPAETI_VERTRAG_ACTIVE") % [
-			UIKit.content_text("VERTRAG", str(vertrag["active"])), int(vertrag.get("waves_left", 0))], 17))
+		var vname := UIKit.content_text("VERTRAG", str(vertrag["active"]))
+		var left := int(vertrag.get("waves_left", 0))
+		var active_text := tr("SPAETI_VERTRAG_ACTIVE_ONE") % vname if left == 1 else tr("SPAETI_VERTRAG_ACTIVE") % [vname, left]
+		a[1].add_child(UIKit.para(active_text, 17))
 		a[1].add_child(UIKit.para(UIKit.content_text("VERTRAG", str(vertrag["active"]), "DESC"), 15, UITheme.INK_SOFT))
 		col.add_child(a[0])
 	return scroll
@@ -485,10 +526,10 @@ func _on_buy(i: int) -> void:
 	if i >= offers.size() or offers[i].get("sold", false):
 		_deny()
 		return
-	var price := int(offers[i].get("price", 0))
-	var spend := int(me.get("spend_left", -1))
-	if price > int(me.get("pfand", 0)) or (spend >= 0 and price > spend):
+	var block := buy_block_reason(offers[i], me)
+	if block != "":
 		_deny()
+		ToastLayer.show_text(tr(block))
 		return
 	UIApi.sfx("buy")
 	UIApi.request("buy", i)
@@ -517,7 +558,7 @@ func _on_kasse_in() -> void:
 
 
 func _on_kasse_out() -> void:
-	if int(_meta().get("kasse", 0)) <= 0:
+	if int(_meta().get("kasse", 0)) < int(_meta().get("kasse_out", 20)):
 		_deny()
 		return
 	UIApi.sfx("buy")
@@ -530,6 +571,14 @@ func _on_repair() -> void:
 		return
 	UIApi.sfx("buy")
 	UIApi.request("repair_wall")
+
+
+func _on_repair_kasse() -> void:
+	if int(_meta().get("repair_price_kasse", 0)) > int(_meta().get("kasse", 0)):
+		_deny()
+		return
+	UIApi.sfx("buy")
+	UIApi.request("repair_wall_kasse")
 
 
 func _on_vote(i: int) -> void:
