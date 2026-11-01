@@ -5,7 +5,7 @@
 ## 1. Repository
 
 - **Public on GitHub**, with `main` as the only long-lived branch.
-- **All changes reach `main` via pull request**, and the repo owner merges every PR personally. Claude never merges.
+- **All changes reach `main` via pull request.** Only the owner and Claude (acting through the owner's account) may merge. Outside contributors can only open PRs from forks, and CI runs on their PRs only after the owner approves them.
 - **Branch protection on `main`:**
   - A PR is required.
   - CI checks must be green.
