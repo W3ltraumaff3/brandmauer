@@ -27,6 +27,10 @@ var _last_wave := 0
 
 func _initialize() -> void:
 	OS.add_logger(_errors)
+	var save_node := root.get_node_or_null("Save")
+	if save_node:
+		save_node.persist = false
+		save_node.data = save_node._defaults()
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("shots="):
 			_shots = a.substr(6)

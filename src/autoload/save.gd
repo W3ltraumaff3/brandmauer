@@ -5,6 +5,8 @@ extends Node
 const PATH := "user://brandmauer_save.json"
 
 var data := {}
+## Tests and tools set this to false so they never touch the player's save.
+var persist := true
 
 
 func _ready() -> void:
@@ -37,6 +39,8 @@ func load_save() -> void:
 
 
 func save() -> void:
+	if not persist:
+		return
 	var f := FileAccess.open(PATH, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify(data, "\t"))

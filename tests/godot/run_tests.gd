@@ -30,6 +30,9 @@ func _initialize() -> void:
 			node.name = name
 			root.add_child(node)
 	OS.add_logger(_errors)
+	var save_node := root.get_node_or_null("Save")
+	if save_node:
+		save_node.persist = false
 	call_deferred("_run")
 
 
