@@ -186,7 +186,33 @@ func _build_grid() -> Control:
 			b.tooltip_text = UIKit.ach_text(str(Content.CHARACTERS[id].get("unlock", "")), "DESC")
 		_char_buttons[id] = b
 		grid.add_child(b)
+	_link_char_grid(grid)
 	return c
+
+
+## Explicit grid navigation: the cards are tilted, which confuses Godot's geometric
+## focus search. Right at a row end wraps to the next row's first card, left at a row
+## start wraps to the previous row's last card; up/down move by one row.
+func _link_char_grid(grid: GridContainer) -> void:
+	var cards: Array = grid.get_children()
+	var cols := grid.columns
+	for i in cards.size():
+		var b := cards[i] as Control
+		if i + 1 < cards.size():
+			b.focus_neighbor_right = b.get_path_to(cards[i + 1])
+		else:
+			b.focus_neighbor_right = b.get_path_to(b)
+		if i > 0:
+			b.focus_neighbor_left = b.get_path_to(cards[i - 1])
+		if i + cols < cards.size():
+			b.focus_neighbor_bottom = b.get_path_to(cards[i + cols])
+		elif i + cols < cols * ceili(cards.size() / float(cols)):
+			b.focus_neighbor_bottom = b.get_path_to(cards[cards.size() - 1])
+		if i - cols >= 0:
+			b.focus_neighbor_top = b.get_path_to(cards[i - cols])
+		b.focus_next = b.focus_neighbor_right
+		if i > 0:
+			b.focus_previous = b.focus_neighbor_left
 
 
 func _build_detail() -> Control:

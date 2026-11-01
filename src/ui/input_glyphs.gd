@@ -212,6 +212,7 @@ static func _add_button(action: String, button: JoyButton) -> void:
 		if e is InputEventJoypadButton and (e as InputEventJoypadButton).button_index == button:
 			return
 	var ev := InputEventJoypadButton.new()
+	ev.device = -1  # any controller, not only device 0
 	ev.button_index = button
 	InputMap.action_add_event(action, ev)
 
@@ -221,6 +222,7 @@ static func _add_axis(action: String, axis: JoyAxis, value: float) -> void:
 		return
 	InputMap.add_action(action, 0.25)
 	var ev := InputEventJoypadMotion.new()
+	ev.device = -1  # any controller, not only device 0
 	ev.axis = axis
 	ev.axis_value = value
 	InputMap.action_add_event(action, ev)

@@ -442,6 +442,7 @@ func _check_lobby(title: String, mode: String, lobby: Dictionary) -> void:
 	await _frames(4)
 	var mine := str(UIApi.by_peer(lobby, 1).get("char", ""))
 	_expect_focus("open", _find(l, "char_" + mine))
+	await _check_char_grid(l)
 	var n := await _walk("lllrrrrruuuddddddlllll", l)
 	_note("%d controls reached" % n)
 	# Picker: A opens the list, D-pad + A picks, B closes it.
@@ -475,6 +476,30 @@ func _check_lobby(title: String, mode: String, lobby: Dictionary) -> void:
 	_end()
 
 
+## Character grid (GDD §19b): directions mean directions, read like text. Right at
+## a row end goes to the next row's first card, left at a row start to the previous
+## row's last card, up/down move by one row.
+func _check_char_grid(l: Node) -> void:
+	var ids := Content.CHAR_ORDER
+	var cols := 3
+	var wrong := 0
+	for i in ids.size():
+		var want := {"r": i + 1, "l": i - 1, "d": i + cols, "u": i - cols}
+		for dir in want:
+			var j: int = want[dir]
+			if j < 0 or j >= ids.size():
+				continue
+			(_find(l, "char_" + ids[i]) as Control).grab_focus()
+			await _frames(1)
+			await _button(DIRS[dir], 1)
+			var f := _focus()
+			if f == null or f.name != "char_" + ids[j]:
+				wrong += 1
+				_fail("grid: '%s' from %s -> %s, expected %s" % [dir, ids[i], f.name if f else "null", ids[j]])
+	if wrong == 0:
+		_note("char grid directions ok")
+
+
 # --- Späti --------------------------------------------------------------------------
 
 func _spaeti(meta: Dictionary) -> SpaetiPanel:
@@ -493,6 +518,7 @@ func _check_spaeti_levelup() -> void:
 	_expect_focus("open", _find(sp, "levelup_0"))
 	var n := await _walk("rrrlllldddduuuurrrr", sp)
 	_note("%d controls reached" % n)
+	await _check_sections_closed(sp)
 	await _free(sp)
 	_end()
 
@@ -515,6 +541,7 @@ func _check_spaeti_shop() -> void:
 	_note("first focus %s" % (f.name if f else "-"))
 	var n := await _walk("rrrrddddllllllddddrrrrrrrruuuuuuuuuulll", sp)
 	_note("%d controls reached" % n)
+	await _check_sections_closed(sp)
 	# Bereit is disabled until the vote: must never get focus.
 	var ready := _find(sp, "ready") as Button
 	if ready and ready.disabled and ready.focus_mode != Control.FOCUS_NONE:
@@ -550,6 +577,31 @@ func _check_spaeti_shop() -> void:
 		_fail("no focus tooltip on a stat")
 	await _free(sp)
 	_end()
+
+
+## D-pad never leaves a Späti section (GDD §19b): from every focusable control of
+## every section, each direction keeps focus inside that section.
+func _check_sections_closed(sp: Node) -> void:
+	var tested := 0
+	var moved := 0
+	for sec_name in SpaetiPanel.SECTIONS:
+		var sec := _find(sp, sec_name)
+		if sec == null or not sec.is_visible_in_tree():
+			continue
+		for c in sec.find_children("*", "Control", true, false):
+			if not UINav.can_focus(c):
+				continue
+			for dir in DIRS:
+				(c as Control).grab_focus()
+				await _frames(1)
+				await _button(DIRS[dir], 1)
+				tested += 1
+				var f := _focus()
+				if f != c:
+					moved += 1
+				if f == null or _section_of(sp, f) != sec_name.trim_prefix("sec_"):
+					_fail("'%s' from %s left %s (-> %s)" % [dir, c.name, sec_name, f.name if f else "null"])
+	_note("%d section steps stayed inside (%d moved)" % [tested, moved])
 
 
 func _check_spaeti_overlays() -> void:
