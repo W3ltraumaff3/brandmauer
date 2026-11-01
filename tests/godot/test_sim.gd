@@ -107,10 +107,13 @@ func test_kasse_and_steuermoral() -> void:
 	var s := _sim(["oma", "antifa"])
 	_to_shop(s)
 	s.players[1].pfand = 50
+	var before: int = s.players[2].pfand
+	assert_true(s.request(1, "kasse_in"))
+	assert_false(s.request(2, "kasse_out"), "needs 20 in the Kasse")
 	assert_true(s.request(1, "kasse_in"))
 	assert_true(s.request(2, "kasse_out"))
 	assert_eq(s.kasse, 0)
-	assert_eq(s.players[2].pfand >= 10, true)
+	assert_eq(s.players[2].pfand - before, 15, "20 minus 25 % Kapitalertragsteuer")
 	s._finish(false)
 	assert_near(s.result["players"][1]["steuermoral"], 1.0)
 	assert_near(s.result["players"][2]["steuermoral"], 0.0)
@@ -252,3 +255,33 @@ func test_pickups_are_capped_without_losing_pfand() -> void:
 	for k in s.pickups:
 		total += k.value
 	assert_true(total >= 395, "value kept: %d" % total)
+
+
+func test_kasse_disabled_in_solo() -> void:
+	var s := _sim(["oma"])
+	_to_shop(s)
+	s.players[1].pfand = 100
+	assert_false(s.request(1, "kasse_in"), "no Kasse in solo")
+	assert_false(s.build_meta()["kasse_enabled"])
+
+
+func test_repair_wall_from_kasse_is_cheaper() -> void:
+	var s := _sim(["oma", "antifa"])
+	_to_shop(s)
+	s.wall[0] = false
+	s.kasse = 1000
+	var holes := s.wall.count(false)
+	assert_true(s.request(2, "repair_wall_kasse"))
+	assert_eq(s.wall.count(false), holes - 1)
+	assert_eq(s.kasse, 1000 - s.kasse_repair_price())
+	assert_true(s.kasse_repair_price() < Content.repair_price(s.wave))
+
+
+func test_coop_only_items_not_in_solo_shop() -> void:
+	var s := _sim(["oma"])
+	_to_shop(s)
+	var p: Sim.SimPlayer = s.players[1]
+	for i in 400:
+		var o := s._roll_offer(p)
+		assert_false(Content.ITEMS.get(o["id"], {}).get("coop_only", false), "coop item offered in solo: " + o["id"])
+

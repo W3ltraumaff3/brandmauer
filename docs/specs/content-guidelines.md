@@ -7,7 +7,7 @@ Every character, item, enemy, asset and line of text is checked against these ru
 ## 1. Punch up
 
 - **The joke always lands on the speaker or the powerful, never on the group they're talking about.**
-- **A character built on an insult is the answer to the quote, not its illustration.** The quote appears **only on the unlock card**, with source and context. The gameplay answers it.
+- **A character built on an insult is the answer to the quote, not its illustration.** The quote appears on the unlock card (and may also appear on the start screen), always with source and context. The gameplay answers it.
 - **No ethnic or religious visual markers or accents used as gags.** Characters are drawn through their job, situation or attitude.
 - **The supposedly "lazy" archetypes** (Sozialtourist, Bürgergeld-Empfänger, Totalverweigerer…) are drawn as **likeable and competent**. The joke is that these builds win.
 - **Exhaustion comes from circumstances, never weakness.** Characters are never pitiful or helpless, and nobody gets rescued by an outside hero.
@@ -58,3 +58,8 @@ Taboo, in visuals, names and text:
 
 - Playtest with people from the affected groups (migrants, Bürgergeld recipients, Jewish players and others) to catch blind spots.
 - Before launch, consider a legal check of the quotes and boss parodies.
+
+## 7. Language
+
+- **Gender with a colon** in all our own texts: Spieler:innen, Kontrolleur:innen, Sozialtourist:in, Besorgte:r Bürger:in.
+- Exceptions: real quotes (always verbatim), named parody figures (Der Sauerländer, Die Remigrantin), family roles and proper names (Oma gegen Rechts, Telegram-Onkel), already neutral terms (Mitspielende, Gewerkschaftsmitglied).

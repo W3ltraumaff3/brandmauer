@@ -91,7 +91,7 @@ Characters start **exhausted by circumstances** and get stronger and more visibl
 | Heal on hit | **Umverteilung** | you take from the enemies |
 | Damage % | **Wut** | |
 | Melee damage | **Handarbeit** | manual labor, and Oma's knitting |
-| Ranged damage | **Lautstärke** | megaphone |
+| Ranged damage | **Durchschlagskraft** | all ranged weapons |
 | Status damage (poison, slow) | **Ziviler Ungehorsam** | |
 | Attack speed | **Akkord** | piece-rate work |
 | Crit chance | **Direkte Aktion** | |
@@ -265,7 +265,7 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 
 | Mechanic | Rule |
 |---|---|
-| **Koalitionskasse** | Each player has their own wallet, plus a shared pot anyone can pay into. The end screen shows a **Steuermoral** stat for who paid in and who only took out |
+| **Koalitionskasse** | Co-op only (off in solo). Each player has their own wallet, plus a shared pot. Paying in: 10 Pfand. Taking out: 20 from the pot, you get 15 (25 % **Kapitalertragsteuer**). Shared things can be paid from the pot on purpose (never automatically): Brandmauer repairs cost 30 % less from the Kasse. The end screen shows a **Steuermoral** stat for who paid in and who only took out |
 | **Koalitionsvertrag** | Before certain waves, everyone votes on a modifier. **If the vote isn't unanimous, the worst option wins** |
 | **Solidaritätszuschlag** | Reviving a downed player costs the others HP or money |
 | **Scaling** | More players means more enemies and stronger elites |

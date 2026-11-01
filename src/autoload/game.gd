@@ -412,4 +412,4 @@ func _show_end() -> void:
 
 
 func _player_name() -> String:
-	return str(Save.option("name", "Genoss*in"))
+	return str(Save.option("name", "Genoss:in"))

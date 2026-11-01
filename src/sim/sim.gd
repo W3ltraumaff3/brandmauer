@@ -23,6 +23,10 @@ const REVIVE_RANGE := 60.0
 const SAY_INTERVAL := 3.5
 const STREIK_TIME := 5.0
 const DMG_EVENTS_PER_FRAME := 24
+const KASSE_IN := 10
+const KASSE_OUT := 20              # taken from the Kasse ...
+const KASSE_TAX := 0.25            # ... minus 25 % Kapitalertragsteuer
+const KASSE_REPAIR_DISCOUNT := 0.3
 
 
 class SimPlayer:
@@ -2087,7 +2091,7 @@ func _roll_offer(p: SimPlayer) -> Dictionary:
 	var total_w := 0.0
 	for id in Content.ITEM_ORDER:
 		var d: Dictionary = Content.ITEMS[id]
-		if d.get("no_shop", false):
+		if d.get("no_shop", false) or (d.get("coop_only", false) and num_players() <= 1):
 			continue
 		var w := 0.0
 		match int(d["rarity"]):
@@ -2212,20 +2216,35 @@ func request(peer: int, action: String, arg = null) -> bool:
 			_make_levelup_options(p)
 			return true
 		"kasse_in":
-			if p.pfand < 10:
+			if not kasse_enabled():
+				return false
+			if p.pfand < KASSE_IN:
 				return _deny(p, "DENY_NO_PFAND")
-			p.pfand -= 10
-			kasse += 10
-			p.paid_in += 10
+			p.pfand -= KASSE_IN
+			kasse += KASSE_IN
+			p.paid_in += KASSE_IN
 			if p.paid_in >= 200:
 				_grant(p, "ach_kassenwart")
 			return true
 		"kasse_out":
-			if kasse < 10:
+			if not kasse_enabled():
+				return false
+			if kasse < KASSE_OUT:
 				return _deny(p, "DENY_KASSE_EMPTY")
-			kasse -= 10
-			p.pfand += 10
-			p.taken_out += 10
+			kasse -= KASSE_OUT
+			p.pfand += kasse_payout()
+			p.taken_out += KASSE_OUT
+			return true
+		"repair_wall_kasse":
+			if not kasse_enabled():
+				return false
+			if wall.count(false) == 0:
+				return _deny(p, "DENY_NOTHING_TO_REPAIR")
+			var kprice := kasse_repair_price()
+			if kasse < kprice:
+				return _deny(p, "DENY_KASSE_EMPTY")
+			kasse -= kprice
+			_repair_one_hole()
 			return true
 		"vote":
 			var i := int(arg)
@@ -2248,6 +2267,19 @@ func request(peer: int, action: String, arg = null) -> bool:
 			_check_all_ready()
 			return true
 	return false
+
+
+## The Koalitionskasse only exists in co-op.
+func kasse_enabled() -> bool:
+	return num_players() > 1
+
+
+func kasse_payout() -> int:
+	return int(round(KASSE_OUT * (1.0 - KASSE_TAX)))
+
+
+func kasse_repair_price() -> int:
+	return int(round(Content.repair_price(wave) * (1.0 - KASSE_REPAIR_DISCOUNT)))
 
 
 func _repair_one_hole() -> void:
@@ -2288,7 +2320,9 @@ func build_meta() -> Dictionary:
 		}
 	return {
 		"wave": wave, "phase": phase, "org": org, "difficulty": difficulty, "blackrock": blackrock,
-		"kasse": kasse, "wall_holes": wall.count(false), "repair_price": Content.repair_price(wave),
+		"kasse": kasse, "kasse_enabled": kasse_enabled(), "kasse_in": KASSE_IN, "kasse_out": KASSE_OUT,
+		"kasse_payout": kasse_payout(), "repair_price_kasse": kasse_repair_price(),
+		"wall_holes": wall.count(false), "repair_price": Content.repair_price(wave),
 		"streik": {"available": streik_available, "active": streik_active},
 		"vertrag": vertrag.duplicate(true), "encounter": encounter,
 		"team": {"level": team_level, "xp": team_xp, "need": Content.xp_for_level(team_level), "stage": stage},

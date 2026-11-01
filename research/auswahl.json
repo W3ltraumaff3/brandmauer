@@ -2,9 +2,10 @@
   {
     "id": "merz-01",
     "verwendung": [
-      "freischalt_karte:stadtbild"
+      "freischalt_karte:stadtbild",
+      "startbildschirm"
     ],
-    "begruendung": "Das Stadtbild-Zitat: Original der Figur, nur auf der Karte (§1)."
+    "begruendung": "Das Stadtbild-Zitat: Original der Figur (Karte) und auf Nutzerwunsch auch Startbildschirm (67 Zeichen)."
   },
   {
     "id": "merz-02",
@@ -146,9 +147,9 @@
   {
     "id": "merz-31",
     "verwendung": [
-      "freischalt_karte:oma"
+      "album"
     ],
-    "begruendung": "Gesetzliche Rente nur noch \"Basisabsicherung\": passender für die Oma-Karte als die frühere Notlösung."
+    "begruendung": "Gesetzliche Rente nur noch \"Basisabsicherung\": frühere Notlösung für die Oma-Karte, nach dem Fund von cdu-fraktion-01 nur noch Album (Ladebildschirm ist mit 40 voll)."
   },
   {
     "id": "soeder-01",
@@ -279,9 +280,10 @@
   {
     "id": "weidel-01",
     "verwendung": [
-      "freischalt_karte:taugenichts"
+      "freischalt_karte:taugenichts",
+      "startbildschirm"
     ],
-    "begruendung": "\"Kopftuchmädchen, alimentierte Messermänner und sonstige Taugenichtse\": Original der Taugenichts-Figur, nur auf der Karte (§1)."
+    "begruendung": "\"Kopftuchmädchen, alimentierte Messermänner und sonstige Taugenichtse\": Original der Taugenichts-Figur (Karte) und auf Nutzerwunsch auch Startbildschirm (171 Zeichen)."
   },
   {
     "id": "weidel-02",
@@ -313,17 +315,16 @@
   {
     "id": "weidel-05",
     "verwendung": [
-      "boss_ruf:eidgenossin",
       "sprechblase:telegram_onkel"
     ],
-    "begruendung": "\"Nieder mit diesen Windmühlen der Schande!\": kurzer Kampfruf, ideal als Boss-Schrei."
+    "begruendung": "\"Nieder mit diesen Windmühlen der Schande!\": kurzer Kampfruf, jetzt nur noch als Blase (Boss-Ruf-Platz geht an weidel-09)."
   },
   {
     "id": "weidel-06",
     "verwendung": [
-      "freischalt_karte:antifa"
+      "album"
     ],
-    "begruendung": "\"Rot lackierte Nazis\" über Gegendemonstranten: nur Fragment, Vorlage für den Antifa-Charakter; nur Karte."
+    "begruendung": "\"Rot lackierte Nazis\": nur Fragment, frühere Notlösung für die Antifa-Karte; nur Album."
   },
   {
     "id": "weidel-07",
@@ -496,9 +497,9 @@
   {
     "id": "storch-04",
     "verwendung": [
-      "freischalt_karte:teilzeit"
+      "album"
     ],
-    "begruendung": "\"Rabenmutter!\" als Zwischenruf: passende Vorlage für die Teilzeit-Figur."
+    "begruendung": "\"Rabenmutter!\" als Zwischenruf: frühere Notlösung für die Teilzeit-Karte, ohne Kontext schwach; nur Album."
   },
   {
     "id": "krah-01",
@@ -671,5 +672,40 @@
       "ladebildschirm"
     ],
     "begruendung": "\"Was ist daran per se negativ?\" zum Wort \"völkisch\": Rehabilitierungsversuch; mit Kontext (sie benutze den Begriff selbst nicht) lesen."
+  },
+  {
+    "id": "cdu-fraktion-01",
+    "verwendung": [
+      "freischalt_karte:oma"
+    ],
+    "begruendung": "Kleine Anfrage der CDU/CSU-Fraktion (551 Fragen, Feb 2025): \"Ein besonders umstrittenes Beispiel ist der Verein Omas gegen Rechts\". Wortlaut aus der Bundestags-Drucksache 20/15035, echte Vorlage für die Oma-Figur."
+  },
+  {
+    "id": "merz-40",
+    "verwendung": [
+      "freischalt_karte:teilzeit"
+    ],
+    "begruendung": "\"Lifestyle und Vier-Tage-Woche. Alles schön, kann man alles machen\": Aschermittwoch Trier 2026, mitten in der \"Lifestyle-Teilzeit\"-Debatte. Merz sagt das Wort Teilzeit nicht; der Bezug kommt aus der Berichterstattung."
+  },
+  {
+    "id": "merz-41",
+    "verwendung": [
+      "freischalt_karte:antifa"
+    ],
+    "begruendung": "Merz an Antifa-Demonstranten: \"Wo waren die denn, als Walter Lübcke ... ermordet worden ist\". Wahlkampfabschluss München 2025, drei Medien; ersetzt das Fragment weidel-06."
+  },
+  {
+    "id": "weidel-09",
+    "verwendung": [
+      "boss_ruf:eidgenossin"
+    ],
+    "begruendung": "\"Eine Steuer, die gegen Null geht ...\": Weidel 2016 für die Abschaffung der Erbschaftsteuer, passt zu Phase 3 (Steuerparadies, Goldbarren)."
+  },
+  {
+    "id": "weidel-10",
+    "verwendung": [
+      "album"
+    ],
+    "begruendung": "\"Ich zahle hier meine Steuern\": Weidel im RTL-Quadrell zu ihrem Schweizer Wohnsitz; Reserve für Phase 3, Ruf-Platz (max. 4) ist vergeben; Album."
   }
 ]

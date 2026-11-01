@@ -4,7 +4,7 @@ Recherche für Ladebildschirme, Boss-Intros, Sprechblasen und das Zitat-Album. S
 
 ## Überblick
 
-- **135 Einträge** in der JSON: 124 `verifiziert`, 4 `umstritten`, 2 `sinngemäß`, 5 `unverifiziert` (nicht verwenden). **130 sind verwendbar**, davon 78 mit `kurz: ja` (Sprechblasen-tauglich).
+- **140 Einträge** in der JSON: 129 `verifiziert`, 4 `umstritten`, 2 `sinngemäß`, 5 `unverifiziert` (nicht verwenden). **135 sind verwendbar**, davon 80 mit `kurz: ja` (Sprechblasen-tauglich).
 - **26** häufig falsch zitierte Sätze mit korrekter Fassung und **38** nicht verwendbare (unverifizierte) Zitate am Ende des Dokuments.
 - Primärquellen wurden wo immer möglich genutzt: Bundestags-Plenarprotokolle 19/32, 19/155, 20/209, 21/3, 21/15, 21/17 (Text per `pdftotext` aus den amtlichen PDFs), Gerichtsentscheidungen (VG Köln 13 K 326/21, BGH 3 StR 484/24 und 519/24, LG Hamburg 324 O 103/20).
 
@@ -56,7 +56,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 
 | Person | Partei | verwendbar | davon verifiziert | kurz | unverifiziert (weggelassen) |
 |---|---|---|---|---|---|
-| Friedrich Merz | CDU | 37 | 35 | 21 | 2 |
+| Friedrich Merz | CDU | 39 | 37 | 22 | 2 |
 | Markus Söder | CSU | 6 | 6 | 6 | 2 |
 | Carsten Linnemann | CDU | 5 | 5 | 1 | 0 |
 | Jens Spahn | CDU | 5 | 5 | 3 | 0 |
@@ -66,7 +66,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 | Hubert Aiwanger | Freie Wähler | 6 | 6 | 1 | 0 |
 | Katherina Reiche | CDU | 2 | 2 | 1 | 0 |
 | Andreas Scheuer | CSU | 1 | 1 | 0 | 0 |
-| Alice Weidel | AfD | 8 | 8 | 6 | 0 |
+| Alice Weidel | AfD | 10 | 10 | 7 | 0 |
 | Björn Höcke | AfD | 11 | 11 | 5 | 0 |
 | Alexander Gauland | AfD | 7 | 6 | 5 | 0 |
 | Tino Chrupalla | AfD | 4 | 4 | 4 | 0 |
@@ -86,6 +86,7 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 | Horst Seehofer | CSU | 2 | 2 | 2 | 0 |
 | Ulrich Siegmund | AfD | 2 | 2 | 1 | 0 |
 | Marc Vallendar | AfD | 1 | 1 | 1 | 0 |
+| CDU/CSU-Bundestagsfraktion (unterzeichnet von Friedrich Merz und Alexander Dobrindt) | CDU/CSU | 1 | 1 | 0 | 0 |
 
 ### Die 15 besten Highlights fürs Spiel
 
@@ -241,6 +242,15 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Status:** `verifiziert` · **Kategorien:** Sozialstaat/Arbeit · **kurz:** ja
 - **Quellen:** <https://www.lto.de/recht/nachrichten/n/zu-viele-krankheitstage-telefonische-au-arbeitszeitgesetz-merz-kritik> · <https://www.zdfheute.de/politik/deutschland/krankmeldung-krankenstand-merz-kritik-100.html> · <https://www.pharmazeutische-zeitung.de/merz-kritisiert-fehltage-wegen-krankheit-161982/>
 - **Notizen:** Kurzform fürs Spiel: 'Ist das wirklich richtig? Ist das wirklich notwendig?' Die Zahl '14,5 Krankheitstage' stammt aus Statistiken/Medien, nicht aus seinem Wortlaut. Ob zwischen beiden Teilen weiterer Text lag, ist nicht gesichert – daher '[…]'. KBV gab ihm recht, SPD/Grüne/Linke kritisierten. Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender.
+
+#### `merz-40` – „Lifestyle und Vier-Tage-Woche. Alles schön, kann man alles machen“
+
+- **Sprecher:** Friedrich Merz (CDU), damals: Bundeskanzler und CDU-Bundesvorsitzender
+- **Datum:** 2026-02-18
+- **Kontext:** Rede beim Politischen Aschermittwoch der CDU in Trier, kurz vor dem CDU-Parteitag, mitten im Streit um den Antrag des CDU-Wirtschaftsflügels 'Kein Rechtsanspruch auf Lifestyle-Teilzeit'. Merz forderte einen Mentalitätswechsel und mehr Leistungsbereitschaft; weiter im Text: 'Aber wenn wir unseren Wohlstand erhalten wollen, dann müssen wir jetzt alle mal zusammen ins Rad packen.'
+- **Status:** `verifiziert` · **Kategorien:** Sozialstaat/Arbeit · **kurz:** ja
+- **Quellen:** <https://www.zdfheute.de/politik/merz-mentalitaetswechsel-politischer-aschermittwoch-100.html> · <https://www.handelsblatt.com/politik/deutschland/vor-cdu-parteitag-zusammen-ins-rad-packen-merz-fordert-mentalitaetswechsel/100201501.html> · <https://www.tagesspiegel.de/politik/mussen-zusammen-ins-rad-packen-merz-fordert-mentalitatswechsel-zu-mehr-leistungsbereitschaft-15267745.html> · <https://www.lessentiel.lu/de/story/deutschland-merz-teilt-gegen-lifestyle-teilzeit-aus-103509284>
+- **Notizen:** Wortlaut in vier Medien identisch (zdfheute/dpa, Handelsblatt, Tagesspiegel, L'essentiel/dpa). WICHTIG: Merz sagt hier NICHT das Wort 'Teilzeit'; der Bezug zur 'Lifestyle-Teilzeit'-Debatte (Antrag des Wirtschaftsflügels, Januar/Februar 2026) stammt aus der Berichterstattung (L'essentiel-Titel 'Merz teilt in Trier gegen Lifestyle-Teilzeit aus'). Ein wörtliches Merz-Zitat mit 'Teilzeit' wurde in keiner Quelle gefunden. Weitere Zitate derselben Rede: 'wenn unsere Eltern mit dieser Mentalität an die Arbeit gegangen wären, die wir heute zum Teil sehen' (Fragment), 'Nicht mit Zwang, nicht mit Druck, nicht mit neuen Gesetzen, sondern einfach mit Fröhlichkeit an der Arbeit.' Verwandt: merz-09 (Wirtschaftstag Mai 2025).
 
 #### `merz-31` – „Die gesetzliche Rentenversicherung allein wird allenfalls noch die Basisabsicherung sein für das Alter.“
 
@@ -422,6 +432,15 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien, Klima · **kurz:** ja
 - **Quellen:** <https://www.berliner-zeitung.de/article/friedrich-merz-rede-zu-linke-und-gruene-spinner-kritik-an-cdu-kanzlerkandidat-2301250> · <https://www.leinetal24.de/welt/gruene-und-linke-spinner-merz-rede-vor-bundestagswahl-verstoerend-zr-93587623.html>
 - **Notizen:** Nur als Fragment verwenden; der vollständige Satz wurde nicht geprüft. Häufige Verschreibung 'grüne und linke Spinner' – im Original Dativ 'grünen und linken Spinner'. Stand 11/2026: Bundeskanzler (gewählt am 6. Mai 2025 im zweiten Wahlgang) und CDU-Bundesvorsitzender.
+
+#### `merz-41` – „Ich frage mal die Ganzen, die da draußen rumlaufen, Antifa und gegen Rechts: Wo waren die denn, als Walter Lübcke in Kassel ermordet worden ist von einem Rechtsradikalen?“
+
+- **Sprecher:** Friedrich Merz (CDU), damals: Kanzlerkandidat der Union und CDU-Bundesvorsitzender
+- **Datum:** 2025-02-22
+- **Kontext:** Rede beim gemeinsamen Wahlkampfabschluss von CDU und CSU im Münchner Löwenbräukeller, gerichtet an die Demonstranten vor dem Gebäude. Die Familie von Walter Lübcke zeigte sich 'sehr befremdet'; Lübckes Witwe widersprach der Unterstellung, nach dem Mord seien Tausende auf die Straße gegangen.
+- **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** nein
+- **Quellen:** <https://www.nd-aktuell.de/artikel/1189274.wahlkampf-merz-gegen-antifa.html> · <https://www.hessenschau.de/politik/witwe-von-walter-luebcke-kritisiert-friedrich-merz-sehr-befremdet-v4,merz-aeusserung-walter-luebcke-100.html> · <https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_100613614/merz-ueber-luebcke-mord-witwe-kritisiert-seine-aussage-scharf.html>
+- **Notizen:** Drei Medien (nd, hessenschau, t-online) geben beide Satzteile übereinstimmend wieder; Abweichungen nur in Groß-/Kleinschreibung und Form ('Ganzen'/'ganzen', 'rumlaufen'/'herumlaufen', 'gegen Rechts'/'Gegen Rechts'). Hier die Schreibweise von t-online ('rumlaufen', auch nd). Datum (Samstag, 22.02.2025) aus hessenschau/nd erschlossen (Artikel 23. bis 27.02.2025; Wahl am 23.02.2025). Tagesspiegel soll laut Suchzusammenfassung zudem berichtet haben, Merz habe 'Antifa und gegen rechts' 'Spinner' genannt: nicht selbst geprüft, nicht verwenden. Video/Protokoll nicht eingesehen. Ersetzt weidel-06 (Fragment) als Antifa-Karte.
 
 #### `merz-33` – „Wir sind alle zutiefst schockiert. Wir haben es in dieser Form so nicht erwartet.“
 
@@ -910,6 +929,26 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
 - **Quellen:** <https://www.stuttgarter-zeitung.de/politik/alice-weidel-auf-afd-parteitag-in-riesa-wenn-das-radikale-schleichend-normal-wird-79030329.html> · <https://taz.de/Remigration-ist-jetzt-Parteiraeson/!6058444/> · <https://taz.de/Weidel-zur-AfD-Kanzlerkandidatin-gewaehlt/!6061592> · <https://gotranscript.com/public/afd-parteitag-in-riesa-weidel-als-kanzlerkandidatin>
 - **Notizen:** Vollständiger Satz in Stuttgarter Zeitung und im Transkript (gotranscript); taz zitiert ab 'Wenn es dann ...'. 'Remigration' war 2023 Unwort des Jahres. Stand 11/2026: Co-Bundesvorsitzende der AfD (beim Bundesparteitag Erfurt am 4./5.7.2026 mit 81,3 % bestätigt) und Co-Vorsitzende der AfD-Bundestagsfraktion.
+
+### Wirtschaft/Kapital
+
+#### `weidel-09` – „Eine Steuer, die gegen Null geht, stärkt die Familien, fördert den unternehmerischen Geist, stärkt den Mittelstand und macht nicht zuletzt den Wirtschaftsstandort Deutschland attraktiver.“
+
+- **Sprecher:** Alice Weidel (AfD), damals: AfD-Bundesvorstandsmitglied
+- **Datum:** 2016-02-15
+- **Kontext:** AfD-Pressemitteilung 'Weidel: Reform der Erbschaftsteuer - Eine historische Chance für eine Abschaffung' (Berlin, 15.02.2016) zur Debatte um die Reform der Erbschaftsteuer. Weidel forderte darin, die Erbschaftsteuer ganz abzuschaffen, weil der Staat 'am erarbeiteten Privateinkommen und -vermögen doppelt verdient'.
+- **Status:** `verifiziert` · **Kategorien:** Wirtschaft/Kapital · **kurz:** nein
+- **Quellen:** <https://www.afd.de/weidel-reform-der-erbschaftssteuer-eine-historische-chance-fuer-eine-abschaffung/> · <https://www.aktiencheck.de/exklusiv/Artikel-Weidel_AfD_Reform_Erbschaftssteuer_Eine_historische_Chance_fuer_eine_Abschaffung-7021961>
+- **Notizen:** Primärquelle: Pressemitteilung auf afd.de, Wortlaut selbst von der Seite abgerufen und im Volltext geprüft. Zweitabdruck bei aktiencheck.de (nur Suchtreffer gesehen, nicht abgerufen). Eigene Erklärung Weidels (Pressemitteilung), keine Rede. Schlusssatz: 'Ich appelliere an die Vernunft aller im Bundestag vertretenen Parteien, diese historische Chance zu nutzen [...] und die Erbschaftsteuer abzuschaffen.' Weidel war 2016 Bundesvorstandsmitglied, noch nicht Parteichefin.
+
+#### `weidel-10` – „Ich zahle hier meine Steuern“
+
+- **Sprecher:** Alice Weidel (AfD), damals: AfD-Bundessprecherin und Kanzlerkandidatin
+- **Datum:** 2025-02-16
+- **Kontext:** RTL-'Quadrell' (Kampf ums Kanzleramt, u. a. mit Günther Jauch) auf die Frage nach ihrem Wohnsitz in der Schweiz (Einsiedeln, wo ihre Partnerin und die Kinder leben) und ihrer Steuerpflicht. Weidel verwies auf das Doppelbesteuerungsabkommen und gab Überlingen als deutschen Wohnsitz an.
+- **Status:** `verifiziert` · **Kategorien:** Wirtschaft/Kapital · **kurz:** ja
+- **Quellen:** <https://www.20min.ch/story/kanzlerduell-keine-steuern-alice-weidel-erklaert-ihre-schweizer-wohnsituation-103283171> · <https://politik.watson.de/politik/deutschland/570975740-alice-weidel-bezahlt-sie-in-der-schweiz-doch-steuern> · <https://www.blick.ch/ausland/versteuern-sie-alles-in-deutschland-alice-weidel-in-tv-debatte-wegen-schweiz-wohnsitz-unter-druck-id20598804.html>
+- **Notizen:** Drei Medien (20 Minuten, watson, Blick) geben 'Ich zahle hier meine Steuern' wörtlich wieder. Längere Fassungen: 20 Minuten 'Ich zahle hier meine Steuern und bin nur als Fraktions- und Parteivorsitzende in Deutschland unterwegs, ich arbeite hier.'; Blick 'Ich habe meinen Wohnsitz in Deutschland. Ich zahle hier meine Steuern.'; watson zusätzlich 'Das ist völlig normal gemäß dem Doppelbesteuerungsabkommen' und 'Meine Frau ist Schweizerin. Dementsprechend hat sie ihren Wohnsitz in der Schweiz.' (nur watson). Sendung am Sonntag, 16.02.2025 (Artikel vom 17.02.2025). Mehrere Medien (CH Media, nume) berichteten später, sie zahle zumindest auf eine Schweizer Immobilie Steuern; das ist nicht Teil des Zitats. Fragment: ohne Video/Transkript nur der Kernsatz gesichert.
 
 ### Klima
 
@@ -1510,6 +1549,19 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Status:** `verifiziert` · **Kategorien:** Geschichte/NS-Relativierung · **kurz:** ja
 - **Quellen:** <https://de.nachrichten.yahoo.com/unversch%C3%A4mtheit-holocaust-gedenktag-sorgt-afd-163834618.html>
 - **Notizen:** Einzelquelle, aber dpa (via Yahoo Nachrichten). Worauf sich 'Kriegsverbrechen' im Redebeitrag bezog, steht im abgerufenen dpa-Auszug nicht; die Grünen (Franco) warfen ihm vor, den Mord an sechs Millionen Juden zu relativieren (Wertung der Grünen). Selbstkorrektur 'Es gab Kriegsverbrechen.' immer mitnennen. Kein Ausschussprotokoll eingesehen.
+
+## CDU/CSU-Bundestagsfraktion (unterzeichnet von Friedrich Merz und Alexander Dobrindt) (CDU/CSU)
+
+### Demokratie/Medien
+
+#### `cdu-fraktion-01` – „Ein besonders umstrittenes Beispiel ist der Verein „Omas gegen Rechts“, der über das Programm „Demokratie leben!“ Fördermittel erhalten hat.“
+
+- **Sprecher:** CDU/CSU-Bundestagsfraktion (unterzeichnet von Friedrich Merz und Alexander Dobrindt) (CDU/CSU), damals: Fraktion der CDU/CSU im Bundestag (Kleine Anfrage, Drucksache 20/15035, unterzeichnet von Fraktionsvorsitzendem Friedrich Merz und Alexander Dobrindt)
+- **Datum:** 2025-02-24
+- **Kontext:** Einleitungstext der Kleinen Anfrage 'Politische Neutralität staatlich geförderter Organisationen' (551 Fragen zu NGOs, Drucksache 20/15035, datiert 24.02.2025, unterzeichnet 21.02.2025), kurz nach den Protesten gegen die CDU vor der Bundestagswahl. Allein 25 Fragen (Nr. 45 bis 69) gelten den Omas gegen Rechts, u. a. Nr. 54: 'Werden staatliche Fördergelder, die der Verein Omas gegen Rechts Deutschland e. V. vereinnahmt hat, nach Einschätzung der Bundesregierung für parteipolitische Zwecke zweckentfremdet?'
+- **Status:** `verifiziert` · **Kategorien:** Demokratie/Medien · **kurz:** nein
+- **Quellen:** <https://dserver.bundestag.de/btd/20/150/2015035.pdf> · <https://www.vorwaerts.de/inland/anfrage-zu-omas-gegen-rechts-die-cdu-hat-uns-damit-viele-probleme-bereitet>
+- **Notizen:** Wortlaut direkt aus dem Original (Bundestags-Drucksache 20/15035, S. 2, Text selbst aus dem PDF extrahiert); Vorwärts (14.03.2025) gibt 'besonders umstrittenes Beispiel' ebenfalls wieder. Der Satz geht weiter: 'Während der Verein betont, dass er sich aus Spenden und Mitgliedsbeiträgen finanziere, gehört die staatliche Förderung ebenfalls zu seinen Finanzierungsquellen' (laut Mimikama/Vorwärts erhält der Verein keine staatliche Förderung; Einordnung, nicht Teil des Zitats). Autorschaft: Fraktionsdokument, kein Einzelsprecher; Merz und Dobrindt zeichnen als Fraktionsvorsitzende. Die Bundesregierung ließ laut Presse ca. 251 der 551 Fragen offen (Antwort März 2025).
 
 ## Häufig falsch zitiert oder falsch zugeschrieben
 

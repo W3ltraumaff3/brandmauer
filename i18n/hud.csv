@@ -23,12 +23,12 @@ HUD_VERSPAETUNG,Verspätung
 HUD_REVIVE_HINT,Hilf mir hoch!
 HUD_DOWN_TAG,am Boden
 HUD_GONE_TAG,weg
-HUD_YOU_DOWN,"Kurz durchatmen – die anderen holen dich zurück!"
+HUD_YOU_DOWN,Kurz durchatmen – die anderen holen dich zurück!
 HUD_STREIK_PROMPT,[%s] Streik ausrufen!
 HUD_STREIK_ACTIVE,Streik! Noch %d s
 HUD_STREIK_STAMP,STREIK!
-HUD_VERTRAG,"Koalitionsvertrag: %s (noch %d Wochen)"
-HUD_VERTRAG_ONE,"Koalitionsvertrag: %s (noch 1 Woche)"
+HUD_VERTRAG,Koalitionsvertrag: %s (noch %d Wochen)
+HUD_VERTRAG_ONE,Koalitionsvertrag: %s (noch 1 Woche)
 HUD_KEIN_NETZ,Kein Netz
 HUD_WENDE,Wende um 180 Grad!
 HUD_WENDE_SUB,Steuerung vertauscht: links ist jetzt rechts!

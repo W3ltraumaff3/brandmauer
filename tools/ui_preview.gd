@@ -45,7 +45,7 @@ func _run() -> void:
 
 	UIApi.preview_local_id = 1
 	UIApi.preview_mode = "solo"
-	UIApi.preview_lobby = {1: {"name": "Genoss*in", "char": "oma", "ready": false}}
+	UIApi.preview_lobby = {1: {"name": "Genoss:in", "char": "oma", "ready": false}}
 	UIApi.preview_net = {"org": "omas", "difficulty": 1}
 	await _shot("04_lobby_solo", Lobby.new())
 
@@ -122,7 +122,7 @@ func _fake_save() -> void:
 	save.data["achievements"] = {"ach_doep": true, "ach_180": true, "ach_kassenwart": true}
 	save.data["max_umfrage"] = 2
 	save.data["stats"] = {"runs": 12, "wins": 3, "best_wave": 20}
-	save.data["options"]["name"] = "Genoss*in"
+	save.data["options"]["name"] = "Genoss:in"
 
 
 func _shot(file: String, screen: Control, after: Callable = Callable(), settle := 6) -> void:
@@ -183,7 +183,7 @@ func _player(pname: String, ch: String, ready: bool, pfand: int) -> Dictionary:
 
 
 func _fake_meta(levelup: bool) -> Dictionary:
-	var me := _player("Genoss*in", "oma", false, 87)
+	var me := _player("Genoss:in", "oma", false, 87)
 	if levelup:
 		me["levelups"] = 2
 		me["levelup_options"] = [{"stat": "max_hp", "amount": 3.0}, {"stat": "status", "amount": 2.0},

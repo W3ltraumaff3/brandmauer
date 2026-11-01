@@ -49,3 +49,7 @@ Format: **ID · date · decision** — rationale. A decision is never edited; a 
 | D-043 | 2026-11-01 | Beaten bosses/elites are "abgesetzt" and go "ins politische Abseits" instead of "in den Aufsichtsrat befördert". Supersedes that part of D-018 | User decision |
 | D-044 | 2026-11-01 | Quotes: the most drastic ones are wanted (especially NS/Holocaust relativization, racism), always with speaker, **party**, date and a short context line (`kontext_kurz`). Quotes about groups (e.g. children) are fine: attributed, they always expose the speaker. The start screen always shows one of the strongest quotes | User decision |
 | D-045 | 2026-11-01 | Menu subtitle "Halt die Brandmauer. Sonst macht's ja keiner."; options label just "Musik" | User feedback |
+| D-046 | 2026-11-01 | Koalitionskasse: co-op only; taking out costs 25 % Kapitalertragsteuer (20 out, 15 received); Brandmauer repairs can be paid from the Kasse on purpose at 30 % discount | User decision: it must matter, but never automatically |
+| D-047 | 2026-11-01 | Ranged damage stat renamed **Durchschlagskraft** (was Lautstärke) | Fits all ranged weapons, not only the Megafon |
+| D-048 | 2026-11-01 | All our own person-related generic terms are gendered with a colon (Schwarzfahrer:innen-Mütze, Sozialtourist:in, Besorgte:r Bürger:in …). Real quotes are never changed; named parody figures stay as they are | User decision |
+| D-049 | 2026-11-01 | Character insult quotes may also appear on the start screen | User decision; supersedes the 'unlock card only' rule |
