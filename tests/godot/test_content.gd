@@ -69,7 +69,7 @@ func test_references_valid() -> void:
 		assert_has(Content.ACHIEVEMENT_ORDER, Content.ENCOUNTERS[id]["achievement"])
 	assert_eq(Content.WAVE_LENGTHS.size(), Content.WAVE_COUNT)
 	assert_eq(Content.STATS.size(), 18, "18 stats (GDD §8)")
-	assert_eq(Content.WEAPON_ORDER.size(), 20, "12 MVP + 8 new weapons")
+	assert_eq(Content.WEAPON_ORDER.size(), 23, "12 MVP + 8 (v0.2) + 3 (v0.3) weapons")
 
 
 func test_curated_quotes_are_verified_and_cover_encounters() -> void:

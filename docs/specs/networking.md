@@ -92,6 +92,7 @@
 | player `seq` | u32 | exact |
 | player hp and max hp, `time`, `wave_time_left` | float32 | float32 |
 | counts | u16 | exact |
+| `wall` (intact segments) | u64 bitmask, 38 bits used (`Snapshot.VERSION` 2 since D-082; version 1 had a u16 with 12 bits) | exact |
 | `boss` | presence byte, then `enc`, `hp`, `phase`, `shield` | as above |
 
 - **Per-entity cost:**
@@ -136,7 +137,7 @@
 3. **Joining mid-run:** not in the MVP. Lobby only. The one exception is a **reconnect** with a valid session token (§7.4).
 4. **A client disconnects:**
    - **in the lobby, or deliberately** (menu, quit): their entry and character are removed at once.
-   - **mid-run, connection lost:** their character stays as **away** for a 60 s grace period and they can reconnect (§7.4). Only after that is the character removed; the enemy scaling then adjusts at the start of the next wave.
+   - **mid-run, connection lost** (network problem or game crash): their character stays as **away until the run ends**, and they can come back at any time (§7.4). The enemy scaling keeps counting them.
 5. **The host disconnects:** the run ends. There's no host migration in the MVP. Clients first retry for up to 60 s (§7.4); a host that quits deliberately tells them, so they go straight to the menu.
 
 ### 7.1 Handshake (implemented in `src/autoload/net.gd`)
@@ -149,7 +150,7 @@
    - ENet accepts 2 connections beyond the player limit, so that a client of a full lobby still gets its reason.
 4. **Acceptance:** the host adds `{name, char: "stadtbild", ready: false}` to the lobby, sends `session(token, player_id)` and then `welcome` on the same reliable channel (the client emits `connected`), and resyncs the lobby.
    - **Session token:** 16 random bytes (`Crypto.generate_random_bytes`) as 32 hex characters, one per player, kept by the host for the whole session.
-   - The client keeps the token, its player id and the host's `ip:port` **in memory only** (never saved), for reconnects (§7.4).
+   - The client keeps the token, its player id and the host's `ip:port` in memory for reconnects. During a run it also saves them to `user://rejoin.json`, so it can rejoin after a crash (§7.5).
 5. **Timeouts:**
    - A client that isn't welcomed within **8 s** gets `connection_failed("NET_ERR_TIMEOUT")`.
    - A pending peer that never says hello is dropped after 8 s.
@@ -157,7 +158,7 @@
 6. **Stable RPC ids:** the handshake RPCs are named `_rpc_00_hello`, `_rpc_01_reject` and `_rpc_02_welcome`.
    - Godot numbers RPCs by sorted method name, so these keep the same ids across game versions, and an old client still gets a clean version error.
    - Never rename them or change their arguments. New RPCs (`_rpc_session`, `_rpc_resume`, `_rpc_bye`, `_rpc_host_closed`, …) sort after them.
-7. **Protocol version:** `PROTOCOL_VERSION` is **2** since the reconnect RPCs were added (they shift the ids of every later RPC).
+7. **Protocol version:** `PROTOCOL_VERSION` is **3** since `_rpc_want_run` was added for rejoining after a crash (§7.5). Version 2 added the reconnect RPCs. New RPCs shift the ids of every later RPC.
 
 ### 7.2 Lobby
 - **Ownership:** the host owns `Net.lobby` (`{player_id: {name, char, ready}}`), `Net.org` and `Net.difficulty`, and pushes all three to every client on every change. Each push emits `lobby_changed`.
@@ -165,7 +166,8 @@
 - **Names:** trimmed, `|` replaced, at most 20 characters.
 - **A peer leaves** (in the lobby, after its grace period, or with `bye`):
   - The host removes it from the lobby, forgets its token, emits `peer_left(player_id)` and resyncs.
-  - On a dedicated server, if the lobby empties during a run, `Game.back_to_lobby()` is called. Away players still count as being in the lobby, so this only happens once the last grace period ran out.
+  - On a dedicated server, if the lobby empties during a run, `Game.back_to_lobby()` is called.
+  - Away players still count as being in the lobby. So a dedicated server also ends the run once **nobody has been connected for 5 minutes** (`Net.EMPTY_SERVER_S`), every player being away. Otherwise it would wait forever.
 - **Deliberate leave:** `Net.leave()` sends a goodbye and flushes it before closing, so nobody waits for a reconnect that never comes:
   - a client sends `bye`: the host removes it at once, without a grace period.
   - a host or dedicated server sends `host_closed`: clients leave at once with `disconnected("NET_ERR_HOST_CLOSED")`.
@@ -201,17 +203,17 @@
   - `Net.local_player_id()` / `Game.local_id()` return the player id on the client, not `multiplayer.get_unique_id()`.
 - Rationale: renaming the player inside `Sim` would mean rewriting every owner reference (projectiles, hazards, summons, votes, intro flags, stats); the mapping keeps `Sim` unaware of the network.
 
-**Host (grace period):**
-1. A client's peer disconnects while a run is active (`Game.config` non-empty) and without `bye`: the host keeps its lobby entry, marks it away for **60 s** (`Net.GRACE_S`) and emits `peer_away(player)`.
+**Host (away until the run ends):**
+1. A client's peer disconnects while a run is active (`Game.config` non-empty) and without `bye`: the host keeps its lobby entry, marks it away **until the run ends** and emits `peer_away(player)`.
 2. `Game` calls `Sim.set_away(player, true)`: the player gets **state 3 "away"** and the event `["away", player]` goes out (architecture §3, §5). An away player:
    - keeps its character, **frozen** (no movement, weapons or ultimate, requests refused) and **greyed out** in the view.
    - is **invulnerable** and **not targeted** by enemies.
    - **doesn't block** the Späti ready check or the boss intro wait. If everyone present is ready, the next wave starts without them.
    - still counts for enemy scaling and the Koalitionskasse (`num_players`), gets wave income, Späti offers and level-ups.
-   - **never causes a game over.** While nobody is alive and at least one player is away (`Sim.waiting_for_away()`, e.g. the only other player is downed, or a dedicated server whose only client dropped), the world waits. If they're removed after the grace period, the normal game-over check applies.
+   - **never causes a game over.** While nobody is alive and at least one player is away (`Sim.waiting_for_away()`, e.g. the only other player is downed, or a dedicated server whose only client dropped), the world waits. If they're removed (deliberate leave, empty dedicated server), the normal game-over check applies.
    - comes back in the state it left in (a downed player is still downed); waves that started in between bring it back alive.
-3. If the client comes back in time (below), the host emits `peer_back(player)`, `Game` calls `Sim.set_away(player, false)` (event `["back", player]`) and forces a fresh meta, snapshots resume at once.
-4. If not, after 60 s the host calls `remove_player` as before (`peer_left`).
+3. When the client comes back (below, or §7.5 after a crash), the host emits `peer_back(player)`, `Game` calls `Sim.set_away(player, false)` (event `["back", player]`) and forces a fresh meta, snapshots resume at once.
+4. Away players are removed only when the run ends or returns to the lobby, or by the empty-server rule (§7.2).
 
 **Client (reconnect):**
 1. On losing the host mid-run with a token (`server_disconnected` in `CLIENT` mode), `Net` switches to `RECONNECTING` and emits `connection_lost`, instead of `disconnected`.
@@ -222,15 +224,40 @@
    - This is the only way into a running run: a plain `hello` still gets `NET_ERR_RUNNING`.
    - If the host hasn't noticed the old connection dying yet, it disconnects the old peer itself; that peer's disconnect is then ignored.
    - On success the host maps the new peer to the player and sends `session(token, player)` + `welcome`; the client emits `reconnected`, `Game` clears its snapshot buffer and its unacknowledged predicted inputs, and play continues.
-6. After **60 s** (`RECONNECT_S`) without success, or on a rejection, the client leaves and gets `disconnected("NET_ERR_LOST")`: back to the menu with that message.
+6. After **60 s** (`RECONNECT_S`) without success, or on a rejection, the client leaves and gets `disconnected("NET_ERR_LOST")`: back to the menu with that message. Its character stays away on the host, so it can still rejoin from the menu (§7.5).
 
 **Solo is unaffected:** no socket, so no disconnects, no away state, no timers, no indicator. The host's own player (peer 1) is never away.
 
 **Limitations:**
 - No host migration: if the host is gone for good, clients retry for 60 s and then return to the menu.
-- The session lives in memory only; a client that restarts the game can't rejoin the running run.
 - Events sent while a client was away (sounds, speech bubbles, toasts) are lost; meta and snapshots are full state, so everything else catches up.
-- A run that ends or returns to the lobby during the grace period drops the away players; their reconnect is then rejected.
+- A run that ends or returns to the lobby drops the away players; their reconnect is then rejected.
+
+### 7.5 Rejoining after a crash (implemented in `src/autoload/net.gd`, `game.gd`, `save.gd`, `src/ui/main_menu.gd`)
+
+**Goal:** a player whose game crashed (or who gave up reconnecting) gets back into the running run from the main menu.
+
+**Client: the rejoin file.**
+- When a co-op run starts on a client, `Save` writes `user://rejoin.json`: `{ip, port, token, player, version, saved_at}`. Tests and tools never write it (`Save.persist = false`).
+- The file is deleted when the client leaves the run on purpose. That covers:
+  - quitting to the menu
+  - closing the window (the client says goodbye, so the host removes the player)
+  - the run ending (end screen)
+  - returning to the lobby
+  - the host closing the game
+  - a rejected rejoin
+- A crash or a lost connection (`NET_ERR_LOST`) keeps it.
+- It counts only if `version` matches the running game and it is younger than **6 hours**.
+
+**Main menu.**
+- With a valid rejoin file the menu shows **"Zurück ins Spiel"** as the first button, with the host's address as tooltip.
+- Pressing it calls `Game.open_rejoin()`: Game mode CLIENT, `Net.rejoin(ip, port, token, player)`. Net enters `RECONNECTING` with the stored session and tries for up to **15 s** (`REJOIN_S`), every 2 s, exactly like §7.4.
+- On `welcome` the client emits `reconnected`. `Game` has no run yet, so it sends `want_run` (CH_RUN). The host answers with `run_start(config)` to that peer only and forces a fresh meta. The client starts the run screen, and snapshots and meta take over.
+- **On failure** the client is back in the menu with the reason, and the rejoin file is deleted:
+  - `NET_ERR_SESSION`: the run is over, or the host doesn't know the token.
+  - `NET_ERR_LOST`: no host reachable within 15 s.
+
+**Host.** `want_run` is answered only for a player that is in the lobby and connected, while a run is active.
 
 ## 8. Saves & trust
 
@@ -259,6 +286,11 @@ godot --headless --path . -- --server [--port=N] [--org=<id>] [--umfrage=0-5] [-
   2. **Reconnect** (port 24815, real `Game` + `Sim` run): the client drops its connection mid-run without telling the host and reconnects with its token.
      - `host-run` passes if the player went away (sim state 3, still in the lobby), came back on a new peer id that maps to the same player id (state alive/downed again), and then left with `bye`.
      - `join-reconnect` passes if its run state survived the drop, its player id stayed the same on a new peer id, and it received at least 5 snapshots (own player not away) plus meta after the reconnect.
+  3. **Rejoin after a crash** (second `host-run`):
+     - `join-crash` joins, saves its session to a temp file after 10 run snapshots and kills its own process (no goodbye).
+     - After 16 s (the host has noticed the dead peer), a fresh `rejoin` process calls `Game.open_rejoin()` with that session. It passes once it runs the run again as the same player and received at least 5 snapshots (player not away) plus meta.
+     - `host-run` passes as in scenario 2.
+- **Unit tests for the rejoin:** `test_rejoin.gd` (saved session: version and age check, kept on a lost connection, dropped on every deliberate exit) and `test_net_lobby.gd` (away until the run ends, empty dedicated server, rejoin state machine).
 
 ## 11. Open items
 

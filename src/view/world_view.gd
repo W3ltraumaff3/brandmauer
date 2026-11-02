@@ -8,12 +8,21 @@ extends Node2D
 ## Reads `source_view` if set (preview harness), else `Game.view`; draws nothing
 ## when neither exists.
 
-const ARENA := Vector2(1600, 1000)
-const WALL_TOP := 78.0
-const WALL_BOTTOM := 102.0
-const WALL_SEGMENTS := 12
-const SEG_W := 1600.0 / 12.0
+## Geometry comes from Arena (GDD §5a): the sheet, four Brandmauer walls, the
+## inner arena. Wall meshes are baked in the top wall's local frame (y from
+## WALL_TOP to WALL_BOTTOM, +y into the arena) and rotated onto their side.
+const ARENA := Arena.SIZE
+const INNER := Arena.INNER
+const WALL_TOP := Arena.WALL_OUT
+const WALL_BOTTOM := Arena.WALL_IN
+const WALL_SEGMENTS := Arena.WALL_SEGMENTS
+const SEG_W := Arena.SEG_LEN_H
 const REVIVE_RANGE := 60.0
+## K_WALL types: 0..37 intact segments, then rubble (horizontal / vertical
+## length) and the corner pillar.
+const WALL_RUBBLE_H := 38
+const WALL_RUBBLE_V := 39
+const WALL_PILLAR := 40
 
 enum { K_ENEMY = 1, K_PROJ, K_PICK, K_SUMMON, K_PLAYER, K_WEAPON, K_MISC, K_FOLLOWER, K_BIKE, K_WHEEL, K_WALL }
 enum { M_BG, M_WALL, M_RUBBLE, M_URNE, M_BLADES, M_YACHT, M_SCHIRM, M_FLAG, M_CHALET, M_CIRCUS, M_SITTER,
@@ -23,6 +32,7 @@ enum { M_BG, M_WALL, M_RUBBLE, M_URNE, M_BLADES, M_YACHT, M_SCHIRM, M_FLAG, M_CH
 ## read like the red enemy lob marker.
 const FRIEND := Color("2f8a5a")
 const MASH := Color("f3e2a0")
+const CHALK: Array[Color] = [Color("f28fb1"), Color("8fc8f2"), Color("f2e08f"), Color("a8e3a1"), Color("c9a8f0")]
 ## Ballpoint blue (Unterschriftenliste) and stamp red (Normenkontrolle).
 const BIC := Color("1f3a9a")
 const STAMP_RED := Color("c0262d")
@@ -46,7 +56,8 @@ const GHOST_TINT := Color("bfe9cb")
 ## Spray-painted tags on the Brandmauer: [segment, text, paint color, angle].
 ## Language-neutral on purpose (no translation keys needed).
 const GRAFFITI := [[1, "FCK AfD", Color("f4f1e6"), -0.05], [5, "NO PASARAN", Color("f2c418"), 0.04],
-	[9, "FCK AfD", Color("ff8fc8"), 0.03]]
+	[9, "FCK AfD", Color("ff8fc8"), 0.03], [16, "NO PASARAN", Color("8fe08a"), 0.03],
+	[22, "FCK AfD", Color("f2c418"), -0.04], [28, "NO PASARAN", Color("f4f1e6"), 0.02], [33, "FCK AfD", Color("7ad0f0"), -0.03]]
 
 const INK := Color("222222")
 const FACE := Color("f7e4cc")
@@ -285,7 +296,7 @@ func prewarm(st: int) -> void:
 	for t in Content.PICKUP_ORDER.size():
 		for v in Doodle.VARIANTS:
 			_mesh(K_PICK, t, st, v)
-	for t in WALL_SEGMENTS:
+	for t in WALL_PILLAR + 1:
 		for v in Doodle.VARIANTS:
 			_mesh(K_WALL, t, st, v)
 	# Lastenrad pedal phases + wheels, only when someone rides one
@@ -365,7 +376,12 @@ func _build(kind: int, type: int, st: int, v: int, white: bool) -> ArrayMesh:
 			else:
 				_b_wheel(sk, Vector2.ZERO, BIKE_FW_R)
 		K_WALL:
-			_b_wall(sk, type)
+			if type < WALL_SEGMENTS:
+				_b_wall(sk, type)
+			elif type == WALL_PILLAR:
+				_b_pillar(sk)
+			else:
+				_b_rubble(sk, Arena.SEG_LEN_H if type == WALL_RUBBLE_H else Arena.SEG_LEN_V)
 	return sk.build()
 
 
@@ -391,21 +407,43 @@ func _draw_ground(vs: ViewState, st: int) -> void:
 		draw_mesh(_mesh(K_MISC, M_CIRCUS, st, Doodle.variant(0)), null)
 	if not b.is_empty() and int(b.get("enc", -1)) == Content.ENCOUNTER_ORDER.find("eidgenossin") and int(b.get("phase", 0)) >= 2:
 		# Steuerparadies: Swiss chalet at the top where she retreats
-		draw_mesh(_mesh(K_MISC, M_CHALET, st, Doodle.variant(1)), null, Transform2D(0.0, Vector2(1.4, 1.4), 0.0, Vector2(800, 200)))
+		draw_mesh(_mesh(K_MISC, M_CHALET, st, Doodle.variant(1)), null, Transform2D(0.0, Vector2(1.4, 1.4), 0.0, Vector2(Arena.CENTER.x, INNER.position.y + 98.0)))
+
+
+## Text on a wall segment reads upright on the top and bottom walls and along
+## the left (bottom to top) and right (top to bottom) walls.
+static func _wall_text_angle(seg: int) -> float:
+	var side := Arena.side_of(seg)
+	if side == Arena.RIGHT:
+		return PI * 0.5
+	if side == Arena.LEFT:
+		return -PI * 0.5
+	return 0.0
+
+
+## Baseline anchor of a label on a segment; d = baseline depth on the top wall
+## (from its outer face), mirrored so glyphs always sit on the wall.
+static func _wall_label_pos(seg: int, d: float) -> Vector2:
+	return Arena.seg_center(seg) + Vector2(0, 1).rotated(_wall_text_angle(seg)) * (d - Arena.WALL_THICK * 0.5)
 
 
 func _draw_wall(vs: ViewState, st: int) -> void:
 	var red := Doodle.desat(RED, maxi(st, 2))
+	# four straight walls (GDD §5a): every segment is the top wall's mesh rotated onto its side
 	for i in WALL_SEGMENTS:
-		var x := i * SEG_W
 		var v := Doodle.variant(i)
+		var xf := Arena.seg_xform(i)
 		if vs.wall & (1 << i):
-			draw_mesh(_mesh(K_WALL, i, st, v), null, Transform2D(0.0, Vector2(x, 0)))
+			draw_mesh(_mesh(K_WALL, i, st, v), null, xf)
 		else:
-			draw_mesh(_mesh(K_MISC, M_RUBBLE, st, v), null, Transform2D(0.0, Vector2(x, 0)))
-			draw_set_transform(Vector2(x + SEG_W * 0.5, WALL_TOP + 17), -0.12 + 0.02 * Doodle.noise(v + i), Vector2.ONE)
+			var rubble := WALL_RUBBLE_H if Arena.side_of(i) % 2 == 0 else WALL_RUBBLE_V
+			draw_mesh(_mesh(K_WALL, rubble, st, v), null, xf)
+			draw_set_transform(_wall_label_pos(i, 17.0), _wall_text_angle(i) - 0.12 + 0.02 * Doodle.noise(v + i), Vector2.ONE)
 			Doodle.text(self, tr("HUD_WALL_ABGESTIMMT"), Vector2.ZERO, 17, red, _hand, 4)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
+	for k in 4:
+		var pr: Rect2 = Arena.pillars()[k]
+		draw_mesh(_mesh(K_WALL, WALL_PILLAR, st, Doodle.variant(k)), null, Transform2D(k * PI * 0.5, pr.get_center()))
 	# spray-painted tags on intact segments (a little boil wobble in the angle)
 	for g in GRAFFITI:
 		var seg: int = g[0]
@@ -413,7 +451,7 @@ func _draw_wall(vs: ViewState, st: int) -> void:
 			continue
 		var v := Doodle.variant(seg + 5)
 		var ang: float = g[3]
-		draw_set_transform(Vector2((seg + 0.5) * SEG_W, WALL_TOP + 20.0), ang + 0.012 * Doodle.noise(v * 3 + seg), Vector2.ONE)
+		draw_set_transform(_wall_label_pos(seg, 20.0), _wall_text_angle(seg) + ang + 0.012 * Doodle.noise(v * 3 + seg), Vector2.ONE)
 		var col: Color = g[2]
 		Doodle.text(self, g[1], Vector2.ZERO, 18, Doodle.desat(col, maxi(st, 1)), _hand, 4, Color(0.13, 0.1, 0.12, 0.9))
 	draw_set_transform_matrix(Transform2D.IDENTITY)
@@ -478,6 +516,14 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 				_brei_seen[Vector2i(pos.round())] = anim_time
 			"ziegel":
 				_ziegel.append(i)
+			"kreide":
+				# Straßenkreide: a pastel chalk scribble on the asphalt, fading out
+				var chalk: Color = CHALK[int(absf(pos.x * 0.37 + pos.y * 0.61)) % CHALK.size()]
+				var ca := minf(1.0, life * 2.5)
+				draw_circle(pos, r * 0.9, Doodle.desat_amt(Color(chalk, 0.18 * ca), amt))
+				draw_multiline(Transform2D(v * 1.3, pos) * Doodle.hatch_circle(r * 0.85, 9.0, 0.6),
+					Doodle.desat_amt(Color(chalk, 0.75 * ca), amt), 2.6)
+				draw_polyline(Doodle.blob_pts(pos, r * 0.9, v, i, 0.18, true), Doodle.desat_amt(Color(chalk.darkened(0.15), 0.6 * ca), amt), 2.0)
 			"paragraf":
 				_draw_paragraf(pos, r, life, amt)
 			"explosion":
@@ -496,18 +542,36 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 				pts.append(pts[0])
 				draw_polyline(pts, Color(INK, life), 2.5)
 			"abschiebezone":
+				# the band along the inside of all four walls (GDD §5a)
 				var c := Doodle.desat_amt(Color(0.85, 0.1, 0.1), amt)
-				var y0 := WALL_BOTTOM
-				var h := 70.0
-				draw_rect(Rect2(0, y0, ARENA.x, h), Color(c, 0.13 + 0.05 * sin(anim_time * 5.0)))
+				var h := float(Arena.WALL["abschiebe_band"])
+				var wash := Color(c, 0.13 + 0.05 * sin(anim_time * 5.0))
 				var stripes := PackedVector2Array()
-				var x := -h + fmod(anim_time * 30.0, 40.0)
-				while x < ARENA.x:
-					stripes.append(Vector2(x, y0 + h))
-					stripes.append(Vector2(x + h, y0))
-					x += 40.0
+				var ph := fmod(anim_time * 30.0, 40.0)
+				for band in [Rect2(INNER.position, Vector2(INNER.size.x, h)), Rect2(INNER.position.x, INNER.end.y - h, INNER.size.x, h),
+						Rect2(INNER.position.x, INNER.position.y + h, h, INNER.size.y - 2.0 * h),
+						Rect2(INNER.end.x - h, INNER.position.y + h, h, INNER.size.y - 2.0 * h)]:
+					var b: Rect2 = band
+					draw_rect(b, wash)
+					if b.size.x >= b.size.y:
+						var x := b.position.x + ph
+						while x + b.size.y <= b.end.x:
+							stripes.append(Vector2(x, b.end.y))
+							stripes.append(Vector2(x + b.size.y, b.position.y))
+							x += 40.0
+					else:
+						var y := b.position.y + ph
+						while y + b.size.x <= b.end.y:
+							stripes.append(Vector2(b.position.x, y + b.size.x))
+							stripes.append(Vector2(b.end.x, y))
+							y += 40.0
 				draw_multiline(stripes, Color(c, 0.35), 10.0)
-				draw_polyline(Doodle.line_pts(Vector2(0, y0 + h), Vector2(ARENA.x, y0 + h), v, 3.0), Color(c, 0.9), 3.0)
+				var edge := INNER.grow(-h)
+				var pts := PackedVector2Array()
+				for k in [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1), Vector2(0, 0)]:
+					pts.append(edge.position + edge.size * (k as Vector2))
+				for k in 4:
+					draw_polyline(Doodle.line_pts(pts[k], pts[k + 1], v + k, 3.0), Color(c, 0.9), 3.0)
 			"push_ring":
 				var c := Doodle.desat_amt(Color(0.75, 0.2, 0.1, 0.85 * life), amt)
 				draw_polyline(Doodle.circle_pts(pos, r, v), c, 6.0)
@@ -1136,7 +1200,7 @@ func _draw_paper_storm(st: int) -> void:
 	for k in 46:
 		var sp := 110.0 + 70.0 * (0.5 + 0.5 * Doodle.noise(k * 3))
 		var x := fmod(Doodle.noise(k) * 2000.0 + 2000.0 + t * sp, span) - 120.0
-		var y := WALL_BOTTOM + 20.0 + (0.5 + 0.5 * Doodle.noise(k + 77)) * (ARENA.y - WALL_BOTTOM - 40.0)
+		var y := INNER.position.y + 20.0 + (0.5 + 0.5 * Doodle.noise(k + 77)) * (INNER.size.y - 40.0)
 		y += sin(t * (1.1 + 0.4 * Doodle.noise(k + 5)) + k) * 26.0
 		var rot := t * (1.5 + Doodle.noise(k + 9)) + k
 		var flip := 0.35 + 0.65 * absf(sin(t * 2.3 + k * 0.7))
@@ -2110,41 +2174,53 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 			sk.misreg = 0.0
 			sk.fill(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), ARENA, Vector2(0, ARENA.y)]), PAPER, false)
 			_b_paper_grain(sk)
-			sk.fill(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), Vector2(ARENA.x, WALL_TOP), Vector2(0, WALL_TOP)]), Color("a89c84"), false)
-			var x := 40.0
-			while x < ARENA.x:
-				sk.line2(Vector2(x, WALL_BOTTOM), Vector2(x, ARENA.y), 1.0, Color(0.3, 0.45, 0.7, 0.13))
+			# the staging area behind all four walls: trampled grey ground (GDD §5a)
+			# (fills overlap in the corners so no paper seam shows; hatching doesn't)
+			var bands: Array[PackedVector2Array] = []
+			for r in [Rect2(0, 0, ARENA.x, WALL_TOP), Rect2(0, ARENA.y - WALL_TOP, ARENA.x, WALL_TOP),
+					Rect2(0, WALL_TOP, WALL_TOP, ARENA.y - 2.0 * WALL_TOP), Rect2(ARENA.x - WALL_TOP, WALL_TOP, WALL_TOP, ARENA.y - 2.0 * WALL_TOP)]:
+				var rr: Rect2 = r
+				bands.append(PackedVector2Array([rr.position, Vector2(rr.end.x, rr.position.y), rr.end, Vector2(rr.position.x, rr.end.y)]))
+			for r in [Rect2(0, 0, ARENA.x, WALL_TOP + 6.0), Rect2(0, ARENA.y - WALL_TOP - 6.0, ARENA.x, WALL_TOP + 6.0),
+					Rect2(0, 0, WALL_TOP + 6.0, ARENA.y), Rect2(ARENA.x - WALL_TOP - 6.0, 0, WALL_TOP + 6.0, ARENA.y)]:
+				var rr: Rect2 = r
+				sk.fill(PackedVector2Array([rr.position, Vector2(rr.end.x, rr.position.y), rr.end, Vector2(rr.position.x, rr.end.y)]),
+					Color("a89c84"), false)
+			var x := INNER.position.x + 40.0
+			while x < INNER.end.x:
+				sk.line2(Vector2(x, INNER.position.y), Vector2(x, INNER.end.y), 1.0, Color(0.3, 0.45, 0.7, 0.13))
 				x += 40.0
-			var y := WALL_BOTTOM + 40.0
-			while y < ARENA.y:
-				sk.line2(Vector2(0, y), Vector2(ARENA.x, y), 1.0, Color(0.3, 0.45, 0.7, 0.13))
+			var y := INNER.position.y + 40.0
+			while y < INNER.end.y:
+				sk.line2(Vector2(INNER.position.x, y), Vector2(INNER.end.x, y), 1.0, Color(0.3, 0.45, 0.7, 0.13))
 				y += 40.0
-			sk.line2(Vector2(70, WALL_BOTTOM), Vector2(68, ARENA.y), 1.6, Color(0.8, 0.2, 0.2, 0.25))
-			sk.hatch(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), Vector2(ARENA.x, WALL_TOP), Vector2(0, WALL_TOP)]),
-				7.0, 2.3, Color(0.25, 0.2, 0.15, 0.22), 1.2)
-			sk.hatch(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), Vector2(ARENA.x, WALL_TOP), Vector2(0, WALL_TOP)]),
-				13.0, 0.9, Color(0.25, 0.2, 0.15, 0.15), 1.0)
-			for i in 14:
-				var p := Vector2(60 + i * 117 + Doodle.noise(i) * 30, 18 + absf(Doodle.noise(i + 50)) * 45)
+			sk.line2(Vector2(INNER.position.x + 70, INNER.position.y), Vector2(INNER.position.x + 68, INNER.end.y), 1.6, Color(0.8, 0.2, 0.2, 0.25))
+			for b in bands:
+				sk.hatch(b, 7.0, 2.3, Color(0.25, 0.2, 0.15, 0.22), 1.2)
+				sk.hatch(b, 13.0, 0.9, Color(0.25, 0.2, 0.15, 0.15), 1.0)
+			var pebbles := 44
+			for i in pebbles:
+				var s := (i + 0.5 + Doodle.noise(i) * 0.25) * Arena.perimeter(Arena.STAGING_RECT) / pebbles
+				var p := Arena.perimeter_point(Arena.STAGING_RECT, s) + Vector2(Doodle.noise(i + 50), Doodle.noise(i + 70)) * 20.0
 				sk.line(sk.ellipse_pts(p, 6 + absf(Doodle.noise(i + 9)) * 6, 3, 6), 1.0, Color(0.2, 0.18, 0.12, 0.3), true)
 			sk.seg = 9.0
 			var faint := Color(0.25, 0.25, 0.3, 0.18)
-			_coffee_stain(sk, Vector2(1380, 820), 45.0, 0.85)
-			_coffee_stain(sk, Vector2(240, 300), 29.0, 0.6)
-			_coffee_stain(sk, Vector2(1545, 150), 34.0, 0.7)
+			_coffee_stain(sk, _ip(Vector2(1380, 820)), 45.0, 0.85)
+			_coffee_stain(sk, _ip(Vector2(240, 300)), 29.0, 0.6)
+			_coffee_stain(sk, _ip(Vector2(1545, 150)), 34.0, 0.7)
 			_margin_doodles(sk)
 			for p in [Vector2(520, 880), Vector2(1180, 230), Vector2(150, 640), Vector2(900, 520), Vector2(1500, 420)]:
-				sk.line(sk.star_pts(p, 12, 5, 5), 1.4, faint, true)
-			sk.line(PackedVector2Array([Vector2(700, 940), Vector2(760, 930), Vector2(820, 945), Vector2(880, 928)]), 1.6, faint)
-			sk.line(PackedVector2Array([Vector2(300, 160), Vector2(340, 175), Vector2(330, 150), Vector2(370, 170)]), 1.4, faint)
-			sk.line(PackedVector2Array([Vector2(1060, 760), Vector2(1100, 760), Vector2(1092, 752)]), 1.4, faint)
-			sk.line(PackedVector2Array([Vector2(1100, 760), Vector2(1092, 768)]), 1.4, faint)
-			var hrt := PackedVector2Array([Vector2(1500, 900), Vector2(1488, 886), Vector2(1492, 878), Vector2(1500, 884),
+				sk.line(sk.star_pts(_ip(p), 12, 5, 5), 1.4, faint, true)
+			sk.line(_ipa([Vector2(700, 940), Vector2(760, 930), Vector2(820, 945), Vector2(880, 928)]), 1.6, faint)
+			sk.line(_ipa([Vector2(300, 160), Vector2(340, 175), Vector2(330, 150), Vector2(370, 170)]), 1.4, faint)
+			sk.line(_ipa([Vector2(1060, 760), Vector2(1100, 760), Vector2(1092, 752)]), 1.4, faint)
+			sk.line(_ipa([Vector2(1100, 760), Vector2(1092, 768)]), 1.4, faint)
+			var hrt := _ipa([Vector2(1500, 900), Vector2(1488, 886), Vector2(1492, 878), Vector2(1500, 884),
 				Vector2(1508, 878), Vector2(1512, 886)])
 			sk.line(hrt, 1.4, Color(0.8, 0.2, 0.3, 0.2), true)
 			for i in 5:
-				sk.line2(Vector2(90 + i * 6, 950), Vector2(92 + i * 6, 970), 1.4, faint)
-			sk.line2(Vector2(86, 966), Vector2(122, 954), 1.4, faint)
+				sk.line2(_ip(Vector2(90 + i * 6, 950)), _ip(Vector2(92 + i * 6, 970)), 1.4, faint)
+			sk.line2(_ip(Vector2(86, 966)), _ip(Vector2(122, 954)), 1.4, faint)
 			sk.seg = 30.0
 			sk.line(PackedVector2Array([Vector2(0, 0), Vector2(ARENA.x, 0), ARENA, Vector2(0, ARENA.y)]), 4.0, INK, true)
 		M_WALL:
@@ -2168,8 +2244,8 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 				sk.line(pts, 1.4 if i % 3 else 2.2, grain if i % 2 == 0 else light)
 				y += 11.0 + absf(Doodle.noise(i + 40)) * 9.0
 				i += 1
-			for c in PackedVector2Array([Vector2(-120, -110), Vector2(1720, 300), Vector2(400, -130), Vector2(1200, 1120),
-					Vector2(-150, 820), Vector2(1750, -90)]):
+			for c in PackedVector2Array([Vector2(-120, -110), Vector2(ARENA.x + 120, 300), Vector2(400, -130), Vector2(1200, ARENA.y + 120),
+					Vector2(-150, 820), Vector2(ARENA.x + 150, -90)]):
 				sk.line(sk.ellipse_pts(c, 22, 7, 12), 1.6, grain, true)
 				sk.line(sk.ellipse_pts(c, 12, 3.5, 10), 1.2, grain, true)
 		M_HIT:
@@ -2178,19 +2254,7 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 			sk.shape(sk.star_pts(Vector2.ZERO, 18.0, 9.5, 9, 0.2), Color("fff3a6"), true, 1.6)
 			sk.fill(sk.star_pts(Vector2.ZERO, 11.0, 6.0, 9, 0.5), Color(1.0, 0.62, 0.2, 0.75), false)
 		M_RUBBLE:
-			sk.jit = 0.8
-			var w := SEG_W
-			sk.fill(PackedVector2Array([Vector2(0, WALL_TOP + 4), Vector2(w, WALL_TOP + 4), Vector2(w, WALL_BOTTOM - 2), Vector2(0, WALL_BOTTOM - 2)]),
-				Color(0.45, 0.4, 0.35, 0.35), false)
-			for side in [0.0, 1.0]:
-				var bx := 6.0 if side == 0.0 else w - 26.0
-				for i in 4:
-					var c := Vector2(bx + sk.rng.randf_range(0, 20), WALL_TOP + 6 + i * 5 + sk.rng.randf_range(0, 4))
-					var hw := sk.rng.randf_range(4, 8)
-					sk.shape(PackedVector2Array([c + Vector2(-hw, -3), c + Vector2(hw, -4), c + Vector2(hw + 1, 3), c + Vector2(-hw, 4)]), BRICK, true, 1.4)
-			for i in 4:
-				var c := Vector2(sk.rng.randf_range(30, w - 30), sk.rng.randf_range(WALL_TOP + 2, WALL_BOTTOM + 12))
-				sk.shape(PackedVector2Array([c + Vector2(-3, -2), c + Vector2(3, -2), c + Vector2(3, 2), c + Vector2(-3, 2)]), BRICK, true, 1.0)
+			_b_rubble(sk, SEG_W)
 		M_URNE:
 			sk.lw = 1.6
 			sk.rect(Rect2(-9, -8, 18, 13), Color("c8d2de"))
@@ -2244,23 +2308,26 @@ func _b_misc(sk: Doodle.Sketch, id: int) -> void:
 			sk.misreg = 0.0
 			var sw := 26.0
 			var cols := [Color(0.85, 0.15, 0.15, 0.55), Color(1, 1, 1, 0.55)]
-			var yy := WALL_BOTTOM
+			# tent stripes and bunting along the inside of the four walls
+			var x0 := INNER.position.x
+			var x1 := INNER.end.x
+			var yy := INNER.position.y
 			var k := 0
-			while yy < ARENA.y:
-				sk.fill(PackedVector2Array([Vector2(0, yy), Vector2(60, yy + 10), Vector2(60, yy + sw + 10), Vector2(0, yy + sw)]), cols[k % 2], false)
-				sk.fill(PackedVector2Array([Vector2(ARENA.x, yy), Vector2(ARENA.x - 60, yy + 10), Vector2(ARENA.x - 60, yy + sw + 10), Vector2(ARENA.x, yy + sw)]), cols[k % 2], false)
+			while yy < INNER.end.y - sw:
+				sk.fill(PackedVector2Array([Vector2(x0, yy), Vector2(x0 + 60, yy + 10), Vector2(x0 + 60, yy + sw + 10), Vector2(x0, yy + sw)]), cols[k % 2], false)
+				sk.fill(PackedVector2Array([Vector2(x1, yy), Vector2(x1 - 60, yy + 10), Vector2(x1 - 60, yy + sw + 10), Vector2(x1, yy + sw)]), cols[k % 2], false)
 				yy += sw
 				k += 1
-			var x := 0.0
+			var x := x0
 			k = 0
-			while x < ARENA.x:
-				sk.shape(PackedVector2Array([Vector2(x, WALL_BOTTOM + 2), Vector2(x + 40, WALL_BOTTOM + 2), Vector2(x + 20, WALL_BOTTOM + 30)]),
+			while x < x1 - 1.0:
+				sk.shape(PackedVector2Array([Vector2(x, INNER.position.y + 2), Vector2(x + 40, INNER.position.y + 2), Vector2(x + 20, INNER.position.y + 30)]),
 					Color("e8443a") if k % 3 == 0 else (Color("f2c418") if k % 3 == 1 else Color("2e6db4")), true, 1.2)
-				sk.shape(PackedVector2Array([Vector2(x, ARENA.y), Vector2(x + 40, ARENA.y), Vector2(x + 20, ARENA.y - 26)]),
+				sk.shape(PackedVector2Array([Vector2(x, INNER.end.y), Vector2(x + 40, INNER.end.y), Vector2(x + 20, INNER.end.y - 26)]),
 					Color("e8443a") if k % 2 == 0 else WHITE, true, 1.2)
 				x += 40.0
 				k += 1
-			sk.line(PackedVector2Array([Vector2(0, WALL_BOTTOM + 2), Vector2(ARENA.x, WALL_BOTTOM + 2)]), 2.0)
+			sk.line(PackedVector2Array([Vector2(x0, INNER.position.y + 2), Vector2(x1, INNER.position.y + 2)]), 2.0)
 		M_SITTER:
 			_person(sk, {"x": -2.0, "y": 8.0, "s": 0.62, "legs": "sit", "body": [Color("3f8f4f"), Color("e8b923"), Color("2e6db4")][sk.rng.randi() % 3],
 				"pants": DENIM, "hair": ["curly", "ponytail", "short", "beanie"][sk.rng.randi() % 4], "arms": "hold", "mouth": "smile",
@@ -2390,8 +2457,8 @@ func _b_paper_grain(sk: Doodle.Sketch) -> void:
 	sk.grad_quad(Vector2(0, h), Vector2(w, h), Vector2(w, h - d), Vector2(0, h - d), e, z)
 	sk.grad_quad(Vector2(0, 0), Vector2(0, h), Vector2(d, h), Vector2(d, 0), e, z)
 	sk.grad_quad(Vector2(w, 0), Vector2(w, h), Vector2(w - d, h), Vector2(w - d, 0), e, z)
-	for i in 2200:
-		var p := Vector2(rng.randf() * w, WALL_BOTTOM + rng.randf() * (h - WALL_BOTTOM))
+	for i in 2660:   # same density as before over the larger inner arena
+		var p := INNER.position + Vector2(rng.randf(), rng.randf()) * INNER.size
 		var r := rng.randf_range(0.5, 1.3)
 		var a := rng.randf_range(0.05, 0.13)
 		var c := Color(0.42, 0.35, 0.25, a) if i % 4 else Color(1, 1, 1, a * 2.5)
@@ -2400,13 +2467,26 @@ func _b_paper_grain(sk: Doodle.Sketch) -> void:
 			p + Vector2(cos(ang + 4.2), sin(ang + 4.2)) * r, sk.fc(c))
 	var old_seg := sk.seg
 	sk.seg = 30.0
-	for i in 70:
-		var p := Vector2(rng.randf() * w, WALL_BOTTOM + rng.randf() * (h - WALL_BOTTOM))
+	for i in 85:
+		var p := INNER.position + Vector2(rng.randf(), rng.randf()) * INNER.size
 		var a0 := rng.randf() * TAU
 		var dir := Vector2(cos(a0), sin(a0))
 		var ln := rng.randf_range(6, 16)
 		sk.line(PackedVector2Array([p, p + dir * ln * 0.5 + dir.orthogonal() * 1.5, p + dir * ln]), 0.7, Color(0.4, 0.33, 0.25, 0.1))
 	sk.seg = old_seg
+
+
+## Maps a point of the old 1600 x 898 play area (y from 102) onto today's inner
+## arena, so the paper doodles keep their places relative to the walls.
+static func _ip(p: Vector2) -> Vector2:
+	return INNER.position + (p - Vector2(0, 102)) * (INNER.size / Vector2(1600, 898))
+
+
+static func _ipa(pts: Array) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	for p in pts:
+		out.append(_ip(p))
+	return out
 
 
 ## Coffee ring: faint wash, uneven ring, an inner echo and a drip.
@@ -2427,21 +2507,22 @@ func _margin_doodles(sk: Doodle.Sketch) -> void:
 	var sp := PackedVector2Array()
 	for i in 28:
 		var a := i * 0.55
-		sp.append(Vector2(36, 640) + Vector2(cos(a), sin(a)) * (1.0 + i * 0.5))
+		sp.append(_ip(Vector2(36, 640)) + Vector2(cos(a), sin(a)) * (1.0 + i * 0.5))
 	sk.line(sp, 1.3, pen)
 	# sun
-	sk.line(sk.ellipse_pts(Vector2(35, 200), 7, 7, 10), 1.3, pen, true)
+	var sun := _ip(Vector2(35, 200))
+	sk.line(sk.ellipse_pts(sun, 7, 7, 10), 1.3, pen, true)
 	for i in 8:
 		var d := Vector2(cos(TAU * i / 8.0), sin(TAU * i / 8.0))
-		sk.line2(Vector2(35, 200) + d * 10.0, Vector2(35, 200) + d * 15.0, 1.2, pen)
+		sk.line2(sun + d * 10.0, sun + d * 15.0, 1.2, pen)
 	# peace sign
-	var pc := Vector2(36, 880)
+	var pc := _ip(Vector2(36, 880))
 	sk.line(sk.ellipse_pts(pc, 10, 10, 12), 1.3, pen, true)
 	sk.line2(pc + Vector2(0, -10), pc + Vector2(0, 10), 1.2, pen)
 	sk.line2(pc, pc + Vector2(-7, 7), 1.2, pen)
 	sk.line2(pc, pc + Vector2(7, 7), 1.2, pen)
 	# tiny bike
-	var bc := Vector2(1440, 968)
+	var bc := _ip(Vector2(1440, 968))
 	sk.line(sk.ellipse_pts(bc + Vector2(-12, 0), 7, 7, 10), 1.2, pen, true)
 	sk.line(sk.ellipse_pts(bc + Vector2(12, 0), 7, 7, 10), 1.2, pen, true)
 	sk.line(PackedVector2Array([bc + Vector2(-12, 0), bc + Vector2(-2, 0), bc + Vector2(-6, -9), bc + Vector2(7, -9),
@@ -2449,17 +2530,17 @@ func _margin_doodles(sk: Doodle.Sketch) -> void:
 	sk.line2(bc + Vector2(-2, 0), bc + Vector2(7, -9), 1.2, pen)
 	sk.line2(bc + Vector2(7, -9), bc + Vector2(6, -14), 1.2, pen)
 	# cube
-	var q := Vector2(230, 958)
+	var q := _ip(Vector2(230, 958))
 	sk.line(PackedVector2Array([q, q + Vector2(16, 0), q + Vector2(16, 16), q + Vector2(0, 16)]), 1.2, pen, true)
 	sk.line(PackedVector2Array([q, q + Vector2(7, -6), q + Vector2(23, -6), q + Vector2(16, 0)]), 1.2, pen)
 	sk.line(PackedVector2Array([q + Vector2(23, -6), q + Vector2(23, 10), q + Vector2(16, 16)]), 1.2, pen)
 	# hashtag + cloud
-	var hs := Vector2(600, 966)
+	var hs := _ip(Vector2(600, 966))
 	sk.line2(hs + Vector2(-3, -8), hs + Vector2(-5, 8), 1.2, pen)
 	sk.line2(hs + Vector2(4, -8), hs + Vector2(2, 8), 1.2, pen)
 	sk.line2(hs + Vector2(-8, -3), hs + Vector2(8, -3), 1.2, pen)
 	sk.line2(hs + Vector2(-9, 3), hs + Vector2(7, 3), 1.2, pen)
-	var cl := Vector2(1180, 968)
+	var cl := _ip(Vector2(1180, 968))
 	sk.line(PackedVector2Array([cl + Vector2(-18, 6), cl + Vector2(-20, -2), cl + Vector2(-10, -6), cl + Vector2(-4, -13),
 		cl + Vector2(7, -10), cl + Vector2(12, -4), cl + Vector2(20, 0), cl + Vector2(16, 6)]), 1.2, pen, true)
 
@@ -2469,7 +2550,7 @@ func _margin_doodles(sk: Doodle.Sketch) -> void:
 func _b_wall(sk: Doodle.Sketch, seg: int) -> void:
 	sk.jit = 0.45
 	sk.misreg = 0.35
-	var w := SEG_W
+	var w := Arena.seg_len(seg)   # baked in the top wall's frame, rotated onto its side when drawn
 	sk.fill(PackedVector2Array([Vector2(0, WALL_TOP), Vector2(w, WALL_TOP), Vector2(w, WALL_BOTTOM), Vector2(0, WALL_BOTTOM)]),
 		Color("cdbd9f"), false)
 	var cap := 5.0
@@ -2498,7 +2579,7 @@ func _b_wall(sk: Doodle.Sketch, seg: int) -> void:
 		var cx := sk.rng.randf_range(20, w - 20)
 		sk.line(PackedVector2Array([Vector2(cx, top), Vector2(cx + 3, top + 6), Vector2(cx - 1, top + 11), Vector2(cx + 2, top + 17)]),
 			0.9, Color(0.2, 0.12, 0.1, 0.8))
-	match seg:
+	match {3: 3, 7: 7, 11: 11, 14: 11, 24: 3, 29: 7, 36: 3}.get(seg, -1):
 		3:
 			var hc := Vector2(w * 0.5, 91)
 			sk.shape(PackedVector2Array([hc + Vector2(0, 7), hc + Vector2(-8, -1), hc + Vector2(-6, -6), hc + Vector2(-2, -6),
@@ -2515,6 +2596,39 @@ func _b_wall(sk: Doodle.Sketch, seg: int) -> void:
 	var sh := Color(0.2, 0.15, 0.1, 0.17)
 	sk.grad_quad(Vector2(0, WALL_BOTTOM + 1), Vector2(w, WALL_BOTTOM + 1), Vector2(w, WALL_BOTTOM + 14), Vector2(0, WALL_BOTTOM + 14),
 		sh, Color(sh, 0.0))
+
+
+## A voted-away segment of length w (same frame as _b_wall): a dusty gap with
+## broken bricks at both ends and a few crumbs.
+func _b_rubble(sk: Doodle.Sketch, w: float) -> void:
+	sk.jit = 0.8
+	sk.fill(PackedVector2Array([Vector2(0, WALL_TOP + 4), Vector2(w, WALL_TOP + 4), Vector2(w, WALL_BOTTOM - 2), Vector2(0, WALL_BOTTOM - 2)]),
+		Color(0.45, 0.4, 0.35, 0.35), false)
+	for side in [0.0, 1.0]:
+		var bx := 6.0 if side == 0.0 else w - 26.0
+		for i in 4:
+			var c := Vector2(bx + sk.rng.randf_range(0, 20), WALL_TOP + 6 + i * 5 + sk.rng.randf_range(0, 4))
+			var hw := sk.rng.randf_range(4, 8)
+			sk.shape(PackedVector2Array([c + Vector2(-hw, -3), c + Vector2(hw, -4), c + Vector2(hw + 1, 3), c + Vector2(-hw, 4)]), BRICK, true, 1.4)
+	for i in 4:
+		var c := Vector2(sk.rng.randf_range(30, w - 30), sk.rng.randf_range(WALL_TOP + 2, WALL_BOTTOM + 12))
+		sk.shape(PackedVector2Array([c + Vector2(-3, -2), c + Vector2(3, -2), c + Vector2(3, 2), c + Vector2(-3, 2)]), BRICK, true, 1.0)
+
+
+## Corner pillar, centred at 0 (drawn rotated so -x/-y face out of the arena):
+## a concrete block with the coping on its outer edges and a shadow inside.
+func _b_pillar(sk: Doodle.Sketch) -> void:
+	sk.jit = 0.4
+	sk.misreg = 0.3
+	var h := Arena.WALL_THICK * 0.5 + 1.0
+	var sh := Color(0.2, 0.15, 0.1, 0.17)
+	sk.grad_quad(Vector2(h, -h), Vector2(h + 13, -h), Vector2(h + 13, h + 13), Vector2(h, h), sh, Color(sh, 0.0))
+	sk.grad_quad(Vector2(-h, h), Vector2(h, h), Vector2(h + 13, h + 13), Vector2(-h, h + 13), sh, Color(sh, 0.0))
+	sk.shape(PackedVector2Array([Vector2(-h, -h), Vector2(h, -h), Vector2(h, h), Vector2(-h, h)]), Color("b9b2a6"), true, 2.6)
+	sk.fill(PackedVector2Array([Vector2(-h, -h), Vector2(h, -h), Vector2(h - 5, -h + 5), Vector2(-h + 5, -h + 5)]), Color("a39e94"), false)
+	sk.fill(PackedVector2Array([Vector2(-h, -h), Vector2(-h + 5, -h + 5), Vector2(-h + 5, h - 5), Vector2(-h, h)]), Color("a39e94"), false)
+	sk.line(PackedVector2Array([Vector2(-h + 5, h - 5), Vector2(-h + 5, -h + 5), Vector2(h - 5, -h + 5)]), 1.0, Color(0.25, 0.22, 0.2, 0.6))
+	sk.line2(Vector2(-3, 2), Vector2(4, -3), 0.8, Color(0.3, 0.28, 0.25, 0.5))
 
 
 # --- Lastenrad ---------------------------------------------------------------------------
@@ -3045,5 +3159,25 @@ func _b_weapon(sk: Doodle.Sketch, id: String) -> void:
 			sk.line2(Vector2(0, -6), Vector2(0, 4), 0.7, Color(0.55, 0.55, 0.58))
 			sk.line2(Vector2(-5.5, 10.5), Vector2(-1, 10.5), 2.0, Color("3f8f4f"))
 			sk.line2(Vector2(1, 10.5), Vector2(5.5, 10.5), 2.0, Color("3f8f4f"))
+		"fahnenstange":
+			# long pole with a red demo flag at the far end
+			sk.line2(Vector2(-14, 2), Vector2(14, 2), 1.8, Color("8a5a35"))
+			sk.shape(PackedVector2Array([Vector2(6, 1), Vector2(15, -1), Vector2(14, -9), Vector2(5, -8)]), Color("d8262e"), true, 1.2)
+			sk.line2(Vector2(7.5, -5.5), Vector2(12.5, -6), 0.8, WHITE)
+			sk.circle(Vector2(14.5, 2), 1.4, GOLD, true, 0.6)
+		"bierkiste":
+			# Späti beer crate with bottle necks sticking out
+			for k in 3:
+				var x := -6.0 + k * 6.0
+				sk.rect(Rect2(x - 1.6, -10, 3.2, 5), Color("6a4a20"), true, 0.8)
+				sk.rect(Rect2(x - 1.2, -11.5, 2.4, 1.8), GOLD, true, 0.6)
+			sk.shape(PackedVector2Array([Vector2(-10, -5), Vector2(10, -5), Vector2(10, 8), Vector2(-10, 8)]), Color("2f7a3c"), true, 1.5)
+			sk.rect(Rect2(-5, -2, 10, 3.5), Color("1f5a2a"), true, 0.8)
+			sk.line2(Vector2(-10, 4), Vector2(10, 4), 0.8, Color("1f5a2a"))
+		"strassenkreide":
+			# two sticks of chalk, pink and blue, with a little scribble
+			sk.line(PackedVector2Array([Vector2(-12, 7), Vector2(-8, 4), Vector2(-5, 7), Vector2(-1, 4)]), 1.2, Color("f28fb1"))
+			sk.shape(PackedVector2Array([Vector2(-6, -3), Vector2(7, -8), Vector2(9, -4), Vector2(-4, 1)]), Color("f28fb1"), true, 1.2)
+			sk.shape(PackedVector2Array([Vector2(-3, 3), Vector2(10, 0), Vector2(11, 4), Vector2(-2, 7)]), Color("8fc8f2"), true, 1.2)
 		_:
 			sk.circle(Vector2.ZERO, 4, GOLD)

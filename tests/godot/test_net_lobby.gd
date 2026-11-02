@@ -216,12 +216,57 @@ func test_dedicated_empty_lobby_ends_run() -> void:
 	net.peer_away.connect(func(p): away.append(p))
 	net._on_peer_disconnected(300)
 	assert_eq(away, [300], "mid-run: peer_away, not removed")
-	assert_true(net.lobby.has(300), "kept during the grace period")
+	assert_true(net.lobby.has(300), "kept for a rejoin")
+	net._tick_away(NetScript._now() + 120.0)
+	assert_true(net.lobby.has(300) and left.is_empty(), "still kept after 2 min")
 	assert_eq(fake_game.back, 0, "run keeps waiting")
-	net._tick_away(NetScript._now() + NetScript.GRACE_S + 1.0)
-	assert_eq(left, [300], "peer_left after the grace period")
-	assert_true(net.lobby.is_empty(), "removed from lobby")
-	assert_eq(fake_game.back, 1, "Game.back_to_lobby called when the server is empty")
+	net._tick_away(NetScript._now() + NetScript.EMPTY_SERVER_S + 1.0)
+	assert_eq(fake_game.back, 1, "dedicated server with nobody connected ends the run after 5 min")
+	# The last player leaving on purpose empties the lobby at once.
+	net._drop_player(300)
+	assert_eq(left, [300], "peer_left on a deliberate leave")
+	assert_eq(fake_game.back, 2, "Game.back_to_lobby called when the server is empty")
+
+
+## Rejoin after a crash (networking.md §7.4): a listen host keeps an away
+## player until the run ends, however long it takes.
+func test_host_keeps_away_players_until_the_run_ends() -> void:
+	net._mode = NetScript.Mode.HOST
+	net.lobby = {1: {"name": "Host", "char": "oma", "ready": true},
+			300: {"name": "A", "char": "stadtbild", "ready": true}}
+	net._tokens = {300: "secret"}
+	fake_game.config = {"seed": 1}
+	var left := []
+	net.peer_left.connect(func(p): left.append(p))
+	net._on_peer_disconnected(300)
+	net._tick_away(NetScript._now() + 6 * 3600.0)
+	assert_true(net.is_away(300) and net.lobby.has(300), "still away hours later")
+	assert_true(left.is_empty(), "never removed by time")
+	assert_eq(fake_game.back, 0, "a listen host never ends the run for it")
+	var out := {}
+	assert_eq(net.check_resume(NetScript.PROTOCOL_VERSION, NetScript.game_version(), "secret", out), "", "token still valid")
+	net.return_to_lobby()
+	assert_false(net.lobby.has(300), "dropped when the run ends")
+
+
+## Rejoin from the menu (networking.md §7.5): resume handshake with the saved
+## session, REJOIN_S budget, the real reject reason on failure.
+func test_rejoin_from_menu_state_machine() -> void:
+	var gone := []
+	net.disconnected.connect(func(r): gone.append(r))
+	net.rejoin(" 10.0.0.5 ", 24713, "secret", 4242)
+	assert_true(net.is_reconnecting(), "reconnecting")
+	assert_eq(net.local_player_id(), 4242, "saved player id")
+	assert_near(net.reconnect_time_left(), NetScript.REJOIN_S, 0.5, "15 s budget")
+	assert_eq(net.session_info(), {"ip": "10.0.0.5", "port": 24713, "token": "secret", "player": 4242}, "session")
+	net._rpc_01_reject("NET_ERR_SESSION")
+	assert_eq(gone, ["NET_ERR_SESSION"], "the real reason")
+	assert_false(net.is_reconnecting(), "gave up")
+	assert_true(net.session_info().is_empty(), "session forgotten")
+	gone.clear()
+	net.rejoin("10.0.0.5", 24713, "secret", 4242)
+	net._tick_reconnect(NetScript._now() + NetScript.REJOIN_S + 1.0)
+	assert_eq(gone, ["NET_ERR_LOST"], "no host within 15 s")
 
 
 func test_disconnect_in_lobby_removes_at_once() -> void:

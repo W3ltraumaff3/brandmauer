@@ -38,7 +38,9 @@ func test_start_run() -> void:
 	assert_near(oma.stats["max_hp"], 30.0, 0.01, "oma max hp")
 	assert_near(oma.hp, 30.0, 0.01)
 	assert_eq(oma.weapons[0]["id"], "stricknadeln")
-	assert_eq(s.wall.count(false), 1, "one hole at start")
+	assert_eq(s.wall.count(false), 2, "one hole per player at start (GDD §5a)")
+	assert_false(s.wall[6], "top middle hole")
+	assert_false(s.wall[25], "bottom middle hole")
 
 
 func test_determinism() -> void:
@@ -68,6 +70,68 @@ func test_vertrag_unanimous_or_worst() -> void:
 	assert_eq(Sim.resolve_votes(opts, {1: 0, 2: -1}, [1, 2]), "digitalpakt", "abstention doesn't count")
 	assert_eq(Sim.resolve_votes(opts, {1: -1, 2: -1}, [1, 2]), "", "everyone abstains -> no contract")
 	assert_eq(Sim.resolve_votes(opts, {}, [1]), "", "nobody voted -> no contract")
+
+
+## Shop weapon offers favour the held weapons' scaling (GDD §6), never exclusively.
+func test_shop_weapons_favour_your_style() -> void:
+	var s := _sim(["stadtbild"])   # starts with the Döner (melee)
+	var p: Sim.SimPlayer = s.players[1]
+	assert_near(float(Sim.weapon_style(p).get("melee", 0.0)), 1.0, 0.001, "pure melee style")
+	assert_near(Sim.style_match(Sim.weapon_style(p), "grundgesetz"), 1.0, 0.001, "melee weapon matches fully")
+	assert_eq(Sim.style_match(Sim.weapon_style(p), "gendersternchen"), 0.0, "ranged weapon doesn't match")
+	var melee := 0
+	var n := 4000
+	for i in n:
+		if Content.WEAPONS[s._pick_weapon(p)].get("melee", false):
+			melee += 1
+	var melee_ids := Content.WEAPON_ORDER.filter(func(id): return Content.WEAPONS[id].get("melee", false)).size()
+	var others := Content.WEAPON_ORDER.size() - melee_ids
+	var expected := 3.0 * melee_ids / (3.0 * melee_ids + others)
+	assert_near(float(melee) / n, expected, 0.03, "melee weapons 3x as likely")
+	assert_true(melee < n, "never exclusive")
+	assert_true(float(melee) / n > float(melee_ids) / Content.WEAPON_ORDER.size() + 0.15, "clearly favoured over uniform")
+	# Mixed: one melee + one ranged weapon -> both halves favoured equally.
+	p.weapons.append({"id": "gendersternchen", "tier": 1, "cd": 0.0, "angle": 0.0})
+	var st := Sim.weapon_style(p)
+	assert_near(float(st["melee"]), 0.5, 0.001, "half melee")
+	assert_near(float(st["ranged"]), 0.5, 0.001, "half ranged")
+	p.weapons.clear()
+	assert_true(Sim.weapon_style(p).is_empty(), "no weapons: no preference")
+
+
+## Level-up reroll (GDD §6): free rerolls first, then its own rising price that
+## resets when a level-up is picked; refused without level-ups or Pfand.
+func test_levelup_reroll() -> void:
+	var s := _sim(["sozialtourist"])
+	_to_shop(s)
+	var p: Sim.SimPlayer = s.players[1]
+	p.levelups = 2
+	s._make_levelup_options(p)
+	p.pfand = 1000
+	var free := p.free_rerolls
+	assert_true(free > 0, "Sozialtourist:in starts with free rerolls")
+	assert_true(s.request(1, "levelup_reroll"), "free reroll")
+	assert_eq(p.free_rerolls, free - 1, "free reroll used first")
+	assert_eq(p.pfand, 1000, "free")
+	p.free_rerolls = 0
+	var price := Content.reroll_price(s.wave, 0)
+	assert_eq(int(s.build_meta()["players"][1]["levelup_reroll_price"]), price, "price in meta")
+	var seen := {}
+	for i in 6:
+		var before := p.pfand
+		assert_true(s.request(1, "levelup_reroll"))
+		assert_eq(before - p.pfand, Content.reroll_price(s.wave, i), "price rises")
+		assert_eq(p.levelup_options.size(), 4, "4 new options")
+		seen[str(p.levelup_options)] = true
+	assert_true(seen.size() > 1, "options change")
+	assert_eq(p.rerolls_done, 0, "shop reroll price untouched")
+	assert_true(s.request(1, "levelup", 0))
+	assert_eq(p.levelup_rerolls, 0, "price resets after a pick")
+	p.pfand = 0
+	assert_false(s.request(1, "levelup_reroll"), "no Pfand")
+	p.pfand = 1000
+	assert_true(s.request(1, "levelup", 0))
+	assert_false(s.request(1, "levelup_reroll"), "no level-ups left")
 
 
 func test_shop_buy_reroll_sell_deny() -> void:
@@ -326,12 +390,13 @@ func test_shots_pass_holes_but_not_wall() -> void:
 	var s := _sim(["oma"])
 	for i in Sim.WALL_SEGMENTS:
 		s.wall[i] = true
-	var below := Vector2(100, 300)
-	var above := Vector2(100, 40)
+	var below := Vector2(170, 300)
+	var above := Vector2(170, 40)
 	assert_true(s.shot_blocked(below, above), "intact wall blocks")
 	s.wall[0] = false
 	assert_false(s.shot_blocked(below, above), "hole lets shots through")
 	assert_false(s.shot_blocked(below, Vector2(500, 600)), "same side never blocked")
+	assert_true(s.shot_blocked(Vector2(200, 200), Vector2(20, 20)), "corner pillars always block")
 
 
 func test_every_weapon_aims_at_closest_enemy_in_all_directions() -> void:
@@ -426,6 +491,30 @@ func test_ultimate_effects() -> void:
 	assert_true(t.request(2, "ultimate"), "antifa ult")
 	var comrades := t.summons.filter(func(x): return x.type == Content.idx(Content.SUMMON_ORDER, "genosse"))
 	assert_eq(comrades.size(), 6, "Schwarzer Block spawns 6")
+
+
+## Critical Mass: invulnerable during the dash and the whole speed boost (GDD §9a).
+func test_critical_mass_is_invulnerable_until_the_boost_ends() -> void:
+	var s := _sim(["lastenrad"])
+	var p: Sim.SimPlayer = s.players[1]
+	p.stats["dodge"] = 0.0
+	p.stats["armor"] = 0.0
+	assert_true(s.request(1, "ultimate"), "Critical Mass")
+	var u: Dictionary = Content.ULTS["critical_mass"]
+	var boost_end: float = u["dash_time"] + u["boost_time"]
+	for i in int((boost_end - 0.2) * 60.0):
+		s.step(1.0 / 60.0)
+		s.enemies.clear()
+	assert_true(p.boost_t > 0.0, "boost still running")
+	var hp := p.hp
+	s.damage_player(p, 30.0)
+	assert_eq(p.hp, hp, "no damage while boosted")
+	for i in 30:
+		s.step(1.0 / 60.0)
+		s.enemies.clear()
+	assert_true(p.boost_t <= 0.0, "boost over")
+	s.damage_player(p, 30.0)
+	assert_true(p.hp < hp, "damage again after the boost")
 
 
 func test_run_stats_track_damage_per_weapon_and_heals() -> void:
@@ -534,9 +623,40 @@ func test_no_real_quote_bubbles_in_waves() -> void:
 				assert_eq(str(e[3]), "", "no real quote bubble during a wave")
 
 
-func test_new_weapons_fire_and_hit() -> void:
-	for wid in ["kartoffelbrei", "trillerpfeife", "brandmauer_ziegel", "normenkontrolle", "unterschriftenliste",
-			"scheinwerfer", "neun_euro_ticket", "weisser_overall"]:
+## Straßenkreide (GDD §11): marks stay behind a walking player and hurt whoever
+## follows; standing still renews the last mark instead of stacking.
+func test_strassenkreide_leaves_a_damaging_trail() -> void:
+	var s := _sim(["oma"])
+	var p: Sim.SimPlayer = s.players[1]
+	p.pos = Vector2(500, 560)
+	p.weapons.clear()
+	s._add_weapon(p, "strassenkreide", 1)
+	s.enemies.clear()
+	var t_kreide := Content.idx(Content.HAZARD_ORDER, "kreide")
+	for i in 60:
+		p.iframes = 10.0
+		s.step(1.0 / 60.0)
+	assert_eq(s.hazards.filter(func(h): return h.alive and h.type == t_kreide).size(), 1, "standing still: one mark")
+	s.set_input(1, Vector2.RIGHT)
+	for i in 90:
+		p.iframes = 10.0
+		s.step(1.0 / 60.0)
+	var marks := s.hazards.filter(func(h): return h.alive and h.type == t_kreide)
+	assert_true(marks.size() >= 4, "walking leaves a trail (%d marks)" % marks.size())
+	s.set_input(1, Vector2.ZERO)
+	var follower := s.spawn_enemy("besorgter_buerger", Vector2(520, 560))
+	follower.behind = false
+	follower.speed = 0.0
+	var hp := follower.hp
+	for i in 30:
+		p.iframes = 10.0
+		s.step(1.0 / 60.0)
+	assert_true(follower.hp < hp or not follower.alive, "enemy on the trail takes damage")
+
+
+## Every weapon deals damage (user rule: "Alle Waffen sollten Schaden machen").
+func test_every_weapon_fires_and_hits() -> void:
+	for wid in Content.WEAPON_ORDER:
 		var s := _sim(["oma"])
 		var p: Sim.SimPlayer = s.players[1]
 		p.pos = Vector2(800, 560)
@@ -544,8 +664,10 @@ func test_new_weapons_fire_and_hit() -> void:
 		s._add_weapon(p, wid, 1)
 		s.enemies.clear()
 		var targets := []
+		# A trail weapon needs no target: its enemies stand right where the player is.
+		var near: bool = Content.WEAPONS[wid]["kind"] == "trail"
 		for k in 4:
-			var e := s.spawn_enemy("reichsbuerger", p.pos + Vector2(110 + k * 40, k * 10))
+			var e := s.spawn_enemy("reichsbuerger", p.pos + (Vector2(k * 6, 0) if near else Vector2(110 + k * 40, k * 10)))
 			e.behind = false
 			e.speed = 0.0
 			targets.append(e)

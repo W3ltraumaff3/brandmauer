@@ -12,6 +12,9 @@ var _refresh_queued := false
 var _focus_name := ""
 var _quote_id := ""
 var _last_hash := 0
+## Scroll positions (by ScrollContainer name) carried over a rebuild, so lists
+## don't jump to the top when something changes.
+var _keep_scroll := {}
 ## Overlays on top of the Späti (children of this node, outside _root_box, so
 ## a rebuild of the Späti keeps them open).
 var _stats: StatsPanel
@@ -326,6 +329,10 @@ static func buy_block_reason(o: Dictionary, me: Dictionary) -> String:
 func _rebuild() -> void:
 	var keep := _focus_name
 	_last_hash = _state_hash()
+	# A restore still pending (two rebuilds in one frame) wins over the fresh, unscrolled lists.
+	if _keep_scroll.is_empty():
+		for s in _root_box.find_children("*", "ScrollContainer", true, false):
+			_keep_scroll[String(s.name)] = (s as ScrollContainer).scroll_vertical
 	UIKit.clear(_root_box)
 	var meta := _meta()
 	var me := _me()
@@ -334,6 +341,7 @@ func _rebuild() -> void:
 		c.size_flags_vertical = SIZE_EXPAND_FILL
 		c.add_child(UIKit.label(tr("SPAETI_EMPTY"), 28, UITheme.INK_SOFT))
 		_root_box.add_child(c)
+		_keep_scroll.clear()
 		return
 	_root_box.add_child(_header(meta, me))
 	var main := UIKit.hbox(12)
@@ -348,6 +356,7 @@ func _rebuild() -> void:
 	mid.add_child(_items_card(me))
 	main.add_child(_side_column(meta, me))
 	_root_box.add_child(_bottom(meta, me))
+	_restore_scroll.call_deferred()
 	UINav.sync_disabled(_root_box)
 	if _stats != null and is_instance_valid(_stats):
 		_stats.show_stats(meta, me)
@@ -359,6 +368,26 @@ func _rebuild() -> void:
 			UIKit.focus_later(target)
 		else:
 			UIKit.focus_first(_root_box)
+
+
+## Puts the lists back where they were before the rebuild. Waits for the new
+## content to be laid out first: before that, the scroll range is still 0.
+func _restore_scroll() -> void:
+	if _keep_scroll.is_empty() or not is_inside_tree():
+		return
+	var keep := _keep_scroll.duplicate()
+	_apply_scroll(keep)  # usually laid out already (no visible jump) ...
+	await get_tree().process_frame
+	_apply_scroll(keep)  # ... else one frame later
+	if _keep_scroll == keep:
+		_keep_scroll.clear()
+
+
+func _apply_scroll(keep: Dictionary) -> void:
+	for n in keep:
+		var s := _root_box.find_child(n, true, false) as ScrollContainer
+		if s:
+			s.scroll_vertical = int(keep[n])
 
 
 func _card(title: String, degrees := 0.0, bg := UITheme.PAPER) -> Array:
@@ -397,6 +426,15 @@ func _header(meta: Dictionary, me: Dictionary) -> Control:
 		var sl := UIKit.label(tr("SPAETI_SPEND_LEFT") % [spend, UIKit.currency(meta)], 20, UITheme.RED)
 		sl.size_flags_vertical = SIZE_SHRINK_CENTER
 		h.add_child(sl)
+	# Reichensteuer of the last wave (balancing.md §5a)
+	var tax := int(me.get("tax_wave", 0))
+	if tax != 0:
+		var tl := UIKit.label((tr("SPAETI_TAX_PAID") if tax < 0 else tr("SPAETI_TAX_RECEIVED")) % [absi(tax), UIKit.currency(meta)],
+			17, UITheme.INK_SOFT if tax < 0 else UITheme.GREEN)
+		tl.name = "tax_wave"
+		tl.size_flags_vertical = SIZE_SHRINK_CENTER
+		UIKit.fit_label(tl, 220, 12)
+		h.add_child(tl)
 	var pad_hint := UIKit.label("", 17, UITheme.INK_SOFT)
 	pad_hint.name = "section_hint"
 	pad_hint.size_flags_vertical = SIZE_SHRINK_CENTER
@@ -521,10 +559,24 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 				"levelup_%d" % i, _on_levelup.bind(i), fs)
 			b.custom_minimum_size = Vector2(150, 110)
 			b.autowrap_mode = TextServer.AUTOWRAP_OFF
+			# Rarity like the items, by color only (balancing.md §4).
+			var rcol: Color = Content.RARITY_COLORS.get(int(o.get("rarity", 1)), UITheme.INK)
+			b.add_theme_stylebox_override("normal", UITheme.box(rcol.lerp(UITheme.PAPER, 0.88), rcol, 3))
+			b.add_theme_color_override("font_color", rcol.darkened(0.25))
 			b.tooltip_text = UIKit.trk("STAT_%s_DESC" % stat.to_upper())
 			UIKit.tilt(b, UIKit.tilt_for(i, 1.2))
 			row.add_child(b)
 		lp[1].add_child(row)
+		# Level-up reroll (GDD §6): free rerolls first, then its own rising price.
+		var lfree := int(me.get("free_rerolls", 0))
+		var lprice := int(me.get("levelup_reroll_price", 0))
+		var lr_row := UIKit.hbox(0)
+		lr_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		var lr := UIKit.compact(_btn(tr("SPAETI_REROLL_FREE") % lfree if lfree > 0 else tr("SPAETI_REROLL") % [lprice, UIKit.currency(meta)],
+			"levelup_reroll", _on_levelup_reroll, 18), 0, 10)
+		lr.tooltip_text = tr("SPAETI_LEVELUP_REROLL_TIP")
+		lr_row.add_child(lr)
+		lp[1].add_child(lr_row)
 		lp[0].size_flags_vertical = SIZE_EXPAND_FILL
 		return lp[0]
 
@@ -763,6 +815,7 @@ static func _sell_refund(meta: Dictionary, w: Dictionary) -> int:
 
 func _side_column(meta: Dictionary, me: Dictionary) -> Control:
 	var scroll := ScrollContainer.new()
+	scroll.name = "side_scroll"
 	scroll.custom_minimum_size.x = 320
 	_side_scroll = scroll
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -933,7 +986,22 @@ func _bottom(meta: Dictionary, me: Dictionary) -> Control:
 	rb.set_pressed_no_signal(ready)
 	rb.custom_minimum_size = Vector2(210, 56)
 	UIKit.tilt(rb, -1.5)
-	if not ready and vote_pending(meta):
+	UIKit.ready_look(rb, ready)
+	if ready:
+		rb.tooltip_text = tr("READY_TAKE_BACK_TIP")
+		var waiting := []
+		for peer in players:
+			var p: Dictionary = players[peer]
+			if str(peer) != str(UIApi.local_id()) and not bool(p.get("ready", false)) and not bool(p.get("away", false)):
+				waiting.append(str(p.get("name", "?")))
+		var you := UIKit.vbox(0)
+		you.name = "ready_status"
+		you.size_flags_vertical = SIZE_SHRINK_CENTER
+		you.add_child(UIKit.label(tr("READY_YOU"), 20, UITheme.GREEN, HORIZONTAL_ALIGNMENT_RIGHT))
+		if not waiting.is_empty():
+			you.add_child(UIKit.label(tr("READY_WAITING_FOR") % ", ".join(waiting), 16, UITheme.INK_SOFT, HORIZONTAL_ALIGNMENT_RIGHT))
+		h.add_child(you)
+	elif vote_pending(meta):
 		# The Sim refuses "ready" until the local player voted or abstained.
 		rb.disabled = true
 		rb.tooltip_text = tr("SPAETI_READY_VOTE_FIRST")
@@ -979,6 +1047,15 @@ func _on_reroll() -> void:
 		return
 	UIApi.sfx("ui_click")
 	UIApi.request("reroll")
+
+
+func _on_levelup_reroll() -> void:
+	var me := _me()
+	if int(me.get("free_rerolls", 0)) <= 0 and int(me.get("levelup_reroll_price", 0)) > int(me.get("pfand", 0)):
+		_deny()
+		return
+	UIApi.sfx("ui_click")
+	UIApi.request("levelup_reroll")
 
 
 ## Opens a dialog on top of the Späti; `focus_back` names the control that

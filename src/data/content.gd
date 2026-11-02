@@ -18,9 +18,9 @@ const BASE_STATS := {
 
 ## Amount a single level-up adds to a stat.
 const LEVELUP_AMOUNTS := {
-	"max_hp": 3.0, "hp_regen": 2.0, "lifesteal": 2.0, "damage": 5.0, "melee": 2.0,
+	"max_hp": 5.0, "hp_regen": 3.0, "lifesteal": 2.0, "damage": 5.0, "melee": 2.0,
 	"ranged": 2.0, "status": 2.0, "attack_speed": 5.0, "crit": 4.0, "summon": 2.0,
-	"range": 25.0, "armor": 1.0, "dodge": 3.0, "speed": 4.0, "luck": 6.0,
+	"range": 25.0, "armor": 2.0, "dodge": 3.0, "speed": 4.0, "luck": 6.0,
 	"income": 2.0, "pickup": 20.0, "xp": 8.0,
 }
 
@@ -42,7 +42,7 @@ const CHARACTERS := {
 	"sozialtourist": {"ult": "urlaubsantrag", "mods": {"max_hp": -3.0}, "weapon": "pfandflasche", "locked": false, "quote": "merz-06",
 		"start_pfand": 30, "free_rerolls": 2},
 	"buergergeld": {"ult": "antrag_gestellt", "mods": {"income": 8.0, "damage": -20.0}, "weapon": "gendersternchen", "locked": false, "quote": ""},
-	"klimakleber": {"ult": "strassenblockade", "mods": {"speed": -20.0}, "weapon": "kleber", "locked": false, "quote": ""},
+	"klimakleber": {"ult": "strassenblockade", "mods": {"speed": -10.0, "status": 3.0}, "weapon": "kleber", "locked": false, "quote": ""},
 	"lastenrad": {"ult": "critical_mass", "mods": {"speed": 25.0}, "weapon": "megafon", "locked": false, "quote": "", "max_weapons": 7},
 	"gewerkschaft": {"ult": "tarifrunde", "mods": {"summon": 2.0}, "weapon": "infostand", "locked": false, "quote": ""},
 	"antifa": {"ult": "schwarzer_block", "mods": {"speed": 10.0, "damage": 10.0}, "weapon": "farbbeutel", "locked": false, "quote": ""},
@@ -59,6 +59,7 @@ const WEAPON_ORDER: Array[String] = [
 	"transparent", "mietspiegel", "tofu", "farbbeutel", "kleber", "infostand",
 	"kartoffelbrei", "trillerpfeife", "brandmauer_ziegel", "normenkontrolle",
 	"unterschriftenliste", "scheinwerfer", "neun_euro_ticket", "weisser_overall",
+	"fahnenstange", "bierkiste", "strassenkreide",
 ]
 
 const WEAPONS := {
@@ -76,32 +77,39 @@ const WEAPONS := {
 		"scale": {"melee": 0.8}, "price": 22, "melee": true},
 	"transparent": {"kind": "cone", "dmg": [7, 12, 19, 30], "cd": 1.4, "range": 110.0, "arc": 360.0, "knock": 60.0,
 		"scale": {"melee": 0.7}, "price": 24, "melee": true},
-	"mietspiegel": {"kind": "orbit", "dmg": [4, 7, 11, 18], "cd": 0.5, "range": 90.0, "count": [1, 1, 2, 2],
+	"mietspiegel": {"kind": "orbit", "dmg": [6, 10, 16, 26], "cd": 0.5, "range": 90.0, "count": [1, 1, 2, 2],
 		"scale": {"melee": 0.5}, "price": 26, "melee": true},
-	"tofu": {"kind": "shot", "dmg": [2, 3, 5, 8], "cd": 1.0, "range": 340.0, "speed": 460.0, "proj": "tofu",
-		"poison": [3, 5, 8, 13], "poison_time": 3.0, "scale": {"status": 1.0}, "price": 20},
-	"farbbeutel": {"kind": "shot", "dmg": [5, 8, 13, 20], "cd": 1.3, "range": 360.0, "speed": 430.0, "proj": "farbe",
+	"tofu": {"kind": "shot", "dmg": [3, 5, 8, 13], "cd": 1.0, "range": 340.0, "speed": 460.0, "proj": "tofu",
+		"poison": [5, 8, 13, 21], "poison_time": 3.0, "scale": {"status": 1.0}, "price": 20},
+	"farbbeutel": {"kind": "shot", "dmg": [7, 11, 18, 29], "cd": 1.3, "range": 360.0, "speed": 430.0, "proj": "farbe",
 		"splash": 70.0, "slow": 0.4, "slow_time": 2.0, "scale": {"status": 0.8, "ranged": 0.4}, "price": 22},
-	"kleber": {"kind": "puddle", "dmg": [2, 4, 6, 10], "cd": 2.2, "range": 300.0, "radius": 60.0, "life": 3.0,
+	"kleber": {"kind": "puddle", "dmg": [4, 7, 11, 18], "cd": 2.2, "range": 300.0, "radius": 60.0, "life": 3.0,
 		"slow": 0.7, "scale": {"status": 1.0}, "price": 24},
-	"infostand": {"kind": "turret", "dmg": [4, 7, 11, 17], "cd": 5.0, "range": 300.0, "fire_cd": 0.6, "life": 10.0,
-		"max": 2, "proj": "flugblatt", "speed": 520.0, "scale": {"summon": 1.0}, "price": 26},
+	"infostand": {"kind": "turret", "dmg": [4, 6, 10, 15], "cd": 5.0, "range": 300.0, "fire_cd": 0.6, "life": 10.0,
+		"max": 2, "proj": "flugblatt", "speed": 520.0, "scale": {"summon": 0.8}, "price": 26},
 	"kartoffelbrei": {"kind": "lob", "dmg": [18, 30, 48, 77], "cd": 3.0, "range": 340.0, "radius": 110.0,
 		"delay": 0.8, "proj": "kartoffelbrei", "scale": {"ranged": 1.0}, "price": 26},
-	"trillerpfeife": {"kind": "cone", "dmg": [4, 7, 11, 17], "cd": 2.0, "range": 150.0, "arc": 360.0, "knock": 0.0,
+	"trillerpfeife": {"kind": "cone", "dmg": [5, 8, 13, 21], "cd": 2.0, "range": 150.0, "arc": 360.0, "knock": 0.0,
 		"stun": 0.6, "scale": {"melee": 0.6}, "price": 22, "melee": true},
 	"brandmauer_ziegel": {"kind": "wall", "dmg": [3, 5, 8, 13], "cd": 4.0, "range": 220.0, "width": 140.0,
 		"life": 6.0, "slow": 0.4, "max": 2, "scale": {"summon": 1.0}, "price": 26},
-	"normenkontrolle": {"kind": "mark", "dmg": [30, 50, 80, 129], "cd": 4.5, "range": 360.0, "delay": 3.0,
+	"normenkontrolle": {"kind": "mark", "dmg": [45, 75, 120, 193], "cd": 4.5, "range": 360.0, "delay": 3.0,
 		"scale": {"status": 1.0}, "price": 28},
 	"unterschriftenliste": {"kind": "chain", "dmg": [5, 8, 13, 21], "cd": 1.4, "range": 260.0, "jumps": 3,
 		"jump_range": 120.0, "falloff": 0.2, "scale": {"ranged": 0.9}, "price": 22},
 	"scheinwerfer": {"kind": "beam", "dmg": [14, 23, 37, 60], "cd": 2.2, "range": 400.0, "width": 22.0,
 		"expose": 5.0, "expose_crit": 15.0, "scale": {"ranged": 1.0}, "price": 26},
-	"neun_euro_ticket": {"kind": "fan", "dmg": [2, 3, 5, 9], "cd": 1.5, "range": 180.0, "count": 9, "count_late": 5,
+	"neun_euro_ticket": {"kind": "fan", "dmg": [3, 5, 8, 13], "cd": 1.5, "range": 180.0, "count": 9, "count_late": 5,
 		"late_wave": 4, "arc": 60.0, "speed": 520.0, "proj": "ticket", "scale": {"ranged": 0.5}, "price": 18},
 	"weisser_overall": {"kind": "swarm", "dmg": [6, 10, 16, 26], "cd": 4.0, "range": 300.0, "count": 3,
 		"scale": {"summon": 1.0}, "price": 24},
+	# More melee and zone weapons (GDD §11, D-080)
+	"fahnenstange": {"kind": "thrust", "dmg": [10, 17, 27, 43], "cd": 1.0, "range": 190.0, "width": 18.0, "arc": 6.0,
+		"knock": 50.0, "scale": {"melee": 0.9}, "price": 22, "melee": true},
+	"bierkiste": {"kind": "cone", "dmg": [22, 37, 59, 95], "cd": 2.4, "range": 120.0, "arc": 360.0, "knock": 220.0,
+		"stun": 0.3, "scale": {"melee": 1.2}, "price": 26, "melee": true},
+	"strassenkreide": {"kind": "trail", "dmg": [9, 15, 24, 39], "cd": 0.35, "range": 60.0, "radius": 26.0, "life": 4.0,
+		"spacing": 24.0, "scale": {"status": 0.8}, "price": 24},
 }
 
 const TIER_PRICE_MULT := [1.0, 1.8, 3.2, 5.5]
@@ -150,13 +158,13 @@ const ITEMS := {
 	"bierdeckel": {"mods": {}, "flags": [], "price": 5, "rarity": 1},
 	"faxgeraet": {"mods": {"damage": 40.0}, "flags": ["fax"], "price": 30, "rarity": 3},
 	"db_ticket": {"mods": {"speed": 30.0}, "flags": ["db_ticket"], "price": 20, "rarity": 2},
-	"thermoskanne": {"mods": {"hp_regen": 2.0}, "price": 16, "rarity": 1},
+	"thermoskanne": {"mods": {"hp_regen": 3.0}, "price": 16, "rarity": 1},
 	"betriebsrat": {"mods": {"armor": 3.0, "speed": -3.0}, "price": 22, "rarity": 2},
 	"solibutton": {"mods": {"max_hp": 10.0}, "price": 20, "rarity": 1},
-	"mate_kiste": {"mods": {"attack_speed": 15.0, "max_hp": -3.0}, "price": 22, "rarity": 2},
+	"mate_kiste": {"mods": {"attack_speed": 12.0, "max_hp": -3.0}, "price": 22, "rarity": 2},
 	"gewerkschaftsweste": {"mods": {"armor": 2.0, "max_hp": 5.0}, "price": 24, "rarity": 2},
-	"wut_tagebuch": {"mods": {"damage": 12.0}, "price": 24, "rarity": 2},
-	"lautsprecherwagen": {"mods": {"ranged": 3.0, "range": 30.0}, "price": 24, "rarity": 2},
+	"wut_tagebuch": {"mods": {"damage": 10.0}, "price": 24, "rarity": 2},
+	"lautsprecherwagen": {"mods": {"ranged": 2.0, "range": 30.0}, "price": 24, "rarity": 2},
 	"strickliesel": {"mods": {"ranged": 3.0}, "price": 18, "rarity": 1},
 	"bolzenschneider": {"mods": {"crit": 5.0, "melee": 2.0}, "price": 24, "rarity": 2},
 	"schwarzfahrer_muetze": {"mods": {"dodge": 8.0}, "price": 22, "rarity": 2},
@@ -177,13 +185,13 @@ const ITEMS := {
 	"vogelschiss": {"mods": {"damage": 1.0}, "price": 3, "rarity": 1, "hidden": true},
 	"reichsausweis": {"mods": {}, "price": 0, "rarity": 1, "hidden": true, "no_shop": true},
 	# green: one simple bonus
-	"isomatte": {"mods": {"armor": 1.0}, "price": 12, "rarity": 1},
+	"isomatte": {"mods": {"armor": 2.0}, "price": 12, "rarity": 1},
 	"club_mate": {"mods": {"attack_speed": 6.0}, "price": 14, "rarity": 1},
-	"fahrradhelm": {"mods": {"max_hp": 4.0}, "price": 10, "rarity": 1},
+	"fahrradhelm": {"mods": {"max_hp": 6.0}, "price": 10, "rarity": 1},
 	"frisbee": {"mods": {"ranged": 2.0}, "price": 12, "rarity": 1},
 	"taschenlampe": {"mods": {"crit": 3.0}, "price": 12, "rarity": 1},
 	"flugblatt_stapel": {"mods": {"summon": 2.0}, "price": 12, "rarity": 1},
-	"kirschkernkissen": {"mods": {"hp_regen": 1.0}, "price": 10, "rarity": 1},
+	"kirschkernkissen": {"mods": {"hp_regen": 2.0}, "price": 10, "rarity": 1},
 	# blue: good, sometimes with a malus
 	"megafon_akku": {"mods": {"ranged": 5.0, "attack_speed": -5.0}, "price": 26, "rarity": 2},
 	"arbeitshandschuhe": {"mods": {"melee": 4.0, "armor": 2.0}, "price": 30, "rarity": 2},
@@ -306,7 +314,7 @@ const PROJ_ORDER: Array[String] = [
 const PICKUP_ORDER: Array[String] = ["pfand", "passant", "geldschein", "stulle", "reichsausweis"]
 const HAZARD_ORDER: Array[String] = [
 	"kleber", "mietzone", "kerosin", "lob_marker", "sitzblockade", "explosion", "abschiebezone",
-	"push_ring", "farbklecks", "brei_marker", "ziegel", "paragraf",
+	"push_ring", "farbklecks", "brei_marker", "ziegel", "paragraf", "kreide",
 ]
 const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse", "overall"]
 
@@ -359,8 +367,51 @@ const ORG_ORDER: Array[String] = ["gewerkschaft", "antifa", "omas"]
 
 const DIFFICULTY_PERCENT := [10, 15, 20, 25, 30, 35]
 
+## Every balancing knob (docs/specs/balancing.md). Measured with tools/balance_matrix.sh.
+const BALANCE := {
+	# enemies: HP × (1 + hp_lin·w + hp_quad·w² + hp_cubic·w³), dmg × (dmg_base + dmg_lin·w)
+	"hp_lin": 0.18, "hp_quad": 0.018, "hp_cubic": 0.0007, "dmg_base": 0.5, "dmg_lin": 0.095,
+	"coop_hp": 0.10, "coop_spawn": 0.55,     # × (1 + k·(players − 1))
+	"spawn_base": 0.32, "spawn_lin": 0.15,   # spawns per second: base + lin·wave
+	"diff_hp": 0.15, "diff_dmg": 0.10, "diff_spawn": 0.08,   # Umfrage level L: × (1 + k·L)
+	# elites and bosses
+	"elite_base": 0.6, "elite_coop": 0.45,   # HP × (base + coop·(players − 1))
+	"final_boss_mult": 0.9,                  # Die Remigrantin's HP on top
+	"elite_wave_exp": 0.6,                   # elite HP × (enemy HP curve(wave) / curve(5)) ^ this
+	"boss_wave_spawn": 0.25,                 # regular spawn rate while an elite/boss is alive
+	"enrage_at": 0.5, "enrage_tempo": 1.4,          # phase 2: AI runs 1.4× as fast below 50 % HP
+	# economy: prices × (1 + price_lin·w + price_quad·w² + price_cubic·w³), w = wave − 1
+	"price_lin": 0.08, "price_quad": 0.009, "price_cubic": 0.0004,
+	"pfand_mult": 1.2,                      # Pfand per kill × this
+	# Reichensteuer (co-op, balancing.md §5a): part above threshold × others' average is taxed
+	# at a rate by player count and goes to the poorest first; givers keep reich_keep more
+	"reich_threshold": 1.5, "reich_min": 5, "reich_rate": {2: 0.5, 3: 0.6, 4: 0.7}, "reich_keep": 0.1,
+	"reich_benchmark": "poorer",              # "poorer": average of the poorer players; "others": of all others
+	# level-ups: picks granted after a wave, from that wave on
+	"levelup_schedule": [[1, 1], [5, 2], [12, 3]],
+	"levelup_rarity_mult": [1.0, 2.0, 3.0, 5.0],
+	# Umverteilung: % chance per point and hit to heal 1 HP (Brotato)
+	"lifesteal_chance": 1.0,
+}
+
 static func difficulty_mult(level: int) -> Dictionary:
-	return {"hp": 1.0 + 0.12 * level, "dmg": 1.0 + 0.10 * level, "spawn": 1.0 + 0.08 * level}
+	return {"hp": 1.0 + BALANCE["diff_hp"] * level, "dmg": 1.0 + BALANCE["diff_dmg"] * level,
+		"spawn": 1.0 + BALANCE["diff_spawn"] * level}
+
+
+## Enemy HP factor for a wave (balancing.md §3): 1 + lin·w + quad·w² + cubic·w³, w = wave − 1.
+static func enemy_hp_curve(wave: int) -> float:
+	var w := float(wave - 1)
+	return 1.0 + BALANCE["hp_lin"] * w + BALANCE["hp_quad"] * w * w + BALANCE["hp_cubic"] * w * w * w
+
+
+## Level-up picks granted after `wave` (balancing.md §4).
+static func levelups_after_wave(wave: int) -> int:
+	var n := 0
+	for entry in BALANCE["levelup_schedule"]:
+		if wave >= int(entry[0]):
+			n = int(entry[1])
+	return n
 
 # --- Koalitionsvertrag (GDD §16) ---------------------------------------------
 # Voted before waves 4, 8, 12, 16. Not unanimous -> highest badness wins.
@@ -407,10 +458,15 @@ static func weapon_damage(id: String, tier: int) -> float:
 
 static func weapon_price(id: String, tier: int, wave: int) -> int:
 	var base: float = WEAPONS[id]["price"] * TIER_PRICE_MULT[clampi(tier, 1, 4) - 1]
-	return int(round(base * (1.0 + 0.08 * (wave - 1))))
+	return int(round(base * price_mult(wave)))
 
 static func item_price(id: String, wave: int) -> int:
-	return int(round(ITEMS[id]["price"] * (1.0 + 0.08 * (wave - 1))))
+	return int(round(ITEMS[id]["price"] * price_mult(wave)))
+
+## Shop price factor for a wave (balancing.md §5).
+static func price_mult(wave: int) -> float:
+	var w := float(wave - 1)
+	return 1.0 + BALANCE["price_lin"] * w + BALANCE["price_quad"] * w * w + BALANCE["price_cubic"] * w * w * w
 
 static func sell_price(id: String, tier: int, wave: int) -> int:
 	return int(weapon_price(id, tier, wave) * 0.4)

@@ -30,6 +30,7 @@ const PAPER := Color("fffbea")
 const SWING_COLORS := {
 	"doener": Color(0.85, 0.5, 0.15), "grundgesetz": Color(0.2, 0.35, 0.75), "megafon": Color(0.85, 0.2, 0.2),
 	"transparent": Color(0.55, 0.25, 0.7), "oma": Color(0.2, 0.45, 0.8),
+	"fahnenstange": Color(0.85, 0.15, 0.15), "bierkiste": Color(0.2, 0.5, 0.25),
 }
 
 var world: WorldView
@@ -276,6 +277,16 @@ func _draw_swing(s: Dictionary) -> void:
 		for j in 3:
 			var r := rng * clampf(k * 1.4 - j * 0.18, 0.1, 1.0)
 			draw_arc(pos, r, ang - arc * 0.5, ang + arc * 0.5, 14, c, 4.0 - j)
+		return
+	if id == "fahnenstange":
+		# a quick jab: the pole shoots out and back, a flag flutters at the tip
+		var reach := rng * (sin(PI * minf(1.0, k * 1.6)) * 0.85 + 0.15)
+		var dirv := Vector2(cos(ang), sin(ang))
+		var tip := pos + dirv * reach
+		draw_line(pos + dirv * 14.0, tip, Color(0.55, 0.36, 0.2, c.a), 4.0)
+		var side := dirv.orthogonal() * -1.0
+		draw_colored_polygon(PackedVector2Array([tip, tip - dirv * 22.0, tip - dirv * 20.0 + side * 14.0, tip + side * 12.0]), c)
+		draw_line(tip - dirv * reach * 0.7, tip, Color(c, c.a * 0.35), 10.0)
 		return
 	if arc >= TAU - 0.01:
 		var sweep := TAU * (0.35 + k * 0.65)
@@ -648,9 +659,9 @@ func _ult_antrag(u: Dictionary, t: float, a: float) -> void:
 ## Straßenblockade: protest signs pop up along the glue strip, "BLOCKADE!" banner.
 func _ult_blockade(u: Dictionary, t: float, a: float) -> void:
 	var p: Vector2 = u["pos"]
-	var x := 75.0
+	var x := Arena.INNER.position.x + 75.0
 	var idx := 0
-	while x < WorldView.ARENA.x - 40.0:
+	while x < Arena.INNER.end.x - 40.0:
 		if absf(x - p.x) > 60.0:
 			var k := _pop(t - absf(x - p.x) / 1400.0)
 			if k > 0.0:

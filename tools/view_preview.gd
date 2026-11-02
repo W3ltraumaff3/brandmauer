@@ -66,6 +66,9 @@ func _run() -> void:
 	if _want("overview"):
 		for st in 5:
 			await _shot_overview(st)
+	if _want("ring"):
+		for st in [0, 2, 4]:
+			await _shot_ring(st)
 	if _want("enemies"):
 		await _shot_enemies(4, "enemies_s4")
 		await _shot_enemies(0, "enemies_s0")
@@ -135,7 +138,8 @@ func _vs(stage: int) -> ViewState:
 	vs.stage = stage
 	vs.wave = 7
 	vs.wave_time_left = 23.4
-	vs.wall = 0xFFF & ~((1 << 3) | (1 << 8))
+	# four walls (GDD §5a): holes on the top (3, 8), right (15), bottom (25) and left (34)
+	vs.wall = ((1 << Arena.WALL_SEGMENTS) - 1) & ~((1 << 3) | (1 << 8) | (1 << 15) | (1 << 25) | (1 << 34))
 	return vs
 
 
@@ -191,7 +195,7 @@ func _shot_overview(st: int) -> void:
 		_enemy(vs, types[i % types.size()], Vector2(rng.randf_range(150, 1450), rng.randf_range(160, 900)))
 	for i in 4:
 		_enemy(vs, "besorgter_buerger", Vector2(200 + i * 300, 45))
-	_enemy(vs, "ju_schnoesel", Vector2(3.5 * WorldView.SEG_W, 120), ViewState.EF_PARKED)
+	_enemy(vs, "ju_schnoesel", Arena.seg_inner(2, 19.0), ViewState.EF_PARKED)
 	for i in 30:
 		vs.k_type.append(i % 3)
 		vs.k_pos.append(Vector2(rng.randf_range(150, 1450), rng.randf_range(160, 900)))
@@ -212,6 +216,40 @@ func _shot_overview(st: int) -> void:
 	_show(vs, Vector2(800, 500), 0.8, m)
 	await _capture("overview_s%d" % st, 6)
 	hud.visible = false
+
+
+## The whole sheet: four Brandmauer walls, holes on every side, AfD enemies
+## queueing behind every wall, one stepping through a hole (GDD §5a). Plus two
+## close-ups of opposite corners (pillars, rotated text and rubble).
+func _shot_ring(st: int) -> void:
+	_clear_labels()
+	var vs := _vs(st)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	for side in 4:
+		for i in 5:
+			_enemy(vs, ["besorgter_buerger", "telegram_onkel", "identitaerer_hipster", "reichsbuerger"][(i + side) % 4],
+				Arena.staging_point(side, 0.1 + i * 0.2 + rng.randf_range(-0.04, 0.04)))
+	for h in [3, 15, 25, 34]:
+		_enemy(vs, "besorgter_buerger", Arena.seg_center(h) + Arena.inward(h) * 6.0)
+		_enemy(vs, "ju_schnoesel", Arena.seg_inner(h + 1, 19.0), ViewState.EF_PARKED)
+	var chars := ["oma", "antifa", "stadtbild", "lastenrad"]
+	for i in 4:
+		_player(vs, i + 1, chars[i], Arena.CENTER + Vector2(-165 + i * 110, 0), ["stricknadeln"], {"aim": 0.4 * i})
+	var m := _meta(4)
+	m["team"]["stage"] = st
+	m["wall_holes"] = 5
+	hud.visible = true
+	_show(vs, Arena.CENTER, 0.56, m)
+	await _capture("ring_s%d" % st, 6)
+	hud.visible = false
+	if st == 4:
+		_show(vs, Vector2(330, 1000), 1.3, m)
+		await _capture("ring_corner_bl")
+		_show(vs, Vector2(1650, 230), 1.3, m)
+		await _capture("ring_corner_tr")
+		_show(vs, Vector2(1850, 90), 5.0, m)
+		await _capture("ring_corner_tr_zoom")
 
 
 func _shot_enemies(st: int, name: String) -> void:
@@ -760,7 +798,7 @@ func _hz(vs: ViewState, id: String, pos: Vector2, r: float, life: float) -> void
 
 func _weapons_vs() -> ViewState:
 	var vs := _vs(4)
-	vs.wall = 0xFFF
+	vs.wall = (1 << Arena.WALL_SEGMENTS) - 1
 	# Kartoffelbrei: blob in flight above its target marker, plus a fresh splat
 	_player(vs, 1, "oma", Vector2(200, 330), ["kartoffelbrei"], {"aim": 0.0})
 	_hz(vs, "brei_marker", Vector2(440, 330), 110.0 * 0.6, 0.5)

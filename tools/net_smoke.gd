@@ -19,6 +19,14 @@ extends SceneTree
 ##   without telling the host, reconnects with its token and exits 0 only if its
 ##   player id stayed the same on a new peer id and it got >= 5 snapshots (with its
 ##   player not away) plus meta after the reconnect.
+##
+## Rejoin after a crash (networking.md §7.5), against a second host-run:
+##   godot --headless --path . -s res://tools/net_smoke.gd -- join-crash
+##   godot --headless --path . -s res://tools/net_smoke.gd -- rejoin
+## join-crash: joins, waits for >= 10 run snapshots, writes its session to a temp
+##   file and kills its own process (no goodbye, like a crash).
+## rejoin: a fresh process; Game.open_rejoin() with that session must get the run
+##   config, its old player id and >= 5 snapshots (player not away) plus meta.
 
 const SMOKE_PORT := 24813
 const RUN_PORT := 24815
@@ -81,7 +89,20 @@ func _start() -> void:
 		net.name = "Net"
 		root.add_child(net)
 	game = root.get_node_or_null("Game")
+	var save := root.get_node_or_null("Save")
+	if save:
+		save.persist = false   # never touch the player's save or rejoin file
 	match role:
+		"join-crash", "rejoin":
+			if game == null:
+				_finish(1, "the rejoin scenario needs the Game autoload")
+				return
+			if role == "join-crash":
+				net.snapshot_received.connect(_on_crash_snapshot)
+				net.connection_failed.connect(func(reason): _finish(1, "connection failed: %s" % reason))
+				game.open_join("127.0.0.1", RUN_PORT, "SmokeCrash")
+			else:
+				_start_rejoin()
 		"host-run", "join-reconnect":
 			if game == null:
 				_finish(1, "the reconnect scenario needs the Game autoload")
@@ -115,6 +136,14 @@ func _process(delta: float) -> bool:
 	if done:
 		return false   # _finish quits once the goodbye went out
 	elapsed += delta
+	if role == "join-crash" or role == "rejoin":
+		if elapsed > RUN_TIMEOUT_S:
+			_finish(1, "timeout (role %s, run snapshots %d, after %d, meta %s, errors %s)"
+					% [role, run_snapshots, after_snapshots, after_meta_ok, join_errors])
+		elif role == "rejoin" and game.is_running() and after_snapshots >= 5 and after_meta_ok:
+			_finish(0 if join_errors.is_empty() else 1, "back in the run as player %d, %d snapshots + meta, errors %s"
+					% [first_pid, after_snapshots, join_errors])
+		return false
 	if role == "host-run" or role == "join-reconnect":
 		if elapsed > RUN_TIMEOUT_S:
 			_finish(1, "timeout (role %s, host errors %s, join errors %s, away %s, back %s, run snapshots %d, after %d, meta %s)"
@@ -359,6 +388,52 @@ func _on_rc_reconnected() -> void:
 		join_errors.append("run lost on reconnect")
 	reconnected_ok = true
 	print("[smoke join-reconnect] reconnected after %.1f s as player %d on peer %d" % [elapsed - drop_at, first_pid, peer])
+
+
+# --- Rejoin-after-crash scenario --------------------------------------------------------
+
+static func _session_file() -> String:
+	return OS.get_temp_dir().path_join("brandmauer_smoke_rejoin.json")
+
+
+func _on_crash_snapshot(bytes: PackedByteArray) -> void:
+	var vs := Snapshot.decode(bytes)
+	if vs == null or vs.find_player(net.local_player_id()).is_empty():
+		return
+	run_snapshots += 1
+	if run_snapshots != 10:
+		return
+	var session: Dictionary = net.session_info()
+	var f := FileAccess.open(_session_file(), FileAccess.WRITE)
+	if session.is_empty() or f == null:
+		_finish(1, "no session to save")
+		return
+	f.store_string(JSON.stringify(session))
+	f.close()
+	print("[smoke join-crash] player %d, %d run snapshots, crashing now" % [int(session["player"]), run_snapshots])
+	OS.kill(OS.get_process_id())   # no goodbye, no cleanup: like a real crash
+
+
+func _start_rejoin() -> void:
+	var f := FileAccess.open(_session_file(), FileAccess.READ)
+	var session = JSON.parse_string(f.get_as_text()) if f else null
+	if f:
+		f.close()
+		DirAccess.remove_absolute(_session_file())
+	if not (session is Dictionary):
+		_finish(1, "no session file from join-crash")
+		return
+	first_pid = int(session["player"])
+	game.get_node("/root/Save").set_rejoin({"ip": str(session["ip"]), "port": int(session["port"]),
+		"token": str(session["token"]), "player": first_pid})
+	net.disconnected.connect(func(reason): _finish(1, "rejoin failed: %s" % reason))
+	net.reconnected.connect(func(): reconnected_ok = true)
+	net.snapshot_received.connect(_on_rc_snapshot)
+	net.meta_received.connect(_on_rc_meta)
+	if not game.open_rejoin():
+		_finish(1, "open_rejoin refused the session")
+		return
+	print("[smoke rejoin] rejoining as player %d" % first_pid)
 
 
 func _finish(code: int, msg: String) -> void:

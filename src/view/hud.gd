@@ -394,7 +394,7 @@ func _draw_wall_info(vs: ViewState, meta: Dictionary, sz: Vector2) -> void:
 	var holes := int(meta.get("wall_holes", -1))
 	if holes < 0:
 		holes = 0
-		for i in WorldView.WALL_SEGMENTS:
+		for i in Arena.WALL_SEGMENTS:
 			if not (vs.wall & (1 << i)):
 				holes += 1
 	var s: String
@@ -404,16 +404,29 @@ func _draw_wall_info(vs: ViewState, meta: Dictionary, sz: Vector2) -> void:
 		s = tr("HUD_WALL_HOLE_ONE")
 	else:
 		s = tr("HUD_WALL_HOLES") % holes
-	var w := _hand.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x + 44
+	var w := _hand.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x + 56
 	var r := Rect2(sz.x - 14 - w, 96, w, 30)
 	_panel(r, Color("ecd9cf"), 5)
-	# tiny brick icon
-	var b := Rect2(r.position + Vector2(9, 8), Vector2(20, 14))
-	draw_rect(b, Color("b5654a"))
-	draw_line(b.position + Vector2(0, 7), b.position + Vector2(20, 7), Color("6a3a2a"), 1.0)
-	draw_line(b.position + Vector2(10, 0), b.position + Vector2(10, 7), Color("6a3a2a"), 1.0)
-	draw_rect(b, INK, false, 1.5)
-	_txt(s, Vector2(r.position.x + 36, r.position.y + 22), 19, RED if holes > 0 else INK)
+	_draw_wall_map(vs.wall, Rect2(r.position + Vector2(9, 6), Vector2(30, 19)))
+	_txt(s, Vector2(r.position.x + 48, r.position.y + 22), 19, RED if holes > 0 else INK)
+
+
+## Tiny map of the four Brandmauer walls (GDD §5a): brick strokes for intact
+## segments, short red ticks where a hole is, so you see on which side.
+func _draw_wall_map(mask: int, m: Rect2) -> void:
+	var k := m.size / Arena.SIZE
+	var brick := Color("b5654a")
+	for i in Arena.WALL_SEGMENTS:
+		var sr := Arena.seg_rect(i)
+		var c := m.position + sr.get_center() * k
+		var along := Vector2(sr.size.x * k.x, 0) if sr.size.x > sr.size.y else Vector2(0, sr.size.y * k.y)
+		if mask & (1 << i):
+			draw_line(c - along * 0.5, c + along * 0.5, brick, 3.0)
+		else:
+			var across := Vector2(along.y, along.x).normalized() * 2.5
+			draw_line(c - across, c + across, RED, 2.0)
+	for pr in Arena.pillars():
+		draw_rect(Rect2(m.position + pr.position * k - Vector2(1, 1), Vector2(2.5, 2.5)), INK)
 
 
 func _draw_team(vs: ViewState, meta: Dictionary) -> void:
@@ -746,7 +759,7 @@ func _draw_overlay(o: Dictionary, sz: Vector2) -> void:
 		"wave_end":
 			draw_set_transform(c + Vector2(0, -90), 0.03, Vector2.ONE)
 			_txt(tr("HUD_WAVE_END"), Vector2(-sz.x * 0.5, 0), 60, Color(0.2, 0.5, 0.25, a), null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 10)
-			_txt(tr("HUD_WAVE_END_SUB"), Vector2(-sz.x * 0.5, 40), 26, Color(0.35, 0.3, 0.25, a), null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
+			_txt(tr("HUD_WAVE_END_SUB") % int(d.get("wave", 0)), Vector2(-sz.x * 0.5, 40), 26, Color(0.35, 0.3, 0.25, a), null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
 		"over":
 			var won: bool = d["won"]

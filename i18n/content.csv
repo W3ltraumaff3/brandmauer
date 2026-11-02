@@ -1,38 +1,38 @@
 keys,de
 STAT_MAX_HP,Solidarität
-STAT_MAX_HP_DESC,Maximale Lebenspunkte. Gemeinsam hält man mehr aus. Pro Stufe +3.
+STAT_MAX_HP_DESC,Maximale Lebenspunkte. Gemeinsam hält man mehr aus. Level-up: +5, seltene mehr.
 STAT_HP_REGEN,Krankenschein
-STAT_HP_REGEN_DESC,"Lebensregeneration. Drei Tage zu Hause, ganz offiziell. Pro Stufe +2."
+STAT_HP_REGEN_DESC,"Lebensregeneration. Drei Tage zu Hause, ganz offiziell. Level-up: +3, seltene mehr."
 STAT_LIFESTEAL,Umverteilung
-STAT_LIFESTEAL_DESC,"Leben bei Treffer. Du nimmst es von denen, die zu viel haben. Pro Stufe +2."
+STAT_LIFESTEAL_DESC,"Jeder Punkt: 1 % Chance pro Treffer auf 1 Leben. Du nimmst es von denen, die zu viel haben."
 STAT_DAMAGE,Wut
-STAT_DAMAGE_DESC,"Mehr Schaden in Prozent. Wer Miete zahlt, versteht das. Pro Stufe +5."
+STAT_DAMAGE_DESC,"Mehr Schaden in Prozent. Wer Miete zahlt, versteht das. Level-up: +5, seltene mehr."
 STAT_MELEE,Handarbeit
-STAT_MELEE_DESC,"Nahkampfschaden: Döner-Spieß, Grundgesetz, Transparent, Mietspiegel. Ehrliche Handarbeit. Pro Stufe +2."
+STAT_MELEE_DESC,"Nahkampfschaden: Döner-Spieß, Grundgesetz, Transparent, Mietspiegel. Ehrliche Handarbeit. Level-up: +2, seltene mehr."
 STAT_RANGED,Durchschlagskraft
-STAT_RANGED_DESC,"Schaden aller Fernwaffen: Gendersternchen, Pfandflasche, Megafon, Farbbeutel, Stricknadeln. Pro Stufe +2."
+STAT_RANGED_DESC,"Schaden aller Fernwaffen: Gendersternchen, Pfandflasche, Megafon, Farbbeutel, Stricknadeln. Level-up: +2, seltene mehr."
 STAT_STATUS,Ziviler Ungehorsam
-STAT_STATUS_DESC,"Gift- und Verlangsamungsschaden. Kleben, tofuen, nerven. Pro Stufe +2."
+STAT_STATUS_DESC,"Gift- und Verlangsamungsschaden. Kleben, tofuen, nerven. Level-up: +2, seltene mehr."
 STAT_ATTACK_SPEED,Akkord
-STAT_ATTACK_SPEED_DESC,Angriffstempo. Diesmal arbeitest du für dich. Pro Stufe +5.
+STAT_ATTACK_SPEED_DESC,Angriffstempo. Diesmal arbeitest du für dich. Level-up: +5, seltene mehr.
 STAT_CRIT,Direkte Aktion
-STAT_CRIT_DESC,Chance auf kritische Treffer. Spontan und gut organisiert. Pro Stufe +4.
+STAT_CRIT_DESC,Chance auf kritische Treffer. Spontan und gut organisiert. Level-up: +4, seltene mehr.
 STAT_SUMMON,Ehrenamt
-STAT_SUMMON_DESC,"Stärke deiner Helfer:innen. Unbezahlt, aber unbezahlbar. Pro Stufe +2."
+STAT_SUMMON_DESC,"Stärke deiner Helfer:innen. Unbezahlt, aber unbezahlbar. Level-up: +2, seltene mehr."
 STAT_RANGE,Reichweite
-STAT_RANGE_DESC,"Größere Reichweite, auch in den sozialen Medien. Pro Stufe +25."
+STAT_RANGE_DESC,"Größere Reichweite, auch in den sozialen Medien. Level-up: +25, seltene mehr."
 STAT_ARMOR,Kündigungsschutz
-STAT_ARMOR_DESC,"Rüstung: Jeder Treffer wird abgemildert. Fristgerecht, versteht sich. Pro Stufe +1."
+STAT_ARMOR_DESC,"Rüstung: Jeder Treffer wird abgemildert. Fristgerecht, versteht sich. Level-up: +2, seltene mehr."
 STAT_DODGE,Schwarzfahren
-STAT_DODGE_DESC,"Ausweichchance, maximal 60 %. Kontrolle? Nie gesehen. Pro Stufe +3."
+STAT_DODGE_DESC,"Ausweichchance, maximal 60 %. Kontrolle? Nie gesehen. Level-up: +3, seltene mehr."
 STAT_SPEED,Deutschlandticket
-STAT_SPEED_DESC,"Lauftempo. Fährt sogar, wenn die Bahn nicht fährt. Pro Stufe +4."
+STAT_SPEED_DESC,"Lauftempo. Fährt sogar, wenn die Bahn nicht fährt. Level-up: +4, seltene mehr."
 STAT_LUCK,Eltern
-STAT_LUCK_DESC,Glück. Bei manchen startet der Wert bei 9.000. Pro Stufe +6.
+STAT_LUCK_DESC,Glück. Bei manchen startet der Wert bei 9.000. Level-up: +6, seltene mehr.
 STAT_INCOME,Nebenjob
-STAT_INCOME_DESC,Du schiebst nach Feierabend noch eine Schicht: extra Pfand am Ende jeder Woche. Pro Stufe +2.
+STAT_INCOME_DESC,Du schiebst nach Feierabend noch eine Schicht: extra Pfand am Ende jeder Woche. Level-up: +2, seltene mehr.
 STAT_PICKUP,Pfandradar
-STAT_PICKUP_DESC,Einsammelradius. Du hörst jede Flasche klirren. Pro Stufe +20.
+STAT_PICKUP_DESC,Einsammelradius. Du hörst jede Flasche klirren. Level-up: +20, seltene mehr.
 STAT_XP,Vernetzung
 STAT_XP_DESC,"+8 % Zusammenhalt pro besiegter Gegner:in (Zusammenhalt = deine bzw. eure Erfahrung, wirkt auch solo). Dafür gibt es sogar eine Signal-Gruppe."
 CHAR_STADTBILD_NAME,Das Stadtbild
@@ -42,7 +42,7 @@ CHAR_SOZIALTOURIST_DESC,"Startet mit 30 Pfand und 2 Gratis-Rerolls, dafür −3 
 CHAR_BUERGERGELD_NAME,Bürgergeld-Empfänger:in
 CHAR_BUERGERGELD_DESC,"+8 Nebenjob, aber −20 Wut. Startet mit dem Gendersternchen. Faul? Gewinnt trotzdem über die Wirtschaft."
 CHAR_KLIMAKLEBER_NAME,Klimakleber:in
-CHAR_KLIMAKLEBER_DESC,"Starker Schaden im Stehen, bremst Gegner:innen. −20 Deutschlandticket. Startet mit dem Kleber."
+CHAR_KLIMAKLEBER_DESC,"Starker Schaden im Stehen, bremst Gegner:innen. −10 Deutschlandticket, +3 Ziviler Ungehorsam. Startet mit dem Kleber."
 CHAR_LASTENRAD_NAME,Lastenrad-Grüne
 CHAR_LASTENRAD_DESC,"+25 Deutschlandticket, Rammschaden, 7 statt 6 Waffenplätze (Transportkorb). Startet mit dem Megafon."
 CHAR_GEWERKSCHAFT_NAME,Gewerkschaftsmitglied
@@ -70,13 +70,13 @@ WEAPON_TRANSPARENT_DESC,Nahkampf · skaliert mit Handarbeit. Schlägt 360° um d
 WEAPON_MIETSPIEGEL_NAME,Mietspiegel
 WEAPON_MIETSPIEGEL_DESC,"Nahkampf (Orbit) · skaliert mit Handarbeit. Kreist um dich, ab Stufe 3 doppelt. Endlich mal verbindlich."
 WEAPON_TOFU_NAME,Tofu
-WEAPON_TOFU_DESC,"Fernkampf · skaliert mit Ziviler Ungehorsam. Gift: 3 Schaden über 3 s. Schmeckt nach nichts, wirkt trotzdem."
+WEAPON_TOFU_DESC,"Fernkampf · skaliert mit Ziviler Ungehorsam. Vergiftet 3 s lang. Schmeckt nach nichts, wirkt trotzdem."
 WEAPON_FARBBEUTEL_NAME,Farbbeutel
 WEAPON_FARBBEUTEL_DESC,"Fernkampf · skaliert mit Ziviler Ungehorsam (0,8) und Durchschlagskraft (0,4). Bremst um 40 %. Kunst am Bau."
 WEAPON_KLEBER_NAME,Kleber
-WEAPON_KLEBER_DESC,"Zone · skaliert mit Ziviler Ungehorsam. Pfützen, die 3 s lang um 70 % bremsen. Hält länger als jede Koalition."
+WEAPON_KLEBER_DESC,"Zone · skaliert mit Ziviler Ungehorsam. Pfützen: 3 s lang Schaden pro Sekunde und 70 % langsamer. Hält länger als jede Koalition."
 WEAPON_INFOSTAND_NAME,Infostand
-WEAPON_INFOSTAND_DESC,Gerät · skaliert mit Ehrenamt. Bis zu 2 Stände feuern 10 s lang Flugblätter. Haben Sie kurz Zeit für Demokratie?
+WEAPON_INFOSTAND_DESC,"Gerät · skaliert mit Ehrenamt (0,8). Bis zu 2 Stände feuern 10 s lang Flugblätter. Haben Sie kurz Zeit für Demokratie?"
 ITEM_SCHULDENBREMSE_NAME,Schuldenbremse
 ITEM_SCHULDENBREMSE_DESC,+15 Wut. Fluch: Pro Späti-Besuch darfst du nur begrenzt Geld ausgeben. Verfassungsrang für Geiz.
 ITEM_SONDERVERMOEGEN_NAME,Sondervermögen
@@ -88,17 +88,17 @@ ITEM_FAXGERAET_DESC,+40 Wut. Fluch: Jeder Angriff wird um 3 s verzögert. Piepst
 ITEM_DB_TICKET_NAME,DB-Ticket
 ITEM_DB_TICKET_DESC,+30 Deutschlandticket. Fluch: Zufällige Betäubung durch „Verspätung“ (+5 Min). Grund: Signalstörung.
 ITEM_THERMOSKANNE_NAME,Thermoskanne
-ITEM_THERMOSKANNE_DESC,+2 Krankenschein. Heißer Kaffee wärmt auch die Wut.
+ITEM_THERMOSKANNE_DESC,+3 Krankenschein. Heißer Kaffee wärmt auch die Wut.
 ITEM_BETRIEBSRAT_NAME,Betriebsrat
 ITEM_BETRIEBSRAT_DESC,"+3 Kündigungsschutz, −3 Deutschlandticket. Bewegt sich nur nach Sitzung."
 ITEM_SOLIBUTTON_NAME,Soli-Button
 ITEM_SOLIBUTTON_DESC,"+10 Solidarität. Der Anstecker, der mehr bewirkt als jede Pressemitteilung."
 ITEM_MATE_KISTE_NAME,Mate-Kiste
-ITEM_MATE_KISTE_DESC,"+15 Akkord, −3 Solidarität. Das Herz rast, die Hände auch."
+ITEM_MATE_KISTE_DESC,"+12 Akkord, −3 Solidarität. Das Herz rast, die Hände auch."
 ITEM_GEWERKSCHAFTSWESTE_NAME,Gewerkschaftsweste
 ITEM_GEWERKSCHAFTSWESTE_DESC,"+2 Kündigungsschutz, +5 Solidarität. Die Warnweste für den Warnstreik."
 ITEM_WUT_TAGEBUCH_NAME,Wut-Tagebuch
-ITEM_WUT_TAGEBUCH_DESC,+12 Wut. Heute: %s
+ITEM_WUT_TAGEBUCH_DESC,+10 Wut. Heute: %s
 WUT_TAGEBUCH_1,Mieterhöhung. Begründung: „Lage“. Die Lage ist ernst.
 WUT_TAGEBUCH_2,Der Zug kam pünktlich. Ich traue dem Frieden nicht.
 WUT_TAGEBUCH_3,Die Pfandflasche lag NEBEN dem Mülleimer. Neben. Dem. Mülleimer.
@@ -140,7 +140,7 @@ WUT_TAGEBUCH_38,Im Telegram-Chat der Familie: 47 neue Nachrichten. Ich bin nicht
 WUT_TAGEBUCH_39,"Freibad hatte geschlossen. Personalmangel. Wie überall, außer im Aufsichtsrat."
 WUT_TAGEBUCH_40,"Liebes Tagebuch, morgen wird's besser. Haha. Kleiner Scherz."
 ITEM_LAUTSPRECHERWAGEN_NAME,Lautsprecherwagen
-ITEM_LAUTSPRECHERWAGEN_DESC,"+3 Durchschlagskraft, +30 Reichweite. Die Straße gehört dir. Bis dich der Wasserwerfer kriegt."
+ITEM_LAUTSPRECHERWAGEN_DESC,"+2 Durchschlagskraft, +30 Reichweite. Die Straße gehört dir. Bis dich der Wasserwerfer kriegt."
 ITEM_STRICKLIESEL_NAME,Strickliesel
 ITEM_STRICKLIESEL_DESC,"+3 Durchschlagskraft. Meditation mit Wolle, Gegner:innen inklusive."
 ITEM_BOLZENSCHNEIDER_NAME,Bolzenschneider
@@ -257,17 +257,17 @@ ACH_ACH_VOGELSCHISS_DESC,Finde den versteckten Vogelschiss. Nur ein kleines Deta
 ACH_VOGELSCHISS_NAME,Fliegenschiss
 ACH_VOGELSCHISS_DESC,Finde den versteckten Vogelschiss. Nur ein kleines Detail.
 DIFF_0,Umfrage 10%
-DIFF_0_DESC,Immerhin noch zweistellig. Normale Gegnerstärke.
+DIFF_0_DESC,Immerhin noch zweistellig.
 DIFF_1,Umfrage 15%
-DIFF_1_DESC,"Die Zahlen steigen. Gegner:innen +12 % Leben, +10 % Schaden, +8 % Spawns."
+DIFF_1_DESC,Die Zahlen steigen.
 DIFF_2,Umfrage 20%
-DIFF_2_DESC,"Plötzlich sind alle „besorgt“. Gegner:innen +24 % Leben, +20 % Schaden, +16 % Spawns."
+DIFF_2_DESC,Plötzlich sind alle „besorgt“.
 DIFF_3,Umfrage 25%
-DIFF_3_DESC,"Man müsse die Sorgen ernst nehmen. Gegner:innen +36 % Leben, +30 % Schaden, +24 % Spawns."
+DIFF_3_DESC,Man müsse die Sorgen ernst nehmen.
 DIFF_4,Umfrage 30%
-DIFF_4_DESC,"Brandmauer? Nie gehört. Gegner:innen +48 % Leben, +40 % Schaden, +32 % Spawns."
+DIFF_4_DESC,Brandmauer? Nie gehört.
 DIFF_5,Umfrage 35%
-DIFF_5_DESC,"Das hat keiner kommen sehen. Gegner:innen +60 % Leben, +50 % Schaden, +40 % Spawns."
+DIFF_5_DESC,Das hat keiner kommen sehen.
 STAGE_0,Erschöpft
 STAGE_1,Genervt
 STAGE_2,Wütend
@@ -303,7 +303,7 @@ ULT_ANTRAG_GESTELLT_DESC,Papierkrieg! Alle Gegner:innen sind 6 s lang 60 % langs
 ULT_STRASSENBLOCKADE_NAME,Straßenblockade
 ULT_STRASSENBLOCKADE_DESC,"Eine Kleberspur quer durch die ganze Arena, auf deiner Höhe: Gegner:innen kleben 6 s lang fest (85 % langsamer, 4 Schaden pro Sekunde). Hier geht's nicht weiter."
 ULT_CRITICAL_MASS_NAME,Critical Mass
-ULT_CRITICAL_MASS_DESC,"Wir sind der Verkehr! Ein Sprint rammt alles auf dem Weg (3-facher Schaden), danach 5 s lang doppeltes Tempo. Radweg? Ist jetzt die ganze Straße."
+ULT_CRITICAL_MASS_DESC,"Wir sind der Verkehr! Ein Sprint rammt alles auf dem Weg (3-facher Schaden), danach 5 s lang doppeltes Tempo, die ganze Zeit unverwundbar. Radweg? Ist jetzt die ganze Straße."
 ULT_TARIFRUNDE_NAME,Tarifrunde
 ULT_TARIFRUNDE_DESC,"+50 % Schaden für alle Spieler:innen und alles, was sie aufgestellt haben – 8 s lang. Mehr Lohn, mehr Wumms."
 ULT_SCHWARZER_BLOCK_NAME,Schwarzer Block
@@ -314,11 +314,11 @@ ULT_FRAGEN_SIE_UNS_NAME,Fragen Sie mal uns
 ULT_FRAGEN_SIE_UNS_DESC,"Alle alten Männer in Anzügen (Union, Kapital, Sauerländer) sind 2 s lang sprachlos und nehmen 6 s lang doppelten Schaden. Wir hätten da ein paar Fragen."
 SUMMON_GENOSSE_NAME,Genoss:in
 ITEM_ISOMATTE_NAME,Isomatte
-ITEM_ISOMATTE_DESC,+1 Kündigungsschutz. Schon viele Mahnwachen überstanden.
+ITEM_ISOMATTE_DESC,+2 Kündigungsschutz. Schon viele Mahnwachen überstanden.
 ITEM_CLUB_MATE_NAME,Club-Mate (eine Flasche)
 ITEM_CLUB_MATE_DESC,+6 Akkord. Koffein mit Haltung.
 ITEM_FAHRRADHELM_NAME,Fahrradhelm
-ITEM_FAHRRADHELM_DESC,"+4 Solidarität. Sieht doof aus, rettet Leben."
+ITEM_FAHRRADHELM_DESC,"+6 Solidarität. Sieht doof aus, rettet Leben."
 ITEM_FRISBEE_NAME,Frisbee
 ITEM_FRISBEE_DESC,+2 Durchschlagskraft. Aus dem Park mitgenommen.
 ITEM_TASCHENLAMPE_NAME,Taschenlampe
@@ -326,7 +326,7 @@ ITEM_TASCHENLAMPE_DESC,"+3 Direkte Aktion. Leuchtet dahin, wo es wehtut."
 ITEM_FLUGBLATT_STAPEL_NAME,Flugblatt-Stapel
 ITEM_FLUGBLATT_STAPEL_DESC,+2 Ehrenamt. Frisch aus dem Copyshop.
 ITEM_KIRSCHKERNKISSEN_NAME,Kirschkernkissen
-ITEM_KIRSCHKERNKISSEN_DESC,"+1 Krankenschein. Von Oma, mit Liebe gewärmt."
+ITEM_KIRSCHKERNKISSEN_DESC,"+2 Krankenschein. Von Oma, mit Liebe gewärmt."
 ITEM_MEGAFON_AKKU_NAME,Megafon-Akku
 ITEM_MEGAFON_AKKU_DESC,"+5 Durchschlagskraft, −5 Akkord. Lauter, aber muss erst laden."
 ITEM_ARBEITSHANDSCHUHE_NAME,Arbeitshandschuhe
@@ -385,6 +385,12 @@ WEAPON_NEUN_EURO_TICKET_NAME,9-Euro-Ticket
 WEAPON_NEUN_EURO_TICKET_DESC,"Fernkampf · skaliert mit Durchschlagskraft (0,5). Fächer aus 9 Tickets, ab Woche 4 nur noch 5. Läuft halt aus."
 WEAPON_WEISSER_OVERALL_NAME,Weißer Overall
 WEAPON_WEISSER_OVERALL_DESC,Gerät · skaliert mit Ehrenamt. 3 Aktivist:innen stürmen je auf eine Gegner:in. Der Bagger steht still.
+WEAPON_FAHNENSTANGE_NAME,Demo-Fahnenstange
+WEAPON_FAHNENSTANGE_DESC,"Nahkampf · skaliert mit Handarbeit (0,9). Sticht weit geradeaus und trifft alles in der Linie. Wer vorne läuft, hat die längste Stange."
+WEAPON_BIERKISTE_NAME,Bierkiste vom Späti
+WEAPON_BIERKISTE_DESC,"Nahkampf · skaliert mit Handarbeit (1,2). Langsamer, schwerer Rundumschlag mit viel Rückstoß, betäubt kurz. Pfand gibt's nur für leere."
+WEAPON_STRASSENKREIDE_NAME,Straßenkreide
+WEAPON_STRASSENKREIDE_DESC,"Zone · skaliert mit Ziviler Ungehorsam (0,8). Malt beim Laufen eine Spur, die 4 s lang Schaden macht. Lass sie hinter dir herlaufen. Sachbeschädigung? Regen ist für Montag angesagt."
 SUMMON_OVERALL_NAME,Aktivist:in im Overall
 ITEM_ERINNERUNGSLUECKE_NAME,Erinnerungslücke
 ITEM_ERINNERUNGSLUECKE_DESC,"+15 Schwarzfahren, −10 Vernetzung. Treffer? Daran kann ich mich gerade nicht erinnern."

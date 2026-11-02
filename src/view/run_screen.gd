@@ -7,6 +7,7 @@ extends Node
 const SPAETI_PATH := "res://src/ui/spaeti.gd"
 const PAUSE_PATH := "res://src/ui/pause_menu.gd"
 const ZOOM := 0.92
+const WAVE_WON_PAUSE := 2.0          # s of "Feierabend!" over the arena before the Späti (GDD §5)
 
 var world: WorldView
 var fx: Fx
@@ -16,6 +17,8 @@ var hud_layer: CanvasLayer
 var overlay_layer: CanvasLayer
 
 var _spaeti: Node
+var _prev_phase := -1
+var _shop_wait := 0.0
 var _pause: Node
 var _shake := 0.0
 var _cam_init := false
@@ -105,7 +108,7 @@ func _process(delta: float) -> void:
 	world.set_process(not paused)
 	fx.set_process(not paused)
 	_update_camera(delta)
-	_update_overlays()
+	_update_overlays(delta)
 	if InputMap.has_action("pause") and Input.is_action_just_pressed("pause"):
 		_toggle_pause()
 	if InputMap.has_action("streik") and Input.is_action_just_pressed("streik") and not paused:
@@ -150,11 +153,24 @@ func _update_camera(delta: float) -> void:
 		camera.offset = Vector2.ZERO
 
 
-func _update_overlays() -> void:
+## True once the Späti may open: WAVE_WON_PAUSE after a won wave (wave -> shop),
+## at once when the screen starts in the Späti (join, rejoin).
+func _spaeti_due(phase: int, delta: float) -> bool:
+	if phase == 1 and _prev_phase == 0:
+		_shop_wait = WAVE_WON_PAUSE
+	_prev_phase = phase
+	if phase != 1:
+		_shop_wait = 0.0
+		return false
+	_shop_wait = maxf(0.0, _shop_wait - delta)
+	return _shop_wait <= 0.0
+
+
+func _update_overlays(delta: float) -> void:
 	var meta := world.get_meta_dict()
 	var vs := world.get_view()
 	var phase := int(meta.get("phase", vs.phase if vs else 0))
-	if phase == 1:
+	if _spaeti_due(phase, delta):
 		if _spaeti == null or not is_instance_valid(_spaeti):
 			_spaeti = _make(SPAETI_PATH)
 			if _spaeti:
@@ -162,7 +178,7 @@ func _update_overlays() -> void:
 				overlay_layer.move_child(_spaeti, 0)
 				if _spaeti is Control:
 					UINav.block_if_covered(_spaeti as Control)  # pause menu already open
-	elif _spaeti != null:
+	elif phase != 1 and _spaeti != null:
 		if is_instance_valid(_spaeti):
 			_spaeti.queue_free()
 		_spaeti = null

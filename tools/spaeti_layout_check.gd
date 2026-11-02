@@ -51,10 +51,55 @@ func _run() -> void:
 	meta["players"][1]["items"] = items
 	meta["phase"] = Sim.Phase.SHOP
 	await _check(meta, "extreme: 80 items")
+	await _check_scroll_kept()
 	print("Späti layout: %d visits checked, %d failed" % [_checked, _fails.size()])
 	for f in _fails:
 		printerr("  FAIL ", f)
 	quit(1 if not _fails.is_empty() or _checked < 10 else 0)
+
+
+## Regression (v0.2.3): a rebuild (Pfand changed, a vote came in …) must not throw
+## the scrolled side column or item list back to the top.
+func _check_scroll_kept() -> void:
+	var Preview := load("res://tools/ui_preview.gd")
+	var meta: Dictionary = Preview._combine_meta()
+	meta["kasse_enabled"] = true
+	var items: Array = []
+	for i in 60:
+		items.append(Content.ITEM_ORDER[i % Content.ITEM_ORDER.size()])
+	meta["players"][1]["items"] = items
+	var frame := Control.new()
+	frame.size = VIEW
+	root.add_child(frame)
+	var panel := SpaetiPanel.new()
+	panel.preview_meta = meta
+	frame.add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for i in 4:
+		await process_frame
+	var want := {}
+	for n in ["side_scroll", "items_scroll"]:
+		var s := panel.find_child(n, true, false) as ScrollContainer
+		var bar := s.get_v_scroll_bar() if s else null
+		if s == null or bar.max_value - bar.page < 20.0:
+			_fails.append("scroll: %s missing or not scrollable" % n)
+			continue
+		s.scroll_vertical = int(bar.max_value - bar.page)
+		want[n] = s.scroll_vertical
+	await process_frame
+	var changed := meta.duplicate(true)
+	changed["players"][1]["pfand"] = int(changed["players"][1]["pfand"]) + 7
+	panel.preview_meta = changed
+	panel._queue_refresh()
+	for i in 4:
+		await process_frame
+	for n in want:
+		var s := panel.find_child(n, true, false) as ScrollContainer
+		if s == null or absi(s.scroll_vertical - int(want[n])) > 2:
+			_fails.append("scroll: %s jumped from %d to %d after a rebuild" % [n, want[n], s.scroll_vertical if s else -1])
+	_checked += 1
+	frame.queue_free()
+	await process_frame
 
 
 ## Names the sections whose minimum height pushes the layout (for the failure message).

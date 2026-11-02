@@ -62,7 +62,7 @@ func _kite(s: Sim, p: Sim.SimPlayer) -> Vector2:
 	for pr in s.projectiles:
 		if pr.owner == 0 and pr.pos.distance_to(p.pos) < 120.0:
 			push += (p.pos - pr.pos).normalized() * 0.8
-	var center := Vector2(800, 600) - p.pos
+	var center := Arena.CENTER - p.pos
 	push += center / 900.0
 	# collect nearby pfand when safe
 	if push.length() < 0.3:

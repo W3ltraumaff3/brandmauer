@@ -14,7 +14,7 @@ static func make_view(rng: RandomNumberGenerator, enemies: int, projectiles: int
 	vs.wave = rng.randi_range(1, 20)
 	vs.wave_time_left = rng.randf_range(0.0, 60.0)
 	vs.stage = rng.randi_range(0, 4)
-	vs.wall = rng.randi_range(0, 4095)
+	vs.wall = ((rng.randi() & 0x3F) << 32) | rng.randi()   # 38 segments (four walls)
 	for i in players:
 		var w := PackedByteArray()
 		for k in rng.randi_range(1, 6):
@@ -135,6 +135,18 @@ func test_many_random_round_trips() -> void:
 			vs.boss = {"enc": rng.randi_range(0, 3), "hp": rng.randf(), "phase": rng.randi_range(0, 3),
 					"shield": rng.randf()}
 		_compare(vs, Snapshot.decode(Snapshot.encode(vs)))
+
+
+## D-082: the wall has 38 segments on four sides; every bit must survive (the
+## old u16 field silently dropped segments 16+, i.e. most of the ring).
+func test_wall_mask_keeps_all_four_walls() -> void:
+	for mask in [(1 << Arena.WALL_SEGMENTS) - 1, 1 << (Arena.WALL_SEGMENTS - 1), 1 << 25, (1 << 37) | (1 << 12) | 1]:
+		var vs := ViewState.new()
+		vs.wall = mask
+		assert_eq(Snapshot.decode(Snapshot.encode(vs)).wall, mask, "wall mask %x" % mask)
+	var junk := ViewState.new()
+	junk.wall = (1 << 50) | 5
+	assert_eq(Snapshot.decode(Snapshot.encode(junk)).wall, 5, "bits beyond the 38 segments are dropped")
 
 
 func test_empty_view() -> void:

@@ -36,6 +36,17 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 
+static func _all_scripts(dirs: Array) -> Array[String]:
+	var out: Array[String] = []
+	for d in dirs:
+		for f in DirAccess.get_files_at(d):
+			if f.ends_with(".gd"):
+				out.append(str(d).path_join(f))
+		for sub in DirAccess.get_directories_at(d):
+			out.append_array(_all_scripts([str(d).path_join(sub)]))
+	return out
+
+
 func _run() -> void:
 	var filter := ""
 	var args := OS.get_cmdline_user_args()
@@ -43,6 +54,16 @@ func _run() -> void:
 		filter = args[0]
 	var total := 0
 	var failed := 0
+	# Every script of the project must compile (one broken line, e.g. `:=` on a
+	# Variant, silently takes a whole script and all its callers down).
+	if filter == "":
+		for path in _all_scripts(["res://src", "res://tools", DIR]):
+			total += 1
+			var s := load(path) as GDScript
+			if s == null or not s.can_instantiate():
+				failed += 1
+				printerr("  FAIL %s does not compile (see the parse error above)" % path)
+		print("  ok   every script compiles (%d checked)" % total)
 	var files := Array(DirAccess.get_files_at(DIR))
 	files.sort()
 	for file in files:
@@ -51,6 +72,12 @@ func _run() -> void:
 		if filter != "" and not file.contains(filter):
 			continue
 		var script: GDScript = load(DIR.path_join(file))
+		# A test file that doesn't compile has no methods: count it, never skip it.
+		if script == null or not script.can_instantiate():
+			total += 1
+			failed += 1
+			printerr("  FAIL %s: does not compile (see the parse error above)" % file)
+			continue
 		for m in script.get_script_method_list():
 			var mname: String = m["name"]
 			if not mname.begins_with("test_"):

@@ -41,6 +41,13 @@ func build() -> void:
 		body.add_child(UIKit.para(tr("END_PROMOTED") % ", ".join(names), 20))
 	if bool(r.get("wall_intact", false)):
 		body.add_child(UIKit.label(tr("END_WALL_INTACT"), 20, UITheme.GREEN))
+	if int(r.get("retries", 0)) > 0:
+		body.add_child(UIKit.label(tr("END_RETRIES") % int(r["retries"]), 18, UITheme.INK_SOFT))
+	# Reichensteuer totals of the local player (co-op, balancing.md §5a)
+	var mine: Dictionary = UIApi.by_peer(meta.get("players", {}), UIApi.local_id())
+	var rs: Dictionary = mine.get("run_stats", {})
+	if int(rs.get("tax_paid", 0)) > 0 or int(rs.get("tax_received", 0)) > 0:
+		body.add_child(UIKit.label(tr("END_TAX") % [int(rs.get("tax_paid", 0)), int(rs.get("tax_received", 0))], 18, UITheme.INK_SOFT))
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL

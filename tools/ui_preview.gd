@@ -16,6 +16,7 @@ func _initialize() -> void:
 			var node: Node = load("res://src/autoload/%s.gd" % n.to_lower()).new()
 			node.name = n
 			root.add_child(node)
+	_save_node().persist = false   # never touch the player's save or rejoin file
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("only="):
 			_only = a.trim_prefix("only=")
@@ -108,6 +109,16 @@ func _run() -> void:
 			mp["players"][1]["char"] = ch
 			spp.preview_meta = mp
 			await _shot("42_spaeti_portrait_%s_s%d" % [ch, st], spp)
+	# GDD §6: unmistakable "Bereit" state (local player ready, others still shopping).
+	var srd := SpaetiPanel.new()
+	var mrd := _fake_meta(false)
+	mrd["players"][1]["ready"] = true
+	srd.preview_meta = mrd
+	await _shot("43_spaeti_ready", srd)
+	# networking.md §7.5: "Zurück ins Spiel" in the main menu after a crash.
+	_save_node().set_rejoin({"ip": "192.168.178.23", "port": 24713, "token": "preview", "player": 2})
+	await _shot("44_main_menu_rejoin", MainMenu.new())
+	_save_node().clear_rejoin()
 
 	# Playtest feedback: rarity cards, twins, discard, confirmations, vote gating.
 	var sr := SpaetiPanel.new()

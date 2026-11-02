@@ -55,6 +55,48 @@ func save() -> void:
 		f.store_string(JSON.stringify(data, "\t"))
 
 
+## Client session of a running co-op run, for rejoining after a crash
+## (networking.md §7.5). Kept in memory only when `persist` is off.
+const REJOIN_PATH := "user://rejoin.json"
+const REJOIN_MAX_AGE_S := 6 * 3600
+
+var _rejoin_mem := {}
+
+
+## {ip, port, token, player}; the version and time stamp are added here.
+func set_rejoin(session: Dictionary) -> void:
+	var d := session.duplicate()
+	d["version"] = str(ProjectSettings.get_setting("application/config/version", ""))
+	d["saved_at"] = int(Time.get_unix_time_from_system())
+	_rejoin_mem = d
+	if not persist:
+		return
+	var f := FileAccess.open(REJOIN_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(d))
+
+
+## The saved session if it belongs to this game version and is recent, else {}.
+func rejoin_info() -> Dictionary:
+	var d = _rejoin_mem
+	if persist and FileAccess.file_exists(REJOIN_PATH):
+		var f := FileAccess.open(REJOIN_PATH, FileAccess.READ)
+		d = JSON.parse_string(f.get_as_text()) if f else null
+	if not (d is Dictionary) or (d as Dictionary).is_empty():
+		return {}
+	var age := int(Time.get_unix_time_from_system()) - int(d.get("saved_at", 0))
+	if str(d.get("version", "")) != str(ProjectSettings.get_setting("application/config/version", "")) \
+			or age < 0 or age > REJOIN_MAX_AGE_S or str(d.get("token", "")) == "" or str(d.get("ip", "")) == "":
+		return {}
+	return {"ip": str(d["ip"]), "port": int(d.get("port", 0)), "token": str(d["token"]), "player": int(d.get("player", 0))}
+
+
+func clear_rejoin() -> void:
+	_rejoin_mem = {}
+	if persist and FileAccess.file_exists(REJOIN_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(REJOIN_PATH))
+
+
 func is_char_unlocked(id: String) -> bool:
 	var c: Dictionary = Content.CHARACTERS.get(id, {})
 	if c.is_empty():

@@ -55,6 +55,21 @@ static func compact(b: Button, pad := 1, side := 8) -> Button:
 	return b
 
 
+## "Bereit" toggles (GDD §6): solid green with white text while ready, the
+## normal paper look otherwise.
+static func ready_look(b: Button, on: bool) -> void:
+	for state in ["normal", "hover", "pressed", "hover_pressed"]:
+		if on:
+			b.add_theme_stylebox_override(state, UITheme.box(UITheme.GREEN, UITheme.INK, 3))
+		else:
+			b.remove_theme_stylebox_override(state)
+	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
+		if on:
+			b.add_theme_color_override(c, Color.WHITE)
+		else:
+			b.remove_theme_color_override(c)
+
+
 static func vbox(sep := 8) -> VBoxContainer:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", sep)
@@ -313,9 +328,12 @@ static func focus_first(root: Node) -> void:
 ## Grab focus next frame, but only if the control still exists and is shown
 ## (screens may be swapped within the same frame).
 static func focus_later(c: Control) -> void:
+	# By id: the control may be freed before the deferred call (quick screen switch).
+	var id := c.get_instance_id()
 	var cb := func():
-		if UINav.can_focus(c):
-			c.grab_focus()
+		var o: Object = instance_from_id(id)
+		if UINav.can_focus(o):
+			(o as Control).grab_focus()
 	cb.call_deferred()
 
 
