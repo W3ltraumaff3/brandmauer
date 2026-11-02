@@ -84,6 +84,7 @@ class SimPlayer:
 	var ult_ready := true              # ultimate: once per wave
 	var second_round_used := false     # Zweiter Wahlgang (once per run)
 	var cumex_audited := false
+	var coop_waves := 0                # Genossenschaftsanteil: wave ends held (dividend grows, D-129)
 	var puma_down := false
 	var ult_t := 0.0                   # Urlaubsantrag: lying on the sun lounger
 	var dash_t := 0.0                  # Critical Mass dash
@@ -433,6 +434,10 @@ func _recompute(p: SimPlayer) -> void:
 		s["hp_regen"] += 1.0
 	if p.flags.has("dodge_build"):
 		s["armor"] = 0.0
+	if p.flags.has("lifesteal_build"):
+		# Robin-Hood-Kostüm: Krankenschein counts as Umverteilung (D-134)
+		s["lifesteal"] += maxf(0.0, s["hp_regen"])
+		s["hp_regen"] = 0.0
 	s["max_hp"] = maxf(1.0, s["max_hp"])
 	p.max_weapons = int(Content.CHARACTERS[p.char_id].get("max_weapons", Content.MAX_WEAPONS)) + p.items.count("lastenrad_anhaenger")
 	p.stats = s
@@ -631,7 +636,8 @@ func _end_wave() -> void:
 		if p.flags.has("maut"):
 			p.pfand = maxi(0, p.pfand - Content.RED_BUILD["maut_wave"])
 		if p.flags.has("cumex"):
-			var refund := mini(Content.RED_BUILD["cumex_max"], p.pfand)
+			# the cap grows with the prices, so it keeps its value late in the run (D-130)
+			var refund := mini(int(round(Content.RED_BUILD["cumex_max"] * Content.price_mult(wave + 1))), p.pfand)
 			_give_pfand(p, refund)
 			p.log["pfand_income"] += refund
 			if wave >= Content.RED_BUILD["cumex_audit_wave"] and not p.cumex_audited:
@@ -639,7 +645,8 @@ func _end_wave() -> void:
 				p.pfand = p.pfand / 2
 				_event(["say", p.pos, "SAY_BETRIEBSPRUEFUNG", ""])
 		if p.flags.has("coop_economy"):
-			var interest := mini(Content.RED_BUILD["coop_interest_max"], int(p.pfand * Content.RED_BUILD["coop_interest"]))
+			var interest := coop_dividend(p)
+			p.coop_waves += 1
 			_give_pfand(p, interest)
 			p.log["pfand_income"] += interest
 		if p.flags.has("streikkasse"):
@@ -1234,6 +1241,16 @@ func _lay_chalk(p: SimPlayer, w: Dictionary, def: Dictionary) -> void:
 	hazards.append(mark)
 
 
+## Genossenschaftsanteil (GDD §12, D-129): the dividend at this wave end. The rate grows
+## with every wave end the share was held; it is capped at what a new share costs in the
+## coming Späti, so it keeps its value while prices grow.
+func coop_dividend(p: SimPlayer) -> int:
+	var b := Content.RED_BUILD
+	var rate := minf(b["coop_rate_max"], b["coop_rate"] + b["coop_rate_step"] * p.coop_waves)
+	var cap := _price(Content.item_price("genossenschaftsanteil", wave + 1))
+	return mini(cap, int(p.pfand * rate))
+
+
 ## Wahlversprechen and BER-Eröffnungstermin change Wut over time.
 func dyn_damage(p: SimPlayer) -> float:
 	var b := Content.RED_BUILD
@@ -1275,8 +1292,11 @@ func _build_mult(p: SimPlayer, def: Dictionary) -> float:
 	var melee: bool = def.get("melee", false)
 	if p.flags.has("melee_build"):
 		m *= b["melee"] if melee else b["melee_other"]
-	if p.flags.has("ranged_build") and melee:
-		m *= b["ranged_other"]
+	if p.flags.has("ranged_build"):
+		if melee:
+			m *= b["ranged_other"]
+		elif def["scale"].has("ranged"):
+			m *= b["ranged"]   # every Durchschlagskraft weapon (D-128)
 	if p.flags.has("summon_build"):
 		m *= b["summon"] if def["scale"].has("summon") else b["summon_other"]   # every Ehrenamt weapon (D-114)
 	if p.flags.has("status_build"):
@@ -1472,6 +1492,9 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				pr.weapon = w["id"]
 				pr.source = _wkey(w)
 				pr.life = _weapon_range(p, def) / def["speed"]
+				if p.flags.has("ranged_build"):   # Wurfmaschine covers the fan too (D-128)
+					pr.pierce += Content.RED_BUILD["ranged_pierce"]
+					pr.vel *= Content.RED_BUILD["ranged_speed"]
 				projectiles.append(pr)
 			_event(["sfx", "shoot", p.pos])
 		"swarm":
@@ -1657,9 +1680,12 @@ func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kd
 	if src and e.expose_t > 0.0 and not crit and rng.randf() * 100.0 < Content.WEAPONS["scheinwerfer"]["expose_crit"]:
 		crit = true
 		amount *= 1.5
-	if src and crit and src.flags.has("entlassung") and not e.elite and e.hp < e.max_hp * Content.RED_BUILD["entlassung_hp"]:
-		amount = maxf(amount, e.hp + e.shield)
-		_event(["say", e.pos, "SAY_ENTLASSEN", ""])
+	if src and crit and src.flags.has("entlassung"):
+		if e.elite or e.encounter != "":
+			amount *= Content.RED_BUILD["entlassung_boss"]   # bosses can't be dismissed, but crits hit them harder (D-132)
+		elif e.hp < e.max_hp * Content.RED_BUILD["entlassung_hp"]:
+			amount = maxf(amount, e.hp + e.shield)
+			_event(["say", e.pos, "SAY_ENTLASSEN", ""])
 	if src and src.flags.has("crit_build") and source.begins_with("w"):
 		amount *= Content.RED_BUILD["crit_extra"] if crit else Content.RED_BUILD["crit_other"]
 	if e.armored:
@@ -1840,7 +1866,8 @@ func run_stats(p: SimPlayer) -> Dictionary:
 
 
 func _wumms(p: SimPlayer, pos: Vector2) -> void:
-	var dmg: float = (10.0 + 2.0 * p.stats["ranged"]) * maxf(0.1, 1.0 + p.stats["damage"] / 100.0)
+	var b := Content.RED_BUILD
+	var dmg: float = (b["wumms_dmg"] + b["wumms_ranged"] * p.stats["ranged"]) * maxf(0.1, 1.0 + p.stats["damage"] / 100.0)
 	for o in _query(pos, Content.RED_BUILD["wumms_radius"]):
 		_damage_enemy(o, dmg, p, false, (o.pos - pos).normalized(), 60.0, "wumms")
 	_event(["sfx", "explosion", pos])
@@ -4550,8 +4577,6 @@ func request(peer: int, action: String, arg = null) -> bool:
 			var limit := _spend_limit(p)
 			if limit >= 0 and p.spent + o["price"] > limit:
 				return _deny(p, "DENY_SPEND_LIMIT")
-			if p.flags.has("coop_economy") and p.buys >= Content.RED_BUILD["coop_buys"]:
-				return _deny(p, "DENY_BUY_LIMIT")
 			if o["kind"] == "weapon":
 				var twin := find_twin(p, o["id"], o["tier"], -1)
 				if twin < 0 and p.weapons.size() >= p.max_weapons:

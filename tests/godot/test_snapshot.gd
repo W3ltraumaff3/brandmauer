@@ -1,6 +1,8 @@
 extends TestCase
 ## Snapshot encode/decode round trips (src/net/snapshot.gd).
 
+const AREAS := ["net", "sim"]  # ci-cd.md §2a
+
 const POS_EPS := 0.5 + 0.0001
 const FRAC_EPS := 0.5 / 255.0 + 0.0001
 const ANGLE_EPS := TAU / 512.0 + 0.0001

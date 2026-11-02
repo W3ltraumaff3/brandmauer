@@ -5,6 +5,8 @@ When a question is answered, move it into [decisions.md](decisions.md) and remov
 ## Content
 
 - [ ] **Item ideas not yet built:** `research/item_ideen.md` has 31 concepts (8 green, 11 blue, 6 purple, 6 red), for example Cum-Ex-Erstattung (competes thematically with Genossenschaftsanteil), Doppelwumms, Untersuchungsausschuss. Pick which ones become items. Facts marked "nachprüfen" there need checking first.
+- [ ] **Eight politics items are still never offered** (D-127): Erinnerungslücke, Treuhandkonto, Aufhören zu produzieren, Wahlversprechen, Maut-Vertrag, BER-Eröffnungstermin, Puma-Schützenpanzer and Zweiter Wahlgang are defined and tested but missing from `Content.ITEM_ORDER` (only the four red ones were added in the red-item round). Add them to the shop pool? Their Pfand amounts (Treuhand +30, Maut −8) are flat like the old red caps and would need the same price-factor check.
+- [ ] **Red items in playtests** (D-127 to D-135): do the reworked red items feel like the run's big step without being a must-buy? Bot results in balancing.md "Red items (v0.4.1)". Watch especially Kritische Masse (+2.8 waves for the crit bot) and whether the Genossenschaftsanteil invites hoarding.
 - [ ] **More unlock characters** (candidates in GDD §9: Gen Z mit Work-Life-Balance, Teilzeit-Mama, Taugenichts, Totalverweigerer …). Which ones, and what unlocks them.
 - [ ] **Encounter pools beyond the MVP** (GDD §14: Generalsekretär, Weißwurst-Kaiser, Präsidentin, Krawatten-Opa) and later arenas.
 - [ ] **Single-source quotes still to verify** (see `research/verifikation.md` and `research/auswahl.md`). Weak slots: Bierdeckel and Steuerparadies phases have no fitting quote, and the unlock quotes for Oma and Antifa are makeshift.

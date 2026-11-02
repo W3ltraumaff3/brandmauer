@@ -2,6 +2,8 @@ extends TestCase
 ## The eight v0.3 status and summon weapons and their status effects
 ## (GDD §11 "Status and summon weapons", D-091 to D-096).
 
+const AREAS := ["sim", "view", "net"]  # ci-cd.md §2a
+
 const DT := 1.0 / 60.0
 
 

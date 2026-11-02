@@ -3,6 +3,8 @@ extends TestCase
 ## every side, holes on every side, line of sight through holes on every side,
 ## players stay inside, and the wall pressure scales with the team size.
 
+const AREAS := ["sim"]  # ci-cd.md §2a
+
 const SIDES := [Arena.TOP, Arena.RIGHT, Arena.BOTTOM, Arena.LEFT]
 
 

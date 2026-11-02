@@ -110,7 +110,7 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
   - **"Bereit" must be unmistakable** (co-op Späti and lobby):
     - Not ready: a normal paper button "Bereit?".
     - Ready: the button turns **solid green with white text "Bereit!"**, and a line next to it says **"Du bist bereit"**, plus who the group is still waiting for. Pressing it again takes it back.
-  - Prices rise by 8 % per wave. Weapon tiers I–IV cost ×1.0 / 1.8 / 3.2 / 5.5.
+  - Prices rise with the wave, faster than 8 % per wave because the curve is cubic (balancing.md §5): ×2.4 in the Späti after wave 8, ×3.1 after wave 10, ×5.0 after wave 14, ×8.5 after wave 19. Weapon tiers I–IV cost ×1.0 / 1.8 / 3.2 / 5.5.
   - A **Statistik** button (section 6c) and the weapon/item management below.
   - A **character portrait:** the local player's character drawn exactly as in the arena, at the **current Zusammenhalt stage**, with the stage name and progress to the next stage. Kept **small and calm**; it must not crowd the Späti, which is already dense (no held weapons, no extra panels; it fits into existing free space such as the header area or the bottom bar). It reminds you who you play and shows how far the team has come.
 - **Character selection** (lobby) uses the same in-game drawings (stage 4, confident) instead of separate icons, so lobby and arena look alike.
@@ -123,6 +123,7 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
 | **Combine** | Two weapons with the same id and the same tier become **one weapon of the next tier** (max tier IV), freeing a slot. Three ways: **automatic on buying** (an offer that matches a weapon you own is marked "kombiniert zu …" and needs no free slot), the **Kombinieren button** on an owned weapon that has a twin, and the button always asks for a **confirmation** ("Auseinandernehmen geht nicht."). Without a twin: "Zum Kombinieren brauchst du zwei gleiche Waffen gleicher Stufe." |
 | **Sell** | Refund is 40 % of the current weapon price. **Asks for confirmation** ("Weg ist weg"). You can't sell your last weapon |
 | **Throw away items** | Click an item in the item list: choose how many, or all. **No refund.** For undoing accidental buys (e.g. Schuldenbremse) |
+| **Tier colors** (D-150) | Weapon tiers use the item rarity colors (section 12): **I green, II blue, III purple, IV red**. A weapon offer gets the border and tier tag in its tier color like an item card (tier IV also the tinted background). The tier is colored wherever a weapon is named with it: the owned-weapon list, "kombiniert zu …" and the Kombinieren button (in the color of the tier it becomes), and the Statistik damage rows (sold or combined rows stay grey) |
 
 ### 6b. Targeting
 
@@ -336,7 +337,7 @@ Every status effect goes through the one immunity check (D-087): **the Reichsbü
 
 Soli-Sticker's poison is its own effect (it doesn't replace a Tofu poison and isn't replaced by one); it shows as the usual poison tint plus a small sticker on the enemy.
 
-## 12. Items (57, incl. 2 hidden)
+## 12. Items (61 in the shop pool, incl. 2 hidden)
 
 Every item is a stat change and/or a rule flag. Throwing items away: section 6a.
 
@@ -348,7 +349,9 @@ Every item is a stat change and/or a rule flag. Throwing items away: section 6a.
 | 3 | purple | very good bonus, malus if very very good | from wave 4 (0.35·(*w*−3)) |
 | 4 | red | game-changing, only for one specific build | from wave 8, rare (0.12·(*w*−7)) |
 
-Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"ROT · Build-Item"** stamp in the Späti. Item prices grow by 8 % per wave.
+Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"ROT · Build-Item"** stamp in the Späti. Item prices grow with the wave like weapon prices (section 6).
+
+**What a red item has to be worth (D-127):** when it shows up (Späti after wave 8–12) a red item costs about as much as a whole Späti visit's Pfand (90 base → about 220 after wave 8, 280 after wave 10, 450 after wave 14, against 200 / 245 / 510 Pfand on arrival in bot runs). So a red item must clearly beat what that visit would otherwise buy (2–3 blue or purple items, or a weapon tier): for its build it is the run's big step, about ×1.5–2 on what the build lives on, with a malus for everything else. Money items must pay back their price within about 3 waves and keep their value while prices grow, so their amounts scale with the price factor instead of being fixed.
 
 ### Green
 | Item | Effect |
@@ -413,13 +416,13 @@ Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"RO
 | Item | Build | Effect |
 |---|---|---|
 | Hausbesetzung | melee | melee weapons ×2 damage, all others ×0.5 |
-| Wurfmaschine | ranged | projectiles pierce +1 target and fly 50 % faster; melee ×0.5 |
-| Genossenschaftsanteil | saving | each wave end +15 % of your Pfand (max 50), but only 2 purchases per Späti visit |
+| Wurfmaschine | ranged | every weapon that scales with Durchschlagskraft ×1.4 damage; every player projectile (shots and the 9-Euro-Ticket fan) pierces +1 target and flies 50 % faster; melee ×0.5 (D-128, was pierce and speed only, and the fan was left out) |
+| Genossenschaftsanteil | saving | price 60: at every wave end a **dividend on your Pfand**: 30 %, +5 % for every wave end you have held the share (up to 50 %), at most as much as a new share costs in that Späti. No purchase limit (D-129, was price 80, +15 % up to 50 Pfand and only 2 purchases per visit) |
 | Ehrenamtskarte | summons | every weapon that scales with Ehrenamt (Infostand, Brandmauer-Ziegel, Weißer Overall, Menschenkette, Pappkamerad, Demo-Sanis, Lauti) and the Genoss:innen: ×1.5 damage and healing, twice the duration; all other weapons ×0.6 (D-114, was ×2 for summon kinds only and ×0.6 for Ziegel and Overall) |
 | Kompost | status | poison and glue ×2, poison spreads to neighbors on death, direct damage ×0.7 |
-| Kritische Masse | crit | crits hit ×1.5 harder, all other hits ×0.7 |
-| Robin-Hood-Kostüm | lifesteal | Umverteilung heals ×3, but Krankenschein no longer works |
-| Tarnkappe | dodge | Schwarzfahren cap 80 % instead of 60 %, but Kündigungsschutz drops to 0 |
+| Kritische Masse | crit | +15 Direkte Aktion; weapon crits hit ×2 harder, all other weapon hits ×0.75 (D-131, was no crit, ×1.5 / ×0.7: a loss below ~30 % crit chance, where the crit build stands when red items show up) |
+| Robin-Hood-Kostüm | lifesteal | +10 Umverteilung; every Umverteilung heal is 4 HP instead of 1; your Krankenschein counts as Umverteilung (it no longer heals over time, its points are added to Umverteilung) (D-134, was ×3 heals and Krankenschein simply stopped working) |
+| Tarnkappe | dodge | +50 Schwarzfahren, cap 80 % instead of 60 %, but Kündigungsschutz drops to 0 (D-135, was without the +50) |
 
 ### Hidden
 | Item | Effect |
@@ -440,10 +443,12 @@ Twelve items built on real German political events of 2016–2026. The sources a
 | BER-Eröffnungstermin | purple | waves 1–9: −10 Wut; from wave 10: +40 Wut, +20 Akkord | BER airport |
 | Puma-Schützenpanzer | purple | +25 Durchschlagskraft, +10 Kündigungsschutz; every 18 s all weapons fail for 3 s | all 18 Pumas failed, 2022 |
 | Zweiter Wahlgang | purple | once per run: when you'd go down, you're back at 50 % Solidarität instead; −10 Wut | chancellor election in the second round, 2025 |
-| Cum-Ex-Erstattung | red (saving build) | at wave end your unspent Pfand is refunded once more (+100 %, max +40); at the end of wave 15 the Betriebsprüfung takes half your Pfand (once) | Cum-Ex |
-| Doppelwumms | red (ranged build) | every kill by you explodes twice (150 px, damage 10 + 2 × Durchschlagskraft, scaled by Wut); explosions don't chain; −15 Kündigungsschutz | "Doppel-Wumms", 2022 |
+| Cum-Ex-Erstattung | red (saving build) | price 60 (was 80); at wave end your unspent Pfand is refunded once more (+100 %, max +40 × the price factor of the next Späti, so the cap keeps its value; D-130, was a flat 40); at the end of wave 15 (or the first wave end after it) the Betriebsprüfung takes half your Pfand (once) | Cum-Ex |
+| Doppelwumms | red (ranged build) | every kill by you explodes twice (150 px, damage 20 + 3 × Durchschlagskraft, scaled by Wut; D-133, was 10 + 2 ×); explosions don't chain; −10 Kündigungsschutz (was −15) | "Doppel-Wumms", 2022 |
 | Brandmauer-Fertigputz | red (armor build) | +50 Kündigungsschutz, enemies touching you are knocked back, −30 Deutschlandticket | the Brandmauer |
-| Entlassungsurkunde | red (crit build) | +20 Direkte Aktion; a crit on a non-elite enemy under 30 % HP takes it out at once; −15 Durchschlagskraft | Ampel-Aus, 2024 |
+| Entlassungsurkunde | red (crit build) | +30 Direkte Aktion; a crit on a normal enemy under 40 % HP takes it out at once, a crit on an elite, miniboss or boss deals ×1.5 instead; −10 Vernetzung (D-132, was +20, under 30 %, −15 Durchschlagskraft, which took the crit build's damage away) | Ampel-Aus, 2024 |
+
+All twelve politics items are in the item definitions; the four red ones are in the shop pool since D-127 (before, none of the twelve could be offered; the eight others are an open question).
 
 ## 13. Enemies
 
@@ -635,7 +640,7 @@ Offers a set of modifier options; the result applies for **4 waves** (`Content.V
 - 1 arena with the Brandmauer
 - 8 characters, plus Die Töchter as an unlock
 - 3 Organisationen
-- 12 weapons, 57 items (green/blue/purple/red)
+- 12 weapons, 61 items in the shop pool (green/blue/purple/red; 12 red)
 - 20 waves (ramping), with 3 elites/minibosses (waves 5/10/15) and 1 boss (wave 20)
 - The Späti with combine, sell, discard and statistics
 - Zusammenhalt progression
@@ -678,10 +683,15 @@ The whole game is fully playable with a gamepad (Xbox/PlayStation/Switch layouts
 | Confirm in menus | A / ✕ | Enter |
 | Back / close dialog | B / ○ | Esc |
 | Späti tabs/sections | LB / RB jump between the sections Angebote, Waffen, Items, Kasse, Mauer, Vertrag, Bereit and Werte; the right stick scrolls lists | — |
+| Lobby areas | LB / RB jump between Einstellungen (Organisation, Umfrage, Boss-Wiederholung), Charaktere (your selected card) and the bottom row (Bereit, else Los; D-124) | — |
 
 - **Every menu, dialog and the Späti are navigable with focus:** there's a visible focus frame, focus never gets lost, and the first sensible button gets focus.
 - **Directions mean directions:** right moves to the control on the right, down to the one below, and so on.
 - **In the Späti, the D-pad, left stick and arrow keys stay inside the current section.** At the edge of a section, focus stays where it is. Only LB / RB change the section.
+- **Focus stays where you were when an action removes the focused control** (buy, sell, combine, discard):
+  - After a buy, focus goes to the next offer you can still buy. From the last offer it wraps to the first.
+  - With no buyable offer left, focus goes to Neu würfeln. Otherwise it goes to the first control of the same section. It never jumps to the header (Statistik) (D-126).
+- **The level-up options are one row:** left / right walk the options in order and never stop on the reroll below them. Down goes to the reroll; up from the reroll goes back to the option you came from (D-123).
 - **The character grid in the lobby is read like text:**
   - Right on the last card of a row goes to the first card of the next row.
   - Left on the first card of a row goes to the last card of the previous row.

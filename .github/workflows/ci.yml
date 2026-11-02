@@ -32,9 +32,18 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+      - uses: ./.github/actions/affected
+        id: affected
+      - name: Nothing to check
+        if: steps.affected.outputs.quotes != 'true'
+        env:
+          AREAS: ${{ steps.affected.outputs.summary }}
+        run: echo "::notice title=Quote data skipped::no quote data or Python test touched (areas $AREAS)"
       - name: Validate quote data
+        if: steps.affected.outputs.quotes == 'true'
         run: python -m unittest discover -s tests -v
       - name: Generated files are up to date
+        if: steps.affected.outputs.quotes == 'true'
         run: |
           python -I research/scripts/build_all.py
           git diff --exit-code -- research/
@@ -47,14 +56,36 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Only the touched test areas on a PR, everything on main (ci-cd.md §2a).
+      - uses: ./.github/actions/affected
+        id: affected
+      - name: Nothing to test
+        if: steps.affected.outputs.godot != 'true' && steps.affected.outputs.spaeti_layout != 'true'
+        env:
+          AREAS: ${{ steps.affected.outputs.summary }}
+        run: echo "::notice title=Godot tests skipped::no game code touched (areas $AREAS)"
       - uses: ./.github/actions/setup-godot
+        if: steps.affected.outputs.godot == 'true' || steps.affected.outputs.spaeti_layout == 'true'
         with:
           version: ${{ env.GODOT_VERSION }}
       - name: Import assets
+        if: steps.affected.outputs.godot == 'true' || steps.affected.outputs.spaeti_layout == 'true'
         run: ~/godot/godot --headless --path . --import
       - name: Run tests
-        run: ~/godot/godot --headless --path . -s res://tests/godot/run_tests.gd
+        if: steps.affected.outputs.godot == 'true'
+        env:
+          GODOT_ARGS: ${{ steps.affected.outputs.godot_args }}
+          AREAS: ${{ steps.affected.outputs.summary }}
+        run: |
+          echo "Godot tests, areas: $AREAS" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$GODOT_ARGS" ]; then
+            # shellcheck disable=SC2086 # word splitting into areas=… files=… is intended
+            ~/godot/godot --headless --path . -s res://tests/godot/run_tests.gd -- $GODOT_ARGS
+          else
+            ~/godot/godot --headless --path . -s res://tests/godot/run_tests.gd
+          fi
       - name: Späti layout over a full run (Bereit always on screen)
+        if: steps.affected.outputs.spaeti_layout == 'true'
         run: ~/godot/godot --headless --path . -s res://tools/spaeti_layout_check.gd
 
   net-smoke:
@@ -65,10 +96,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: ./.github/actions/affected
+        id: affected
       - name: Check for tools/net_smoke.sh
         id: check
+        env:
+          NEEDED: ${{ steps.affected.outputs.net_smoke }}
+          AREAS: ${{ steps.affected.outputs.summary }}
         run: |
-          if [ -f tools/net_smoke.sh ]; then
+          if [ "$NEEDED" != "true" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Net smoke skipped::no net, sim or save code touched (areas $AREAS)"
+          elif [ -f tools/net_smoke.sh ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"

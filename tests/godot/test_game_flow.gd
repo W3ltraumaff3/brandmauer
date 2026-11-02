@@ -1,6 +1,8 @@
 extends TestCase
 ## Integration: Game + Net + Sim in solo mode, driven like the real main loop.
 
+const AREAS := ["sim", "net", "ui", "save", "view"]  # ci-cd.md §2a
+
 var game: Node
 var net: Node
 

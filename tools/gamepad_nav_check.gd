@@ -48,6 +48,7 @@ func _run() -> void:
 		2: {"name": "Oma Inge", "char": "oma", "ready": false}})
 	await _check_spaeti_levelup()
 	await _check_spaeti_shop()
+	await _check_spaeti_buy_focus()
 	await _check_spaeti_overlays()
 	await _check_pause_over_spaeti()
 	await _check_end()
@@ -445,6 +446,7 @@ func _check_lobby(title: String, mode: String, lobby: Dictionary) -> void:
 	await _check_char_grid(l)
 	var n := await _walk("lllrrrrruuuddddddlllll", l)
 	_note("%d controls reached" % n)
+	await _check_lobby_areas(l, mode, mine)
 	# Picker: A opens the list, D-pad + A picks, B closes it.
 	var pick := _find(l, "diff_pick") as OptionButton
 	if pick:
@@ -474,6 +476,30 @@ func _check_lobby(title: String, mode: String, lobby: Dictionary) -> void:
 		_note("start disabled -> skipped")
 	await _free(l)
 	_end()
+
+
+## LB / RB in the lobby (D-124): grid -> bottom row (Bereit, solo: Los) ->
+## Einstellungen -> grid, and back the other way.
+func _check_lobby_areas(l: Lobby, mode: String, mine: String) -> void:
+	var card := _find(l, "char_" + mine)
+	var bottom: Control = l.get("_start_btn") if mode == "solo" else l.get("_ready_btn")
+	card.grab_focus()
+	await _frames(1)
+	await _button(JOY_BUTTON_RIGHT_SHOULDER)
+	_expect_focus("RB from grid", bottom)
+	await _button(JOY_BUTTON_RIGHT_SHOULDER)
+	var f := _focus()
+	if f == null or not l.get("_settings_area").is_ancestor_of(f):
+		_fail("RB from bottom: focus on %s, expected Einstellungen" % (f.name if f else "null"))
+	await _button(JOY_BUTTON_RIGHT_SHOULDER)
+	_expect_focus("RB from Einstellungen", card)
+	await _button(JOY_BUTTON_LEFT_SHOULDER)
+	await _button(JOY_BUTTON_LEFT_SHOULDER)
+	_expect_focus("LB LB from grid", bottom)
+	await _button(JOY_BUTTON_LEFT_SHOULDER)
+	_expect_focus("LB from bottom", card)
+	if _errors.is_empty():
+		_note("LB/RB areas ok")
 
 
 ## Character grid (GDD §19b): directions mean directions, read like text. Right at
@@ -518,9 +544,34 @@ func _check_spaeti_levelup() -> void:
 	_expect_focus("open", _find(sp, "levelup_0"))
 	var n := await _walk("rrrlllldddduuuurrrr", sp)
 	_note("%d controls reached" % n)
+	await _check_levelup_row(sp)
 	await _check_sections_closed(sp)
 	await _free(sp)
 	_end()
+
+
+## Left/right walks the level-up options in order and never stops on the
+## reroll below them; down goes to the reroll, up comes back (D-123).
+func _check_levelup_row(sp: Node) -> void:
+	var opts: Array[Control] = []
+	while _find(sp, "levelup_%d" % opts.size()) != null:
+		opts.append(_find(sp, "levelup_%d" % opts.size()))
+	var reroll := _find(sp, "levelup_reroll")
+	opts[0].grab_focus()
+	await _frames(1)
+	for i in range(1, opts.size()):
+		await _button(DIRS["r"])
+		_expect_focus("level-up right %d" % i, opts[i])
+	for i in range(opts.size() - 2, -1, -1):
+		await _button(DIRS["l"])
+		_expect_focus("level-up left %d" % i, opts[i])
+	await _button(DIRS["d"])
+	_expect_focus("level-up down", reroll)
+	for ch in "lr":
+		await _button(DIRS[ch])
+		_expect_focus("reroll '%s'" % ch, reroll)
+	await _button(DIRS["u"])
+	_expect_focus("reroll up", opts[0])
 
 
 func _section_of(sp: Node, c: Control) -> String:
@@ -530,6 +581,23 @@ func _section_of(sp: Node, c: Control) -> String:
 			return String(p.name).trim_prefix("sec_")
 		p = p.get_parent()
 	return "?"
+
+
+## A buy rebuilds the Späti with the offer sold (disabled): focus goes to the
+## next offer, from the last one to the first, never to the header (D-126).
+func _check_spaeti_buy_focus() -> void:
+	_begin("Späti (focus after a buy)")
+	var meta := Preview._rarity_meta()
+	var sp := await _spaeti(meta)
+	for pair in [[1, 2], [3, 0]]:
+		(_find(sp, "buy_%d" % pair[0]) as Control).grab_focus()
+		await _frames(1)
+		meta["players"][1]["offers"][pair[0]]["sold"] = true
+		sp._rebuild()
+		await _frames(3)
+		_expect_focus("after buy_%d" % pair[0], _find(sp, "buy_%d" % pair[1]))
+	await _free(sp)
+	_end()
 
 
 func _check_spaeti_shop() -> void:

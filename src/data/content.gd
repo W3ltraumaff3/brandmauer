@@ -194,6 +194,11 @@ const ITEM_ORDER: Array[String] = [
 	"kritische_masse",
 	"robin_hood",
 	"tarnkappe",
+	# red politics items (GDD §12 "Politics items"; in the shop pool since D-127)
+	"cumex_erstattung",
+	"doppelwumms",
+	"brandmauer_fertigputz",
+	"entlassungsurkunde",
 ]
 
 const ITEMS := {
@@ -252,12 +257,12 @@ const ITEMS := {
 	# red: game-changing, only for specific builds
 	"hausbesetzung": {"mods": {}, "flags": ["melee_build"], "price": 90, "rarity": 4},
 	"wurfmaschine": {"mods": {}, "flags": ["ranged_build"], "price": 90, "rarity": 4},
-	"genossenschaftsanteil": {"mods": {}, "flags": ["coop_economy"], "price": 80, "rarity": 4},
+	"genossenschaftsanteil": {"mods": {}, "flags": ["coop_economy"], "price": 60, "rarity": 4},
 	"ehrenamtskarte": {"mods": {}, "flags": ["summon_build"], "price": 90, "rarity": 4},
 	"kompost": {"mods": {}, "flags": ["status_build"], "price": 85, "rarity": 4},
-	"kritische_masse": {"mods": {}, "flags": ["crit_build"], "price": 90, "rarity": 4},
-	"robin_hood": {"mods": {}, "flags": ["lifesteal_build"], "price": 85, "rarity": 4},
-	"tarnkappe": {"mods": {}, "flags": ["dodge_build"], "price": 85, "rarity": 4},
+	"kritische_masse": {"mods": {"crit": 15.0}, "flags": ["crit_build"], "price": 90, "rarity": 4},
+	"robin_hood": {"mods": {"lifesteal": 10.0}, "flags": ["lifesteal_build"], "price": 85, "rarity": 4},
+	"tarnkappe": {"mods": {"dodge": 50.0}, "flags": ["dodge_build"], "price": 85, "rarity": 4},
 	# politics items (GDD §12 "Politics items")
 	"erinnerungsluecke": {"mods": {"dodge": 15.0, "xp": -10.0}, "price": 50, "rarity": 3},
 	"treuhandkonto": {"mods": {}, "flags": ["treuhand"], "price": 26, "rarity": 2},
@@ -267,23 +272,24 @@ const ITEMS := {
 	"ber_eroeffnungstermin": {"mods": {}, "flags": ["ber"], "price": 50, "rarity": 3},
 	"puma": {"mods": {"ranged": 25.0, "armor": 10.0}, "flags": ["puma"], "price": 60, "rarity": 3},
 	"zweiter_wahlgang": {"mods": {"damage": -10.0}, "flags": ["zweiter_wahlgang"], "price": 55, "rarity": 3},
-	"cumex_erstattung": {"mods": {}, "flags": ["cumex"], "price": 80, "rarity": 4},
-	"doppelwumms": {"mods": {"armor": -15.0}, "flags": ["doppelwumms"], "price": 90, "rarity": 4},
+	"cumex_erstattung": {"mods": {}, "flags": ["cumex"], "price": 60, "rarity": 4},
+	"doppelwumms": {"mods": {"armor": -10.0}, "flags": ["doppelwumms"], "price": 90, "rarity": 4},
 	"brandmauer_fertigputz": {"mods": {"armor": 50.0, "speed": -30.0}, "flags": ["fertigputz"], "price": 90, "rarity": 4},
-	"entlassungsurkunde": {"mods": {"crit": 20.0, "ranged": -15.0}, "flags": ["entlassung"], "price": 85, "rarity": 4},
+	"entlassungsurkunde": {"mods": {"crit": 30.0, "xp": -10.0}, "flags": ["entlassung"], "price": 85, "rarity": 4},
 }
 
 ## Item rarities (GDD §12): 1 green, 2 blue, 3 purple, 4 red.
 const RARITY_COLORS := {1: Color("3f8f4f"), 2: Color("2e6db4"), 3: Color("8e44ad"), 4: Color("c0392b")}
-const RED_BUILD := {"melee": 2.0, "melee_other": 0.5, "ranged_pierce": 1, "ranged_speed": 1.5, "ranged_other": 0.5,
-	"coop_interest": 0.15, "coop_interest_max": 50, "coop_buys": 2, "summon": 1.5, "summon_life": 2.0, "summon_other": 0.6,
-	"status": 2.0, "status_direct": 0.7, "status_spread": 100.0, "crit_extra": 1.5, "crit_other": 0.7,
-	"lifesteal_heal": 3.0, "dodge_cap": 80.0,
+const RED_BUILD := {"melee": 2.0, "melee_other": 0.5, "ranged": 1.4, "ranged_pierce": 1, "ranged_speed": 1.5, "ranged_other": 0.5,
+	"coop_rate": 0.3, "coop_rate_step": 0.05, "coop_rate_max": 0.5, "summon": 1.5, "summon_life": 2.0, "summon_other": 0.6,
+	"status": 2.0, "status_direct": 0.7, "status_spread": 100.0, "crit_extra": 2.0, "crit_other": 0.75,
+	"lifesteal_heal": 4.0, "dodge_cap": 80.0,
 	"treuhand_chance": 0.5, "treuhand_pfand": 30, "aufhoeren_after": 2.0, "aufhoeren_regen": 8.0, "aufhoeren_armor": 10.0,
 	"wahl_time": 10.0, "wahl_early": 40.0, "wahl_late": -10.0, "maut_now": 60, "maut_wave": 8,
 	"ber_wave": 10, "ber_early": -10.0, "ber_late_dmg": 40.0, "ber_late_as": 20.0,
 	"puma_period": 18.0, "puma_down": 3.0, "second_round_hp": 0.5, "cumex_max": 40, "cumex_audit_wave": 15,
-	"wumms_radius": 150.0, "wumms_delay": 0.35, "fertigputz_knock": 600.0, "entlassung_hp": 0.3}
+	"wumms_radius": 150.0, "wumms_delay": 0.35, "wumms_dmg": 20.0, "wumms_ranged": 3.0,
+	"fertigputz_knock": 600.0, "entlassung_hp": 0.4, "entlassung_boss": 1.5}
 
 ## Shop weight of an item rarity at a given wave (luck shifts towards rarer tiers).
 static func rarity_weight(rarity: int, wave: int, luck: float) -> float:

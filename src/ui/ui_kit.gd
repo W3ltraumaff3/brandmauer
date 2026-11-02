@@ -219,6 +219,11 @@ static func rarity_color(rarity: int) -> Color:
 	return Content.RARITY_COLORS.get(rarity, UITheme.INK)
 
 
+## Weapon tier I..IV in the item rarity colors (GDD §6a, D-150).
+static func tier_color(tier: int) -> Color:
+	return rarity_color(clampi(tier, 1, 4))
+
+
 ## "Grün" / "Blau" / "Lila" / "Rot" (content.csv RARITY_1..4).
 static func rarity_name(rarity: int) -> String:
 	var t := trk("RARITY_%d" % rarity)

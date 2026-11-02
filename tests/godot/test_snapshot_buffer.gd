@@ -1,6 +1,8 @@
 extends TestCase
 ## Client interpolation buffer (src/net/snapshot_buffer.gd).
 
+const AREAS := ["net"]  # ci-cd.md §2a
+
 
 static func _view(t: float, enemies: Dictionary, player_x: float, seq := 0) -> ViewState:
 	var vs := ViewState.new()

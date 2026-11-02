@@ -38,6 +38,11 @@ Source of truth for how difficulty, economy and player power scale. Every number
   - `prefer=<weapon|item>[,...]`: bought first whenever offered and affordable, in every
     mode; a preferred weapon with full slots sells the lowest-tier non-preferred weapon.
     `prefer` only biases purchases; use `start=` to guarantee a weapon is played.
+  - `buy=<item>:<wave>[,...]`: from the Späti after that wave on, until the bot owns it, the
+    item is added as a fifth offer at its normal shop price and bought first once the bot
+    can pay for it (D-136). Measures an item at the price and wave a player would really buy
+    it (a red item first shows up after wave 7), unlike `item=`, which gives it for free
+    from wave 1. A run that never affords it is identical to the run without `buy=`.
   - **Behaviour switches** (bot 3, D-105; on by default except `castult`; `=0` turns one off for A/B):
     - `ult=smart|1|boss|0` (default `smart`): the ultimate, once per wave (the final boss
       recharges it at her phase changes). `smart`: heal ultimates (Urlaubsantrag, Kaffee
@@ -304,6 +309,40 @@ Data: `balance/runs/v0.4.0-beta/` (final code 3589912e33); decisions D-113 to D-
   summon build with Gewerkschaft is now the strongest bot build at 35 % (watch in playtests; the
   lever would be the passive's own-summon count); the rest of the boss-rule numbers.
 
+### Red items (v0.4.1, 2026-11-03; bot 3, `buy=<item>:8`, solo)
+Data: `balance/runs/v0.4.1-beta/` (final code ddac79751b); decisions D-127 to D-136. Each item
+is offered from the Späti after wave 8 on at its shop price and bought first once affordable
+(typically after wave 8–9, 145–250 Pfand), paired with the same seeds without it. Outcome = wave
+reached (21 = won), B−A ± SE over the pairs.
+
+| Item (build) | Before (v0.4.0) | After (final) | n | Wins A → B (after) |
+|---|---|---|---|---|
+| Hausbesetzung (melee, unchanged) | +0.25 ± 0.11 | +0.75 ± 0.56 | 16 | 4 → 8; final boss 105 → 81 s |
+| Wurfmaschine (ranged) | −0.56 ± 0.56 | +1.25 ± 0.85 | 16 | 14 → 16 |
+| Doppelwumms (ranged) | −0.12 ± 0.09 | +1.25 ± 0.85 | 16 | 14 → 16 |
+| Genossenschaftsanteil (ranged / crit) | −2.38 ± 1.07 / — | +0.50 ± 0.65 / +0.06 ± 0.82 | 16 / 16 | 14 → 15 / 8 → 8 |
+| Cum-Ex-Erstattung (ranged / crit) | −2.44 ± 1.09 / — | −0.12 ± 0.92 / +0.69 ± 1.05 | 16 / 16 | 14 → 14 / 8 → 9 |
+| Ehrenamtskarte (summon, unchanged) | 0 (ceiling) | 0 (ceiling) | 16 | 15 → 15; final boss 165 → 92 s |
+| Kompost (status Oma + Kleber, unchanged) | 0 (ceiling) | +0.56 ± 0.56 | 16 | 11 → 12 |
+| Kritische Masse (crit) | −0.81 ± 1.09 | +2.75 ± 1.44 | 16 | 8 → 13; final boss 47 → 31 s |
+| Entlassungsurkunde (crit) | −4.25 ± 1.40 | +1.38 ± 1.30 | 16 | 8 → 10 |
+| Tarnkappe (crit / ranged) | −2.50 ± 1.19 / — | +1.12 ± 1.53 / +0.12 ± 0.92 | 16 / 16 | 8 → 10 / 14 → 14 |
+| Robin-Hood-Kostüm (melee) | −1.62 ± 1.01 | +0.56 ± 1.00 | 16 | 4 → 5 |
+| Brandmauer-Fertigputz (melee / tank, unchanged) | +0.50 ± 0.57 / +0.06 | +1.12 ± 0.73 / +0.06 ± 0.06 | 16 / 16 | 4 → 5 / 0 → 1 |
+
+- "Before" cells: `before2` (v0.4.0, ranged and crit at Umfrage 20 / 35 %, the others 10 / 20 %) and
+  `r2before` (melee); the "after" cells are crit and ranged at 20 % with 16 seeds, the others 10 / 20 %
+  with 8 seeds each (summon 20 / 35 %). The bases differ a little between them because the four red
+  politics items are now in the shop pool (D-127).
+- Money items: with the Genossenschaftsanteil the bot spends 345 instead of 261 Pfand in the very next
+  Späti and 1.5–1.8× as much from wave 12 on; Cum-Ex about +100 per visit until the audit at wave 15.
+  The bot converts the extra money into few extra wins because ranged is at the win ceiling at 20 %
+  and it never saves on purpose; a saving player gets more.
+- Nothing trivializes the run: the largest gain is Kritische Masse (+2.8 waves, the crit bot from
+  8 to 13 wins of 16 at Umfrage 20 %). Tarnkappe still costs armor builds (tank: −0.7 ± 0.6 waves with +40 in round 1); that
+  build has Brandmauer-Fertigputz. The tank bot affords a red item in only 2–3 of 16 runs (it is poor
+  and dies early), so tank numbers are thin.
+
 ## 3. Enemies
 
 - **HP:** `base × (1 + hp_lin·w + hp_quad·w² + hp_cubic·w³) × Umfrage hp × co-op hp`, where
@@ -390,7 +429,7 @@ not wave income), computed for every player at once from the values before any t
 ## 6. Lifesteal (like Brotato)
 
 - 1 Lebensraub point = **1 % chance per hit** to heal 1 HP; at most 10 heals per second.
-- The red lifesteal build keeps its bigger heal per proc.
+- The red lifesteal build (Robin-Hood-Kostüm) heals 4 HP per proc instead of 1 and turns Krankenschein points into Umverteilung (D-134).
 - **Krankenschein (HP regen): 0.08 HP per second per point** (v0.4, D-119; was 0.12), level-up
   +3 as before. Measured as HP actually healed per stat point and minute in bot runs, it now
   sits in the same band as Umverteilung (see "After tuning (v0.4.0)"; before 1.01–1.45 vs 0.47–0.61).

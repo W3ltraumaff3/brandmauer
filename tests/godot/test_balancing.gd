@@ -2,6 +2,8 @@ extends TestCase
 ## Balancing rules (docs/specs/balancing.md): level-up schedule and rarities,
 ## Brotato lifesteal, boss retry, boss phase 2, Umfrage from the start.
 
+const AREAS := ["sim", "content", "ui"]  # ci-cd.md §2a
+
 
 func _sim(chars: Array, extra := {}) -> Sim:
 	var players := []

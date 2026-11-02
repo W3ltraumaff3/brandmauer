@@ -1,7 +1,10 @@
 extends SceneTree
 ## Headless test runner:
 ##   godot --headless --path . -s res://tests/godot/run_tests.gd [-- filter]
+##   godot ... -s res://tests/godot/run_tests.gd -- areas=sim,ui [files=test_x.gd,…]
 ## Runs every tests/godot/test_*.gd (TestCase subclasses). Exit code 1 on failure.
+## With areas= / files= (ci-cd.md §2a, picked by tools/affected_tests.py) only
+## the files whose AREAS overlap, the named files and files without AREAS run.
 
 const DIR := "res://tests/godot"
 
@@ -47,16 +50,36 @@ static func _all_scripts(dirs: Array) -> Array[String]:
 	return out
 
 
+## A test file runs for an area selection if it was named, declares no AREAS
+## (unknown coverage: always run) or shares an area with the selection.
+static func runs_for(file_areas, areas: PackedStringArray, is_named: bool) -> bool:
+	if is_named or not (file_areas is Array):
+		return true
+	for a in file_areas:
+		if areas.has(str(a)):
+			return true
+	return false
+
+
 func _run() -> void:
 	var filter := ""
-	var args := OS.get_cmdline_user_args()
-	if args.size() > 0:
-		filter = args[0]
+	var areas := PackedStringArray()
+	var named := PackedStringArray()
+	var by_area := false
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("areas="):
+			by_area = true
+			areas = a.trim_prefix("areas=").split(",", false)
+		elif a.begins_with("files="):
+			by_area = true
+			named = a.trim_prefix("files=").split(",", false)
+		elif filter == "":
+			filter = a
 	var total := 0
 	var failed := 0
 	# Every script of the project must compile (one broken line, e.g. `:=` on a
 	# Variant, silently takes a whole script and all its callers down).
-	if filter == "":
+	if filter == "" or by_area:
 		for path in _all_scripts(["res://src", "res://tools", DIR]):
 			total += 1
 			var s := load(path) as GDScript
@@ -69,7 +92,7 @@ func _run() -> void:
 	for file in files:
 		if not (file.begins_with("test_") and file.ends_with(".gd")) or file == "test_case.gd":
 			continue
-		if filter != "" and not file.contains(filter):
+		if filter != "" and not by_area and not file.contains(filter):
 			continue
 		var script: GDScript = load(DIR.path_join(file))
 		# A test file that doesn't compile has no methods: count it, never skip it.
@@ -77,6 +100,8 @@ func _run() -> void:
 			total += 1
 			failed += 1
 			printerr("  FAIL %s: does not compile (see the parse error above)" % file)
+			continue
+		if by_area and not runs_for(script.get_script_constant_map().get("AREAS"), areas, named.has(file)):
 			continue
 		for m in script.get_script_method_list():
 			var mname: String = m["name"]

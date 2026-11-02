@@ -3,6 +3,12 @@
 Raw bot runs (one JSON line per run from `tools/balance_sim.gd`) kept as baselines.
 How the bots and tools work: [docs/specs/balancing.md](../docs/specs/balancing.md) §2.
 
+## runs/v0.4.1-beta/
+
+Red-item review (2026-11-02/03, bot 3, `buy=<item>:8` A/B, final code `ddac79751b`); summary in
+[balancing.md](../docs/specs/balancing.md) §2 "Red items (v0.4.1)", decisions D-127 to D-136.
+Folder layout and code hashes: [runs/v0.4.1-beta/README.md](runs/v0.4.1-beta/README.md).
+
 ## runs/v0.4.0-beta/
 
 Balancing round for v0.4.0-beta (2026-11-02, bot 3, Godot 4.7.2, 16 jobs); summary in

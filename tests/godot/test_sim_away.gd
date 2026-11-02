@@ -2,6 +2,8 @@ extends TestCase
 ## Sim player state 3 "away": a co-op client lost its connection and may come
 ## back within the grace period (networking.md §7.4, architecture.md §3).
 
+const AREAS := ["sim", "net"]  # ci-cd.md §2a
+
 const TICK := 1.0 / 60.0
 
 

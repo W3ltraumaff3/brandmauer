@@ -2,6 +2,8 @@ extends TestCase
 ## Area damage for the summon weapons (GDD §11, D-115): Infostand leaflets bounce
 ## ("Flugblatt wird weitergereicht"), the Weißer Overall splashes ("Blockade-Knäuel").
 
+const AREAS := ["sim"]  # ci-cd.md §2a
+
 const DT := 1.0 / 60.0
 
 

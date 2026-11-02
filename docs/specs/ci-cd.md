@@ -1,6 +1,6 @@
 # Spec: CI/CD, Tests & Repository Rules
 
-**Status:** Approved · **Last updated:** 2026-11-01
+**Status:** Approved · **Last updated:** 2026-11-02
 
 ## 1. Repository
 
@@ -24,7 +24,7 @@ Runs on every PR and every push to `main`. The plan grows with the project.
 | Stage | Content | Job (check name) | Required |
 |---|---|---|---|
 | Quote data | `tests/test_quotes.py` validates `zitate_de.json` against the content guidelines. A rebuild must produce no diff | `Quote data` | yes |
-| Godot unit tests | headless Godot 4.7.2 (official Linux build, SHA-512 checked, cached), `--import`, then the custom runner `tests/godot/run_tests.gd` over `tests/godot/test_*.gd` | `Godot tests` | yes |
+| Godot unit tests | headless Godot 4.7.2 (official Linux build, SHA-512 checked, cached), `--import`, then the custom runner `tests/godot/run_tests.gd` over `tests/godot/test_*.gd`; on PRs only the touched areas (§2a) | `Godot tests` | yes |
 | Network tests | `tools/net_smoke.sh`: headless host plus clients in one CI job: handshake, sync, disconnect, reconnect | `Net smoke` (skips with a notice while the script doesn't exist) | yes |
 | GDScript compile | `tools/check_script.gd` compiles every tracked `.gd` file on its own (after `--import`, so `class_name`s resolve). A script that stops compiling is named directly, with an error annotation, instead of surfacing as many unrelated test failures | `GDScript compile` | no (candidate) |
 | GDScript lint | `gdlint` (gdtoolkit 4.x, hash-pinned in `tools/requirements-lint.txt`) with `.gdlintrc`: tabs count as 4 columns, lines up to 140, `class-definitions-order`, `max-file-lines` and `max-public-methods` disabled. Findings become warning annotations; the step has `continue-on-error`, so the job stays green | `GDScript lint` | no (non-blocking by design) |
@@ -42,6 +42,34 @@ gdlint .
 godot --headless --path . -s res://tools/check_script.gd -- res://src/sim/sim.gd
 actionlint    # https://github.com/rhysd/actionlint/releases
 ```
+
+### 2a. Test areas: run only what a change touches (D-125)
+
+Locally and on PRs, only the tests of the areas a change touches run. `main` and manual runs still run everything.
+
+- **Areas:** `sim`, `content`, `net`, `view`, `ui`, `audio`, `save`, `quotes`.
+- **Each test file declares its areas** with `const AREAS := ["sim", "view"]`. A test file without `AREAS` runs for every change, so a forgotten declaration costs time but never coverage.
+- **`tests/test_areas.json` maps paths to areas** (prefixes or exact paths). It has two special lists:
+  - `all`: the test runner, `test_case.gd`, `project.godot`, the map, the selector and the CI workflow. A change to any of these runs everything.
+  - `skip`: docs, balance data, Markdown and the balance tools. These need no tests.
+- **A changed path that matches nothing runs everything.** New folders are safe by default.
+- **A changed or new test file always runs itself.**
+- **The selector `tools/affected_tests.py`** compares against the merge base with `origin/main`. Locally it also includes uncommitted and untracked files. It prints the areas and checks; with `--run` it runs them.
+  ```sh
+  python tools/affected_tests.py          # what would run
+  python tools/affected_tests.py --run    # import + run it (Godot from $GODOT or tools/run_tests.sh's list)
+  python tools/affected_tests.py --all --run
+  ```
+- **Runner:** `run_tests.gd -- areas=sim,ui files=test_x.gd,test_y.gd` runs the test files that declare one of these areas, the named files, and every file without `AREAS`.
+  - The "every script compiles" check always runs, with or without areas.
+  - It is skipped only for the old single name filter (`-- audio`), which is for quick local debugging.
+- **CI on a PR:** a first step in each required job runs the selector against the PR base.
+  - `Godot tests` runs the affected areas. The Späti layout check runs when `ui`, `sim` or `content` is affected.
+  - `Net smoke` runs when `net`, `sim` or `save` is affected.
+  - `Quote data` runs when `quotes` is affected.
+  - A job with nothing to run still starts and reports green with a notice, because required checks must report.
+- **CI on a push to `main` and on `workflow_dispatch`:** everything runs. A missing area in a PR is caught at the latest there.
+- **Rule for contributors and Claude:** after a GDScript change, run the affected tests (`affected_tests.py --run`). Run the full suite before a PR or a release.
 
 ## 3. CD
 

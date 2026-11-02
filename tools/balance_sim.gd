@@ -8,7 +8,9 @@ extends SceneTree
 ## build's own character unless char= is given), char=<id>[,<id>...] (bot i plays
 ## the i-th character, cycling), start=<weapon>[:tier][,...] (replaces the start
 ## weapon), item=<item>[,...] (start items), prefer=<weapon|item>[,...] (bought
-## first whenever offered), jobs=N / tag=<text> (only recorded).
+## first whenever offered), buy=<item>:<wave>[,...] (offered in every Späti from that
+## wave on until owned, at the shop price, and bought first once affordable),
+## jobs=N / tag=<text> (only recorded).
 ## Behaviour switches for A/B runs (default first): ult=smart|1|boss|0,
 ## move=1|0 (planner / v2 kiting), dodge=1|0, spread=1|0, target=1|0, pickup=1|0,
 ## shop=1|0, streik=1|0, castult=1|0, metrics=1|0 (weapon delivery metrics).
@@ -79,6 +81,7 @@ var _loadout := {}   # player id -> [{"w", "weapons", "stats", "dmg"}, ...] per 
 var _pressure := {}  # player id -> damage taken in the last wave (× max HP)
 var _shop_log := {}  # player id -> {"sold", "lu_rerolls", "repairs"}
 var _prefer: Array = []
+var _buy: Array = []   # buy=: [[item id, first Späti wave], ...], offered and bought at the shop price
 
 
 func _initialize() -> void:
@@ -135,6 +138,15 @@ func _initialize() -> void:
 					_prefer.append(id)
 				else:
 					bad.append("prefer " + id)
+		elif a.begins_with("buy="):
+			for e in _list(v):
+				var es := str(e)
+				var id := es.get_slice(":", 0)
+				var at := int(es.get_slice(":", 1)) if es.contains(":") else 1
+				if Content.ITEMS.has(id) and at >= 1:
+					_buy.append([id, at])
+				else:
+					bad.append("buy " + es)
 		elif a.begins_with("ult="):
 			if v in ["0", "1", "boss", "smart"]:
 				_bot.ult = v
@@ -429,7 +441,7 @@ func _run(cfg: Dictionary) -> Dictionary:
 	var secs := (Time.get_ticks_msec() - started) / 1000.0
 	return {"players": n, "umfrage": umfrage, "seed": seed, "immortal": immortal, "random": _random, "build": _build,
 		"char": ",".join(chars), "start": cfg["start"].map(func(e): return "%s:%d" % e), "item": cfg["items"],
-		"prefer": _prefer, "ult": _bot.ult, "dodge": _bot.dodge, "switches": cfg["switches"], "tune": cfg.get("tune", ""),
+		"prefer": _prefer, "buy": _buy.map(func(e): return "%s:%d" % e), "ult": _bot.ult, "dodge": _bot.dodge, "switches": cfg["switches"], "tune": cfg.get("tune", ""),
 		"place": s.place_mode, "zonetime": cfg["zonetime"], "bot": BOT_VERSION,
 		"content": content_hash(), "code": code_hash(), "jobs": cfg["jobs"], "tag": cfg["tag"],
 		"won": won, "wave": s.wave, "secs": snappedf(secs, 0.1),
@@ -585,6 +597,7 @@ func _shop_all(s: Sim) -> Dictionary:
 			s.request(p.id, "levelup", best)
 			lu_rerolls = 0
 		_note_offers(p)
+		var forced := _offer_forced(s, p)
 		for attempt in 8:
 			var bought := false
 			var order: Array = range(p.offers.size())
@@ -595,6 +608,9 @@ func _shop_all(s: Sim) -> Dictionary:
 			elif _shop3 and _pressure.get(p.id, 0.0) > PRESSURE_HIGH:
 				order = _defensive_first(p, order)
 			order = _prefer_first(p, order)
+			if forced >= 0 and not p.offers[forced]["sold"]:
+				order.erase(forced)
+				order.push_front(forced)
 			for i in order:
 				var o: Dictionary = p.offers[i]
 				if o["sold"] or o["price"] > p.pfand:
@@ -602,7 +618,7 @@ func _shop_all(s: Sim) -> Dictionary:
 				if o["kind"] == "weapon" and p.weapons.size() >= p.max_weapons and Sim.find_twin(p, o["id"], o["tier"], -1) < 0:
 					if not (o["id"] in _prefer and _make_room(s, p)) and not _swap_off_build(s, p, o):
 						continue
-				if o["kind"] == "item" and o["id"] in AVOID and not o["id"] in _prefer:
+				if o["kind"] == "item" and o["id"] in AVOID and not o["id"] in _prefer and i != forced:
 					continue
 				var price: int = o["price"]
 				if s.request(p.id, "buy", i):
@@ -622,6 +638,7 @@ func _shop_all(s: Sim) -> Dictionary:
 				if s.request(p.id, "reroll"):
 					out["rerolls"] += 1
 					_note_offers(p)
+					forced = _offer_forced(s, p)
 			elif not bought:
 				break
 		if _shop3 and not _random:
@@ -720,6 +737,21 @@ func _note_loadout(s: Sim, p) -> void:
 	if not _loadout.has(p.id):
 		_loadout[p.id] = []
 	_loadout[p.id].append({"w": s.wave, "weapons": weapons, "stats": stats, "dmg": dmg})
+
+
+## buy=<item>:<wave>: from the Späti after that wave on, until the player owns the item,
+## it is added as an extra offer at its normal shop price (the rolled offers stay, so a
+## run that never buys it is the same as without buy=), and the bot buys it before
+## anything else once it can pay for it, like a player who sees a red item and saves
+## for it. Returns the offer index (-1 = none). Added again after a shop reroll.
+func _offer_forced(s: Sim, p) -> int:
+	for e in _buy:
+		if s.wave < int(e[1]) or p.items.has(e[0]):
+			continue
+		p.offers.append({"kind": "item", "id": e[0], "tier": 1, "rarity": int(Content.ITEMS[e[0]]["rarity"]),
+			"price": s._price(Content.item_price(e[0], s.wave + 1)), "sold": false})
+		return p.offers.size() - 1
+	return -1
 
 
 ## prefer=: preferred offers first, keeping the rest of the order (and adding them

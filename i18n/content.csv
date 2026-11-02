@@ -352,19 +352,19 @@ ITEM_SOLI_KONZERT_DESC,"+30 Akkord, +10 Eltern, −8 Solidarität. Ohrenbetäube
 ITEM_HAUSBESETZUNG_NAME,Hausbesetzung
 ITEM_HAUSBESETZUNG_DESC,"Nahkampf-Build: Nahkampfwaffen ×2 Schaden, alle anderen nur ×0,5. Die Häuser denen, die drin kämpfen."
 ITEM_WURFMASCHINE_NAME,Wurfmaschine
-ITEM_WURFMASCHINE_DESC,"Fernkampf-Build: Geschosse durchschlagen +1 Ziel und fliegen 50 % schneller, Nahkampf nur ×0,5."
+ITEM_WURFMASCHINE_DESC,"Fernkampf-Build: Durchschlagskraft-Waffen ×1,4 Schaden, Geschosse durchschlagen +1 Ziel und fliegen 50 % schneller, Nahkampf nur ×0,5."
 ITEM_GENOSSENSCHAFTSANTEIL_NAME,Genossenschaftsanteil
-ITEM_GENOSSENSCHAFTSANTEIL_DESC,"Spar-Build: Jede Woche +15 % deines Pfands (max. 50), aber nur 2 Käufe pro Späti-Besuch."
+ITEM_GENOSSENSCHAFTSANTEIL_DESC,"Spar-Build: Am Wochenende Dividende auf dein Pfand, erst 30 %, jede Woche +5 % (bis 50 %), höchstens so viel, wie ein neuer Anteil gerade kostet. Eine:r für alle."
 ITEM_EHRENAMTSKARTE_NAME,Ehrenamtskarte
 ITEM_EHRENAMTSKARTE_DESC,"Helfer:innen-Build: alle Ehrenamt-Waffen und Genoss:innen ×1,5 Schaden und Heilung, doppelte Dauer; andere Waffen nur ×0,6."
 ITEM_KOMPOST_NAME,Kompost
 ITEM_KOMPOST_DESC,"Status-Build: Gift und Kleber ×2, Gift springt beim Tod auf Nachbar:innen über, direkter Schaden ×0,7."
 ITEM_KRITISCHE_MASSE_NAME,Kritische Masse
-ITEM_KRITISCHE_MASSE_DESC,"Krit-Build: Krits treffen ×1,5 härter, alle anderen Treffer nur ×0,7."
+ITEM_KRITISCHE_MASSE_DESC,"Krit-Build: +15 Direkte Aktion, Krits treffen ×2 härter, alle anderen Treffer nur ×0,75."
 ITEM_ROBIN_HOOD_NAME,Robin-Hood-Kostüm
-ITEM_ROBIN_HOOD_DESC,"Umverteilungs-Build: Umverteilung heilt ×3, dafür kein Krankenschein mehr."
+ITEM_ROBIN_HOOD_DESC,"Umverteilungs-Build: +10 Umverteilung, jede Umverteilung heilt 4 statt 1, und dein Krankenschein zählt als Umverteilung statt zu heilen."
 ITEM_TARNKAPPE_NAME,Tarnkappe
-ITEM_TARNKAPPE_DESC,"Ausweich-Build: Schwarzfahren bis 80 % statt 60 %, aber Kündigungsschutz fällt auf 0."
+ITEM_TARNKAPPE_DESC,"Ausweich-Build: +50 Schwarzfahren, Grenze 80 % statt 60 %, aber Kündigungsschutz fällt auf 0."
 RARITY_1,Grün
 RARITY_2,Blau
 RARITY_3,Lila
@@ -409,13 +409,13 @@ ITEM_PUMA_DESC,"+25 Durchschlagskraft, +10 Kündigungsschutz. Alle 18 s fallen a
 ITEM_ZWEITER_WAHLGANG_NAME,Zweiter Wahlgang
 ITEM_ZWEITER_WAHLGANG_DESC,Einmal pro Run: statt umzufallen mit 50 % Solidarität weiter. −10 Wut. Im zweiten Anlauf reicht's. Knapp.
 ITEM_CUMEX_ERSTATTUNG_NAME,Cum-Ex-Erstattung
-ITEM_CUMEX_ERSTATTUNG_DESC,"Spar-Build: Ungenutztes Pfand wird am Wochenende nochmal erstattet (max. +40). Nach Woche 15: Betriebsprüfung, die Hälfte ist weg."
+ITEM_CUMEX_ERSTATTUNG_DESC,"Spar-Build: Ungenutztes Pfand wird am Wochenende nochmal erstattet (max. +40, steigt mit den Preisen). Nach Woche 15: Betriebsprüfung, die Hälfte ist weg."
 ITEM_DOPPELWUMMS_NAME,Doppelwumms
-ITEM_DOPPELWUMMS_DESC,Fernkampf-Build: Jeder Kill explodiert zweimal (150 px). −15 Kündigungsschutz. Die Rechnung kommt später.
+ITEM_DOPPELWUMMS_DESC,"Fernkampf-Build: Jeder Kill explodiert zweimal (150 px, stark mit Durchschlagskraft). −10 Kündigungsschutz. Die Rechnung kommt später."
 ITEM_BRANDMAUER_FERTIGPUTZ_NAME,Brandmauer-Fertigputz
 ITEM_BRANDMAUER_FERTIGPUTZ_DESC,"Panzer-Build: +50 Kündigungsschutz, wer dich berührt, fliegt zurück. −30 Deutschlandticket. Hält allem stand, außer einer Abstimmung."
 ITEM_ENTLASSUNGSURKUNDE_NAME,Entlassungsurkunde
-ITEM_ENTLASSUNGSURKUNDE_DESC,"Krit-Build: +20 Direkte Aktion, Krit auf Gegner:innen unter 30 % setzt sie sofort ab. −15 Durchschlagskraft."
+ITEM_ENTLASSUNGSURKUNDE_DESC,"Krit-Build: +30 Direkte Aktion, Krit auf Gegner:innen unter 40 % setzt sie sofort ab, Krits gegen Elites und Bosse ×1,5. −10 Vernetzung. Die Koalition ist Geschichte."
 WEAPON_KLEINE_ANFRAGE_NAME,Kleine Anfrage
 WEAPON_KLEINE_ANFRAGE_DESC,"Status · skaliert mit Zivilem Ungehorsam (1,3). Aktendeckel, durchschlägt 1 Gegner:in. Treffer: 3 s „In Bearbeitung“, also keine Spezialfähigkeit. Zielt zuerst auf Gegner:innen mit Fähigkeit, abstimmende JU-Schnösel vorneweg. 551 Fragen an die Zivilgesellschaft? Hier kommt Frage 552."
 WEAPON_LOBBYREGISTER_NAME,Lobbyregister

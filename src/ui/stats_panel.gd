@@ -173,7 +173,10 @@ func _damage_card(rs: Dictionary, me: Dictionary) -> Control:
 		var sold := bool(r.get("sold", false)) or bool(r.get("merged", false))
 		var col := UITheme.GREY if sold else UITheme.INK
 		var total := int(r.get("total", 0))
-		var n := UIKit.label(source_name(r, ult_id(me)), 19, col)
+		var weapon := str(r.get("kind", "")) == "weapon"
+		var n := UIKit.label(source_name(r, ult_id(me)), 19,
+			UIKit.tier_color(int(r.get("tier", 1))) if weapon and not sold else col)   # GDD §6a
+		n.name = "src_%d" % i
 		n.size_flags_horizontal = SIZE_EXPAND_FILL
 		n.clip_text = true
 		n.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS

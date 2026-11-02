@@ -2,6 +2,8 @@ extends TestCase
 ## Net logic that needs no sockets: solo lobby, validation, handshake checks,
 ## LAN parsing, dedicated auto-start (src/autoload/net.gd).
 
+const AREAS := ["net"]  # ci-cd.md §2a
+
 const NetScript := preload("res://src/autoload/net.gd")
 const FAKE_GAME_SRC := """extends Node
 var mode := 0

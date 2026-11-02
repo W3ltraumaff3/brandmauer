@@ -3,6 +3,8 @@ extends TestCase
 ## Pressekonferenz, random targets, stun resistance and interruptible casts, the
 ## slow cap, the boss HP lever, the new abilities and the old-arena coordinate fix.
 
+const AREAS := ["sim", "view"]  # ci-cd.md §2a
+
 const DT := 1.0 / 60.0
 
 

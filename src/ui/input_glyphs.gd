@@ -194,7 +194,7 @@ static func show_on_pad(c: CanvasItem) -> void:
 
 
 ## Registers the gamepad bindings Godot's default ui_* actions lack:
-## A = ui_accept, B = ui_cancel, LB/RB = ui_page_left/right (Späti sections),
+## A = ui_accept, B = ui_cancel, LB/RB = ui_page_left/right (Späti sections, lobby areas),
 ## right stick = ui_scroll_up/down. Safe to call repeatedly.
 static func ensure_actions() -> void:
 	_add_button("ui_accept", JOY_BUTTON_A)

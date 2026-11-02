@@ -21,6 +21,9 @@ var _start_btn: Button
 var _wait_label: Label
 var _mode_label: Label
 var _detail_scroll: ScrollContainer
+## LB / RB areas (D-124): left column and bottom row; the grid is _char_buttons.
+var _settings_area: Control
+var _bottom_area: Control
 
 
 func _init() -> void:
@@ -45,11 +48,13 @@ func build() -> void:
 	var main := UIKit.hbox(16)
 	main.size_flags_vertical = SIZE_EXPAND_FILL
 	body.add_child(main)
-	main.add_child(_build_left())
+	_settings_area = _build_left()
+	main.add_child(_settings_area)
 	main.add_child(_build_grid())
 	main.add_child(_build_detail())
 
 	var bottom := UIKit.hbox(14)
+	_bottom_area = bottom
 	bottom.add_child(UIKit.button("← " + tr("LOBBY_BACK"), _on_back, 22))
 	bottom.add_child(UIKit.spacer())
 	_wait_label = UIKit.label(tr("LOBBY_WAIT_HOST"), 20, UITheme.INK_SOFT)
@@ -366,6 +371,50 @@ func _link_bottom_row() -> void:
 		return
 	for b in [_ready_btn, _start_btn]:
 		(b as Control).focus_neighbor_top = (b as Control).get_path_to(target)
+
+
+## LB / RB: jump to the previous / next area that has a usable control (D-124).
+func _input(event: InputEvent) -> void:
+	if not is_visible_in_tree():
+		return
+	var dir := 0
+	if InputMap.has_action("ui_page_left") and event.is_action_pressed("ui_page_left"):
+		dir = -1
+	elif InputMap.has_action("ui_page_right") and event.is_action_pressed("ui_page_right"):
+		dir = 1
+	if dir == 0:
+		return
+	# Something above the lobby (an open picker list, a dialog) has focus: not ours.
+	var f := get_viewport().gui_get_focus_owner()
+	if f == null or not is_ancestor_of(f):
+		return
+	get_viewport().set_input_as_handled()
+	var areas := [_settings_area, null, _bottom_area]   # null: the character grid
+	var cur := 1
+	for i in areas.size():
+		var a: Control = areas[i]
+		if a != null and a.is_ancestor_of(f):
+			cur = i
+	for step in range(1, areas.size()):
+		var target := _area_target(areas[posmod(cur + dir * step, areas.size())])
+		if target != null:
+			UIApi.sfx("ui_click")
+			target.grab_focus()
+			return
+
+
+func _area_target(area: Control) -> Control:
+	if area == null:
+		var mine := str(_my_entry().get("char", Content.CHAR_ORDER[0]))
+		return _char_buttons.get(mine, _char_buttons.get(Content.CHAR_ORDER[0])) as Control
+	if area == _bottom_area:
+		for b in [_ready_btn, _start_btn]:
+			if UINav.can_focus(b):
+				return b
+	for c in area.find_children("*", "Control", true, false):
+		if UINav.can_focus(c):
+			return c
+	return null
 
 
 func _local_ips() -> Array:
