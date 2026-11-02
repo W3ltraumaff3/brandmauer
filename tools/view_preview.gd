@@ -1083,8 +1083,66 @@ func _shot_bosses() -> void:
 	_show(vs, at + Vector2(0, 80), 1.0, _meta(1))
 	await _capture("boss_ownfx_20", 6)
 	world.own_fx_override = -1.0
+	await _shot_final_boss()
 	await _shot_boss_hud_layout()
 	hud.visible = false
+
+
+## The final exam (GDD §14, D-141 to D-144): Ansturm-Kette lane and a falling and a
+## lying rotor, Reichweite (red arena, blue-turquoise safe strips in front of the
+## intact wall, none next to holes), Briefkastenfirmen with gold links, the
+## Hochrechnung tag in the boss bar.
+func _shot_final_boss() -> void:
+	var b := Content.BOSS
+	# 1. P1: a charge lane at the player, a turbine tipping over, a rotor lying there
+	var vs := _vs(3)
+	var at := Arena.CENTER + Vector2(-380, -60)
+	var ang := 0.25
+	_summon(vs, "turbine", Arena.CENTER + Vector2(420, -230))
+	_hza(vs, "ansturm_bahn", at, float(b["ansturm_len"]) + 36.0, 0.45, ang)
+	_hza(vs, "rotor", Arena.CENTER + Vector2(-420, 210), b["rotor_len"], 0.7, -0.6)
+	_hza(vs, "rotor", Arena.CENTER + Vector2(260, 180), b["rotor_len"], 0.3, 2.6)
+	_enemy2(vs, "eidgenossin", at, 0, ViewState.EF_ELITE | ViewState.EF_WINDUP)
+	_player(vs, 1, "oma", at + Vector2(cos(ang), sin(ang)) * 330.0, ["stricknadeln"])
+	_player(vs, 2, "antifa", Arena.CENTER + Vector2(100, 280), ["tofu"])
+	vs.boss = _boss_block("eidgenossin", 0.85, 0, "ansturm", 0.55)
+	_show(vs, Arena.CENTER + Vector2(-40, 0), 0.75, _meta(2))
+	await _capture("boss_final_kette", 6)
+	# 2. P2: Reichweite warning with the band in front of the holes and a push ring
+	vs = _vs(3)
+	_hza(vs, "abschiebezone", Vector2(Arena.CENTER.x, Arena.INNER.position.y + 35.0), 110.0, 1.0)
+	_hza(vs, "reichweite", Arena.CENTER + Vector2(0, -40), Arena.INNER.size.length(), 0.45)
+	_hza(vs, "push_ring", Arena.CENTER + Vector2(0, -40), 300.0, 0.65)
+	_enemy2(vs, "eidgenossin", Arena.CENTER + Vector2(0, -40), 0, ViewState.EF_ELITE | ViewState.EF_WINDUP)
+	_player(vs, 1, "oma", Arena.seg_inner(21, 50.0), ["stricknadeln"])
+	_player(vs, 2, "antifa", Arena.CENTER + Vector2(300, 120), ["tofu"])
+	_player(vs, 3, "lastenrad", Arena.seg_inner(25, 60.0), [])
+	vs.boss = _boss_block("eidgenossin", 0.5, 1, "reichweite", 0.55)
+	_show(vs, Arena.CENTER, 0.56, _meta(3))
+	await _capture("boss_final_reichweite", 6)
+	vs = _vs(3)
+	_hza(vs, "abschiebezone", Vector2(Arena.CENTER.x, Arena.INNER.position.y + 35.0), 110.0, 1.0)
+	_hza(vs, "reichweite_hit", Arena.CENTER + Vector2(0, -40), Arena.INNER.size.length(), 0.35)
+	_enemy2(vs, "eidgenossin", Arena.CENTER + Vector2(0, -40), 0, ViewState.EF_ELITE)
+	_player(vs, 1, "oma", Arena.seg_inner(21, 50.0), ["stricknadeln"])
+	vs.boss = _boss_block("eidgenossin", 0.45, 1)
+	_show(vs, Arena.CENTER, 0.56, _meta(1))
+	await _capture("boss_final_reichweite_hit", 6)
+	# 3. P3: shield, four letterboxes with gold links, Hochrechnung +20 %
+	vs = _vs(3)
+	_hza(vs, "abschiebezone", Vector2(Arena.CENTER.x, Arena.INNER.position.y + 35.0), 110.0, 1.0)
+	var top := Vector2(Arena.CENTER.x, Arena.INNER.position.y + 128.0)
+	_enemy2(vs, "eidgenossin", top, 0, ViewState.EF_ELITE | ViewState.EF_SHIELDED)
+	var r := Arena.INNER.grow(-float(b["brief_inset"]))
+	for c in [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)]:
+		_enemy2(vs, "briefkasten", c, 0, ViewState.EF_ELITE)
+	_player(vs, 1, "oma", r.end + Vector2(-160, -60), ["stricknadeln"])
+	_player(vs, 2, "antifa", Arena.CENTER + Vector2(-200, 100), ["tofu"])
+	vs.boss = _boss_block("eidgenossin", 0.25, 2)
+	vs.boss["shield"] = 0.6
+	vs.boss["hoch"] = 2
+	_show(vs, Arena.CENTER, 0.56, _meta(2))
+	await _capture("boss_final_briefkasten", 6)
 
 
 ## Bottom HUD row with a boss: ult panel (longest name, ready), Streik prompt and
@@ -1103,6 +1161,8 @@ func _shot_boss_hud_layout() -> void:
 					_player(vs, i + 1, ["oma", "antifa", "lastenrad", "toechter"][i], Arena.CENTER + Vector2(-150 + i * 100, 200), ["stricknadeln"])
 				_enemy2(vs, Content.ENCOUNTERS[enc]["units"][0], Arena.CENTER, 0, ViewState.EF_ELITE | ViewState.EF_WINDUP)
 				vs.boss = _boss_block(enc, 0.55, 1, "abstimmung" if enc == "sauerlaender" else "wende", 0.4)
+				if enc == "eidgenossin":
+					vs.boss["hoch"] = 5   # the longest Hochrechnung tag beside the name (D-144)
 				var m := _ult_meta("fragen_sie_uns", true, num)
 				m["streik"] = {"available": true, "active": 0.0}
 				m["effects"] = {"tarifrunde": 5.0}

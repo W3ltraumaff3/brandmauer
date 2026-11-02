@@ -67,6 +67,18 @@ Source of truth for how difficulty, economy and player power scale. Every number
   - `jobs=N`, `tag=<text>`: only recorded in the JSON line.
   - `stop=<wave>`: end the run at the Späti after that wave, e.g. `stop=1` for the wave-1
     income of a start weapon (D-117); the report then prints only the "Wave-1 income" table.
+  - `retry`: Boss-Wiederholung on (§8): a lost boss wave starts over, the run goes on.
+  - `mortal=<wave>[,...]`: the bots can't die except in these waves (healed every frame
+    elsewhere, like `immortal`). `mortal=15,20 retry` plays the Sauerländer and the final
+    boss for real with the loadout of a full run at any Umfrage, even 35 % where mortal
+    bots never get there (D-146). The JSON line has `mortal`, `retry`, `retries`.
+  - Boss waves record (D-146): `retries` (Boss-Wiederholungen in the wave), `enc_kill`
+    (kill time of the winning attempt) and `enc_total` (incl. failed attempts), `tele_on`
+    (share of the fight with a boss cast or boss telegraph up), `tele_in` (share of living
+    player time inside an enemy danger zone: lob markers, cones, lanes, rotors, the band,
+    the Reichweite outside its safe strips; `Sim.danger_at`), `enc_by` (damage taken by
+    source during the fight, × max HP per player), `casts` (boss casts started, by id),
+    `interrupts`, `phase_t` (seconds into the attempt at which each phase began).
   - Unknown ids or values stop the run with an error on stderr and no JSON line; so does a
     run that fails (e.g. a script error in the game code).
   - All bots of a run get the same options. For A/B, run the same seeds with and without an
@@ -90,6 +102,10 @@ Source of truth for how difficulty, economy and player power scale. Every number
     keeping the wanted distance to the nearest enemy (or the focused boss), strafing
     sideways, the bot's own Plenum circle during an Abstimmung (the first
     `plenum_needed()` living bots by id each take one), revives, pickups, smooth movement.
+  - **Final boss (D-146):** her lanes, rotor lines and the Reichweite cost what `Sim.danger_at`
+    says; during a Reichweite the bot walks to `Sim.reich_safe_spot` (the nearest safe strip in
+    front of the intact wall). While letterboxes stand it focuses and targets the nearest one
+    (target mode "closest"), like a player who switches targets.
   - **Klimakleber:in** gets a standing bonus; with weapons that only work while moving
     (`trail`: Straßenkreide) it walks for a share of every 3 s cycle equal to
     (trail weapons ÷ weapons), so the marks keep coming.
@@ -401,7 +417,7 @@ not wave income), computed for every player at once from the values before any t
   scales with the team (`elite_base` 0.6 solo, + `elite_coop` 0.3 per extra player; v0.4, D-118,
   was 0.5). `diff_boss_hp` (0.15 per Umfrage level L) and the per-encounter `hp_mult`
   (`Content.ENCOUNTERS`: Sylt-Clique 1.25, Geschichtslehrer 2.2, Sauerländer 2.0; were 1.0 / 1.4 / 1.6)
-  act only on encounter units. Die Remigrantin additionally × `final_boss_mult` (4.5, was 1.6). D-102, D-118.
+  act only on encounter units. Die Remigrantin additionally × `final_boss_mult` (5.5 since v0.4.1, D-145; 4.5 in v0.4.0, D-118; 1.6 before). D-102, D-118.
 - **Melee against encounter units: ×2** (`melee_vs_boss`, v0.4, D-121): every melee weapon deals
   double damage to elites, minibosses and bosses, because it has to stand next to them.
 - **Elites grow with the waves:** × `(enemy HP curve(wave) / curve(5)) ^ elite_wave_exp`, so the
@@ -412,6 +428,22 @@ not wave income), computed for every player at once from the values before any t
   this replaced the old "phase 2 at 50 %" switch. Movement and basic attacks run `Content.BOSS.phase_tempo`
   (×1.0 / ×1.2 / ×1.4) as fast per phase; signature abilities keep real time. Every boss-rule knob lives in `Content.BOSS`.
 - Unique multi-phase bosses: spec in GDD §14 "Boss rules" (D-102 to D-104), tuned in the next balancing round.
+
+### Final boss (v0.4.1, D-140 to D-146)
+Data: `balance/runs/v0.4.1-beta/final_boss/` (80 paired runs, `mortal=15,20 retry` and `immortal`; the
+Sauerländer's wave came out identical in all 80 pairs). Every number of her kit lives in `Content.BOSS`
+(`kette_*`, `ansturm_*`, `rotor_*`, `reich_*`, `brief_*`, `wahl_*`, `shield`, `p3_ring_every`).
+- **Why the Sauerländer felt harder:** he flees at his 60 s wave timer (killed 0 of 12 times by ranged,
+  summon and status at Umfrage 35 %), he deals as much or more damage per minute (35 %: ranged 0.78 vs her
+  0.66 × max HP), and ~70 % of her damage was unavoidable push-ring chip damage.
+- **Median kill time, solo (before → after):** ranged 37 → 49 s / 59 → 71 s / 133 → 155 s at 10 / 20 / 35 %;
+  summon 109 → 96 / 89 → 134 / 104 → 145 s; status 81 → 123 / 66 → 126 / 392 → 201 s. 4 players at 20 %:
+  ranged 60 → 77 s, summon 50 → 87 s. Immortal ranged 50 / 58 / 113 → 60 / 71 / 138 s.
+- **Pressure at 35 %:** damage taken per minute ranged 0.66 → 1.13, summon 0.42 → 0.71 (Sauerländer 0.78 /
+  0.72); time inside a danger zone 0.14 → 0.25 and 0.10 → 0.26. First tries lost at 35 %: ranged 1 → 2 of 4.
+- **Open:** summon and status lose much damage in phase 3 (stands and zones stay behind while they walk to the
+  letterboxes and the safe strips; immortal summon at 20 % 90 → 309 s); melee still can't finish her (open
+  questions); at 10–20 % the bot hardly ever loses a first try, humans will. Check in playtests.
 
 ## 8. Retry for boss waves (option)
 

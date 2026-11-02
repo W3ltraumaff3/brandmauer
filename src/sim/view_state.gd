@@ -65,7 +65,8 @@ var s_type := PackedByteArray()
 var s_pos := PackedVector2Array()
 var s_hp := PackedFloat32Array()       # 0..1; 1 for summons that can't be hurt
 
-## {} or {enc, hp, phase, shield, cast (0 none, else 1 + index into Content.BOSS_CASTS), cast_t}
+## {} or {enc, hp, phase, shield, cast (0 none, else 1 + index into Content.BOSS_CASTS), cast_t,
+## hoch (final boss Wahlabend step, D-144)}
 var boss := {}
 
 

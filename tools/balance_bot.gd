@@ -21,6 +21,10 @@ const HARMLESS := ["kleber", "farbklecks", "brei_marker", "ziegel", "paragraf", 
 	"sitzblockade", "explosion", "abstimmung", "kahlschlag_hit"]
 ## "Stand here" zones (GDD §14 telegraph standard): hazard type names containing these.
 const STAND_HERE := ["plenum"]
+## The final boss's own telegraphs (D-141, D-143): the sim says where they hurt
+## (Sim.danger_at); cost of standing in each. Reichweite also pulls toward the
+## nearest safe strip in front of the intact Brandmauer.
+const OWN_DANGER := {"ansturm_bahn": 7.0, "rotor": 6.0, "reichweite": 9.0}
 const ULT_NEAR := 300.0
 const ULT_CROWD := 6
 const ULT_BOSS_NEAR := 400.0
@@ -152,6 +156,10 @@ func _plan(s, p) -> Vector2:
 			boss = e
 	# what the range term aims at: the boss when we focus it, else the nearest enemy
 	var focus = boss if (target and boss != null) else null
+	# Briefkastenfirmen (D-142): a decent player goes for the letterboxes feeding her shield
+	var box = _nearest_box(s, pos) if target else null
+	if box != null:
+		focus = box
 	# enemy projectiles that could reach us
 	var projs := []
 	for pr in s.projectiles:
@@ -162,6 +170,8 @@ func _plan(s, p) -> Vector2:
 	var stand := []       # [pos, radius]
 	var rings := []
 	var cones := []       # [origin, angle, half angle, reach] (Kahlschlag)
+	var lanes := []       # her hazards checked with s.danger_at (lane, rotor, Reichweite)
+	var safe_spot = null  # Reichweite: nearest safe point in front of the intact wall
 	var band := -1.0
 	if dodge:
 		for h in s.hazards:
@@ -173,6 +183,12 @@ func _plan(s, p) -> Vector2:
 					rings.append(h)
 			elif tname == "abschiebezone":
 				band = h.radius if s.has_method("in_band") else float(Arena.WALL.get("abschiebe_band", 70.0))
+			elif OWN_DANGER.has(tname) and s.has_method("danger_at"):
+				lanes.append([h, OWN_DANGER[tname]])
+				if tname == "reichweite" and safe_spot == null:
+					var sp: Vector2 = s.reich_safe_spot(pos)
+					if sp != Vector2.INF:
+						safe_spot = sp
 			elif tname == "kahlschlag":
 				cones.append([h.pos, float(h.get("ang")), deg_to_rad(float(Content.BOSS.get("kahl_arc", 90.0))) * 0.5,
 					h.radius])
@@ -272,6 +288,12 @@ func _plan(s, p) -> Vector2:
 			var in_b: bool = s.in_band(q, band + 25.0) if s.has_method("in_band") else Arena.edge_dist(q) < band + 25.0
 			if in_b:
 				sc -= 6.0
+		for x in lanes:
+			if s.danger_at(x[0], q) or s.danger_at(x[0], mid):
+				sc -= x[1]
+		if safe_spot != null:
+			var dsp: float = q.distance_to(safe_spot)
+			sc += 8.0 * (1.0 - minf(1.0, dsp / 1200.0)) + (3.0 if s.reich_safe(q) else 0.0)
 		for c in cones:
 			if Sim.in_cone(c[0], c[1], c[2], c[3] + 20.0, q, Content.PLAYER_RADIUS + 10.0) \
 					or Sim.in_cone(c[0], c[1], c[2], c[3] + 20.0, mid, Content.PLAYER_RADIUS + 10.0):
@@ -307,6 +329,9 @@ func _plan(s, p) -> Vector2:
 			sc += 2.0 * (1.0 - minf(1.0, q.distance_to(dpos) / 700.0))
 		if pick != null:
 			sc += pick_w * 1.2 * (1.0 - minf(1.0, q.distance_to(pick.pos) / 450.0))
+		if box != null:
+			# close enough that the letterbox is the closest target (target mode "closest")
+			sc += 8.0 * (1.0 - minf(1.0, maxf(0.0, q.distance_to(box.pos) - want * 0.6) / 1600.0))
 		# Klimakleber: the standing bonus, or walking for trail weapons
 		if klima:
 			if dir == Vector2.ZERO:
@@ -318,6 +343,20 @@ func _plan(s, p) -> Vector2:
 			best_sc = sc
 			best = dir
 	_last[p.id] = best
+	return best
+
+
+## The nearest letterbox of the final boss (D-142), or null.
+static func _nearest_box(s, pos: Vector2):
+	var t := Content.ENEMY_ORDER.find("briefkasten")
+	if t < 0:
+		return null
+	var best = null
+	var bd := INF
+	for e in s.enemies:
+		if e.alive and e.type == t and e.pos.distance_to(pos) < bd:
+			bd = e.pos.distance_to(pos)
+			best = e
 	return best
 
 
@@ -412,6 +451,8 @@ func choose_target(s, p) -> void:
 		elif d < 150.0:
 			adds += 1
 	var mode: int = Sim.Target.MOST_HP if boss_in and adds < 4 else Sim.Target.CLOSEST
+	if _nearest_box(s, p.pos) != null:
+		mode = Sim.Target.CLOSEST   # the letterboxes first (D-142)
 	if _mode.get(p.id, -1) != mode:
 		_mode[p.id] = mode
 		s.request(p.id, "target_mode", mode)

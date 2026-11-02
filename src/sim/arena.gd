@@ -276,6 +276,26 @@ static func band_mask(mask: int) -> int:
 	return out
 
 
+## "Reichweite" (GDD §14, D-141): bitmask of the segments whose strip in front of
+## the wall is safe from her arena-wide wave: intact segments that aren't next to a
+## hole (where the Abschiebezone stands). One function for sim, view and bot.
+static func reich_mask(mask: int) -> int:
+	var full := (1 << WALL_SEGMENTS) - 1
+	mask &= full
+	if mask == full:
+		return full
+	return mask & ~band_mask(mask)
+
+
+## Is p in a Reichweite safe strip: within `depth` of the wall, in front of a
+## segment of reich_mask(mask)?
+static func reich_safe(p: Vector2, mask: int, depth: float) -> bool:
+	if edge_dist(p) >= depth:
+		return false
+	var seg := facing_seg(p)
+	return seg >= 0 and (reich_mask(mask) & (1 << seg)) != 0
+
+
 ## AfD spawn weight of each side: base + per hole on it.
 static func side_weights(wall: Array[bool]) -> Array[float]:
 	var w: Array[float] = []

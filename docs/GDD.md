@@ -513,9 +513,44 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 ### Final boss: Die Remigrantin (Weidel parody)
 - **Phase 1 "Windmühlen der Schande":** she tears down the wind turbines in the arena, which are your cover. She charges like Don Quixote. Quote weidel-05.
 - **Phase 2 "Remigration":** push waves drive all players toward the Brandmauer wall nearest to her, and the arena edge (all four sides) becomes the danger zone.
-- **Phase 3 "Steuerparadies":** she retreats behind a vault shield of gold bars in a Swiss chalet, and the players have to break the shield.
+- **Phase 3 "Steuerparadies":** she retreats behind a vault shield of gold bars in a Swiss chalet, and the players have to break the shield (from v0.4.1 fed by Briefkastenfirmen, see "The final exam").
 - **Exit:** she **emigrates to Switzerland**. That's the closing joke: the only person in the game who actually "remigriert".
 - Content rule: none of her phases may summon or depict the groups she insults. Her attacks target only the players and the environment.
+
+#### The final exam (v0.4.1, D-140 to D-145)
+Playtest (solo, v0.4.0): the Sauerländer was harder to beat than she was. She has to be the hardest fight of the run and can fail on a first try; Boss-Wiederholung (balancing.md §8) catches that. Three signature attacks of her own, denser phases, a soft enrage and more HP. Every number lives in `Content.BOSS`; telegraphs follow the boss-rule standard below (red dashed + growing fill, "stand here" blue-turquoise with a hand), shrink with Umfrage and never fade with Eigene Effekte.
+
+| Phase | Her attacks (new in **bold**) | Cadence |
+|---|---|---|
+| 1 Windmühlen der Schande | **Ansturm-Kette** with falling turbines; wing fans (3, 5 from 25 %) | a chain every 3.5 s; wings every 2.2 s |
+| 2 Remigration | Die Brandmauer hält (band + push rings); **wing fans** (she had no aimed attack here); **Reichweite** | rings 3.5 → 2.6 s; wings 2.6 s; Reichweite 6 s after the band arms, then every 16 s (13 s at 35 %) |
+| 3 Steuerparadies | gold-bar shield 20 % (was 25 %) fed by **Briefkastenfirmen**; gold bars; push rings; **Reichweite** | gold every 1.2 s; rings every 4.5 s (was 6); Reichweite every 14 s (11 s at 35 %) |
+| any, after 150 s (120 s from 30 %) | **Wahlabend**: every 15 s +10 % tempo and cadence, up to +50 % | |
+
+**Signature attacks:**
+- **Ansturm-Kette (P1, rework of her charge).**
+  - Instead of one charge every 3 s she runs a chain of 2 charges (3 from Umfrage 30 %, +1 from 3 players), 0.25 s apart, every 3.5 s.
+  - Each charge: an 0.8 s wind-up (cast "Ansturm!") with a red dashed **lane** (84 px wide, 380 px + her radius long) whose fill runs to the tip, then she sprints 380 px at 760 px/s and hits for 1.5× contact damage, once per charge and player. Every charge of a chain picks a new random living player.
+  - Don Quixote: if a turbine stands within 160 px of her target, she charges the turbine. A turbine she runs into **falls in the charge direction**: a 1.0 s warning (the mast tips over a dashed red line), then the rotor lies there for 3 s as a 260 × 44 px line that hurts (1× contact damage per hit).
+  - **Answer:** sidestep the lane; don't hide behind a turbine she is aiming for (turbines still block her wing fans, so cover is a trade-off); a stun during a wind-up breaks the whole chain (D-106).
+  - **Satire:** the windmill speech (`weidel-05`, on the intro card): Don Quixote who actually wins against the windmills, and the players lose the cover the turbines gave them.
+- **Reichweite (P2 and P3, new).**
+  - Her broadcast floods the whole arena: a 3.0 s warning (cast "Reichweite sendet …", 2.4 s at 35 %; an arena change, B8; from the middle the nearest safe strip can be ~550 px away), the arena fills red from her outward. Only the strips **in front of intact Brandmauer segments that aren't next to a hole** stay blue-turquoise ("Brandmauer", hand icon), 160 px deep. Without any hole every segment is safe (the old 70 px band still burns along the wall then).
+  - At the end every living player outside a safe strip takes 2× her contact damage, once. One safe player answers: "Hier endet eure Reichweite. Die Brandmauer steht!" (invented).
+  - Combined pattern: the cast opens with a push ring toward the holes, so players get shoved toward exactly the places where they are not safe.
+  - **Answer:** run to an intact stretch of wall, dodge or absorb the ring; stun interrupts it. Every hole the run left open (and every Sauerländer vote that passed) costs safe wall here, so repairing in the Späti and the Antifa-Ortsgruppe pay off. Co-op: start holes (one per player) leave fewer safe strips, teammates have to share them.
+  - **Satire:** her message only reaches this far because a billionaire's platform amplifies it (the live talk on X, context of `weidel-03`); where the Brandmauer holds, her reach ends. That's the game's title as a mechanic: the players stand together at the firewall, they don't run from her.
+- **Briefkastenfirmen (P3, new; research R3).**
+  - With her gold-bar shield (20 % of max HP) come **letterboxes** ("Briefkastenfirma", a gold box covered in company plates): 3 solo, 4 from 2 players, in the corners 200 px from the walls. They don't move or attack; each has 0.7 % of her max HP (so they scale with players and Umfrage like she does).
+  - While a letterbox stands, a gold dashed line with coins runs from it to her and it **recharges her shield** by 0.1 % of her max HP per second (up to the 20 %).
+  - **When the last one falls, her shield breaks** ("Das Steuerparadies hat Risse!"). 25 s later (18 s at 35 %) all of them open again together at new free spots (corners and the middles of the sides, never her chalet): "Neue Adresse, gleiche Firma." (invented), and the shield regrows from zero. So the fight has a rhythm: clear the letterboxes, then a window on her. Single boxes don't come back on their own. They are not encounter units: she can be beaten with letterboxes standing.
+  - **Answer:** switch targets (target mode "closest" and walk to a corner), split up in co-op (one person per corner), put summons in the corners.
+  - **Satire:** structure, not person (content guidelines §2): the tax haven as an address with a hundred company plates. No money bag, no greed caricature, and no claim that she evades taxes; `weidel-09` (inheritance tax "gegen Null") and `weidel-10` ("Ich zahle hier meine Steuern", her Swiss residence) stand on the cards next to it.
+- **Wahlabend (soft enrage, research R4).** From 150 s of her fight (120 s from Umfrage 30 %), every 15 s one step: +10 % movement, wing/gold tempo and signature cadence, up to 5 steps (+50 %). Her bubble "Neue Hochrechnung: Wir legen zu!" (invented); the boss bar shows "Hochrechnung +20 %". Keeps slow builds from sitting the fight out; with Boss-Wiederholung a failed try costs time, not the run.
+
+**HP and tuning (D-145):** `final_boss_mult` 4.5 → 5.5, measurements in balancing.md §7 "Final boss (v0.4.1)". Target: with the same build she takes clearly longer than the Sauerländer; strong builds 90–150 s at the top Umfrage; a first try can fail.
+
+**Co-op (networking.md: one code path):** chain length +1 from 3 players; every charge re-picks a random target; a fourth letterbox from 2 players and letterbox HP follows her max HP (which scales with the team); Reichweite and the safe strips work the same for everyone; the HUD and view read everything from the snapshot (letterboxes are enemies, lanes/rotors/Reichweite are hazards with `h_ang`, the Wahlabend step `hoch` is in the boss block: snapshot version 5, protocol 6).
 
 ### Boss rules (spec, D-102 to D-104; design in research/boss_ideen.md)
 Goal: bosses take long enough for their mechanics to matter (elites 25–45 s, final boss 60–90 s for a strong build), and ultimates help without ending the fight. Normal waves stay as they are; only encounter units (elites, minibosses, boss) change. All numbers are starting values for the next balancing round.
@@ -526,7 +561,7 @@ Goal: bosses take long enough for their mechanics to matter (elites 25–45 s, f
 - **Resistance:** a stun on an encounter unit lasts half as long, then the unit is **"Standfest"** for 10 s (15 s from Umfrage 30 %): immune to further stuns, shown by a press-spokesperson shield icon. Every stun **interrupts the ability the boss is casting** ("UNTERBROCHEN"). Slow from any source (Kleber, Straßenblockade, Antrag gestellt, …) is capped at 40 % on bosses and minibosses (the Sylt-Clique, tier 1, stays uncapped).
 - **Melee hits harder:** melee weapons deal ×2 damage to elites, minibosses and bosses (v0.4, D-121); they have to stand next to them.
 - **Ultimates:** "Fragen Sie mal uns" makes the Sauerländer take ×1.5 damage (was ×2) for 6 s. Against the final boss every player's ultimate recharges at each of her phase changes (up to 3 uses in the fight). Critical Mass and Urlaubsantrag stay unchanged.
-- **HP:** new `diff_boss_hp` +0.15 per Umfrage level (×1.0 at 10 % up to ×1.75 at 35 %), on top of `diff_hp`, only for encounter units. Tuned in the v0.4 balancing round (D-118): `final_boss_mult` 4.5 (D-102: 1.6), per-encounter `hp_mult` Sylt-Clique 1.25, Geschichtslehrer 2.2, Sauerländer 2.0 (D-102: 1.0 / 1.4 / 1.6), `elite_coop` 0.3 (D-102: 0.5; co-op teams deal less damage per player than solo, so elites fled at the wave timer).
+- **HP:** new `diff_boss_hp` +0.15 per Umfrage level (×1.0 at 10 % up to ×1.75 at 35 %), on top of `diff_hp`, only for encounter units. Tuned in the v0.4 balancing round (D-118): `final_boss_mult` 4.5 (D-102: 1.6; 5.5 since v0.4.1, D-145), per-encounter `hp_mult` Sylt-Clique 1.25, Geschichtslehrer 2.2, Sauerländer 2.0 (D-102: 1.0 / 1.4 / 1.6), `elite_coop` 0.3 (D-102: 0.5; co-op teams deal less damage per player than solo, so elites fled at the wave timer).
 - **Telegraphs:** enemy danger is red with a dashed edge and a fill that grows until impact; lasting zones are red hatching; "stand here" zones are a solid blue-turquoise ring with a hand icon. Minimum warning times: 0.8 s for a targeted impact, 1.2 s for arena-wide attacks, 2.0 s for arena changes; Umfrage shortens them by at most 25 %. Boss telegraphs never fade with **Eigene Effekte**.
 
 **New abilities:**

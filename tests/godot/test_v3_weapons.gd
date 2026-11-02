@@ -74,7 +74,7 @@ func test_new_weapons_are_complete() -> void:
 	# new ids sit at the end of the order lists (stable network ids)
 	assert_eq(Content.PROJ_ORDER.slice(-3), ["akte", "aktenblatt", "sticker"])
 	assert_eq(Content.HAZARD_ORDER.find("kette"), 13, "kette keeps its id; the boss telegraphs (D-108) come after it")
-	assert_eq(Content.HAZARD_ORDER.slice(14), ["abstimmung", "plenum", "kahlschlag", "kahlschlag_hit"])
+	assert_eq(Content.HAZARD_ORDER.slice(14, 18), ["abstimmung", "plenum", "kahlschlag", "kahlschlag_hit"])   # then the final boss's (D-144)
 	assert_eq(Content.SUMMON_ORDER.slice(-4), ["laterne", "pappkamerad", "sani", "lauti"])
 
 

@@ -3,6 +3,12 @@
 Raw bot runs (one JSON line per run from `tools/balance_sim.gd`) kept as baselines.
 How the bots and tools work: [docs/specs/balancing.md](../docs/specs/balancing.md) §2.
 
+## runs/v0.4.1-beta/final_boss/
+
+Die Remigrantin as the final exam (2026-11-02, D-140 to D-146): 80 paired runs before/after (boss waves
+mortal with Boss-Wiederholung at Umfrage 10 / 20 / 35 %, co-op, immortal timing) and the tuning rounds;
+see its [README](runs/v0.4.1-beta/final_boss/README.md).
+
 ## runs/v0.4.0-beta/
 
 Balancing round for v0.4.0-beta (2026-11-02, bot 3, Godot 4.7.2, 16 jobs); summary in
