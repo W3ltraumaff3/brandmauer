@@ -2,6 +2,13 @@
 
 Danke, dass du mittestest! Das Spiel ist eine **Beta**: Es gibt Bugs, und das Balancing ist noch nicht fertig.
 
+### Neu in 0.4.1
+- **Die Remigrantin ist jetzt die Abschlussprüfung:** mehr Lebenspunkte und drei neue Angriffe. Die **Ansturm-Kette** reißt Windräder um. Bei **Reichweite** bist du nur vor intakter Brandmauer sicher (Löcher reparieren lohnt sich!). In Phase 3 laden **Briefkastenfirmen** ihren Schild auf, bis alle zerstört sind. Ab 150 s Kampfdauer legt die **Hochrechnung** zu.
+- **Rote Items gewinnen jetzt Runs:** acht überarbeitet, u. a. Genossenschaftsanteil (Dividende statt Zinsdeckel, kein Kauflimit mehr), Kritische Masse, Entlassungsurkunde, Wurfmaschine, Doppelwumms, Tarnkappe und Robin-Hood-Kostüm. Cum-Ex-Erstattung, Doppelwumms, Brandmauer-Fertigputz und Entlassungsurkunde tauchen jetzt auch wirklich im Späti auf.
+- **Waffenstufen in Farbe:** Stufe I grün, II blau, III lila, IV rot – wie die Items.
+- **Controller:** Im Späti springt der Fokus nach einem Kauf zum nächsten Angebot statt zu „Statistik“. Links/rechts bei den Level-ups bleibt in der Reihe (kein versehentliches Neu würfeln mehr). In der Lobby wechseln LB/RB zwischen Einstellungen, Charakteren und Bereit.
+- **Wichtig für Koop:** Alle brauchen diese Version, ältere können nicht mitspielen.
+
 ### Neu in 0.4.0
 - **Acht neue Status- und Beschwörungswaffen:** Kleine Anfrage, Faktencheck, Soli-Sticker, Lobbyregister, Menschenkette, Pappkamerad, Demo-Sanis und Lauti – dazu drei neue Statuseffekte: In Bearbeitung, Aktenkundig und Rolle rückwärts.
 - **Beschwörungen treffen mehrere:** Flugblätter vom Infostand springen zum nächsten Ziel weiter, Weiße Overalls reißen beim Aufprall die Umstehenden mit. Infostände sind kleiner, schneller aufgebaut, und höhere Stufen halten mehr Stände (2/2/3/4 pro Waffe).
