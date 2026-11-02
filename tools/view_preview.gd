@@ -84,6 +84,8 @@ func _run() -> void:
 		await _shot_fx()
 	if _want("bubbles"):
 		await _shot_bubbles()
+	if _want("ownfx"):
+		await _shot_own_fx()
 	if _want("exits"):
 		await _shot_exits()
 	if _want("ults"):
@@ -94,6 +96,10 @@ func _run() -> void:
 		await _shot_bike()
 	if _want("weapons"):
 		await _shot_new_weapons()
+	elif only == "v3":
+		await _shot_v3_weapons()
+	elif only == "bosses":
+		await _shot_bosses()
 	if _want("stress"):
 		await _stress()
 	for line in report:
@@ -489,6 +495,51 @@ func _shot_bubbles() -> void:
 	_fx_reset()
 
 
+## Option `own_fx_opacity` (GDD §19a, D-086): the same busy fight at 100 % and
+## 30 %. Players, enemies and enemy projectiles must stay fully visible; four
+## Infostände (55 % size) and the players' shots, zones and swings fade.
+func _shot_own_fx() -> void:
+	_clear_labels()
+	var vs := _vs(2)
+	# four Infostand copies = eight stands around the player
+	_player(vs, 1, "gewerkschaft", Vector2(800, 520), ["infostand", "infostand", "infostand", "infostand", "doener"])
+	_player(vs, 2, "klimakleber", Vector2(930, 600), ["kleber", "tofu"])
+	for e in [["besorgter_buerger", Vector2(620, 420)], ["telegram_onkel", Vector2(1010, 410)],
+			["ju_schnoesel", Vector2(640, 660)], ["reichsbuerger", Vector2(1060, 650)]]:
+		_enemy(vs, e[0], e[1])
+	var info := Content.SUMMON_ORDER.find("infostand")
+	for p in [Vector2(700, 470), Vector2(760, 610), Vector2(880, 450), Vector2(1000, 540),
+			Vector2(690, 560), Vector2(850, 650), Vector2(950, 470), Vector2(820, 410)]:
+		vs.s_type.append(info); vs.s_pos.append(p)
+	vs.h_type.append(Content.HAZARD_ORDER.find("kleber")); vs.h_pos.append(Vector2(980, 640)); vs.h_rad.append(60); vs.h_life.append(0.8)
+	vs.h_type.append(Content.HAZARD_ORDER.find("lob_marker")); vs.h_pos.append(Vector2(700, 560)); vs.h_rad.append(50); vs.h_life.append(0.5)
+	for i in 8:
+		var own: String = ["stern", "flugblatt", "tofu", "flugblatt"][i % 4]
+		vs.p_type.append(Content.PROJ_ORDER.find(own)); vs.p_pos.append(Vector2(660 + i * 55, 500 + (i % 3) * 40)); vs.p_ang.append(0.3 * i)
+	for i in 4:
+		var foe: String = ["kettenbrief", "golfball"][i % 2]
+		vs.p_type.append(Content.PROJ_ORDER.find(foe)); vs.p_pos.append(Vector2(700 + i * 90, 440 + (i % 2) * 150)); vs.p_ang.append(PI)
+	_show(vs, Vector2(840, 540), 1.3)
+	for op in [1.0, 0.3]:
+		_fx_reset()
+		world.own_fx_override = op
+		fx.handle_event(["swing", Vector2(800, 520), PI, 130.0, 25.0, "doener"])
+		for s in fx._swings:
+			s["t"] = 0.05
+		# freeze the swing (0.22 s life) while the slow first frames render
+		fx.set_process(false)
+		fx._own_layer.set_process(false)
+		fx._own_layer.modulate.a = op
+		fx._own_layer.queue_redraw()
+		_label("own_fx_opacity = %d %%  (debug)" % int(op * 100), Vector2(330, 750), 16)
+		await _capture("ownfx_%d" % int(op * 100), 3)
+		fx.set_process(true)
+		fx._own_layer.set_process(true)
+		_clear_labels()
+	world.own_fx_override = -1.0
+	_fx_reset()
+
+
 func _shot_exits() -> void:
 	_clear_labels()
 	var vs := _vs(4)
@@ -529,6 +580,8 @@ func _fx_reset() -> void:
 	fx._chains.clear()
 	fx._beams.clear()
 	fx._whistles.clear()
+	fx._pulses.clear()
+	fx._stamps.clear()
 	fx.queue_redraw()
 
 
@@ -886,6 +939,287 @@ func _shot_new_weapons() -> void:
 		_show(vs, s[1], s[2], _meta(1))
 		_weapons_fx()
 		await _capture("weapon_%s" % s[0], 3)
+	await _shot_v3_weapons()
+
+
+const V3_WEAPONS := ["kleine_anfrage", "lobbyregister", "faktencheck", "soli_sticker",
+	"menschenkette", "pappkamerad", "demo_sanis", "lauti"]
+
+
+func _summon(vs: ViewState, id: String, pos: Vector2, hp := 1.0) -> void:
+	vs.s_type.append(Content.SUMMON_ORDER.find(id)); vs.s_pos.append(pos); vs.s_hp.append(hp)
+
+
+func _enemy2(vs: ViewState, type: String, pos: Vector2, flags2: int, flags := 0) -> void:
+	_enemy(vs, type, pos, flags)
+	while vs.e_flags2.size() < vs.e_id.size() - 1:
+		vs.e_flags2.append(0)
+	vs.e_flags2.append(flags2)
+
+
+func _proj(vs: ViewState, id: String, pos: Vector2, ang: float) -> void:
+	vs.p_type.append(Content.PROJ_ORDER.find(id)); vs.p_pos.append(pos); vs.p_ang.append(ang)
+
+
+# --- Boss rules (GDD §14 "Boss rules", D-102 to D-112) --------------------------------
+
+## A hazard with a direction (cones); pads h_ang for hazards added without one.
+func _hza(vs: ViewState, id: String, pos: Vector2, r: float, life: float, ang := 0.0) -> void:
+	while vs.h_ang.size() < vs.h_type.size():
+		vs.h_ang.append(0.0)
+	_hz(vs, id, pos, r, life)
+	vs.h_ang.append(ang)
+
+
+func _boss_block(enc: String, hp: float, phase: int, cast := "", cast_t := 0.0) -> Dictionary:
+	return {"enc": Content.ENCOUNTER_ORDER.find(enc), "hp": hp, "phase": phase, "shield": 0.0,
+		"cast": (1 + Content.BOSS_CASTS.find(cast)) if cast != "" else 0, "cast_t": cast_t}
+
+
+## only=bosses: every boss telegraph in the standard (red dashed + growing fill,
+## red hatching, blue-turquoise "stand here" ring), the Pressekonferenz, Standfest,
+## UNTERBROCHEN and the cast bar; then the same with Eigene Effekte at 20 %.
+func _shot_bosses() -> void:
+	_clear_labels()
+	hud.visible = true
+	# 1. Abstimmung: segment 23 on the bottom wall, three Plenum circles, one taken
+	var vs := _vs(2)
+	var seg := 23
+	_hza(vs, "abstimmung", Arena.seg_center(seg), Arena.seg_len(seg) * 0.5, 0.45)
+	var spots := Sim.plenum_spots([seg], 3)
+	for c in spots:
+		_hza(vs, "plenum", c, Content.BOSS["plenum_radius"], 0.45)
+	_enemy2(vs, "sauerlaender", Arena.seg_inner(seg, 78.0), 0, ViewState.EF_ELITE | ViewState.EF_WINDUP)
+	_player(vs, 1, "oma", spots[0] + Vector2(10, 5), ["stricknadeln"])
+	_player(vs, 2, "antifa", spots[1] + Vector2(0, -150), ["tofu"])
+	_player(vs, 3, "lastenrad", Vector2(700, 600), [])
+	vs.boss = _boss_block("sauerlaender", 0.62, 1, "abstimmung", 0.55)
+	_show(vs, Arena.seg_inner(seg, 150.0), 1.0, _meta(3))
+	await _capture("boss_vote", 6)
+	hud.visible = false
+	_show(vs, Arena.seg_inner(seg, 60.0), 2.2, _meta(3))
+	await _capture("boss_vote_wall_zoom", 6)
+	hud.visible = true
+	# 2. Kahlschlag at 35 %: two cones, summons and a Kleber puddle in the first
+	vs = _vs(2)
+	var at := Arena.CENTER
+	_hza(vs, "kleber", at + Vector2(240, 60), 55.0, 0.8)
+	_hza(vs, "kahlschlag", at, Content.BOSS["kahl_reach"], 0.35, 0.15)
+	_hza(vs, "kahlschlag", at, Content.BOSS["kahl_reach"], 0.8, 0.15 + deg_to_rad(60.0))
+	_summon(vs, "infostand", at + Vector2(260, -10))
+	_summon(vs, "lauti", at + Vector2(180, 90))
+	_enemy2(vs, "sauerlaender", at, 0, ViewState.EF_ELITE | ViewState.EF_WINDUP)
+	_player(vs, 1, "oma", at + Vector2(300, 40), ["infostand"])
+	_player(vs, 2, "klimakleber", at + Vector2(-260, 120), ["kleber"])
+	vs.boss = _boss_block("sauerlaender", 0.5, 1, "kahlschlag", 0.65)
+	_show(vs, at + Vector2(120, 40), 1.0, _meta(2))
+	await _capture("boss_kahlschlag", 6)
+	vs = _vs(2)
+	_hza(vs, "kahlschlag_hit", at, Content.BOSS["kahl_reach"], 0.7, -0.4)
+	_enemy2(vs, "sauerlaender", at, ViewState.EF2_STANDFEST, ViewState.EF_ELITE)
+	_player(vs, 1, "oma", at + Vector2(-200, 200), ["infostand"])
+	vs.boss = _boss_block("sauerlaender", 0.45, 1)
+	fx.handle_event(["interrupt", at, "kahlschlag"])
+	_show(vs, at + Vector2(80, -60), 1.0, _meta(1))
+	await _capture("boss_kahlschlag_hit_unterbrochen", 6)
+	_fx_reset()
+	# 3. Die Brandmauer hält: band only in front of the holes (3, 8, 15, 25, 34 ± 1)
+	vs = _vs(3)
+	_hza(vs, "abschiebezone", Vector2(Arena.CENTER.x, Arena.INNER.position.y + 35.0), 110.0, 1.0)
+	_hza(vs, "push_ring", Arena.CENTER + Vector2(0, -60), 260.0, 0.7)
+	_enemy2(vs, "eidgenossin", Arena.CENTER + Vector2(0, -60), 0, ViewState.EF_ELITE)
+	_player(vs, 1, "oma", Arena.seg_inner(25, 50.0), ["stricknadeln"])
+	_player(vs, 2, "antifa", Arena.CENTER + Vector2(300, 120), ["tofu"])
+	vs.boss = _boss_block("eidgenossin", 0.5, 1)
+	_show(vs, Arena.CENTER, 0.56, _meta(2))
+	await _capture("boss_band", 6)
+	vs.h_life[0] = 0.4
+	vs.boss = _boss_block("eidgenossin", 0.66, 1, "remigration", 0.6)
+	_show(vs, Arena.CENTER, 0.56, _meta(2))
+	await _capture("boss_band_warning", 6)
+	vs.wall = (1 << Arena.WALL_SEGMENTS) - 1
+	vs.h_life[0] = 1.0
+	vs.h_rad[0] = 70.0
+	vs.boss = _boss_block("eidgenossin", 0.5, 1)
+	_show(vs, Arena.CENTER, 0.56, _meta(2))
+	await _capture("boss_band_no_hole", 6)
+	# 4. Pressekonferenz banner + golden outline; Standfest shield on a Sylt member
+	vs = _vs(3)
+	_enemy2(vs, "geschichtslehrer", Arena.CENTER + Vector2(-120, -40), ViewState.EF2_PRESSE, ViewState.EF_ELITE)
+	_enemy2(vs, "sylt_member", Arena.CENTER + Vector2(160, -20), ViewState.EF2_STANDFEST, ViewState.EF_ELITE)
+	_player(vs, 1, "oma", Arena.CENTER + Vector2(0, 160), ["stricknadeln"])
+	vs.boss = _boss_block("geschichtslehrer", 0.66, 1)
+	hud.handle_event(["boss_phase", "geschichtslehrer", 1])
+	hud.preview_overlay_t = 0.9
+	_show(vs, Arena.CENTER + Vector2(0, -90), 1.4, _meta(1))
+	await _capture("boss_pressekonferenz", 6)
+	hud._overlays.clear()
+	# 5. Wende countdown over every player, then a Teilwende (left/right only)
+	vs = _vs(3)
+	_enemy2(vs, "geschichtslehrer", Arena.CENTER + Vector2(0, -200), 0, ViewState.EF_ELITE | ViewState.EF_WINDUP)
+	for i in 3:
+		_player(vs, i + 1, ["oma", "antifa", "lastenrad"][i], Arena.CENTER + Vector2(-160 + i * 160, 80), ["stricknadeln"])
+	vs.boss = _boss_block("geschichtslehrer", 0.8, 0, "wende", 0.45)
+	_show(vs, Arena.CENTER, 1.2, _meta(3))
+	await _capture("boss_wende_countdown", 6)
+	vs.boss = _boss_block("geschichtslehrer", 0.8, 0)
+	for p in vs.players:
+		p["flags"] = ViewState.PF_REVERSED | ViewState.PF_REVERSE_X
+	hud.handle_event(["wende", 4.0, 1])
+	hud.preview_overlay_t = 0.9
+	_show(vs, Arena.CENTER, 1.2, _meta(3))
+	await _capture("boss_teilwende", 6)
+	hud._overlays.clear()
+	hud.preview_overlay_t = -1.0
+	# 6. Eigene Effekte at 20 %: the player's Kleber fades, the boss telegraphs don't (D-086)
+	vs = _vs(2)
+	_hza(vs, "kleber", at + Vector2(200, 160), 60.0, 0.8)
+	_hza(vs, "kahlschlag", at, Content.BOSS["kahl_reach"], 0.4, 0.2)
+	_hza(vs, "plenum", at + Vector2(-260, 120), 70.0, 0.5)
+	_enemy2(vs, "sauerlaender", at, 0, ViewState.EF_ELITE)
+	_player(vs, 1, "klimakleber", at + Vector2(-80, 220), ["kleber"])
+	vs.boss = _boss_block("sauerlaender", 0.5, 1, "kahlschlag", 0.6)
+	world.own_fx_override = 0.2
+	_show(vs, at + Vector2(0, 80), 1.0, _meta(1))
+	await _capture("boss_ownfx_20", 6)
+	world.own_fx_override = -1.0
+	await _shot_boss_hud_layout()
+	hud.visible = false
+
+
+## Bottom HUD row with a boss: ult panel (longest name, ready), Streik prompt and
+## boss bar with a cast must never cover each other, for every encounter name,
+## 1 and 4 players, at 1280×720, 1920×1080 and a narrow 960×600 window.
+func _shot_boss_hud_layout() -> void:
+	for size in [Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(960, 600)]:
+		DisplayServer.window_set_size(size)
+		for e in Content.ENCOUNTER_ORDER.size():
+			var enc: String = Content.ENCOUNTER_ORDER[e]
+			for num in [1, 4]:
+				if size.x != 1280 and (num == 1 or e % 2 == 0):
+					continue   # the other sizes: one long name with 4 players is enough
+				var vs := _vs(3)
+				for i in num:
+					_player(vs, i + 1, ["oma", "antifa", "lastenrad", "toechter"][i], Arena.CENTER + Vector2(-150 + i * 100, 200), ["stricknadeln"])
+				_enemy2(vs, Content.ENCOUNTERS[enc]["units"][0], Arena.CENTER, 0, ViewState.EF_ELITE | ViewState.EF_WINDUP)
+				vs.boss = _boss_block(enc, 0.55, 1, "abstimmung" if enc == "sauerlaender" else "wende", 0.4)
+				var m := _ult_meta("fragen_sie_uns", true, num)
+				m["streik"] = {"available": true, "active": 0.0}
+				m["effects"] = {"tarifrunde": 5.0}
+				_show(vs, Arena.CENTER + Vector2(0, 80), 1.0, m)
+				await _capture("boss_hud_%dx%d_%s_%dp" % [size.x, size.y, enc, num], 6)
+	DisplayServer.window_set_size(Vector2i(1280, 720))
+	for i in 4:
+		await process_frame
+
+
+## GDD §11 v0.3: the eight status and summon weapons and the status symbols.
+func _v3_vs() -> ViewState:
+	var vs := _vs(4)
+	vs.wall = (1 << Arena.WALL_SEGMENTS) - 1
+	var files := func(n: int) -> int: return n << ViewState.EF2_FILE_SHIFT
+	# Kleine Anfrage: file folders flying, a JU-Schnösel and a Telegram-Onkel "in Bearbeitung"
+	_player(vs, 1, "antifa", Vector2(200, 330), ["kleine_anfrage"], {"aim": 0.0})
+	_proj(vs, "akte", Vector2(290, 320), -0.1)
+	_enemy2(vs, "ju_schnoesel", Vector2(420, 290), ViewState.EF2_SILENCED, ViewState.EF_PARKED)
+	_enemy2(vs, "telegram_onkel", Vector2(380, 420), ViewState.EF2_SILENCED)
+	_label("kleine_anfrage (In Bearbeitung)", Vector2(150, 200), 11)
+	# Lobbyregister: sheets in flight, 2 and 5 stacks, an Offengelegt burst
+	_player(vs, 2, "klimakleber", Vector2(640, 330), ["lobbyregister"], {"aim": 0.0})
+	_proj(vs, "aktenblatt", Vector2(710, 330), 0.0)
+	_proj(vs, "aktenblatt", Vector2(760, 310), 0.0)
+	_enemy2(vs, "lobbyist", Vector2(820, 300), files.call(2))
+	_enemy2(vs, "hinterbaenkler", Vector2(880, 420), files.call(5))
+	_enemy2(vs, "fdp_jungunternehmer", Vector2(760, 440), 0)
+	_label("lobbyregister (Aktenkundig 2 / 5, Offengelegt)", Vector2(620, 200), 11)
+	# Faktencheck: cone, two enemies walking backwards
+	_player(vs, 3, "oma", Vector2(1080, 330), ["faktencheck"], {"aim": 0.0})
+	_enemy2(vs, "besorgter_buerger", Vector2(1210, 300), ViewState.EF2_REVERSED)
+	_enemy2(vs, "identitaerer_hipster", Vector2(1230, 380), ViewState.EF2_REVERSED)
+	_enemy2(vs, "reichsbuerger", Vector2(1370, 330), 0)
+	_label("faktencheck (Rolle rückwärts; Reichsbürger immune)", Vector2(1060, 200), 11)
+	# Soli-Sticker: sticker in flight, a crowd with stickers
+	_player(vs, 4, "gewerkschaft", Vector2(200, 650), ["soli_sticker"], {"aim": 0.0})
+	_proj(vs, "sticker", Vector2(270, 650), 0.0)
+	for k in 4:
+		_enemy2(vs, "besorgter_buerger", Vector2(360 + (k % 2) * 40, 610 + (k / 2) * 45), ViewState.EF2_STICKER if k != 3 else 0,
+			ViewState.EF_POISONED if k != 3 else 0)
+	_label("soli_sticker", Vector2(200, 540), 11)
+	# Menschenkette: one between two players, one to a lamppost
+	_player(vs, 5, "buergergeld", Vector2(600, 620), ["menschenkette"], {"aim": 0.0})
+	_player(vs, 6, "lastenrad", Vector2(900, 690), [], {"aim": PI})
+	for k in 5:
+		_hz(vs, "kette", Vector2(600, 620).lerp(Vector2(900, 690), (k + 0.5) / 5.0), 34.0, 0.7)
+	_enemy2(vs, "besorgter_buerger", Vector2(760, 610), 0)
+	_label("menschenkette (co-op)", Vector2(640, 540), 11)
+	_player(vs, 7, "stadtbild", Vector2(1080, 640), ["menschenkette"], {"aim": 0.0})
+	for k in 5:
+		_hz(vs, "kette", Vector2(1080, 640).lerp(Vector2(1300, 600), (k + 0.5) / 5.0), 26.0, 0.4)
+	_summon(vs, "laterne", Vector2(1300, 600))
+	_label("menschenkette (solo, lamppost)", Vector2(1080, 540), 11)
+	# Pappkamerad with damaged HP, enemies going for it
+	_player(vs, 8, "toechter", Vector2(200, 940), ["pappkamerad"], {"aim": 0.0})
+	_summon(vs, "pappkamerad", Vector2(330, 930), 0.6)
+	for p in [Vector2(380, 900), Vector2(370, 960), Vector2(290, 980)]:
+		_enemy2(vs, "besorgter_buerger", p, 0)
+	_label("pappkamerad", Vector2(200, 820), 11)
+	# Demo-Sani behind her player, healing
+	_player(vs, 9, "oma", Vector2(640, 930), ["demo_sanis"], {"aim": 0.0, "hp": 6.0})
+	_summon(vs, "sani", Vector2(600, 945))
+	_enemy2(vs, "besorgter_buerger", Vector2(560, 900), 0)
+	_label("demo_sanis", Vector2(560, 820), 11)
+	# Lauti circling its player
+	_player(vs, 10, "sozialtourist", Vector2(960, 930), ["lauti"], {"aim": 0.0})
+	_summon(vs, "lauti", Vector2(1090, 900))
+	_enemy2(vs, "porsche_suv", Vector2(1150, 960), 0)
+	_label("lauti", Vector2(980, 820), 11)
+	# held icons + one enemy with every symbol at once
+	_player(vs, 11, "lastenrad", Vector2(1300, 930), V3_WEAPONS.slice(0, 7), {"aim": 0.0})
+	_player(vs, 12, "gewerkschaft", Vector2(1450, 930), [V3_WEAPONS[7]], {"aim": PI})
+	_enemy2(vs, "golfclub_vorstand", Vector2(1450, 800), ViewState.EF2_SILENCED | ViewState.EF2_REVERSED
+		| ViewState.EF2_STICKER | files.call(3), ViewState.EF_POISONED)
+	_label("held icons / all symbols", Vector2(1300, 720), 11)
+	while vs.e_flags2.size() < vs.e_id.size():
+		vs.e_flags2.append(0)
+	return vs
+
+
+func _v3_fx() -> void:
+	_fx_reset()
+	fx.handle_event(["swing", Vector2(1080, 330), 0.0, 170.0, 90.0, "faktencheck"])
+	fx.handle_event(["pulse", Vector2(880, 420), 48.0, "offengelegt"])
+	fx.handle_event(["pulse", Vector2(330, 930), 90.0, "konfetti"])
+	fx.handle_event(["pulse", Vector2(600, 945), 70.0, "sani"])
+	fx.handle_event(["pulse", Vector2(1090, 900), 90.0, "lauti"])
+	fx._swings[-1]["t"] = 0.08
+	for q in fx._pulses:
+		q["t"] = 0.2
+
+
+func _shot_v3_weapons() -> void:
+	_clear_labels()
+	var vs := _v3_vs()
+	_show(vs, Vector2(800, 600), 0.78, _meta(1))
+	for i in 3:
+		await process_frame
+	_v3_fx()
+	await _capture("v3_overview", 3)
+	_clear_labels()
+	var shots := [["kleine_anfrage", Vector2(320, 340), 2.4], ["lobbyregister", Vector2(770, 360), 2.4],
+		["faktencheck", Vector2(1220, 340), 2.2], ["soli_sticker", Vector2(300, 640), 2.6],
+		["menschenkette", Vector2(800, 640), 1.8], ["menschenkette_solo", Vector2(1190, 610), 2.2],
+		["pappkamerad", Vector2(320, 920), 2.6], ["demo_sanis", Vector2(620, 920), 2.8],
+		["lauti", Vector2(1060, 920), 2.4], ["icons", Vector2(1380, 860), 2.4]]
+	for s in shots:
+		_show(vs, s[1], s[2], _meta(1))
+		_v3_fx()
+		await _capture("v3_%s" % s[0], 3)
+	# Eigene Effekte at 30 %: the new weapons fade, the status symbols on enemies don't
+	world.own_fx_override = 0.3
+	_show(vs, Vector2(800, 600), 0.78, _meta(1))
+	_v3_fx()
+	await _capture("v3_own_fx_30", 3)
+	world.own_fx_override = -1.0
 
 
 func _stress() -> void:

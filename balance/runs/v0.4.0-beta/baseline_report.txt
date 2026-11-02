@@ -1,0 +1,525 @@
+C:/Users/Weltr/AppData/Local/Temp/claude/c--PythonProjekte-Rogue-Like-AnticapAntiFa/ce83c7bb-3442-432c-a107-677408d7e1c6/scratchpad/v4/b_all.jsonl: 184 runs; bot {3: 184}; content {'30fbbde2a0/9b6a01fe15': 134, '7e8dcbd314/58064148f5': 36, '7e8dcbd314/9b6a01fe15': 14}; tags {'b0-solo': 132, 'b0-immb': 24, 'b0-imm': 12, 'b0-coop': 16}
+  WARNING: mixed content or bot versions in one file; split them before comparing.
+  wall time per run: median 87 s, max 654 s (jobs {16: 184}; 0 = not recorded)
+  cost: median 107.6 ms wall time per simulated second
+  switches off: {'castult=0': 184}; ult: {'smart': 184}
+
+Build bots: wins/runs, median wave (21 = won); build/char = char= override
+build              U0           U2           U5         
+crit               4/4 w21      1/4 w13.5    1/4 w4     
+crit/oma           4/4 w21      4/4 w21      0/4 w6.5   
+melee              3/4 w21      3/8 w18      0/4 w9.5   
+melee/oma          1/4 w20      0/4 w10.5    0/4 w7     
+ranged             4/4 w21      8/8 w21      1/4 w9     
+status             2/4 w13      2/8 w11      0/4 w5     
+status/oma         0/4 w10      0/4 w7.5     0/4 w7     
+summon             4/4 w21      7/8 w21      1/4 w9.5   
+summon/oma         1/4 w15.5    0/4 w11      0/4 w6.5   
+tank               0/4 w20      0/4 w13.5    0/4 w7     
+tank/oma           0/4 w16      0/4 w16.5    0/4 w10    
+
+Characters: mean wave reached (21 = won) with it vs. overall 14.77  (n = player-runs)
+   +4.65  win  83%  n=24   gewerkschaft
+   +0.61  win  29%  n=24   stadtbild
+   -0.35  win  37%  n=84   oma
+   -0.77  win  50%  n=12   buergergeld
+   -2.18  win   0%  n=12   toechter
+   -2.56  win  33%  n=24   klimakleber
+
+Items (owned at the end): mean wave reached (21 = won) with it vs. overall 18.81  (n = player-runs)
+   +2.19  win 100%  n=22   megafon_akku
+   +2.12  win  93%  n=15   generalschluessel
+   +2.10  win  92%  n=12   soli_konzert
+   +2.08  win  89%  n=19   vereinsheim
+   +1.99  win  80%  n=10   volkskueche
+   +1.81  win  82%  n=40   bolzenschneider
+   +1.70  win  83%  n=58   demosani_weste
+   +1.60  win  83%  n=41   schwarzfahrer_muetze
+   +1.52  win  78%  n=60   reichsausweis
+   +1.51  win  91%  n=34   lautsprecherwagen
+   +1.50  win  84%  n=69   wut_tagebuch
+   +1.48  win  82%  n=17   tarifvertrag
+   ...
+   +0.19  win  83%  n=36   frisbee
+   -0.02  win  65%  n=88   solibutton
+   -0.09  win  77%  n=47   fernglas
+   -0.53  win  63%  n=35   deutschlandticket_abo
+   -0.62  win  57%  n=47   betriebsrat
+   -0.89  win  67%  n=90   club_mate
+   -1.18  win  57%  n=65   thermoskanne
+   -1.29  win  74%  n=23   flugblatt_stapel
+   -2.02  win  51%  n=125  fahrradhelm
+   -2.81  win  53%  n=15   sekundenkleber
+   -2.85  win  41%  n=85   isomatte
+   -3.18  win  40%  n=88   kirschkernkissen
+
+Weapons (owned at the end, pooled over builds): mean wave reached (21 = won) with it vs. overall 17.08  (n = player-runs)
+   +3.33  win  94%  n=17   brandmauer_ziegel
+   +3.29  win  92%  n=24   kartoffelbrei
+   +3.19  win  87%  n=15   pappkamerad
+   +3.13  win  86%  n=14   menschenkette
+   +2.99  win  93%  n=30   neun_euro_ticket
+   +2.83  win  87%  n=23   scheinwerfer
+   +2.56  win  82%  n=11   weisser_overall
+   +2.52  win  85%  n=20   lauti
+   +2.45  win  84%  n=19   demo_sanis
+   +2.40  win  84%  n=25   infostand
+   +1.80  win  85%  n=26   pfandflasche
+   +1.71  win  79%  n=19   megafon
+   +0.70  win  78%  n=18   unterschriftenliste
+   +0.43  win  74%  n=35   gendersternchen
+   +0.22  win  26%  n=23   grundgesetz
+   -0.01  win  33%  n=15   bierkiste
+   -0.17  win  36%  n=22   fahnenstange
+   -0.65  win  24%  n=21   trillerpfeife
+   -0.93  win  54%  n=13   faktencheck
+   -1.04  win  25%  n=28   doener
+   -1.38  win  50%  n=10   kleine_anfrage
+   -1.79  win  57%  n=7    strassenkreide
+   -1.94  win  43%  n=7    soli_sticker
+   -2.12  win  19%  n=26   transparent
+   -2.23  win  50%  n=20   farbbeutel
+   -2.30  win  17%  n=18   mietspiegel
+   -2.49  win  39%  n=85   stricknadeln
+   -2.58  win  50%  n=12   lobbyregister
+   -3.14  win  35%  n=17   tofu
+   -4.87  win  33%  n=24   kleber
+   -5.28  win  20%  n=5    normenkontrolle
+
+Level-up stats (picked at least once): mean wave reached (21 = won) with it vs. overall 16.19  (n = player-runs)
+   +2.68  win  74%  n=47   ranged
+   +2.35  win  80%  n=44   crit
+   +2.29  win  59%  n=41   speed
+   +1.49  win  51%  n=99   dodge
+   +0.81  win  50%  n=4    luck
+   +0.70  win  57%  n=37   summon
+   +0.13  win  60%  n=73   range
+   +0.09  win  41%  n=105  hp_regen
+   -0.19  win  46%  n=155  damage
+   -0.23  win  46%  n=158  max_hp
+   -0.43  win  50%  n=143  attack_speed
+   -0.60  win  37%  n=116  armor
+   -1.42  win  15%  n=53   melee
+   -1.50  win  15%  n=55   lifesteal
+   -2.39  win  20%  n=5    pickup
+   -4.48  win  25%  n=32   status
+
+Weapon damage per Pfand spent (bought weapons, all runs):
+     791.7  (5051928 dmg / 6381 Pfand)  infostand
+     664.8  (3085960 dmg / 4642 Pfand)  fahnenstange
+     544.3  (581349 dmg / 1068 Pfand)  weisser_overall
+     492.1  (3173497 dmg / 6449 Pfand)  megafon
+     488.2  (4321963 dmg / 8853 Pfand)  stricknadeln
+     465.6  (2208870 dmg / 4744 Pfand)  doener
+     461.4  (1615520 dmg / 3501 Pfand)  faktencheck
+     412.8  (2277239 dmg / 5516 Pfand)  brandmauer_ziegel
+     399.8  (3491476 dmg / 8732 Pfand)  gendersternchen
+     331.7  (1633453 dmg / 4925 Pfand)  scheinwerfer
+     319.5  (714787 dmg / 2237 Pfand)  kleber
+     292.7  (1032057 dmg / 3526 Pfand)  trillerpfeife
+     290.6  (1232041 dmg / 4239 Pfand)  grundgesetz
+     268.1  (1630646 dmg / 6082 Pfand)  unterschriftenliste
+     262.4  (673333 dmg / 2566 Pfand)  kleine_anfrage
+     256.8  (722923 dmg / 2815 Pfand)  bierkiste
+     240.9  (1546539 dmg / 6421 Pfand)  pfandflasche
+     215.3  (478855 dmg / 2224 Pfand)  tofu
+     185.5  (361827 dmg / 1951 Pfand)  soli_sticker
+     168.7  (453568 dmg / 2689 Pfand)  farbbeutel
+     151.5  (791833 dmg / 5228 Pfand)  lauti
+     150.8  (396230 dmg / 2628 Pfand)  transparent
+     137.3  (449537 dmg / 3275 Pfand)  pappkamerad
+     119.5  (915633 dmg / 7659 Pfand)  neun_euro_ticket
+     107.6  (310326 dmg / 2885 Pfand)  lobbyregister
+     103.4  (695312 dmg / 6726 Pfand)  kartoffelbrei
+      85.0  (281590 dmg / 3311 Pfand)  menschenkette
+      68.6  (26012 dmg / 379 Pfand)  normenkontrolle
+      34.6  (77573 dmg / 2245 Pfand)  mietspiegel
+      21.9  (40069 dmg / 1828 Pfand)  strassenkreide
+       6.3  (29230 dmg / 4629 Pfand)  demo_sanis
+
+Weapons within build crit: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  scheinwerfer             5   80%  +11.7   12%    271         271        16.8       w4
+  stricknadeln             4   75%  +10.1   16%    246         246        17.1       w5
+  kartoffelbrei            6   67%   +9.0    5%     49          49         2.8     w2.5
+  pfandflasche             6   83%   +8.3   13%    172         174        10.4     w3.5
+  neun_euro_ticket         5   80%   +7.2    5%    107         115         6.8       w3
+  megafon                  7   57%   +5.8   29%    416         436        27.7       w2
+  gendersternchen         12   50%      -   42%    345         347           -       w0
+
+Weapons within build crit/oma: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  kartoffelbrei            5  100%   +8.3    5%    103         103         6.4       w5
+  pfandflasche             7   86%   +6.8   12%    154         155         9.6       w5
+  scheinwerfer             7   86%   +6.8   14%    317         325        19.9       w5
+  neun_euro_ticket         7   86%   +6.8    6%    104         105         6.7       w4
+  unterschriftenliste      6   83%   +4.7   21%    246         249        15.9       w3
+  gendersternchen          5   80%   +3.5   22%    427         434        26.3       w3
+  stricknadeln            12   67%      -   35%    444         444           -       w0
+
+Weapons within build melee: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  grundgesetz             16   31%   +4.5   11%    282         315        19.9     w5.5
+  transparent             13   38%   +3.0    6%     96          98         6.3       w4
+  bierkiste               10   40%   +2.4   12%    257         350        22.1       w6
+  fahnenstange            17   41%   +1.9   34%    607         702        45.8       w5
+  trillerpfeife           12   33%   -1.1   14%    144         167        10.4     w3.5
+  mietspiegel             15   20%   -2.1    2%     25          33         2.7       w5
+  doener                  24   29%      -   30%    462         479           -       w0
+
+Weapons within build melee/oma: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  stricknadeln            12    8%      -   90%    323         323           -       w0
+
+Weapons within build ranged: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  neun_euro_ticket        18  100%   +6.5    6%    128         128        10.6       w6
+  kartoffelbrei           13  100%   +3.5    6%    133         133         9.5       w5
+  scheinwerfer            11   91%   +1.3   12%    397         404        26.9       w5
+  gendersternchen         18   89%   +1.2   19%    432         447        32.5       w5
+  megafon                 10   90%   +1.1   28%    493         499        34.9     w6.5
+  pfandflasche            13   85%   -0.5   15%    381         382        25.6       w4
+  farbbeutel               4   75%   -1.1    3%    153         207        14.3     w6.5
+  unterschriftenliste     10   80%   -2.2   22%    290         299        20.5     w3.5
+  stricknadeln            24   88%      -   27%    687         690           -       w0
+
+Weapons within build status: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  faktencheck             13   54%   +8.6   26%    461         481        28.9       w4
+  kleine_anfrage          10   50%   +6.0   19%    262         280        19.4       w4
+  tofu                    15   40%   +5.8   13%    232         275        18.8       w5
+  lobbyregister           10   60%   +5.1   13%    109         117         6.9       w3
+  strassenkreide           6   67%   +4.6    2%     12          13         0.9     w3.5
+  farbbeutel              12   50%   +4.6   14%    176         207        15.0     w3.5
+  soli_sticker             6   50%   +4.4   16%    186         192        12.5     w3.5
+  normenkontrolle          5   20%   -0.5    7%     69         244        12.9       w4
+  kleber                  24   33%      -   33%    320         415           -       w0
+
+Weapons within build status/oma: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  stricknadeln            12    0%      -   77%     96           -           -       w0
+
+Weapons within build summon: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  brandmauer_ziegel       16   94%   +2.9   24%    434         437        31.8       w6
+  pappkamerad             14   86%   +1.9    6%    132         133         8.5       w4
+  menschenkette           13   85%   +1.6    4%     88          89         6.3       w6
+  lauti                   19   84%   +0.5    9%    157         161        12.6       w7
+  demo_sanis              19   84%   +0.5    1%      6           6         0.4       w4
+  weisser_overall         11   82%   +0.4   12%    544         567        46.8       w7
+  infostand               24   83%      -   49%    815         819           -       w0
+
+Weapons within build summon/oma: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  stricknadeln            12    8%      -   90%    182         179           -       w0
+
+Weapons within build tank: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  trillerpfeife            5    0%   +7.9   21%    542         566        42.0       w7
+  grundgesetz              4    0%   +6.2   26%    304         309        19.2       w4
+  transparent             12    0%      -   56%    373         373           -       w0
+
+Weapons within build tank/oma: dwave = with - without  (n = owning player-runs, min 4)
+  weapon                  n  win%  dwave  share  dmg/P  dmg/P long  dmg/P/wave  1st buy
+  stricknadeln            12    0%      -   75%    125         125           -       w0
+
+Boss kill time per build: median s (killed/fights, fled = survived the wave but the elite left at the timer; needs enc_left, bot 3 from v0.4); fights the team died in count as not killed
+  group              wave 5              wave 10             wave 15             wave 20           
+  crit                  23s (8/8)           24s (7/7)           29s (6/7)           29s (6/7)      
+  crit/oma              22s (7/12)          24s (8/8)           36s (7/8)           24s (8/8)      
+  melee                 23s (13/16)         29s (10/13)         27s (1/10)         216s (6/9)      
+  melee/oma             25s (1/12)          24s (1/6)        never (0/5)           137s (1/5)      
+  ranged                28s (9/16)          26s (13/14)         32s (10/13)         26s (13/13)    
+  status                26s (6/16)          23s (7/7)           39s (5/5)           34s (4/5)      
+  status/oma         never (0/12)           49s (1/2)                                              
+  summon                33s (5/16)          27s (10/14)         38s (4/13)          51s (12/13)    
+  summon/oma         never (0/12)        never (0/7)         never (0/2)           142s (1/2)      
+  tank                  23s (4/12)          54s (3/6)        never (0/5)         never (0/5)       
+  tank/oma              29s (1/12)          40s (1/10)       never (0/4)         never (0/4)       
+
+Healing by source (HP per player-run; % = share of damage taken)
+  group              n  taken  regen       lifesteal   sani        other     
+  crit              12     85     22  26%      0   1%      0   0%      6   7%
+  crit/oma          12    142     40  28%      0   0%      0   0%      5   4%
+  melee             24    651    387  59%     85  13%      0   0%      6   1%
+  melee/oma         12    720    487  68%     42   6%      0   0%      7   1%
+  ranged            24    311     67  21%      0   0%      0   0%     16   5%
+  status            24    326    255  78%      2   1%      0   0%      2   0%
+  status/oma        12    267     80  30%      0   0%      0   0%      8   3%
+  summon            24    425    206  49%      0   0%    178  42%      4   1%
+  summon/oma        12    473    210  44%      3   1%      0   0%      9   2%
+  tank              12    602    467  78%     82  14%      0   0%      4   1%
+  tank/oma          12   1098    676  62%    107  10%      0   0%     13   1%
+
+Krankenschein (regen) vs. Umverteilung (lifesteal)
+  HP per stat point and minute: Krankenschein 1.39 (32883 point-min), Umverteilung 0.65 (7546 point-min)
+  end stats             n  mean wave  regen HP  lifesteal HP  taken
+  Krankenschein >= 3   90       16.3       145             0    341
+  Umverteilung >= 3     4        8.8        30            36    243
+  both                 52       16.5       623            91    897
+  neither              34        8.9         4             0    101
+
+Damage taken by source (share, top 6)
+  crit             proj:kettenbrief 31%, hazard:explosion 20%, hazard:push_ring 14%, proj:goldbarren 7%, hazard:lob_marker 7%, hazard:kahlschlag 6%
+  crit/oma         hazard:explosion 19%, proj:kettenbrief 19%, hazard:lob_marker 13%, identitaerer_hipster 11%, hazard:push_ring 9%, besorgter_buerger 6%
+  melee            hazard:lob_marker 31%, proj:kettenbrief 31%, hazard:push_ring 10%, proj:goldbarren 9%, hazard:explosion 5%, proj:bierdeckel 3%
+  melee/oma        identitaerer_hipster 27%, besorgter_buerger 15%, proj:kettenbrief 12%, hinterbaenkler 11%, ju_schnoesel 8%, hazard:lob_marker 5%
+  ranged           hazard:lob_marker 30%, proj:kettenbrief 22%, hazard:explosion 16%, identitaerer_hipster 6%, porsche_suv 5%, besorgter_buerger 4%
+  status           hazard:explosion 44%, hazard:lob_marker 31%, hazard:push_ring 10%, proj:kettenbrief 7%, hazard:sitzblockade 3%, proj:goldbarren 1%
+  status/oma       identitaerer_hipster 41%, besorgter_buerger 12%, hinterbaenkler 10%, proj:kettenbrief 9%, ju_schnoesel 9%, reichsbuerger 4%
+  summon           hazard:lob_marker 31%, proj:kettenbrief 28%, hazard:explosion 12%, hazard:push_ring 8%, proj:goldbarren 3%, proj:bierdeckel 3%
+  summon/oma       identitaerer_hipster 37%, besorgter_buerger 14%, hinterbaenkler 10%, ju_schnoesel 9%, proj:kettenbrief 6%, hazard:lob_marker 6%
+  tank             proj:kettenbrief 25%, hazard:lob_marker 17%, hazard:push_ring 12%, identitaerer_hipster 10%, eidgenossin 5%, hazard:explosion 4%
+  tank/oma         identitaerer_hipster 29%, besorgter_buerger 12%, proj:kettenbrief 10%, hinterbaenkler 9%, hazard:lob_marker 7%, ju_schnoesel 6%
+
+Effects and bot behaviour (mean per wave; still = time standing >= 0.6 s)
+  group              slow  poison  stun  immune  silence  reverse  sticker  summons mean/max  still  ults/wave
+  crit                1%      0%    0%      3%       0%       0%       0%      0.0/0          3%       0.59
+  crit/oma            1%      0%    0%      3%       0%       0%       0%      0.0/0          2%       0.09
+  melee               1%      0%    1%      2%       0%       0%       0%      0.0/0          0%       0.97
+  melee/oma           1%      0%    0%      2%       0%       0%       0%      0.0/0          1%       0.21
+  ranged              1%      0%    0%      3%       0%       0%       0%      0.0/0          1%       0.11
+  status             10%      1%    0%      2%       2%       3%       1%      0.0/0         65%       0.55
+  status/oma          1%      0%    0%      0%       0%       0%       1%      0.0/0          2%       0.36
+  summon              3%      0%    0%      3%       0%       0%       0%      4.8/12         1%       1.05
+  summon/oma          1%      0%    0%      1%       0%       0%       0%      0.5/6          2%       0.27
+  tank                1%      0%    1%      2%       0%       0%       0%      0.0/0          2%       1.05
+  tank/oma            1%      0%    1%      2%       0%       0%       0%      0.0/0          1%       0.28
+
+Spaeti behaviour (mean per player-run)
+  group             sold  lu_rerolls  repairs  defensive items
+  crit               0.0         2.7      0.8              6.5
+  crit/oma           0.0         4.2      0.8              6.0
+  melee              0.0         2.0      0.1              9.5
+  melee/oma          0.1         0.7      0.0              4.5
+  ranged             0.0         2.9      1.2              8.8
+  status             0.0         2.8      0.2              7.6
+  status/oma         0.1         0.9      0.0              3.0
+  summon             0.0         4.8      0.8             16.2
+  summon/oma         0.0         2.7      0.0              3.4
+  tank               0.0         2.6      0.2              5.9
+  tank/oma           0.1         2.0      0.2              5.2
+
+Weapon delivery (pooled player-runs, min 4; zone = per cast, busy = share of the zone's / summon's life with an enemy inside / in reach)
+  class   weapon               kind       n  dmg/cast  hit%  1st dmg  zone en-s  zone busy  summon busy
+  melee   bierkiste            cone       15     134.6     -    0.24s          -          -            -
+  melee   doener               cone       28      75.1     -    0.06s          -          -            -
+  melee   fahnenstange         thrust     22     113.3     -    0.01s          -          -            -
+  melee   grundgesetz          cone       23      72.8     -    0.11s          -          -            -
+  melee   transparent          cone       26      50.4     -    0.21s          -          -            -
+  melee   trillerpfeife        cone       21      95.3     -    0.06s          -          -            -
+  ranged  gendersternchen      shot       35      94.4   68%    0.57s          -          -            -
+  ranged  kartoffelbrei        lob        24      75.1     -    2.63s          -          -            -
+  ranged  megafon              cone       19     158.2     -    0.02s          -          -            -
+  ranged  neun_euro_ticket     fan        30      44.3   27%    0.84s          -          -            -
+  ranged  pfandflasche         shot       26      62.2   59%    0.91s          -          -            -
+  ranged  scheinwerfer         beam       23     131.3     -    0.05s          -          -            -
+  ranged  stricknadeln         shot       88      23.1   81%    0.20s          -          -            -
+  ranged  unterschriftenliste  chain      18     107.5     -    0.01s          -          -            -
+  status  faktencheck          cone       13     252.3     -    0.05s          -          -            -
+  status  farbbeutel           shot       20      41.9   61%    1.05s          -          -            -
+  status  kleber               puddle     24     117.2     -    0.03s       5.52        28%            -
+  status  kleine_anfrage       shot       10      95.7   75%    0.73s          -          -            -
+  status  lobbyregister        shot       12      27.3   83%    0.37s          -          -            -
+  status  normenkontrolle      mark        5      49.8     -    5.75s          -          -            -
+  status  soli_sticker         shot        7      55.3   70%    0.35s          -          -            -
+  status  strassenkreide       trail       7       2.5     -    1.44s       0.15         4%            -
+  status  tofu                 shot       17      47.9   69%    0.51s          -          -            -
+  summon  brandmauer_ziegel    wall       17     484.6     -    0.02s      11.93        15%            -
+  summon  demo_sanis           follower   19       3.9     -   30.44s          -          -          91%
+  summon  infostand            turret     25     721.5   76%    0.28s          -          -          90%
+  summon  lauti                patrol     20     203.4     -    3.41s          -          -          91%
+  summon  menschenkette        tether     14      86.1     -    4.00s          -          -          92%
+  summon  pappkamerad          decoy      15     155.6     -    5.30s          -          -          94%
+  summon  weisser_overall      swarm      11     201.0     -    0.55s          -          -          93%
+
+Immortal bots, 1 player(s), Umfrage 0: per wave (medians)
+ wave  taken(xHP)  dps/player  enemies  boss_kill  shop: pfand  bought  levelups  left
+    1       0.00         5.2       12                      21     1.0       1.0     6
+    2       0.00         7.1       14                      30     1.0       1.0     8
+    3       0.00        12.8       17                      42     1.0       1.0     7
+    4       0.00        20.0       18                      52     1.0       1.0    10
+    5       0.00        28.0       16      20.7s          111     2.0       2.0    17
+    6       0.11        47.4       20                     118     2.0       2.0    14
+    7       0.04        76.7       26                     150     2.0       2.0    26
+    8       0.24       101.4       32                     190     3.0       2.0    18
+    9       0.11       136.9       37                     206     3.0       2.0    24
+   10       0.11       156.3       24      20.3s          270     2.5       2.0    38
+   11       0.21       248.4       46                     326     3.0       2.0    54
+   12       0.62       313.9       48                     393     3.0       3.0    40
+   13       0.37       369.9       50                     390     2.0       3.0    65
+   14       0.36       490.8       63                     442     2.5       3.0    46
+   15       0.27       401.4       32      24.8s          251     1.0       3.0    56
+   16       0.26       702.2       66                     478     2.0       3.0    62
+   17       0.29       867.6       70                     572     2.0       3.0    40
+   18       0.19      1005.9       79                     536     2.5       3.0    78
+   19       0.17      1180.2       74                     540     2.0       3.0    62
+   20       0.66       693.4       24      30.4s          nan     nan       nan   nan
+
+Immortal bots, 1 player(s), Umfrage 2: per wave (medians)
+ wave  taken(xHP)  dps/player  enemies  boss_kill  shop: pfand  bought  levelups  left
+    1       0.00         6.2       16                      22     1.0       1.0     3
+    2       0.00         8.8       16                      28     1.0       1.0     5
+    3       0.13        15.4       22                      44     1.0       1.0    12
+    4       0.15        22.6       28                      54     1.5       1.0    10
+    5       0.00        33.2       16      26.5s           78     1.0       2.0    16
+    6       0.16        51.7       32                      90     2.0       2.0    14
+    7       0.39        90.4       50                     124     2.0       2.0    22
+    8       0.33       134.4       50                     188     3.0       2.0    24
+    9       0.82       170.4       49                     244     2.0       2.0    36
+   10       0.29       155.8       26      27.0s          246     2.0       2.0    22
+   11       1.10       292.2       64                     305     2.0       2.0    44
+   12       1.22       366.0       74                     376     3.0       3.0    26
+   13       1.38       459.0       70                     356     3.0       3.0    28
+   14       1.10       657.0       87                     437     2.5       3.0    48
+   15       0.55       416.5       27      47.5s          218     1.0       3.0    34
+   16       1.07       844.2       90                     486     2.5       3.0    68
+   17       0.80      1072.7       98                     508     2.5       3.0    52
+   18       0.55      1231.5      106                     570     2.0       3.0    68
+   19       0.61      1455.2      112                     562     2.0       3.0    54
+   20       1.65       930.9       28      45.6s          nan     nan       nan   nan
+
+Immortal bots, 2 player(s), Umfrage 2: per wave (medians)
+ wave  taken(xHP)  dps/player  enemies  boss_kill  shop: pfand  bought  levelups  left
+    1       0.00         7.2       20                      26     1.5       1.0     3
+    2       0.02         8.7       26                      24     1.2       1.0     1
+    3       0.04        12.5       37                      29     1.2       1.0     3
+    4       0.23        18.4       42                      38     1.0       1.0     8
+    5       0.34        22.5       18      never           24     0.8       2.0     6
+    6       1.12        37.0       57                      59     1.2       2.0    11
+    7       2.92        51.8      100                      78     1.2       2.0    22
+    8       2.24        83.2      118                     120     2.0       2.0    14
+    9       2.31       111.2      122                     152     2.0       2.0    28
+   10       0.15        76.7       24      never           86     1.2       2.0     8
+   11       1.95       155.6      170                     140     1.8       2.0    23
+   12       1.79       175.9      194                     132     1.5       3.0    28
+   13       1.96       222.9      200                     160     1.5       3.0    38
+   14       2.90       329.2      204                     228     2.0       3.0    30
+   15       0.45       177.9       46      never          124     0.8       3.0    52
+   16       2.20       432.0      222                     258     1.8       3.0    35
+   17       1.52       490.2      223                     220     1.2       3.0    32
+   18       2.46       675.4      202                     335     1.8       3.0    54
+   19       1.67       694.7      223                     270     1.2       3.0    70
+   20       8.30       489.1       63      never          nan     nan       nan   nan
+
+Immortal bots, 4 player(s), Umfrage 2: per wave (medians)
+ wave  taken(xHP)  dps/player  enemies  boss_kill  shop: pfand  bought  levelups  left
+    1       0.00         8.4       26                      21     0.8       1.0     6
+    2       0.04        10.7       34                      27     1.0       1.0     5
+    3       0.23        16.1       45                      32     0.9       1.0     9
+    4       0.18        24.4       46                      45     1.1       1.0    11
+    5       0.20        25.1       20      never           25     0.5       2.0    11
+    6       0.73        48.6       76                      75     1.6       2.0    10
+    7       1.01        72.8      107                      90     1.5       2.0    15
+    8       1.19       106.5      118                     145     2.4       2.0    16
+    9       1.15       148.6      112                     176     3.1       2.0    20
+   10       0.40       104.6       42      52.6s           85     1.3       2.0    22
+   11       3.62       237.2      194                     216     2.1       2.0    30
+   12       5.25       288.4      201                     240     2.3       3.0    36
+   13       4.17       310.6      222                     236     2.0       3.0    28
+   14       5.65       425.9      223                     271     2.2       3.0    48
+   15       0.46       208.7       56      never          146     1.0       3.0    38
+   16       3.05       489.4      223                     271     1.5       3.0    49
+   17       3.79       608.5      224                     297     2.1       3.0    44
+   18       2.80       658.0      223                     276     1.3       3.0    59
+   19       3.05       839.9      223                     326     1.6       3.0    56
+   20      15.36       492.9      108      never          nan     nan       nan   nan
+
+Weapons in immortal runs (no survival bias; share = of the player's damage)  (n = owning player-runs, min 4)
+  weapon                  n  share  dmg/P  dmg/P/wave  1st buy
+  demo_sanis               4    0%      5         0.4       w6
+  mietspiegel              6    2%     61         4.0       w5
+  menschenkette            4    4%    166        12.4       w5
+  pappkamerad              4    5%    167        12.6     w4.5
+  tofu                     7    7%    305        23.1       w7
+  neun_euro_ticket        15    8%    150         9.9       w5
+  lauti                    5   10%    364        29.3       w7
+  farbbeutel               9   12%    335        15.5       w4
+  kleine_anfrage           4   12%    649        47.1       w5
+  soli_sticker             4   15%   1187       105.3       w8
+  kartoffelbrei            9   15%    499        30.2       w4
+  brandmauer_ziegel        4   15%    253        17.3       w4
+  trillerpfeife            4   15%    574        43.1       w7
+  grundgesetz              8   16%    352        21.6     w5.5
+  scheinwerfer             6   17%    518        33.6     w4.5
+  unterschriftenliste      7   18%    380        26.0       w7
+  kleber                   5   18%    449        93.5       w0
+  transparent              9   18%    366        24.1       w2
+  doener                   9   20%    486        54.3       w0
+  pfandflasche            13   23%   1051        62.0       w2
+  gendersternchen         13   24%    503        44.3       w2
+  stricknadeln            16   29%    569        62.6     w0.5
+  faktencheck              5   31%    769        54.8       w4
+  fahnenstange             9   34%    916        70.2       w6
+  megafon                 12   34%    630        31.6       w2
+  infostand                5   46%    703           -       w0
+
+Boss kill time per build: median s (killed/fights, fled = survived the wave but the elite left at the timer; needs enc_left, bot 3 from v0.4); fights the team died in count as not killed
+  group              wave 5              wave 10             wave 15             wave 20           
+  -                  never (0/12)           53s (1/12)       never (0/12)        never (0/12)      
+  crit                  20s (3/4)           27s (4/4)           38s (2/4)           37s (4/4)      
+  melee                 23s (4/4)           29s (4/4)           50s (1/4)          250s (3/4)      
+  ranged                21s (3/4)           21s (4/4)           34s (3/4)           33s (4/4)      
+  status                25s (4/4)           21s (4/4)           34s (4/4)           43s (4/4)      
+  summon                30s (3/4)           22s (3/4)           35s (2/4)           35s (4/4)      
+  tank                  26s (3/4)           46s (2/4)        never (0/4)         never (0/4)       
+
+Damage taken by source (share, top 6)
+  1p U0            identitaerer_hipster 13%, proj:kettenbrief 13%, hazard:push_ring 11%, hazard:lob_marker 11%, besorgter_buerger 10%, reichsbuerger 6%
+  1p U2            hazard:lob_marker 19%, proj:kettenbrief 16%, hazard:push_ring 9%, identitaerer_hipster 9%, hazard:explosion 9%, reichsbuerger 8%
+  2p U2            hazard:push_ring 12%, proj:kettenbrief 11%, identitaerer_hipster 11%, hazard:lob_marker 11%, hinterbaenkler 9%, reichsbuerger 8%
+  4p U2            hazard:lob_marker 33%, proj:kettenbrief 15%, eidgenossin 10%, hazard:push_ring 10%, hazard:farbklecks 9%, hazard:explosion 6%
+
+Effects and bot behaviour (mean per wave; still = time standing >= 0.6 s)
+  group              slow  poison  stun  immune  silence  reverse  sticker  summons mean/max  still  ults/wave
+  -                   3%      0%    0%      3%       0%       0%       2%      0.2/12         1%       0.54
+  crit                1%      0%    0%      3%       0%       0%       0%      0.0/0          1%       0.69
+  melee               1%      0%    0%      3%       0%       0%       0%      0.0/0          1%       1.09
+  ranged              1%      0%    0%      4%       0%       0%       0%      0.0/0          2%       0.00
+  status              8%      1%    0%      3%       2%       4%       0%      0.0/0         62%       0.53
+  summon              2%      0%    0%      3%       0%       0%       0%      5.3/12         1%       1.05
+  tank                1%      0%    1%      3%       0%       0%       0%      0.0/0          1%       1.06
+
+Weapon delivery (pooled player-runs, min 4; zone = per cast, busy = share of the zone's / summon's life with an enemy inside / in reach)
+  class   weapon               kind       n  dmg/cast  hit%  1st dmg  zone en-s  zone busy  summon busy
+  melee   doener               cone        9      80.6     -    0.04s          -          -            -
+  melee   fahnenstange         thrust      9     118.6     -    0.01s          -          -            -
+  melee   grundgesetz          cone        8      73.4     -    0.08s          -          -            -
+  melee   transparent          cone        9      60.3     -    0.16s          -          -            -
+  melee   trillerpfeife        cone        4     104.1     -    0.03s          -          -            -
+  ranged  gendersternchen      shot       13      66.0   84%    0.34s          -          -            -
+  ranged  kartoffelbrei        lob         9     142.8     -    1.41s          -          -            -
+  ranged  megafon              cone       12      89.1     -    0.01s          -          -            -
+  ranged  neun_euro_ticket     fan        15      37.1   43%    0.39s          -          -            -
+  ranged  pfandflasche         shot       13      81.0   79%    0.46s          -          -            -
+  ranged  scheinwerfer         beam        6     141.7     -    0.03s          -          -            -
+  ranged  stricknadeln         shot       16      22.9   88%    0.16s          -          -            -
+  ranged  unterschriftenliste  chain       7      68.2     -    0.01s          -          -            -
+  status  faktencheck          cone        5     161.9     -    0.03s          -          -            -
+  status  farbbeutel           shot        9      39.9   82%    0.48s          -          -            -
+  status  kleber               puddle      5     167.1     -    0.02s      11.58        37%            -
+  status  kleine_anfrage       shot        4      65.8   93%    0.40s          -          -            -
+  status  soli_sticker         shot        4      47.8   95%    0.02s          -          -            -
+  status  tofu                 shot        7      29.2   82%    0.21s          -          -            -
+  summon  brandmauer_ziegel    wall        4     267.8     -    0.03s      11.54        13%            -
+  summon  demo_sanis           follower    4       2.9     -   19.08s          -          -          80%
+  summon  infostand            turret      5     590.1   70%    0.33s          -          -          87%
+  summon  lauti                patrol      5     250.0     -    1.91s          -          -          85%
+  summon  menschenkette        tether      4      76.3     -    4.06s          -          -          92%
+  summon  pappkamerad          decoy       4     130.6     -    5.08s          -          -          93%
+C:/PythonProjekte/Rogue Like AnticapAntiFa/balance/runs/v0.4.0-beta/baseline_w1.jsonl: 120 runs; bot {3: 120}; content {'30fbbde2a0/9b6a01fe15': 120}; tags {'w1': 120}
+  wall time per run: median 5 s, max 16 s (jobs {16: 120}; 0 = not recorded)
+  cost: median 155.6 ms wall time per simulated second
+  switches off: {'castult=0': 120}; ult: {'smart': 120}
+
+Wave-1 income: Pfand at the first Späti per start weapon (ranged starters 18.7)
+  doener                 n=12   21.4
+  pfandflasche           n=12   19.5
+  own:gewerkschaft       n=12   19.4
+  gendersternchen        n=12   19.2
+  megafon                n=12   18.2
+  infostand              n=12   18.2
+  stricknadeln           n=12   17.8
+  kleber                 n=12   17.4
+  farbbeutel             n=12   16.4
+  transparent            n=12   15.9

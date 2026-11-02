@@ -16,12 +16,14 @@ const MAX_LINES := 24
 const CHAIN_LIFE := 0.4
 const BEAM_LIFE := 0.25
 const WHISTLE_LIFE := 0.6
+const PULSE_LIFE := 0.7
 const NUMBER_LIFE := 0.8
 const PUFF_LIFE := 0.45
 const SWING_LIFE := 0.22
 const SAY_LIFE := 3.2
 const QUOTE_LIFE := 7.0
 const MARK_LIFE := 1.8
+const STAMP_LIFE := 1.4
 const BUBBLE_W := 230.0
 const QUOTE_W := 300.0
 
@@ -31,6 +33,7 @@ const SWING_COLORS := {
 	"doener": Color(0.85, 0.5, 0.15), "grundgesetz": Color(0.2, 0.35, 0.75), "megafon": Color(0.85, 0.2, 0.2),
 	"transparent": Color(0.55, 0.25, 0.7), "oma": Color(0.2, 0.45, 0.8),
 	"fahnenstange": Color(0.85, 0.15, 0.15), "bierkiste": Color(0.2, 0.5, 0.25),
+	"faktencheck": Color(0.18, 0.43, 0.75), "overall": Color(0.55, 0.55, 0.6),
 }
 
 var world: WorldView
@@ -44,9 +47,16 @@ var _ults: Array = []        # {id, peer, pos, t, life} from ["ult", peer, ult_i
 var _chains: Array = []      # {pts, t, seed} from ["chain", points] (Unterschriftenliste)
 var _beams: Array = []       # {from, to, t} from ["beam", from, to] (Scheinwerfer)
 var _whistles: Array = []    # {pos, range, t, seed} from a Trillerpfeife "swing"
+var _pulses: Array = []      # {pos, r, kind, t, seed} from ["pulse", pos, radius, kind] (v0.3 weapons)
+var _stamps: Array = []      # {pos, t, seed} from ["interrupt", pos, cast_id]: "UNTERBROCHEN!" (D-107)
 var _hand: Font
 var _type: Font
 var _t := 0.0
+## The players' attack and ultimate visuals (swings, beams, chains, whistles, ults)
+## are drawn by a child Fx that shares these arrays and fades as a group with the
+## option `own_fx_opacity` (GDD §19a), behind numbers and bubbles.
+var _own_layer: Fx
+var _is_own_layer := false
 ## Save option `bubble_opacity` (0..1, 0 = hidden), re-read every frame so a
 ## change in the options applies live (architecture §11).
 var bubble_opacity := 0.7
@@ -64,6 +74,26 @@ func _ready() -> void:
 	_hand = UITheme.hand()
 	_type = UITheme.typewriter()
 	_read_bubble_opacity()
+	if not _is_own_layer:
+		_own_layer = Fx.new()
+		_own_layer.name = "OwnFx"
+		_own_layer._is_own_layer = true
+		_own_layer.world = world
+		_own_layer.show_behind_parent = true
+		_own_layer._swings = _swings
+		_own_layer._beams = _beams
+		_own_layer._chains = _chains
+		_own_layer._whistles = _whistles
+		_own_layer._pulses = _pulses
+		_own_layer._ults = _ults
+		add_child(_own_layer)
+
+
+## Group alpha of the players' visuals: WorldView's value, so both fade together.
+func own_fx_alpha() -> float:
+	if world:
+		return world.own_fx
+	return UIKit.option_float("own_fx_opacity", 1.0, WorldView.OWN_FX_MIN, 1.0)
 
 
 static func is_chatter(key: String) -> bool:
@@ -131,6 +161,13 @@ func handle_event(ev: Array) -> void:
 		"beam":
 			if ev.size() >= 3 and ev[1] is Vector2 and ev[2] is Vector2:
 				_push(_beams, {"from": ev[1], "to": ev[2], "t": 0.0}, MAX_LINES)
+		"pulse":
+			if ev.size() >= 4 and ev[1] is Vector2:
+				_push(_pulses, {"pos": ev[1], "r": float(ev[2]), "kind": str(ev[3]), "t": 0.0, "seed": randi() % 1000}, MAX_LINES)
+		"interrupt":
+			# a stun broke a boss cast (GDD §14, D-107); the boss's feedback, never faded
+			if ev.size() >= 2 and ev[1] is Vector2:
+				_push(_stamps, {"pos": ev[1], "t": 0.0, "seed": randi() % 1000}, MAX_LINES)
 		"down", "revive":
 			var p := _player_pos(int(ev[1]) if ev.size() > 1 else -1)
 			if p != Vector2.INF:
@@ -198,6 +235,11 @@ func _add_bubble(pos: Vector2, key: String, quote_id: String) -> void:
 
 
 func _process(delta: float) -> void:
+	if _is_own_layer:
+		# the parent ages the shared arrays
+		modulate.a = own_fx_alpha()
+		queue_redraw()
+		return
 	_t += delta
 	_read_bubble_opacity()
 	_age(_numbers, delta, NUMBER_LIFE)
@@ -207,6 +249,8 @@ func _process(delta: float) -> void:
 	_age(_chains, delta, CHAIN_LIFE)
 	_age(_beams, delta, BEAM_LIFE)
 	_age(_whistles, delta, WHISTLE_LIFE)
+	_age(_pulses, delta, PULSE_LIFE)
+	_age(_stamps, delta, STAMP_LIFE)
 	var j := _ults.size() - 1
 	while j >= 0:
 		_ults[j]["t"] += delta
@@ -232,18 +276,23 @@ func _age(arr: Array, delta: float, life: float) -> void:
 
 
 func _draw() -> void:
-	for s in _swings:
-		_draw_swing(s)
-	for b in _beams:
-		_draw_beam(b)
-	for c in _chains:
-		_draw_chain(c)
-	for w in _whistles:
-		_draw_whistle(w)
+	if _is_own_layer or _own_layer == null:
+		for s in _swings:
+			_draw_swing(s)
+		for b in _beams:
+			_draw_beam(b)
+		for c in _chains:
+			_draw_chain(c)
+		for w in _whistles:
+			_draw_whistle(w)
+		for q in _pulses:
+			_draw_pulse(q)
+		for u in _ults:
+			_draw_ult(u)
+	if _is_own_layer:
+		return
 	for p in _puffs:
 		_draw_puff(p)
-	for u in _ults:
-		_draw_ult(u)
 	for m in _marks:
 		var k: float = m["t"] / MARK_LIFE
 		var pos: Vector2 = m["pos"] + Vector2(0, -60 - k * 30)
@@ -262,6 +311,26 @@ func _draw() -> void:
 		Doodle.text(self, n["text"], pos, int(n["size"] * pop), c, _hand, 5, Color(1, 1, 1, c.a * 0.9))
 	for b in _bubbles:
 		_draw_bubble(b)
+	for s in _stamps:
+		_draw_interrupt(s)
+
+
+## "UNTERBROCHEN!": a red rubber stamp slammed over the boss, then it fades.
+func _draw_interrupt(s: Dictionary) -> void:
+	var t: float = s["t"]
+	var a := clampf((STAMP_LIFE - t) * 3.0, 0.0, 1.0)
+	var slam := 1.0 + maxf(0.0, 0.15 - t) * 6.0
+	var col := Color(0.8, 0.1, 0.12, a)
+	draw_set_transform(s["pos"] + Vector2(0, -170 - t * 8.0), -0.14 + 0.02 * float(int(s["seed"]) % 5), Vector2(slam, slam))
+	var r := Rect2(-150, -34, 300, 52)
+	draw_rect(r, Color(1, 0.98, 0.92, 0.75 * a))
+	draw_polyline(Doodle.rect_pts(r, int(s["seed"]) % Doodle.VARIANTS, 3.0), col, 6.0)
+	draw_polyline(Doodle.rect_pts(r.grow(-7), (int(s["seed"]) + 1) % Doodle.VARIANTS, 2.0), col, 2.0)
+	Doodle.text(self, tr("FX_UNTERBROCHEN"), Vector2(0, 8), 34, col, UITheme.typewriter(true))
+	for i in 8:
+		var p := Vector2(Doodle.noise(i + int(s["seed"])) * 140.0, Doodle.noise(i + 31) * 24.0)
+		draw_circle(p, 2.0 + absf(Doodle.noise(i + 70)) * 3.0, Color(1, 0.98, 0.92, 0.7 * a))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 func _draw_swing(s: Dictionary) -> void:
@@ -316,6 +385,16 @@ func _draw_swing(s: Dictionary) -> void:
 			var a := lerpf(a0, a1, 0.3 + 0.7 * float(i) / 4)
 			sp.append(pos + Vector2(cos(a), sin(a)) * rng * off)
 		draw_polyline(sp, Color(c, c.a * 0.6), 1.5)
+	if id == "faktencheck":
+		# fact-check ticks along the cone edge
+		var g := Color(0.18, 0.6, 0.3, c.a)
+		for j in 3:
+			var a := lerpf(a0, a1, 0.2 + 0.3 * j)
+			var tp := pos + Vector2(cos(a), sin(a)) * rng * 0.88
+			var tk := _pop(s["t"] - j * 0.03) * 1.2
+			var pl := PackedVector2Array([tp + Vector2(-5, 0) * tk, tp + Vector2(-1, 5) * tk, tp + Vector2(7, -7) * tk])
+			draw_polyline(pl, Color(1, 1, 1, c.a), 5.0)
+			draw_polyline(pl, g, 2.5)
 
 
 ## Unterschriftenliste: a ballpoint signature that scrawls from the player through
@@ -440,6 +519,59 @@ func _draw_whistle(w: Dictionary) -> void:
 		draw_set_transform(pos + Vector2(4, -72.0 - minf(t, 0.4) * 22.0), -0.1 + sin(t * 40.0) * 0.03, Vector2(tk, tk))
 		Doodle.text(self, tr("FX_PFIFF"), Vector2.ZERO, 30, Color(col.darkened(0.15), a), _hand, 6, Color(1, 1, 1, a))
 		draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+## One-shot bursts of the v0.3 weapons (GDD §11): Lauti's ska pulse, a Demo-Sani's
+## heal and shove, the Pappkamerad's confetti and the Lobbyregister's
+## "Offengelegt!" (papers flying out of the file).
+func _draw_pulse(q: Dictionary) -> void:
+	var k: float = q["t"] / PULSE_LIFE
+	var a := 1.0 - k * k
+	var pos: Vector2 = q["pos"]
+	var r: float = q["r"]
+	var seed_v: int = q["seed"]
+	match str(q["kind"]):
+		"lauti":
+			var col := Color(0.93, 0.47, 0.12)
+			for j in 2:
+				var u := clampf(k * 1.6 - j * 0.25, 0.0, 1.0)
+				if u > 0.0 and u < 1.0:
+					draw_arc(pos, 18.0 + (r - 18.0) * u, 0, TAU, 28, Color(col, a * (1.0 - u)), 4.0 - j * 1.5)
+			for j in 4:
+				var ang := TAU * j / 4.0 + seed_v * 0.1
+				var np := pos + Vector2(cos(ang), sin(ang)) * r * (0.3 + 0.6 * k) + Vector2(0, -12.0 * k)
+				draw_circle(np, 3.5, Color(Doodle.INK, a))
+				draw_line(np + Vector2(3, 0), np + Vector2(3, -11), Color(Doodle.INK, a), 1.6)
+		"sani":
+			var g := Color(0.18, 0.6, 0.3)
+			draw_arc(pos, r * (0.6 + 0.4 * k), 0, TAU, 24, Color(g, 0.6 * a), 3.0)
+			for j in 3:
+				var cp := pos + Vector2(-16.0 + j * 16.0, -30.0 - k * 26.0 - (j % 2) * 8.0)
+				var s := 4.0 * _pop(q["t"] - j * 0.05)
+				draw_line(cp + Vector2(-s, 0), cp + Vector2(s, 0), Color(1, 1, 1, a), 5.0)
+				draw_line(cp + Vector2(0, -s), cp + Vector2(0, s), Color(1, 1, 1, a), 5.0)
+				draw_line(cp + Vector2(-s, 0), cp + Vector2(s, 0), Color(g, a), 2.5)
+				draw_line(cp + Vector2(0, -s), cp + Vector2(0, s), Color(g, a), 2.5)
+		"konfetti":
+			var cols := [Color("d63a2e"), Color("f2c418"), Color("2e6db4"), Color("3f8f4f"), Color("f06aa7")]
+			for j in 22:
+				var ang := TAU * j / 22.0 + seed_v * 0.3
+				var sp := 0.5 + 0.5 * Doodle.noise(seed_v + j * 7)
+				var cp := pos + Vector2(cos(ang), sin(ang) * 0.7) * r * sp * minf(1.0, k * 2.0) + Vector2(0, -30.0 * sin(k * PI) + 40.0 * k * k)
+				draw_set_transform(cp, ang + k * 9.0, Vector2.ONE)
+				draw_rect(Rect2(-3, -1.5, 6, 3), Color(cols[j % cols.size()], a))
+			draw_set_transform_matrix(Transform2D.IDENTITY)
+		"offengelegt":
+			draw_arc(pos, r * (0.5 + 0.5 * k), 0, TAU, 24, Color(0.75, 0.15, 0.18, 0.7 * a), 3.0)
+			for j in 6:
+				var ang := TAU * j / 6.0 + seed_v * 0.2
+				var cp := pos + Vector2(cos(ang), sin(ang)) * r * (0.2 + 0.8 * k) + Vector2(0, -20.0 * k)
+				draw_set_transform(cp, ang + k * 4.0, Vector2.ONE)
+				draw_rect(Rect2(-6, -8, 12, 16), Color(0.98, 0.97, 0.92, a))
+				draw_rect(Rect2(-6, -8, 12, 16), Color(Doodle.INK, a), false, 1.2)
+				draw_line(Vector2(-3, -3), Vector2(3, -3), Color(Doodle.INK, a * 0.7), 1.0)
+				draw_line(Vector2(-3, 1), Vector2(3, 1), Color(Doodle.INK, a * 0.7), 1.0)
+			draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 func _draw_puff(p: Dictionary) -> void:

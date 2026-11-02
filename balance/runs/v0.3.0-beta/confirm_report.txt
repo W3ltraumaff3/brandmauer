@@ -1,0 +1,167 @@
+
+Build bots: wins/runs, median wave (21 = won)
+build     U0           U2         
+crit      5/8 w21      1/8 w11    
+melee     2/8 w20      0/8 w20    
+ranged    8/8 w21      1/8 w9     
+status    1/8 w7.5     0/8 w4     
+summon    6/8 w21      7/8 w21    
+tank      0/8 w20      0/8 w15    
+
+Characters: mean wave reached (21 = won) with it vs. overall 14.38  (n = player-runs)
+   +4.48  win  85%  n=40   gewerkschaft
+   +3.93  win  20%  n=40   stadtbild
+   +1.40  win  60%  n=40   oma
+   -0.30  win  38%  n=40   buergergeld
+   -1.32  win   0%  n=40   toechter
+   -8.18  win   2%  n=40   klimakleber
+
+Items (owned at the end): mean wave reached (21 = won) with it vs. overall 18.65  (n = player-runs)
+   +2.24  win  88%  n=17   tarifvertrag
+   +1.97  win  95%  n=21   vereinsheim
+   +1.76  win  54%  n=93   reichsausweis
+   +1.52  win  92%  n=24   megafon_akku
+   +1.43  win  48%  n=56   betriebsrat
+   +1.19  win  45%  n=53   arbeitshandschuhe
+   +1.08  win  36%  n=11   volkskueche
+   +1.05  win  62%  n=13   soli_konzert
+   +0.99  win  57%  n=96   gewerkschaftsweste
+   +0.86  win  42%  n=57   mietendeckel
+   +0.81  win  89%  n=35   flugblatt_stapel
+   +0.63  win  53%  n=87   demosani_weste
+   ...
+   +0.12  win  54%  n=122  solibutton
+   +0.06  win  58%  n=78   erste_hilfe_kurs
+   -0.10  win  76%  n=37   spaeti_sonnenbrille
+   -0.18  win   7%  n=28   spendendose
+   -0.39  win  72%  n=43   strickliesel
+   -0.50  win  37%  n=92   isomatte
+   -0.65  win  72%  n=39   lautsprecherwagen
+   -0.72  win  59%  n=125  club_mate
+   -1.21  win  65%  n=51   frisbee
+   -1.68  win  63%  n=57   taschenlampe
+   -1.74  win  45%  n=157  fahrradhelm
+   -3.04  win  55%  n=56   fernglas
+
+Weapons (owned at the end): mean wave reached (21 = won) with it vs. overall 16.01  (n = player-runs)
+   +3.91  win  92%  n=37   brandmauer_ziegel
+   +3.57  win  89%  n=38   weisser_overall
+   +2.84  win  85%  n=40   infostand
+   +2.79  win  13%  n=30   bierkiste
+   +2.19  win  12%  n=40   trillerpfeife
+   +2.13  win  14%  n=50   fahnenstange
+   +2.03  win  14%  n=44   grundgesetz
+   +1.99  win  11%  n=38   mietspiegel
+   +1.65  win  14%  n=59   doener
+   +0.65  win  60%  n=50   megafon
+   +0.01  win  53%  n=43   neun_euro_ticket
+   -0.01  win  59%  n=41   pfandflasche
+   -0.21  win  53%  n=57   gendersternchen
+   -0.23  win  50%  n=42   unterschriftenliste
+   -0.33  win  56%  n=63   stricknadeln
+   -0.67  win   6%  n=62   transparent
+   -0.74  win  49%  n=37   scheinwerfer
+   -1.32  win  46%  n=39   kartoffelbrei
+   -4.06  win  26%  n=23   farbbeutel
+   -7.83  win   9%  n=11   strassenkreide
+   -8.70  win   6%  n=16   tofu
+   -9.21  win   0%  n=10   normenkontrolle
+   -9.81  win   2%  n=40   kleber
+
+Level-up stats (picked at least once): mean wave reached (21 = won) with it vs. overall 17.05  (n = player-runs)
+   +2.43  win  59%  n=96   speed
+   +1.71  win  63%  n=78   summon
+   +1.64  win  62%  n=55   income
+   +1.33  win  55%  n=49   xp
+   +0.81  win  32%  n=97   lifesteal
+   +0.59  win  49%  n=57   luck
+   +0.58  win  34%  n=101  melee
+   +0.54  win  47%  n=102  dodge
+   +0.44  win  51%  n=59   pickup
+   +0.23  win  41%  n=133  armor
+   -0.01  win  38%  n=127  hp_regen
+   -0.20  win  51%  n=109  crit
+   -0.24  win  51%  n=104  ranged
+   -0.49  win  43%  n=189  max_hp
+   -0.58  win  46%  n=176  attack_speed
+   -1.17  win  41%  n=201  damage
+   -1.18  win  48%  n=122  range
+   -2.25  win  37%  n=82   status
+
+Weapon damage per Pfand spent (bought weapons, all runs):
+     846.5  (7615750 dmg / 8997 Pfand)  fahnenstange
+     603.8  (8060403 dmg / 13350 Pfand)  doener
+     399.3  (4083430 dmg / 10227 Pfand)  megafon
+     385.7  (3098810 dmg / 8035 Pfand)  stricknadeln
+     372.3  (2540719 dmg / 6824 Pfand)  trillerpfeife
+     368.7  (2340741 dmg / 6349 Pfand)  bierkiste
+     366.9  (7688737 dmg / 20955 Pfand)  infostand
+     349.2  (3747176 dmg / 10732 Pfand)  grundgesetz
+     344.1  (2691723 dmg / 7822 Pfand)  gendersternchen
+     254.0  (2545308 dmg / 10021 Pfand)  transparent
+     220.5  (1196961 dmg / 5428 Pfand)  scheinwerfer
+     211.4  (1807480 dmg / 8550 Pfand)  unterschriftenliste
+     165.5  (3960790 dmg / 23937 Pfand)  brandmauer_ziegel
+     143.2  (177080 dmg / 1237 Pfand)  kleber
+     130.5  (984712 dmg / 7547 Pfand)  pfandflasche
+     111.2  (2976824 dmg / 26782 Pfand)  weisser_overall
+     110.8  (823377 dmg / 7431 Pfand)  mietspiegel
+      77.5  (187336 dmg / 2418 Pfand)  farbbeutel
+      72.3  (612795 dmg / 8478 Pfand)  neun_euro_ticket
+      71.4  (66432 dmg / 931 Pfand)  strassenkreide
+      67.4  (58114 dmg / 862 Pfand)  tofu
+      61.8  (425287 dmg / 6884 Pfand)  kartoffelbrei
+       9.8  (9166 dmg / 937 Pfand)  normenkontrolle
+Mortal bots: wins/runs, median wave reached (21 = won)
+players   U0           U2           U5         
+      1   2/4 w15.5    2/4 w14      0/4 w3.5   
+      2   3/4 w21      0/4 w7       0/4 w4     
+      3   1/4 w16      0/4 w7.5     0/4 w4.5   
+      4   1/4 w10      1/4 w7.5     0/4 w4.5   
+Deaths per wave: {2: 2, 3: 2, 4: 7, 5: 3, 6: 6, 7: 5, 8: 3, 10: 7, 11: 1, 12: 1, 20: 1}
+
+Immortal bots, 1 player(s), Umfrage 2: per wave (medians)
+ wave  taken(xHP)  dps/player  enemies  boss_kill  shop: pfand  bought  levelups  left
+    1       0.06         6.2       14                      17     1.0       1.0     6
+    2       0.00        10.9       14                      30     1.0       1.0     6
+    3       0.17        14.0       23                      38     1.5       1.0     4
+    4       0.36        22.0       28                      42     1.5       1.0     7
+    5       0.42        29.5       16      15.2s           76     1.5       2.0     8
+    6       0.56        40.5       45                      72     2.0       2.0    10
+    7       1.51        83.4       44                     148     2.5       2.0    16
+    8       4.72       111.2       48                     182     1.5       2.0    11
+    9       0.82       154.1       54                     234     4.0       2.0    26
+   10       2.98       178.4       40      15.0s          287     4.0       2.0    30
+   11       0.94       275.1       74                     324     4.5       2.0    22
+   12       1.03       334.5       72                     331     3.0       3.0    32
+   13       1.26       391.4       80                     360     4.0       3.0    16
+   14       1.73       557.2      103                     424     3.5       3.0    54
+   15       1.50       328.4       21      never          197     1.0       3.0    70
+   16       1.00       718.5      110                     472     2.5       3.0    42
+   17       1.30       926.5      126                     528     3.0       3.0    50
+   18       1.10      1081.0      133                     518     1.5       3.0    34
+   19       0.93      1194.7      146                     526     2.5       3.0    46
+   20       6.26       696.5       38      51.7s          nan     nan       nan   nan
+
+Immortal bots, 4 player(s), Umfrage 2: per wave (medians)
+ wave  taken(xHP)  dps/player  enemies  boss_kill  shop: pfand  bought  levelups  left
+    1       0.00         8.6       23                      23     1.1       1.0     5
+    2       0.14        10.4       32                      25     0.9       1.0     6
+    3       0.22        16.4       36                      38     1.3       1.0     7
+    4       0.73        22.9       46                      43     1.3       1.0    12
+    5       0.45        29.6       34      25.9s           52     1.4       2.0    10
+    6       1.48        51.5       60                      76     1.8       2.0    14
+    7       1.43        81.8       84                     119     2.3       2.0    19
+    8       2.23       109.0      110                     143     2.3       2.0    25
+    9       1.82       147.8      100                     187     2.8       2.0    18
+   10       2.48       143.1       78      27.4s          148     2.0       2.0    15
+   11       2.67       264.7      130                     227     2.8       2.0    17
+   12       2.25       336.6      161                     241     2.8       3.0    32
+   13       2.16       394.2      177                     271     2.8       3.0    31
+   14       1.73       522.1      200                     318     2.5       3.0    32
+   15       0.77       239.8       33      never          157     1.1       3.0    46
+   16       1.64       730.8      223                     357     2.2       3.0    48
+   17       1.41       926.5      206                     404     2.1       3.0    59
+   18       1.46      1111.2      220                     443     2.1       3.0    46
+   19       1.23      1371.0      220                     474     2.3       3.0    60
+   20       3.04       563.5       49     326.2s          nan     nan       nan   nan

@@ -259,6 +259,23 @@ static func vote_speed(players: int, wave: int) -> float:
 	return 1.0 + float(WALL["vote_per_player"]) * maxi(0, players - 1) + float(WALL["vote_per_wave"]) * maxi(0, wave - 1)
 
 
+## "Die Brandmauer hält" (GDD §14, D-111): bitmask of the segments the
+## Abschiebezone stands in front of: every open segment and its neighbours on the
+## same wall. `mask` has a bit per intact segment (like ViewState.wall).
+static func band_mask(mask: int) -> int:
+	var out := 0
+	for side in 4:
+		var first: int = SIDE_FIRST[side]
+		var last: int = first + int(SIDE_COUNT[side]) - 1
+		for i in range(first, last + 1):
+			if mask & (1 << i):
+				continue
+			for k in [i - 1, i, i + 1]:
+				if k >= first and k <= last:
+					out |= 1 << k
+	return out
+
+
 ## AfD spawn weight of each side: base + per hole on it.
 static func side_weights(wall: Array[bool]) -> Array[float]:
 	var w: Array[float] = []

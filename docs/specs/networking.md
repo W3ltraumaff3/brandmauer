@@ -85,7 +85,8 @@
 | Data | Encoding | Max error |
 |---|---|---|
 | positions | int16 per axis, rounded, clamped to the int16 range | 0.5 px |
-| fractions (enemy hp, hazard life, boss hp and shield) | u8 0..255 | 1/510 |
+| fractions (enemy hp, hazard life, summon hp, boss hp and shield) | u8 0..255 | 1/510 |
+| enemy flags `e_flags`, `e_flags2` | one u8 each per enemy (the first byte is full; the second carries the v0.3 status effects, D-093) | exact |
 | angles (projectiles, player aim) | 1 byte, TAU/256 per step; decoded in [-PI, PI) | TAU/512 |
 | hazard radius | u16, rounded | 0.5 px |
 | ids | int32 | exact |
@@ -93,13 +94,16 @@
 | player hp and max hp, `time`, `wave_time_left` | float32 | float32 |
 | counts | u16 | exact |
 | `wall` (intact segments) | u64 bitmask, 38 bits used (`Snapshot.VERSION` 2 since D-082; version 1 had a u16 with 12 bits) | exact |
-| `boss` | presence byte, then `enc`, `hp`, `phase`, `shield` | as above |
+| hazard angle `h_ang` | 1 byte, TAU/256 (cones such as Kahlschlag; 0 for round hazards) | TAU/512 |
+| `boss` | presence byte, then `enc`, `hp`, `phase`, `shield`, `cast` (u8: 0 = none, else 1 + index into `Content.BOSS_CASTS`), `cast_t` (u8 progress 0..1) | as above |
 
+- **Version history:** 1 = MVP; 2 = `wall` as u64 (D-082); 3 = second enemy flag byte `e_flags2` and summon hp `s_hp` (status effects In Bearbeitung, Aktenkundig, Rolle rückwärts, Soli-Sticker and the Pappkamerad's HP bar, D-093); **4 = hazard angle `h_ang`, boss `cast` and `cast_t`, `e_flags2` bits for Standfest and Pressekonferenz** (boss rules, D-108). The protocol version went up each time (§7.1), so mismatched builds get a clean `NET_ERR_VERSION` instead of silently undecodable snapshots.
 - **Per-entity cost:**
-  - **enemy:** 11 bytes
+  - **enemy:** 12 bytes
   - **projectile:** 6 bytes
-  - **pickup or summon:** 5 bytes
-  - **hazard:** 8 bytes
+  - **pickup:** 5 bytes
+  - **summon:** 6 bytes
+  - **hazard:** 9 bytes
   - **player:** 27 bytes, plus 1 per weapon
 - **Caps per snapshot:**
   - 300 enemies
@@ -111,8 +115,8 @@
   - 16 weapons per player
 
   Extra entities beyond a cap are not sent.
-- **Budget:** a busy frame (200 enemies, 300 projectiles, 100 pickups, 20 hazards, 6 summons, 4 players and a boss) is **4.8 KB raw** and about **4.6 KB on the wire** (positions barely compress).
-  - At 20 Hz that's about **0.75 Mbit/s per client**, so a listen host with 3 clients uploads about 2.2 Mbit/s. At 15 Hz it's 1.7 Mbit/s.
+- **Budget:** a busy frame (200 enemies, 300 projectiles, 100 pickups, 20 hazards, 6 summons, 4 players and a boss) is **5.0 KB raw** and about **4.8 KB on the wire** (positions barely compress; the second flag byte is mostly zero and compresses well).
+  - At 20 Hz that's about **0.77 Mbit/s per client**, so a listen host with 3 clients uploads about 2.3 Mbit/s. At 15 Hz it's 1.7 Mbit/s.
   - Snapshots are larger than the MTU, so ENet fragments them. Losing one fragment drops that snapshot, and the next one replaces it. Godot warns about this once per process.
 
 ### 6.2 Client interpolation (`src/net/snapshot_buffer.gd`)
@@ -120,7 +124,7 @@
 - **Sampling:** `sample(now_s, delay := 0.1)` returns the world at `now - delay`:
   - **enemies:** matched by `e_id`. Positions are lerped when the id is in both snapshots; new ids take the newer position; ids missing from the newer snapshot disappear.
   - **players:** matched by `id`. `pos` and `aim` are lerped; every other field, including `seq`, comes from the newer snapshot.
-  - **projectiles, pickups, hazards, summons, boss:** taken from the newer snapshot, since they have no ids.
+  - **projectiles, pickups, hazards (incl. `h_ang`), summons (incl. `s_hp`), boss (incl. `cast`, `cast_t`):** taken from the newer snapshot, since they have no ids. Enemy hp and both flag bytes also come from the newer snapshot.
 - **Edge cases:**
   - an empty buffer returns `null`
   - a single snapshot is returned as is
@@ -158,7 +162,7 @@
 6. **Stable RPC ids:** the handshake RPCs are named `_rpc_00_hello`, `_rpc_01_reject` and `_rpc_02_welcome`.
    - Godot numbers RPCs by sorted method name, so these keep the same ids across game versions, and an old client still gets a clean version error.
    - Never rename them or change their arguments. New RPCs (`_rpc_session`, `_rpc_resume`, `_rpc_bye`, `_rpc_host_closed`, …) sort after them.
-7. **Protocol version:** `PROTOCOL_VERSION` is **3** since `_rpc_want_run` was added for rejoining after a crash (§7.5). Version 2 added the reconnect RPCs. New RPCs shift the ids of every later RPC.
+7. **Protocol version:** `PROTOCOL_VERSION` is **5** since snapshot version 4 (§6.1, D-108); 4 came with snapshot version 3 (D-093). Version 3 added `_rpc_want_run` for rejoining after a crash (§7.5), version 2 the reconnect RPCs. New RPCs shift the ids of every later RPC; a new snapshot version also bumps the protocol, so the handshake rejects a mismatched build.
 
 ### 7.2 Lobby
 - **Ownership:** the host owns `Net.lobby` (`{player_id: {name, char, ready}}`), `Net.org` and `Net.difficulty`, and pushes all three to every client on every change. Each push emits `lobby_changed`.

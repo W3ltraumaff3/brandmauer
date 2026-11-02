@@ -121,8 +121,9 @@ func test_boss_retry_restarts_the_boss_wave() -> void:
 	assert_eq(t.phase, Sim.Phase.OVER, "no retry in a regular wave")
 
 
-## §7: below enrage_at HP an elite enters phase 2.
-func test_elite_phase_two() -> void:
+## §7 (D-106): the old 50 % switch is gone; the tempo comes with the phases at
+## 66 % / 33 % of the encounter's total HP (the Sylt-Clique as one group).
+func test_elite_phase_tempo() -> void:
 	var s := _sim(["oma"])
 	s._begin_wave(5)
 	for i in 300:
@@ -131,11 +132,19 @@ func test_elite_phase_two() -> void:
 	var elites := s.enemies.filter(func(e): return e.alive and e.elite and e.encounter != "")
 	assert_false(elites.is_empty(), "elite spawned")
 	var boss = elites[0]
-	assert_false(boss.phase2, "phase 1 at full HP")
-	boss.hp = boss.max_hp * 0.4
+	assert_eq(boss.phase, 0, "phase 1 at full HP")
+	assert_near(boss.tempo, 1.0, 0.0001, "normal tempo")
+	boss.hp = boss.max_hp * 0.4   # one member at 40 %: the group is still above 66 %
 	s.players[1].iframes = 10.0
 	s.step(1.0 / 60.0)
-	assert_true(boss.phase2, "phase 2 below 50 %")
+	assert_eq(boss.phase, 0, "one hurt member doesn't change the group's phase")
+	for e in elites:
+		e.hp = e.max_hp * 0.6
+	s.players[1].iframes = 10.0
+	s.step(1.0 / 60.0)
+	for e in elites:
+		assert_eq(e.phase, 1, "the whole clique enters phase 2")
+		assert_near(e.tempo, float(Content.BOSS["phase_tempo"][1]), 0.0001, "phase 2 tempo")
 
 
 ## §5: every Späti offers a weapon for the build (fitting scaling or a weapon you hold).
@@ -231,3 +240,73 @@ func test_every_umfrage_level_selectable() -> void:
 	UIApi.preview_mode = ""
 	UIApi.preview_local_id = 0
 	UIApi.preview_lobby = {}
+
+
+## §2 delivery metrics (tools/balance_metrics.gd): the sim clears hazards at the end of a
+## wave without marking them dead; a cleared Kleber puddle must stop counting its life
+## and the enemies near its old spot (it did, which inflated zone_life about 7x).
+func test_delivery_metrics_drop_cleared_zones() -> void:
+	var metrics = load("res://tools/balance_metrics.gd").new()
+	var s := _sim(["klimakleber"])
+	var guard := 0
+	while s.phase == Sim.Phase.WAVE and guard < 40000:
+		s.players[1].iframes = 10.0
+		metrics.before_step(s)
+		s.step(1.0 / 60.0)
+		metrics.after_step(s, 1.0 / 60.0)
+		guard += 1
+	for i in 600:
+		metrics.before_step(s)
+		metrics.after_step(s, 1.0 / 60.0)
+	var r: Dictionary = metrics.result(1).get("kleber", {})
+	assert_true(int(r.get("zones", 0)) > 0, "the Klimakleber placed puddles")
+	var per_zone := float(r.get("zone_life", 0.0)) / maxf(1, int(r.get("zones", 0)))
+	assert_true(per_zone <= float(Content.WEAPONS["kleber"]["life"]) + 0.1,
+		"a puddle lives at most its life time (%.1f s per puddle)" % per_zone)
+
+
+## §9 (D-113): ground weapons land on the densest group in range, not on a lone closer target.
+func test_ground_weapons_land_on_the_densest_group() -> void:
+	var s := _sim(["klimakleber"])
+	var p: Sim.SimPlayer = s.players[1]
+	s.enemies.clear()
+	s.hazards.clear()
+	p.pos = Vector2(800, 560)
+	var lone := s.spawn_enemy("hinterbaenkler", p.pos + Vector2(100, 0))
+	var group := []
+	for k in 4:
+		group.append(s.spawn_enemy("hinterbaenkler", p.pos + Vector2(-220, 0) + Vector2.from_angle(TAU * k / 4.0) * 25.0))
+	for e in [lone] + group:
+		e.speed = 0.0
+		e.behind = false
+	s._build_grid()
+	p.weapons = [{"id": "kleber", "tier": 1, "cd": 0.0, "angle": 0.0}]
+	s._step_weapons(1.0 / 60.0)
+	var puddles := s.hazards.filter(func(h): return h.owner == 1)
+	assert_eq(puddles.size(), 1, "one puddle")
+	assert_true(puddles[0].pos.distance_to(p.pos + Vector2(-220, 0)) < 20.0, "on the group, not on the closer lone enemy")
+
+
+## §7 (D-121): melee weapons deal melee_vs_boss × damage to encounter units only.
+func test_melee_hits_bosses_harder() -> void:
+	var s := _sim(["stadtbild"])
+	var p: Sim.SimPlayer = s.players[1]
+	s._begin_wave(10)
+	s._add_weapon(p, "doener", 1)
+	s._add_weapon(p, "gendersternchen", 1)
+	var melee_key := Sim._wkey(p.weapons[p.weapons.size() - 2])
+	var ranged_key := Sim._wkey(p.weapons[p.weapons.size() - 1])
+	var boss := s.spawn_enemy("geschichtslehrer", Arena.CENTER, 1.0)
+	boss.encounter = "geschichtslehrer"
+	boss.max_hp = 1.0e7
+	boss.hp = boss.max_hp
+	var mob := s.spawn_enemy("besorgter_buerger", Arena.CENTER + Vector2(200, 0))
+	mob.behind = false
+	mob.max_hp = 1.0e7
+	mob.hp = mob.max_hp
+	var k: float = Content.BALANCE["melee_vs_boss"]
+	for pair in [[melee_key, boss, k], [ranged_key, boss, 1.0], [melee_key, mob, 1.0]]:
+		var e: Sim.SimEnemy = pair[1]
+		var before := e.hp
+		s._damage_enemy(e, 10.0, p, false, Vector2.ZERO, 0.0, pair[0])
+		assert_near(before - e.hp, 10.0 * pair[2], 0.001, "%s on %s" % [pair[0], e.tid])

@@ -127,6 +127,7 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
 ### 6b. Targeting
 
 - **No lead aiming:** shots fly at where the target is now.
+- **Ground weapons land on the thickest crowd** (v0.4, D-113): Kleber, Kartoffelbrei and Brandmauer-Ziegel don't drop on your Zielauswahl target but on the middle of the densest group of enemies in range (among the 16 nearest you can see). One enemy alone still gets it. The Pappkamerad keeps landing half way to its target, the Infostand stays at your feet.
 - **Option Zielauswahl** (per player, default *Nächste:r Gegner:in*): **closest**, **most HP** (elites and bosses first) or **least HP** (clean up fast). Applies to all auto-aiming weapons and turrets.
 - **Weapons face their target**; the character's facing follows the shots.
 - **Line of sight:** AfD enemies behind the Brandmauer can be targeted and hit **only through holes**, on any of the four sides. An intact wall segment or a corner pillar between you and them blocks the shot (§5a).
@@ -135,7 +136,7 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
 
 The Späti has a **Statistik** button (Esc closes it): a recap after the last wave, per player.
 - **Damage by source:** weapons by tier, ramming (Lastenrad), other. Shows last wave, total and share. Sold weapons are marked *(verkauft)*, combined ones *(kombiniert)*.
-- **Survival:** healed by Umverteilung and by Krankenschein, damage taken, damage blocked by Kündigungsschutz, dodges.
+- **Survival:** healed by Umverteilung, by Krankenschein and by Demo-Sanis, damage taken, damage blocked by Kündigungsschutz, dodges.
 - **Misc:** kills, crits, ultimates used, Pfand collected, income and spent.
 
 ## 7. In-run progression: Zusammenhalt
@@ -165,7 +166,7 @@ Characters start **exhausted by circumstances** and get stronger and more visibl
 | Effect | Name in game | Note |
 |---|---|---|
 | Max HP | **Solidarität** | |
-| HP regen | **Krankenschein** | |
+| HP regen | **Krankenschein** | 0.08 HP per second per point (v0.4, D-119) |
 | Heal on hit | **Umverteilung** | you take from the enemies: each point is a 1 % chance per hit to heal 1 HP (at most 10 per second, like Brotato) |
 | Damage % | **Wut** | |
 | Melee damage | **Handarbeit** | manual labor |
@@ -228,7 +229,7 @@ Each character's insult-quote appears on the unlock card and may also appear on 
 | Das Stadtbild | **Flashmob** | the crowd storms outward: enemies nearby are stunned for 2 s, take damage (more with followers) and are knocked back |
 | Sozialtourist:in | **Urlaubsantrag** | 4 s on a sun lounger: invulnerable, can't move, heals |
 | Bürgergeld-Empfänger:in | **Antrag gestellt** | paperwork storm: all enemies 60 % slower for 6 s |
-| Klimakleber:in | **Straßenblockade** | a glue strip across the whole arena at your height; enemies get stuck for 6 s |
+| Klimakleber:in | **Straßenblockade** | a glue strip across the whole arena at your height; enemies get stuck for 6 s. The strip's puddles overlap on purpose, so an enemy can take damage from several at once (D-101) |
 | Lastenrad-Grüne | **Critical Mass** | dash ramming everything in the way, then double speed for 5 s; invulnerable for the whole time (dash + 5 s) |
 | Gewerkschaftsmitglied | **Tarifrunde** | +50 % damage for all players and summons for 8 s |
 | Antifa-Aktivist:in | **Schwarzer Block** | 6 comrades storm out for 6 s, push enemies back and deal damage |
@@ -247,7 +248,7 @@ Chosen before the run, by the group in co-op:
 
 **Later:** Mieterverein, Seenotrettung, Tafel.
 
-## 11. Weapons (23)
+## 11. Weapons (31)
 
 All weapons have tiers I–IV (combine two of the same tier, section 6a). Values from `Content.WEAPONS`:
 
@@ -264,7 +265,7 @@ All weapons have tiers I–IV (combine two of the same tier, section 6a). Values
 | **Tofu** | shot | 3 / 5 / 8 / 13 | 1.0 s | Ziviler Ungehorsam | poison (5 / 8 / 13 / 21 over 3 s) |
 | **Farbbeutel** | shot, splash | 7 / 11 / 18 / 29 | 1.3 s | Ziviler Ungehorsam, Durchschlagskraft | slows 40 % |
 | **Kleber** | puddle | 4 / 7 / 11 / 18 per s | 2.2 s | Ziviler Ungehorsam | puddle for 3 s: damage per second to everything inside, slows 70 % |
-| **Infostand** | turret (max 2) | 4 / 6 / 10 / 15 | 5.0 s | Ehrenamt (0.8) | fires leaflets for 10 s |
+| **Infostand** | turret (max 2 / 2 / 3 / 4 per copy) | 5 / 8 / 12 / 17 (v0.4, D-122; was 4 / 6 / 10 / 15) | 5.0 s | Ehrenamt (0.8) | fires leaflets for 10 / 10 / 15 / 20 s (so the higher tiers really keep more stands up); every copy keeps its own stands (no cap per player); drawn at 55 % size so several stands don't cover the arena. **"Flugblatt wird weitergereicht"** (v0.4, D-115): a leaflet that hits jumps on to the nearest enemy it hasn't hit yet within 140 px, 1 / 1 / 2 / 2 times by tier, −20 % damage per jump (like Unterschriftenliste); no enemy in reach ends it. **"Schnell aufgebaut"** (v0.4, D-117): while a copy has fewer stands than its maximum (wave start, after Kahlschlag), the next stand follows after 1 s instead of the 5 s cooldown, so two stands are up within the first 1.5 s of a wave. A bounce, not pierce: Wurfmaschine's +1 pierce doesn't apply (the Infostand isn't a ranged weapon) |
 
 ### New weapons (v0.2, spec; from `research/waffen_ideen.md`)
 Each one fills a niche no other weapon covers. Tier damage follows the existing curve (×1.67 / ×2.67 / ×4.3 of tier I).
@@ -273,12 +274,12 @@ Each one fills a niche no other weapon covers. Tier damage follows the existing 
 |---|---|---|---|---|---|---|
 | **Kartoffelbrei** | lob | 18 | 3.0 s | 340 | Durchschlagskraft | target marker on the ground, impact after 0.8 s, radius 110; pure area burst, no slow. Flavor: keep your distance from paintings |
 | **Trillerpfeife** | cone 360° | 5 | 2.0 s | 150 | Handarbeit 0.6 | stuns everything around for 0.6 s instead of knockback; control, barely any damage |
-| **Brandmauer-Ziegel** | line wall | 3 per 0.5 s | 4.0 s | 220 | Ehrenamt | a wall 140 px wide across the target direction for 6 s, slows enemies inside by 40 % and damages them; max 2 |
+| **Brandmauer-Ziegel** | line wall | 3 per 0.5 s | 4.0 s | 220 | Ehrenamt | a wall 140 px wide across the target direction for 6 s, slows enemies inside by 40 % and damages them; max 2. An enemy takes each wall's damage once, however many of its bricks it touches; standing in both walls hurts twice (D-089) |
 | **Normenkontrolle** | mark | 45 | 4.5 s | 360 | Ziviler Ungehorsam | marks the strongest enemy in range; after 3 s it's "nichtig erklärt" (burst); boss killer |
 | **Unterschriftenliste** | chain | 5 | 1.4 s | 260 | Durchschlagskraft 0.9 | instant hit that jumps to 3 more enemies within 120 px, −20 % per jump |
 | **Enthüllungs-Scheinwerfer** | beam | 14 | 2.2 s | 400 | Durchschlagskraft | instant straight beam that hits everything in line; hit enemies are "enthüllt": +15 % crit chance against them for 5 s |
 | **9-Euro-Ticket** | fan | 3 × 9 tickets | 1.5 s | 180 | Durchschlagskraft 0.5 | 9 projectiles in a 60° fan; from wave 4 only 5 ("läuft ab") |
-| **Weißer Overall** | swarm | 6 per activist | 4.0 s | 300 | Ehrenamt | 3 activists in white overalls each run at a different enemy, hit once, leave |
+| **Weißer Overall** | swarm | 6 per activist | 4.0 s | 300 | Ehrenamt | 3 activists in white overalls each run at a different enemy, hit once, leave. **"Blockade-Knäuel"** (v0.4, D-115): on arrival the activist also hits every other enemy within 55 px for half the damage, all knocked back from the impact point |
 
 ### More melee and zone weapons (v0.3, spec; user choice)
 
@@ -286,9 +287,54 @@ Each one fills a niche no other weapon covers. Tier damage follows the existing 
 |---|---|---|---|---|---|---|
 | **Demo-Fahnenstange** | melee thrust | 10 | 1.0 s | 190 | Handarbeit 0.9 | jabs straight at the target and hits everything in a 18 px wide line; small knockback. Niche: melee with reach |
 | **Bierkiste vom Späti** | melee 360° | 22 | 2.4 s | 120 | Handarbeit 1.2 | slow, heavy slam all around: big knockback (220), stuns non-elites for 0.3 s. Niche: heavy hitter |
-| **Straßenkreide** | trail zone | 9 per s | 0.35 s | — | Ziviler Ungehorsam 0.8 | needs no target: leaves chalk marks (radius 26, 4 s) behind you while you move; enemies on them take damage per second. Standing still renews the last mark instead of stacking. Niche: kiting, making enemies chase you over your trail |
+| **Straßenkreide** | trail zone | 9 per s | 0.35 s | — | Ziviler Ungehorsam 0.8 | needs no target: leaves chalk marks (radius 26, 4 s) behind you while you move; enemies on them take damage per second. Standing still renews the last mark instead of stacking, and the renewed mark grows into a **chalk circle** around you (+12 px per renewal up to radius 60), so enemies that reach a standing player stand in chalk (v0.4, so a standing Klimakleber:in isn't punished). Niche: kiting, making enemies chase you over your trail; standing: a small damage ring |
 
 Like every weapon, they damage status-immune enemies too (D-079). Tier damage follows the usual curve.
+
+### Status and summon weapons (v0.3, spec; from `research/waffen_ideen_status_beschwoerung.md`, D-091)
+
+The status build needs **defence and damage that still lands on the Reichsbürger**; the summon build gets **utility instead of raw DPS** (balancing.md §2). Tier damage follows the usual curve (×1.67 / ×2.67 / ×4.3). Starting values; the balancing round tunes them with bot batches.
+
+| Weapon | Kind | Tier-I dmg | Cooldown | Range | Scales with | Price | Special / niche |
+|---|---|---|---|---|---|---|---|
+| **Kleine Anfrage** | shot, pierces 1 | 12 (v0.4; was 10) | 1.2 s | 360 | Ziviler Ungehorsam 1.3 (was 1.0) | 24 | a file folder; a hit puts the enemy **"In Bearbeitung"** for 3 s. Aims first at enemies whose ability is running or coming (a voting JU-Schnösel, then any other enemy with an ability that isn't in Bearbeitung yet), else at your Zielauswahl target. Niche: the only answer to enemy abilities; protects the Brandmauer |
+| **Lobbyregister** | shot | 3 | 0.7 s | 340 | Ziviler Ungehorsam 0.5 | 26 | fast sheets of paper; every hit adds one **"Aktenkundig"** stack (max 5). A hit on an enemy that already has 5 stacks is **"Offengelegt!"**: a burst of 16 / 27 / 43 / 69 (+1.2 × Ziviler Ungehorsam), the stacks drop to 0. Niche: single-target build-up that helps the whole team (+25 %) |
+| **Faktencheck** | cone 90° | 10 (v0.4; was 12) | 1.6 s | 170 | Ziviler Ungehorsam 1.2 (was 1.3) | 22 | **"Rolle rückwärts"** for 1.2 / 1.3 / 1.4 / 1.6 s on everyone in the cone, no knockback; the damage goes to the 4 nearest only (crowd cap); wipes enemy projectiles (Kettenbriefe, Golfbälle …) inside the cone. Niche: defence for the status build, drives enemies back into your own zones |
+| **Soli-Sticker** | shot | 6 + 3.5 per s for 4 s (v0.4; was 5 + 2.5) | 0.9 s | 320 | Ziviler Ungehorsam 0.6 (hit), 0.35 (per s; was 0.25) | 24 | the hit sticks a sticker on (poison 3.5 / 6 / 9 / 15 per s). Once per second every stuck enemy passes a fresh 4 s sticker to **one** sticker-free enemy within 50 px (the giver isn't refreshed; an enemy whose sticker just fell off takes no passed-on sticker for 4 s, so two enemies can't keep one alive forever); at most 12 stuck enemies per player. Niche: the only damage over time that grows with enemy density |
+| **Menschenkette** | tether | 5 per 0.5 s (v0.4; was 4) | 5.0 s | 320 (chain) | Ehrenamt 0.8 (was 0.7) | 26 | for 6 s four activists hold hands from you to the **nearest living teammate within 320 px**; solo (or nobody close) to a **lamppost** set down toward your target (at most 220 px away). The chain moves with its ends and tears beyond 320 px (no damage while torn), it re-forms when the ends are close again. Enemies touching it take damage and are pushed back (120; elites only take damage). Max 1. Niche: a moving line the players lead together |
+| **Pappkamerad** | decoy | 14 burst | 7.0 s | 220 (placing) | Ehrenamt 1.0 | 24 | sets down a cardboard straw man for 8 s (HP 25 + 15 × wave + 5 × Ehrenamt). Non-elite enemies within 240 px go for it instead of you; ranged enemies shoot at it. When it falls or its time is up it bursts into confetti (radius 90). Max 1. Niche: the decoy/tank, the only summon that binds enemies |
+| **Demo-Sanis** | follower | 3 shove | 3.0 s | 160 (heal radius) | Ehrenamt 1.0 | 24 | a Demosanitäter:in follows you (40 px behind) for the whole wave. Every 3 s (faster with Akkord) she heals the most injured living player within 160 px by 2 / 3 / 5 / 8 (+0.3 × Ehrenamt) and shoves enemies within 70 px away ("Platz da!": small damage, knockback 100). A downed player next to her is revived 50 % faster. One per weapon copy. Niche: the only healing weapon, a support slot for co-op |
+| **Lauti** | patrol | 12 per pulse (v0.4; was 8) | 6.0 s | 90 (orbit) | Ehrenamt 1.2 (was 1.0) | 24 | a small sound truck circles you for 10 s; every 1.0 s (faster with Akkord) a ska pulse hits the 4 nearest enemies within 120 px of the truck (so everything touching you is in reach), knockback 80. Max 1 (casting again refreshes it). Niche: the first summon that comes along, so a summon build can kite |
+
+**Rules for all eight:**
+- **Every one damages every enemy (D-079, D-096).** At least 60 % of a status weapon's damage still lands on status-immune enemies: Kleine Anfrage, Faktencheck 100 %, Lobbyregister ~85 % (the Offengelegt count runs on immune enemies too, only the +5 % doesn't), Soli-Sticker ~70 % (the hit).
+- **One hit per enemy per tick per weapon:** a chain or a pulse hits an enemy once, however many of its parts touch it.
+- **Ehrenamtskarte** (red, summon build): every weapon that scales with Ehrenamt gets ×1.5 damage and healing and twice the lifetime (D-114).
+- **Gewerkschaftsmitglied's passive** counts the Pappkamerad like any other own summon, but not the Lauti, the Demo-Sanis or the Menschenkette: they are always next to you and would give a permanent bonus.
+- **Kompost** (red, status build) doubles the Soli-Sticker poison; the Offengelegt burst counts as status damage (no ×0.7); control effects stay unchanged.
+- **Away owner (networking.md §7.4):** a Demo-Sani stays with the frozen figure and keeps healing the others; the Lauti keeps circling it; the chain switches to the lamppost; a Pappkamerad stands until its time is up.
+
+**Flavor (Späti description, invented satire lines; never presented as quotes):**
+- Kleine Anfrage: "551 Fragen an die Zivilgesellschaft? Hier kommt Frage 552." (fact: 551 questions, Drucksache 20/15035; the real wording only ever appears as a verified quote card, cdu-fraktion-01)
+- Lobbyregister: "Eintragungspflichtig. Jeder Treffer kommt in die Akte." A Leitz folder, no money bags or briefcases (content guidelines §2)
+- Faktencheck: "Wirkt nur kurz. Aber es wirkt."
+- Soli-Sticker: "Laternenmast, Stromkasten, Porsche-Heckscheibe. Hält überall." Generic own motifs only (heart, rainbow, bicycle), no real party logos, no banned symbols, not even crossed out
+- Menschenkette: "Hand in Hand. Und wer durch will, fliegt zurück." (03.02.2024, "Wir sind die Brandmauer")
+- Pappkamerad: "Sie kämpfen gegen einen Pappkameraden. Wie immer." A faceless cardboard figure holding a sign with a crossed-out schnitzel (the invented "Verbotspartei"). It shows **no real person** and **no real group**, in particular no queer figure: enemies would be hitting it
+- Demo-Sanis: "Pflaster, Wasser, Rettungsdecke. Und niemand bleibt liegen." Drawn competent and as part of the group (§7: no outside hero). Green cross, **not the protected Red Cross emblem**
+- Lauti: "Vorne Ska, hinten die Ordner:innen." Named "Lauti" because the item Lautsprecherwagen already exists
+
+### Status effects on enemies (D-092)
+
+Every status effect goes through the one immunity check (D-087): **the Reichsbürger is immune to all three.** Each has its own symbol above the enemy so it reads at a glance.
+
+| Effect | From | Rule | Elites and bosses | Symbol |
+|---|---|---|---|---|
+| **In Bearbeitung** | Kleine Anfrage | 3 s without special ability: the JU-Schnösel's vote timer pauses, the Telegram-Onkel doesn't throw, the Golfclub-Vorstand doesn't lob, the Immobilienerbe lays no Mietzone, the Porsche-SUV doesn't start a charge, the Lobbyist's Hausausweis gives no armor, the Hipster doesn't push. An FDP-Jungunternehmer that dies "in Bearbeitung" founds no startups ("noch in Bearbeitung"). Moving and contact damage go on | their ability timers run at half speed instead of stopping | a numbered waiting ticket ("Nr. 552") |
+| **Aktenkundig** | Lobbyregister | stacks 1–5; every stack is +5 % damage **from every player and every source** (hits, poison, zones); lasts 5 s, each Lobbyregister hit refreshes it; when it runs out all stacks go. A Lobbyist with 3 or more stacks loses his Hausausweis aura | full effect (a boss tool) | a stack of 1–5 file sheets |
+| **Rolle rückwärts** | Faktencheck | walks backwards away from the nearest player at 70 % speed, still facing them; abilities pause; contact damage stays (whoever walks into it is hit). No knockback, so enemies keep their formation and walk back into Kleber or Kreide. Only inside the arena | immune (like stun) | "↺" above the head, the figure turns away |
+
+Soli-Sticker's poison is its own effect (it doesn't replace a Tofu poison and isn't replaced by one); it shows as the usual poison tint plus a small sticker on the enemy.
 
 ## 12. Items (57, incl. 2 hidden)
 
@@ -369,7 +415,7 @@ Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"RO
 | Hausbesetzung | melee | melee weapons ×2 damage, all others ×0.5 |
 | Wurfmaschine | ranged | projectiles pierce +1 target and fly 50 % faster; melee ×0.5 |
 | Genossenschaftsanteil | saving | each wave end +15 % of your Pfand (max 50), but only 2 purchases per Späti visit |
-| Ehrenamtskarte | summons | Infostände and Genoss:innen ×2 damage and duration, own weapons ×0.6 |
+| Ehrenamtskarte | summons | every weapon that scales with Ehrenamt (Infostand, Brandmauer-Ziegel, Weißer Overall, Menschenkette, Pappkamerad, Demo-Sanis, Lauti) and the Genoss:innen: ×1.5 damage and healing, twice the duration; all other weapons ×0.6 (D-114, was ×2 for summon kinds only and ×0.6 for Ziegel and Overall) |
 | Kompost | status | poison and glue ×2, poison spreads to neighbors on death, direct damage ×0.7 |
 | Kritische Masse | crit | crits hit ×1.5 harder, all other hits ×0.7 |
 | Robin-Hood-Kostüm | lifesteal | Umverteilung heals ×3, but Krankenschein no longer works |
@@ -411,7 +457,7 @@ There are **no animal metaphors** for capitalists (no "Miethai"; see content gui
 | **Besorgte:r Bürger:in** | basic swarm | slow, lots of them. Speech bubble: "Man wird ja wohl noch sagen dürfen…" (an invented line) |
 | **Telegram-Onkel** | ranged | throws a **Kettenbrief** that splits on every bounce ("forwarded") |
 | **Identitärer Hipster** | fast melee | hits **push the player toward the Brandmauer** ("Remigration") |
-| **Reichsbürger** | tank | **immune to status effects** (doesn't recognize your authority): no slow, poison or stun. Every weapon still damages him (Kleber hurts, it just doesn't slow him). Drops a worthless "Reichsausweis" (easter egg) |
+| **Reichsbürger** | tank | **immune to status effects** (doesn't recognize your authority): no slow, poison or stun, from any source: weapons (Kleber, Farbbeutel, Tofu, Trillerpfeife, Bierkiste, Brandmauer-Ziegel), ultimates (Flashmob, Antrag gestellt, Straßenblockade, Fragen Sie mal uns) and the Streik freeze (D-087), and none of In Bearbeitung, Aktenkundig, Rolle rückwärts or the Soli-Sticker poison (§11, D-092). Every weapon still damages him (Kleber hurts, it just doesn't slow him); knockback and damage bonuses against him (Scheinwerfer "enthüllt", double damage) still apply. Drops a worthless "Reichsausweis" (easter egg) |
 
 ### Union
 | Enemy | Role | Mechanic and joke |
@@ -470,6 +516,34 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 - **Phase 3 "Steuerparadies":** she retreats behind a vault shield of gold bars in a Swiss chalet, and the players have to break the shield.
 - **Exit:** she **emigrates to Switzerland**. That's the closing joke: the only person in the game who actually "remigriert".
 - Content rule: none of her phases may summon or depict the groups she insults. Her attacks target only the players and the environment.
+
+### Boss rules (spec, D-102 to D-104; design in research/boss_ideen.md)
+Goal: bosses take long enough for their mechanics to matter (elites 25–45 s, final boss 60–90 s for a strong build), and ultimates help without ending the fight. Normal waves stay as they are; only encounter units (elites, minibosses, boss) change. All numbers are starting values for the next balancing round.
+
+**Rules for every encounter:**
+- **Phase lock:** damage can't skip a phase boundary (66 % / 33 %); damage beyond the boundary is lost. At each phase change the boss holds a **"Pressekonferenz"** for 2.5 s (1.5 s from Umfrage 30 %): it's invulnerable (golden outline), walks to the middle, a banner shows the phase name, stun and slow on it end, and any running vulnerability is paused, not used up. This replaces the separate "faster below 50 %" rule.
+- **Random targets:** encounter attacks don't always aim at the nearest player. Every 4–7 s (random) the boss picks a random player who is alive and not away; it may pick the same one again. Abilities that work "per player" create one instance per player.
+- **Resistance:** a stun on an encounter unit lasts half as long, then the unit is **"Standfest"** for 10 s (15 s from Umfrage 30 %): immune to further stuns, shown by a press-spokesperson shield icon. Every stun **interrupts the ability the boss is casting** ("UNTERBROCHEN"). Slow from any source (Kleber, Straßenblockade, Antrag gestellt, …) is capped at 40 % on bosses and minibosses (the Sylt-Clique, tier 1, stays uncapped).
+- **Melee hits harder:** melee weapons deal ×2 damage to elites, minibosses and bosses (v0.4, D-121); they have to stand next to them.
+- **Ultimates:** "Fragen Sie mal uns" makes the Sauerländer take ×1.5 damage (was ×2) for 6 s. Against the final boss every player's ultimate recharges at each of her phase changes (up to 3 uses in the fight). Critical Mass and Urlaubsantrag stay unchanged.
+- **HP:** new `diff_boss_hp` +0.15 per Umfrage level (×1.0 at 10 % up to ×1.75 at 35 %), on top of `diff_hp`, only for encounter units. Tuned in the v0.4 balancing round (D-118): `final_boss_mult` 4.5 (D-102: 1.6), per-encounter `hp_mult` Sylt-Clique 1.25, Geschichtslehrer 2.2, Sauerländer 2.0 (D-102: 1.0 / 1.4 / 1.6), `elite_coop` 0.3 (D-102: 0.5; co-op teams deal less damage per player than solo, so elites fled at the wave timer).
+- **Telegraphs:** enemy danger is red with a dashed edge and a fill that grows until impact; lasting zones are red hatching; "stand here" zones are a solid blue-turquoise ring with a hand icon. Minimum warning times: 0.8 s for a targeted impact, 1.2 s for arena-wide attacks, 2.0 s for arena changes; Umfrage shortens them by at most 25 %. Boss telegraphs never fade with **Eigene Effekte**.
+
+**New abilities:**
+- **Geschichtslehrer, "Wende um 180 Grad" (rework):** the first reversal comes 4 s into the fight, then every 10 s, with a 1.5 s "3 – 2 – 1" countdown and a 180° arrow over every player. In phase 2 his flying book rings turn around too and come back through the arena. From Umfrage 25 % only one axis flips (left/right or up/down), shown by a big arrow. The reversal lasts 4 s (5 s from 30 %).
+- **Sauerländer, "Abstimmung, egal mit wem":** at each phase change and every 20 s after, he walks to an intact wall segment on the side with the fewest holes and holds a vote for 3.0 s (2.2 s at 35 %). The segment glows red and a progress bar shows "Abstimmung läuft …". Around the segment there is **one "Plenum" circle per player** (blue-turquoise). **The vote fails** if enough circles are occupied at the same time: **all circles with 1 or 2 players, players − 1 circles from 3 players on.** It also fails if the players deal 6 % of his max HP during the vote (9 % at 35 %), or if he gets stunned. A failed vote stuns him for 1.5 s ("Keine Mehrheit? Dann halt nächste Woche." — invented). A vote that passes tears the segment open as a **hole that stays until it's repaired in the Späti**, and 4 + 2 × players AfD enemies come straight through it ("Mir doch egal, wer zustimmt." — invented). From 35 % he votes on two neighbouring segments at once.
+- **Sauerländer, "Kahlschlag" (from phase 2):** a 90° cone (1.2 s red warning) that deals damage and **removes the players' summons and zones** in it (Infostände, Kleber puddles, Straßenkreide, walls, …), so status and summon builds have to move. Every 14 s (11 s from 25 %, two cones at 35 %).
+- **Remigrantin, "Die Brandmauer hält" (rework of phase 2 "Remigration"):** the deportation band only works in front of open wall segments (each hole ± 1 neighbouring segment), 110 px wide (150 px from 25 %; in co-op 110 − 10 × (players − 1) px), and push rings push toward the hole nearest to you. With no hole in the wall she falls back to the old 70 px band along every wall ("Sie findet immer eine Lücke."). So repairing the wall during the run pays off in the final fight; the Antifa-Ortsgruppe repairs here too. Push rings come every 3.5 s (2.6 s at 35 %), with a 2.0 s warning at phase start.
+
+Bug fix that comes with this: the Sauerländer's walk targets and money drops (and the Stadtbild passers-by) still use the old arena coordinates and never reach the right quarter or bottom third; they must use `Arena.INNER`. The Antifa Sitzblockade had the same bug and is fixed with it (D-109).
+
+**Implementation details (D-106 to D-112):** every number lives in `Content.BOSS` (and `hp_mult`, `slow_cap`, `ult_per_phase` in `Content.ENCOUNTERS`), so the balancing round can tune it.
+- **One phase system (D-106):** the tempo of the old 50 % rule moves into the phases (×1.0 / ×1.2 / ×1.4 for movement and basic attacks); signature abilities and telegraphs keep real time. The Sylt-Clique shares one phase and one lock on the group's total HP; its phases are "Vorglühen", "Sekt für alle", "Letzte Runde" (invented).
+- **Resistance (D-107):** Standfest covers the halved stun plus 10 s (15 s from 30 %). Interruptible casts: Wende countdown, Abstimmung, Kahlschlag, the Remigrantin's Ansturm wind-up and her Abschiebezone warning. A failed vote's 1.5 s stagger is the boss's own and starts no Standfest. The slow cap also limits Antrag gestellt and Streik. New telegraphs shrink with Umfrage by ×1.00 / 0.95 / 0.95 / 0.90 / 0.85 / 0.80.
+- **Abstimmung (D-109):** first vote after 20 s or at the first phase change; he hurries there at ×2.5 speed (5 s at most); the segment glows and the Plenum circles (radius 70, 230 px in front of the wall, 160 px apart) appear when he sets off; the vote starts when he arrives. No other attacks while he votes. AfD enemies spawn behind the hole and come through it.
+- **Kahlschlag (D-110):** 90° cone, 380 px, at his current target, 1.5× contact damage; removes every summon a player owns and the zones Kleber, Sitzblockade, Brandmauer-Ziegel, Straßenkreide (not the Oma, not the turbines). He stands still during the warning.
+- **Die Brandmauer hält (D-111):** neighbours count only on the same wall; phase-2 push rings shove each player toward the hole nearest to them; the band stays into phase 3.
+- **Cast display (D-108, D-112):** the boss bar shows the running cast and its progress ("Abstimmung läuft …"); a stun shows "UNTERBROCHEN"; the Pressekonferenz shows a banner with the phase name; Standfest shows a press-spokesperson shield over the unit. Snapshot version 4 carries it (networking.md §6.1).
 
 ### Pool (after the MVP)
 | Tier | Encounter | Mechanic |
@@ -580,6 +654,13 @@ Saved immediately.
 | **Zielauswahl** | Nächste:r Gegner:in (default) / Meiste Lebenspunkte / Wenigste Lebenspunkte |
 | **Fenstermodus** | Vollbild / Maximiertes Fenster / Fenster (default) |
 | **Sprechblasen** | opacity (default 70 %), *aus* |
+| **Eigene Effekte** | opacity of everything the players' side draws except the characters themselves (default 100 %, min 20 %) |
+
+**Eigene Effekte** keeps the screen readable in big fights, so enemy projectiles stand out:
+- **Fades:** the players' projectiles (incl. Mietspiegel orbiters), their zones (Kleber, Straßenkreide, Brandmauer-Ziegel, Kartoffelbrei marker and splat, Normenkontrolle stamp, Farbklecks, Sitzblockade), all summons, the weapons drawn around the characters, attack effects (swooshes, Scheinwerfer beam, Unterschriften line, Trillerpfeife waves), the Stadtbild followers and ultimate visuals (shouts, Critical-Mass ghost riders, Tarifrunde glow, paper storm).
+- **Never fades:** the characters, their ground ring, names and status labels; enemies, enemy projectiles and enemy zones; explosions (they can't be told apart from enemy bombs); pickups; damage numbers; HUD.
+- It applies to every player's effects, not only your own, because teammates' effects clutter the screen just as much. It's a local view setting: each player picks their own, and nothing changes for the others.
+- The minimum is 20 %, so you always still see where your Kleber puddle or Infostand is.
 
 The main menu also has a **Bug melden** button that opens the GitHub bug-report form.
 

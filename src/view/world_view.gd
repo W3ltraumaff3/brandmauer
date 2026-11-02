@@ -26,7 +26,9 @@ const WALL_PILLAR := 40
 
 enum { K_ENEMY = 1, K_PROJ, K_PICK, K_SUMMON, K_PLAYER, K_WEAPON, K_MISC, K_FOLLOWER, K_BIKE, K_WHEEL, K_WALL }
 enum { M_BG, M_WALL, M_RUBBLE, M_URNE, M_BLADES, M_YACHT, M_SCHIRM, M_FLAG, M_CHALET, M_CIRCUS, M_SITTER,
-	M_LOUNGER, M_SHEET, M_STAMP, M_NOTE, M_DESK, M_HIT, M_POTATO, M_ZIEGEL, M_ZIEGEL_V, M_DROP }
+	M_LOUNGER, M_SHEET, M_STAMP, M_NOTE, M_DESK, M_HIT, M_POTATO, M_ZIEGEL, M_ZIEGEL_V, M_DROP, M_KETTE }
+## M_KETTE .. M_KETTE + 3: Menschenkette activists (four looks).
+const KETTE_LOOKS := 4
 
 ## Friendly ink for our own ground markers (Kartoffelbrei target), so they never
 ## read like the red enemy lob marker.
@@ -74,6 +76,12 @@ const GREEN := Color("3f8f4f")
 const BRICK := Color("b5654a")
 const DESK := Color("5b4a3c")
 const POISON_TINT := Color(0.55, 1.0, 0.45)
+## Telegraph standard (GDD §14 "Boss rules", research B7): enemy danger is red with a
+## dashed edge and a fill that grows until impact; lasting zones are red hatching;
+## "stand here" is a solid blue-turquoise ring with a hand. Never faded (D-086).
+const DANGER := Color(0.85, 0.15, 0.1)
+const TEAL := Color(0.05, 0.6, 0.68)
+const WENDE_PINK := Color(0.7, 0.1, 0.45)
 const SLOW_TINT := Color(0.55, 0.75, 1.0)
 const SLOT_COLORS := [Color("c0392b"), Color("2e6db4"), Color("3f8f4f"), Color("8e44ad")]
 
@@ -87,6 +95,12 @@ const LOOK := {
 }
 const BOSSES := ["geschichtslehrer", "sauerlaender", "eidgenossin"]
 const ENEMY_PROJ := ["kettenbrief", "golfball", "champagner", "buch", "bierdeckel", "zirkusball", "fluegel", "goldbarren"]
+## Hazards the players' side creates (weapons, ultimates); they fade with
+## `own_fx_opacity`. Explosions are not listed: enemy bombs use them too.
+const OWN_HAZARDS := ["kleber", "sitzblockade", "farbklecks", "brei_marker", "ziegel", "paragraf", "kreide", "kette"]
+const OWN_FX_MIN := 0.2
+const INFOSTAND_SCALE := 0.55       # several stands per player must not cover the arena
+const INFOSTAND_FOOT := 18.0        # mesh y of the stand's feet (stays on the ground when scaled)
 
 ## Overrides used by the preview harness (and possible replays).
 var source_view: ViewState = null
@@ -126,6 +140,18 @@ var _s_prev := PackedVector2Array()   # summon positions last frame (Weißer Ove
 var _s_face := PackedFloat32Array()
 var _brei_seen := {}              # Vector2i(target) -> anim_time a Kartoffelbrei marker was last seen
 var _ziegel := PackedInt32Array() # hazard indices of wall bricks, drawn in a y-sorted second pass
+var _kette := PackedInt32Array()  # hazard indices of Menschenkette links (5 per chain, in order)
+var _stamp_q: Array = []          # Kahlschlag "GESTRICHEN" stamps, drawn above the players
+var _t_mobile := {}               # summon types that face where they move (Overall, Sani, Lauti)
+var _t_papp := -1
+var _t_lauti := -1
+var _t_laterne := -1
+## Save option `own_fx_opacity` (GDD §19a, OWN_FX_MIN..1): alpha of everything the
+## players' side draws except the characters. Re-read every frame (applies live).
+var own_fx := 1.0
+## Set by tools and tests; < 0 = read the Save option.
+var own_fx_override := -1.0
+var _own_proj := PackedByteArray()   # PROJ_ORDER index -> 1 if a players' projectile
 
 ## Lobby / Späti portraits (CharPortrait): baked player meshes, shared by all
 ## portraits. Static so no WorldView has to live in the UI tree.
@@ -150,10 +176,34 @@ func _ready() -> void:
 	_t_porsche = Content.ENEMY_ORDER.find("porsche_suv")
 	_t_ju = Content.ENEMY_ORDER.find("ju_schnoesel")
 	_t_startup = Content.ENEMY_ORDER.find("startup")
-	for id in ["stern", "flasche", "bierdeckel", "zirkusball", "farbe", "flugblatt"]:
+	for id in ["stern", "flasche", "bierdeckel", "zirkusball", "farbe", "flugblatt", "aktenblatt", "sticker"]:
 		_t_spin[Content.PROJ_ORDER.find(id)] = true
 	_t_brei = Content.PROJ_ORDER.find("kartoffelbrei")
 	_t_overall = Content.SUMMON_ORDER.find("overall")
+	_t_papp = Content.SUMMON_ORDER.find("pappkamerad")
+	_t_lauti = Content.SUMMON_ORDER.find("lauti")
+	_t_laterne = Content.SUMMON_ORDER.find("laterne")
+	for id in ["overall", "sani", "lauti"]:
+		_t_mobile[Content.SUMMON_ORDER.find(id)] = true
+	_own_proj.resize(Content.PROJ_ORDER.size())
+	for i in Content.PROJ_ORDER.size():
+		_own_proj[i] = 1 if is_own_proj(Content.PROJ_ORDER[i]) else 0
+	read_own_fx()
+
+
+static func is_own_proj(id: String) -> bool:
+	return not (id in ENEMY_PROJ)
+
+
+static func is_own_hazard(id: String) -> bool:
+	return id in OWN_HAZARDS
+
+
+func read_own_fx() -> void:
+	if own_fx_override >= 0.0:
+		own_fx = clampf(own_fx_override, OWN_FX_MIN, 1.0)
+	else:
+		own_fx = UIKit.option_float("own_fx_opacity", 1.0, OWN_FX_MIN, 1.0)
 
 
 # --- Data access ----------------------------------------------------------------
@@ -237,6 +287,7 @@ func _draw() -> void:
 	var t0 := Time.get_ticks_usec()
 	var st := clampi(vs.stage, 0, 4)
 	_read_effects()
+	read_own_fx()
 	_ppos.clear()
 	for p in vs.players:
 		if int(p.get("state", 0)) == 0:
@@ -250,6 +301,9 @@ func _draw() -> void:
 	if antrag_vis > 0.0:
 		_draw_formular_notes(vs, st)
 	_draw_players(vs, st)
+	if not _stamp_q.is_empty():
+		_draw_stamps()
+	_draw_wende_countdown(vs)
 	_draw_projectiles(vs, st)
 	if antrag_vis > 0.0:
 		_draw_paper_storm(st)
@@ -319,6 +373,8 @@ func prewarm(st: int) -> void:
 		_mesh(K_MISC, M_POTATO, st, v)
 		_mesh(K_MISC, M_ZIEGEL, st, v)
 		_mesh(K_MISC, M_ZIEGEL_V, st, v)
+		for k in KETTE_LOOKS:
+			_mesh(K_MISC, M_KETTE + k, st, v)
 	_mesh(K_MISC, M_DROP, st, 0)
 
 
@@ -461,10 +517,13 @@ func _draw_wall(vs: ViewState, st: int) -> void:
 
 func _draw_hazards(vs: ViewState, st: int) -> void:
 	_ziegel.clear()
+	_kette.clear()
+	_stamp_q.clear()
 	if not _brei_seen.is_empty():
 		for key in _brei_seen.keys():
 			if anim_time - float(_brei_seen[key]) > 1.0:
 				_brei_seen.erase(key)
+	var fa := own_fx
 	for i in vs.h_pos.size():
 		var id: String = Content.HAZARD_ORDER[vs.h_type[i]] if vs.h_type[i] < Content.HAZARD_ORDER.size() else ""
 		var pos := vs.h_pos[i]
@@ -474,11 +533,11 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 		var amt := Doodle.desat_amount(st) * 0.5
 		match id:
 			"kleber":
-				var c := Doodle.desat_amt(Color(0.96, 0.93, 0.7, 0.75 * minf(1.0, life * 3.0)), amt)
+				var c := Doodle.desat_amt(Color(0.96, 0.93, 0.7, 0.75 * minf(1.0, life * 3.0) * fa), amt)
 				draw_colored_polygon(Doodle.blob_pts(pos, r, v, i), c)
-				draw_polyline(Doodle.blob_pts(pos, r, v, i, 0.12, true), Color(INK, 0.5), 2.0)
-				draw_arc(pos + Vector2(-r * 0.3, -r * 0.3), r * 0.35, PI * 1.1, PI * 1.6, 6, Color(1, 1, 1, 0.8), 3.0)
-				draw_multiline(Transform2D(0.0, pos) * Doodle.hatch_circle(r * 0.8, 14.0, 0.5), Color(0.75, 0.68, 0.3, 0.35), 1.5)
+				draw_polyline(Doodle.blob_pts(pos, r, v, i, 0.12, true), Color(INK, 0.5 * fa), 2.0)
+				draw_arc(pos + Vector2(-r * 0.3, -r * 0.3), r * 0.35, PI * 1.1, PI * 1.6, 6, Color(1, 1, 1, 0.8 * fa), 3.0)
+				draw_multiline(Transform2D(0.0, pos) * Doodle.hatch_circle(r * 0.8, 14.0, 0.5), Color(0.75, 0.68, 0.3, 0.35 * fa), 1.5)
 			"mietzone":
 				var pulse := 0.5 + 0.5 * sin(anim_time * 4.0)
 				draw_colored_polygon(Doodle.blob_pts(pos, r, v, i, 0.06), Doodle.desat_amt(Color(0.8, 0.15, 0.2, 0.16 + 0.06 * pulse), amt))
@@ -503,23 +562,25 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 				draw_line(pos + Vector2(-a, a), pos + Vector2(a, -a), c, 3.0)
 			"sitzblockade":
 				var c := Doodle.desat_amt(Color(0.25, 0.55, 0.85), amt)
-				draw_circle(pos, r, Color(c, 0.12))
-				_dashed_circle(pos, r, Color(c, 0.8), 3.0, 22, anim_time * 0.3)
+				draw_circle(pos, r, Color(c, 0.12 * fa))
+				_dashed_circle(pos, r, Color(c, 0.8 * fa), 3.0, 22, anim_time * 0.3)
 				var n := 6
 				for k in n:
 					var ang := TAU * k / n + 0.3
 					var sp := pos + Vector2(cos(ang), sin(ang) * 0.8) * r * 0.62
 					draw_mesh(_mesh(K_MISC, M_SITTER, st, Doodle.variant(k)), null,
-						Transform2D(0.0, Vector2(-1.0 if k % 2 else 1.0, 1.0), 0.0, sp))
+						Transform2D(0.0, Vector2(-1.0 if k % 2 else 1.0, 1.0), 0.0, sp), Color(1, 1, 1, fa))
 			"brei_marker":
 				_draw_brei_marker(pos, r, life, st, v, amt)
 				_brei_seen[Vector2i(pos.round())] = anim_time
 			"ziegel":
 				_ziegel.append(i)
+			"kette":
+				_kette.append(i)
 			"kreide":
 				# Straßenkreide: a pastel chalk scribble on the asphalt, fading out
 				var chalk: Color = CHALK[int(absf(pos.x * 0.37 + pos.y * 0.61)) % CHALK.size()]
-				var ca := minf(1.0, life * 2.5)
+				var ca := minf(1.0, life * 2.5) * fa
 				draw_circle(pos, r * 0.9, Doodle.desat_amt(Color(chalk, 0.18 * ca), amt))
 				draw_multiline(Transform2D(v * 1.3, pos) * Doodle.hatch_circle(r * 0.85, 9.0, 0.6),
 					Doodle.desat_amt(Color(chalk, 0.75 * ca), amt), 2.6)
@@ -542,36 +603,15 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 				pts.append(pts[0])
 				draw_polyline(pts, Color(INK, life), 2.5)
 			"abschiebezone":
-				# the band along the inside of all four walls (GDD §5a)
-				var c := Doodle.desat_amt(Color(0.85, 0.1, 0.1), amt)
-				var h := float(Arena.WALL["abschiebe_band"])
-				var wash := Color(c, 0.13 + 0.05 * sin(anim_time * 5.0))
-				var stripes := PackedVector2Array()
-				var ph := fmod(anim_time * 30.0, 40.0)
-				for band in [Rect2(INNER.position, Vector2(INNER.size.x, h)), Rect2(INNER.position.x, INNER.end.y - h, INNER.size.x, h),
-						Rect2(INNER.position.x, INNER.position.y + h, h, INNER.size.y - 2.0 * h),
-						Rect2(INNER.end.x - h, INNER.position.y + h, h, INNER.size.y - 2.0 * h)]:
-					var b: Rect2 = band
-					draw_rect(b, wash)
-					if b.size.x >= b.size.y:
-						var x := b.position.x + ph
-						while x + b.size.y <= b.end.x:
-							stripes.append(Vector2(x, b.end.y))
-							stripes.append(Vector2(x + b.size.y, b.position.y))
-							x += 40.0
-					else:
-						var y := b.position.y + ph
-						while y + b.size.x <= b.end.y:
-							stripes.append(Vector2(b.position.x, y + b.size.x))
-							stripes.append(Vector2(b.end.x, y))
-							y += 40.0
-				draw_multiline(stripes, Color(c, 0.35), 10.0)
-				var edge := INNER.grow(-h)
-				var pts := PackedVector2Array()
-				for k in [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1), Vector2(0, 0)]:
-					pts.append(edge.position + edge.size * (k as Vector2))
-				for k in 4:
-					draw_polyline(Doodle.line_pts(pts[k], pts[k + 1], v + k, 3.0), Color(c, 0.9), 3.0)
+				_draw_abschiebezone(vs, r, life, amt, v)
+			"abstimmung":
+				_draw_vote_segment(pos, life, st, v)
+			"plenum":
+				_draw_plenum(pos, r, v)
+			"kahlschlag":
+				_draw_kahlschlag(pos, r, vs.h_ang[i] if i < vs.h_ang.size() else 0.0, life, amt)
+			"kahlschlag_hit":
+				_draw_kahlschlag_hit(pos, r, vs.h_ang[i] if i < vs.h_ang.size() else 0.0, life, amt, v)
 			"push_ring":
 				var c := Doodle.desat_amt(Color(0.75, 0.2, 0.1, 0.85 * life), amt)
 				draw_polyline(Doodle.circle_pts(pos, r, v), c, 6.0)
@@ -583,7 +623,7 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 					var nn := d.orthogonal() * 7.0
 					draw_polyline(PackedVector2Array([tip - d * 9.0 + nn, tip, tip - d * 9.0 - nn]), c, 3.0)
 			"farbklecks":
-				var c := Doodle.desat_amt(Color(0.9, 0.2, 0.6, 0.7 * minf(1.0, life * 2.0)), amt)
+				var c := Doodle.desat_amt(Color(0.9, 0.2, 0.6, 0.7 * minf(1.0, life * 2.0) * fa), amt)
 				draw_colored_polygon(Doodle.blob_pts(pos, r * 0.75, v, i, 0.35), c)
 				for k in 5:
 					var ang := TAU * k / 5.0 + i
@@ -592,28 +632,81 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 				_dashed_circle(pos, r, Color(INK, 0.5), 2.0, 12)
 	if not _ziegel.is_empty():
 		_draw_ziegel(vs, st)
+	if not _kette.is_empty():
+		_draw_kette(vs, st)
 
 
 # --- Weapon hazards (GDD §11 "New weapons") -------------------------------------------
+
+## Menschenkette (GDD §11 v0.3): every 5 consecutive `kette` links are one chain
+## from its owner to the teammate or lamppost. A red ribbon on the ground marks
+## the line that hurts; activists stand on the links and hold hands.
+func _draw_kette(vs: ViewState, st: int) -> void:
+	var chains: Array = []
+	var cur := PackedInt32Array()
+	for idx in _kette:
+		if not cur.is_empty() and (idx != cur[cur.size() - 1] + 1 or cur.size() >= 5):
+			chains.append(cur)
+			cur = PackedInt32Array()
+		cur.append(idx)
+	if not cur.is_empty():
+		chains.append(cur)
+	var amt := Doodle.desat_amount(st) * 0.5
+	for ch in chains:
+		var pts := PackedVector2Array()
+		for idx in ch:
+			pts.append(vs.h_pos[idx])
+		var life := vs.h_life[ch[0]] if ch[0] < vs.h_life.size() else 1.0
+		var a := clampf(life * 8.0, 0.0, 1.0) * own_fx
+		var ends := PackedVector2Array()
+		if pts.size() >= 2:
+			ends.append(pts[0] - (pts[1] - pts[0]) * 0.5)
+			ends.append_array(pts)
+			ends.append(pts[pts.size() - 1] + (pts[pts.size() - 1] - pts[pts.size() - 2]) * 0.5)
+		else:
+			ends = pts
+		# the line that hurts: a red demo ribbon on the ground, slightly wavy
+		var ground := PackedVector2Array()
+		for k in ends.size():
+			ground.append(ends[k] + Vector2(0, 16 + sin(anim_time * 5.0 + k) * 1.5))
+		if ground.size() >= 2:
+			draw_polyline(ground, Color(1, 1, 1, 0.55 * a), 9.0)
+			draw_polyline(ground, Doodle.desat_amt(Color(0.82, 0.16, 0.16, 0.75 * a), amt), 5.0)
+		# activists, back to front, alternately facing each other's hands
+		var order := Array(range(pts.size()))
+		order.sort_custom(func(x, y): return pts[x].y < pts[y].y)
+		for k in order:
+			var bob := absf(sin(anim_time * 6.0 + k * 1.3)) * 1.5
+			draw_mesh(_mesh(K_MISC, M_KETTE + k % KETTE_LOOKS, st, Doodle.variant(k)), null,
+				Transform2D(sin(anim_time * 3.0 + k) * 0.04, Vector2(-1.0 if k % 2 else 1.0, 1.0), 0.0, pts[k] + Vector2(0, -bob)),
+				Color(1, 1, 1, a))
+		# held hands: a line between neighbours at hand height
+		var hands := PackedVector2Array()
+		for k in ends.size():
+			hands.append(ends[k] + Vector2(0, 2))
+		if hands.size() >= 2:
+			draw_polyline(hands, Color(Doodle.desat_amt(FACE.darkened(0.25), amt), a), 2.5)
 
 ## Kartoffelbrei target: friendly green ring that fills with mash until impact,
 ## a potato in the middle. Deliberately unlike the red enemy lob marker (X).
 func _draw_brei_marker(pos: Vector2, r: float, life: float, st: int, v: int, amt: float) -> void:
 	var k := clampf(1.0 - life, 0.0, 1.0)
 	var g := Doodle.desat_amt(FRIEND, amt)
-	draw_colored_polygon(Doodle.blob_pts(pos, maxf(4.0, r * k), v, 3, 0.08), Doodle.desat_amt(Color(MASH, 0.45), amt))
-	_dashed_circle(pos, r, Color(g, 0.85), 2.5, 16, -anim_time * 1.5)
-	draw_arc(pos, r + 6.0, -PI / 2, -PI / 2 + TAU * k, 32, Color(g, 0.9), 3.5)
+	var f := own_fx
+	draw_colored_polygon(Doodle.blob_pts(pos, maxf(4.0, r * k), v, 3, 0.08), Doodle.desat_amt(Color(MASH, 0.45 * f), amt))
+	_dashed_circle(pos, r, Color(g, 0.85 * f), 2.5, 16, -anim_time * 1.5)
+	draw_arc(pos, r + 6.0, -PI / 2, -PI / 2 + TAU * k, 32, Color(g, 0.9 * f), 3.5)
 	var hop := absf(sin(anim_time * 9.0)) * 3.0 * (1.0 - k)
 	var sc := 1.0 + 0.25 * k
-	draw_mesh(_mesh(K_MISC, M_POTATO, st, v), null, Transform2D(sin(anim_time * 4.0) * 0.12, Vector2(sc, sc), 0.0, pos + Vector2(0, -hop)))
+	draw_mesh(_mesh(K_MISC, M_POTATO, st, v), null, Transform2D(sin(anim_time * 4.0) * 0.12, Vector2(sc, sc), 0.0, pos + Vector2(0, -hop)),
+		Color(1, 1, 1, f))
 
 
 ## Kartoffelbrei impact: a lumpy mash splat with flying blobs (replaces the
 ## orange explosion when it lands where a Kartoffelbrei marker just was).
 func _draw_mash_splat(pos: Vector2, r: float, life: float, v: int, i: int, amt: float) -> void:
 	var k := 1.0 - life
-	var a := clampf(life * 2.2, 0.0, 1.0)
+	var a := clampf(life * 2.2, 0.0, 1.0) * own_fx
 	var mash := Doodle.desat_amt(MASH, amt)
 	var pts := Doodle.blob_pts(pos, r * (0.45 + 0.4 * k), v, i + 11, 0.3)
 	draw_colored_polygon(pts, Color(mash, 0.92 * a))
@@ -642,16 +735,17 @@ func _draw_mash_splat(pos: Vector2, r: float, life: float, v: int, i: int, amt: 
 ## Normenkontrolle: a "§" stamp hovering over the marked enemy; the ring
 ## around it runs down until the law is declared void.
 func _draw_paragraf(pos: Vector2, r: float, life: float, amt: float) -> void:
-	var red := Doodle.desat_amt(STAMP_RED, amt * 0.5)
-	_dashed_circle(pos, r, Color(red, 0.7), 2.5, 12, anim_time * 2.5)
+	var f := own_fx
+	var red := Doodle.desat_amt(Color(STAMP_RED, f), amt * 0.5)
+	_dashed_circle(pos, r, Color(red, 0.7 * f), 2.5, 12, anim_time * 2.5)
 	var urgent := life < 0.3
 	var c := pos + Vector2(0, -maxf(54.0, r * 1.9) + sin(anim_time * 3.0) * 2.5)
 	var sc := 1.0 + (0.14 * absf(sin(anim_time * 18.0)) if urgent else 0.0)
 	draw_set_transform(c, -0.12 + (sin(anim_time * 40.0) * 0.06 if urgent else 0.0), Vector2(sc, sc))
-	draw_line(Vector2(0, 17), Vector2(0, maxf(54.0, r * 1.9) - r - 8.0), Color(red, 0.35), 1.5)
-	draw_circle(Vector2.ZERO, 16.0, Color(1.0, 0.98, 0.92))
+	draw_line(Vector2(0, 17), Vector2(0, maxf(54.0, r * 1.9) - r - 8.0), Color(red, 0.35 * f), 1.5)
+	draw_circle(Vector2.ZERO, 16.0, Color(1.0, 0.98, 0.92, f))
 	draw_polyline(Doodle.circle_pts(Vector2.ZERO, 16.0, Doodle.frame % Doodle.VARIANTS), red, 2.5)
-	draw_arc(Vector2.ZERO, 12.5, 0, TAU, 20, Color(red, 0.45), 1.0)
+	draw_arc(Vector2.ZERO, 12.5, 0, TAU, 20, Color(red, 0.45 * f), 1.0)
 	draw_arc(Vector2.ZERO, 21.0, -PI / 2, -PI / 2 + TAU * clampf(life, 0.0, 1.0), 28, red, 4.0)
 	Doodle.text(self, "§", Vector2(0, 8), 24, red, _type)
 	draw_set_transform_matrix(Transform2D.IDENTITY)
@@ -679,12 +773,297 @@ func _draw_ziegel(vs: ViewState, st: int) -> void:
 					vertical = absf(d.y) > absf(d.x)
 		var life := vs.h_life[idx] if idx < vs.h_life.size() else 1.0
 		var rise := clampf((1.0 - life) / 0.06, 0.0, 1.0)
-		var a := clampf(life / 0.08, 0.0, 1.0)
+		var a := clampf(life / 0.08, 0.0, 1.0) * own_fx
 		var sy := rise * (1.0 + 0.12 * sin(rise * PI))
 		var v := Doodle.variant(idx)
 		var base := 17.5 if vertical else 6.0
 		draw_mesh(_mesh(K_MISC, M_ZIEGEL_V if vertical else M_ZIEGEL, st, v), null,
 			Transform2D(0.0, Vector2(1.0, sy), 0.0, pos + Vector2(0, base * (1.0 - sy))), Color(1, 1, 1, a))
+
+
+# --- Boss telegraphs (GDD §14 "Boss rules", D-108 to D-111) ---------------------------
+# They belong to the boss: never faded with own_fx_opacity (D-086), never in OWN_HAZARDS.
+
+## "Die Brandmauer hält" (D-111): the Abschiebezone only in front of open wall
+## segments and their neighbours (the same Arena.band_mask as the sim), `width`
+## deep; without a hole the old 70 px band along every wall. While it is announced
+## (life < 1) a dashed red edge and a fill that grows from the wall; then hatching.
+func _draw_abschiebezone(vs: ViewState, width: float, life: float, amt: float, v: int) -> void:
+	var c := Doodle.desat_amt(DANGER, amt)
+	var full_mask := (1 << WALL_SEGMENTS) - 1
+	var mask := vs.wall & full_mask
+	var rects: Array[Rect2] = []
+	var segs: Array[int] = []   # the wall side of each rect
+	if mask == full_mask:
+		var h := float(Arena.WALL["abschiebe_band"])
+		rects = [Rect2(INNER.position, Vector2(INNER.size.x, h)), Rect2(INNER.position.x, INNER.end.y - h, INNER.size.x, h),
+			Rect2(INNER.position.x, INNER.position.y + h, h, INNER.size.y - 2.0 * h),
+			Rect2(INNER.end.x - h, INNER.position.y + h, h, INNER.size.y - 2.0 * h)]
+		segs = [Arena.TOP, Arena.BOTTOM, Arena.LEFT, Arena.RIGHT]
+	else:
+		var bm := Arena.band_mask(mask)
+		var prev := -2
+		for seg in WALL_SEGMENTS:
+			if not (bm & (1 << seg)):
+				continue
+			if seg == prev + 1 and not rects.is_empty() and segs[segs.size() - 1] == Arena.side_of(seg):
+				rects[rects.size() - 1] = rects[rects.size() - 1].merge(_band_rect(seg, width))   # one band, one hatching
+			else:
+				rects.append(_band_rect(seg, width))
+				segs.append(Arena.side_of(seg))
+			prev = seg
+	var warn := life < 0.995
+	var k := clampf(1.0 - life, 0.0, 1.0)
+	var stripes := PackedVector2Array()
+	var ph := fmod(anim_time * 30.0, 40.0)
+	for j in rects.size():
+		var b: Rect2 = rects[j]
+		var side: int = segs[j]
+		if warn:
+			# announced: the fill grows from the wall into the arena until it is armed
+			draw_rect(_band_part(b, side, k), Color(c, 0.12 + 0.18 * k))
+			_dashed_rect(b, Color(c, 0.95), 3.0, anim_time)
+		else:
+			draw_rect(b, Color(c, 0.13 + 0.05 * sin(anim_time * 5.0)))
+			stripes.append_array(_hatch_rect(b, ph))
+			var e := _band_inner_edge(b, side)
+			draw_polyline(Doodle.line_pts(e[0], e[1], v + j, 2.5), Color(c, 0.9), 3.0)
+	if not stripes.is_empty():
+		draw_multiline(stripes, Color(c, 0.35), 10.0)
+
+
+## The band in front of a segment: `w` deep from its inner wall face.
+static func _band_rect(seg: int, w: float) -> Rect2:
+	var sr := Arena.seg_rect(seg)
+	match Arena.side_of(seg):
+		Arena.TOP:
+			return Rect2(sr.position.x, INNER.position.y, sr.size.x, w)
+		Arena.BOTTOM:
+			return Rect2(sr.position.x, INNER.end.y - w, sr.size.x, w)
+		Arena.RIGHT:
+			return Rect2(INNER.end.x - w, sr.position.y, w, sr.size.y)
+	return Rect2(INNER.position.x, sr.position.y, w, sr.size.y)
+
+
+## The part of a band rect `k` (0..1) deep from its wall.
+static func _band_part(b: Rect2, side: int, k: float) -> Rect2:
+	match side:
+		Arena.TOP:
+			return Rect2(b.position, Vector2(b.size.x, b.size.y * k))
+		Arena.BOTTOM:
+			return Rect2(b.position.x, b.end.y - b.size.y * k, b.size.x, b.size.y * k)
+		Arena.RIGHT:
+			return Rect2(b.end.x - b.size.x * k, b.position.y, b.size.x * k, b.size.y)
+	return Rect2(b.position, Vector2(b.size.x * k, b.size.y))
+
+
+## The arena-side edge of a band rect (where it ends).
+static func _band_inner_edge(b: Rect2, side: int) -> Array:
+	match side:
+		Arena.TOP:
+			return [Vector2(b.position.x, b.end.y), b.end]
+		Arena.BOTTOM:
+			return [b.position, Vector2(b.end.x, b.position.y)]
+		Arena.RIGHT:
+			return [b.position, Vector2(b.position.x, b.end.y)]
+	return [Vector2(b.end.x, b.position.y), b.end]
+
+
+## Diagonal hatch stripes clipped to a rect (pairs for draw_multiline).
+static func _hatch_rect(b: Rect2, ph: float, gap := 40.0) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	var h := b.size.y
+	var d := -h + ph - gap * ceilf(h / gap)
+	while d < b.size.x:
+		var t0 := maxf(0.0, -d / h)
+		var t1 := minf(1.0, (b.size.x - d) / h)
+		if t1 > t0:
+			out.append(Vector2(b.position.x + d + t0 * h, b.end.y - t0 * h))
+			out.append(Vector2(b.position.x + d + t1 * h, b.end.y - t1 * h))
+		d += gap
+	return out
+
+
+func _dashed_rect(r: Rect2, col: Color, w: float, phase: float, dash := 10.0) -> void:
+	var c := [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y), r.position]
+	var segs := PackedVector2Array()
+	for k in 4:
+		_dash_line(segs, c[k], c[k + 1], dash, phase)
+	draw_multiline(segs, col, w)
+
+
+static func _dash_line(segs: PackedVector2Array, a: Vector2, b: Vector2, dash: float, phase: float) -> void:
+	var l := a.distance_to(b)
+	if l < 0.5:
+		return
+	var d := fmod(phase * 20.0, dash * 2.0) - dash * 2.0
+	while d < l:
+		var s0 := maxf(d, 0.0)
+		var s1 := minf(d + dash, l)
+		if s1 > s0:
+			segs.append(a.lerp(b, s0 / l))
+			segs.append(a.lerp(b, s1 / l))
+		d += dash * 2.0
+
+
+## "Abstimmung, egal mit wem" (D-109): the voted wall segment glows red with a
+## dashed edge and fills up red along the wall until the vote passes (the
+## progress), "Abstimmung" written on it; his ballot box stands beside him.
+func _draw_vote_segment(pos: Vector2, life: float, st: int, v: int) -> void:
+	var seg := Arena.wall_at(pos)
+	if seg < 0:
+		return
+	var k := clampf(1.0 - life, 0.0, 1.0)
+	var pulse := 0.5 + 0.5 * sin(anim_time * 8.0)
+	var wr := Arena.seg_rect(seg)
+	var sr := wr.grow(7.0)
+	draw_rect(sr, Color(DANGER, 0.3 + 0.25 * pulse))
+	var horizontal := Arena.side_of(seg) % 2 == 0
+	var fill := Rect2(wr.position, Vector2(wr.size.x * k, wr.size.y)) if horizontal else Rect2(wr.position, Vector2(wr.size.x, wr.size.y * k))
+	if Arena.side_of(seg) == Arena.BOTTOM:
+		fill.position.x = wr.end.x - fill.size.x   # fills clockwise like the segment order
+	elif Arena.side_of(seg) == Arena.LEFT:
+		fill.position.y = wr.end.y - fill.size.y
+	draw_rect(fill, Color(DANGER, 0.85))
+	draw_rect(wr, INK, false, 2.0)
+	_dashed_rect(sr.grow(3.0), Color(DANGER, 0.95), 3.0, anim_time)
+	draw_set_transform(_wall_label_pos(seg, 17.0), _wall_text_angle(seg), Vector2.ONE)
+	Doodle.text(self, tr("FX_ABSTIMMUNG"), Vector2.ZERO, 16, WHITE, _hand, 4, DANGER.darkened(0.35))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+	var urn := Arena.seg_inner(seg, 70.0) + Vector2(-Arena.inward(seg).y, Arena.inward(seg).x) * 52.0
+	draw_mesh(_mesh(K_MISC, M_URNE, st, v), null, Transform2D(0.0, Vector2(1.3, 1.3), 0.0, urn))
+
+
+## A Plenum circle (D-109): "stand here" in the telegraph standard: a solid
+## blue-turquoise ring with a hand; it fills and shows a tick while someone stands in it.
+func _draw_plenum(pos: Vector2, r: float, v: int) -> void:
+	var occupied := false
+	for q in _ppos:
+		if q.distance_to(pos) <= r:
+			occupied = true
+			break
+	var pulse := 0.5 + 0.5 * sin(anim_time * 4.0)
+	draw_circle(pos, r, Color(TEAL, 0.32 if occupied else 0.1 + 0.06 * pulse))
+	draw_polyline(Doodle.circle_pts(pos, r, v), Color(WHITE, 0.8), 8.0)
+	draw_polyline(Doodle.circle_pts(pos, r, v), TEAL, 4.5)
+	if occupied:
+		draw_polyline(PackedVector2Array([pos + Vector2(-14, 0), pos + Vector2(-4, 11), pos + Vector2(16, -12)]), Color(WHITE, 0.9), 9.0)
+		draw_polyline(PackedVector2Array([pos + Vector2(-14, 0), pos + Vector2(-4, 11), pos + Vector2(16, -12)]), TEAL.darkened(0.3), 5.0)
+	else:
+		_hand_icon(pos + Vector2(0, -sin(anim_time * 5.0) * 3.0), 1.0, TEAL.darkened(0.25))
+	Doodle.text(self, tr("FX_PLENUM"), pos + Vector2(0, r + 20), 17, TEAL.darkened(0.35), _hand, 4)
+
+
+## An open hand ("stand here"), about 34 px tall at scale 1.
+func _hand_icon(c: Vector2, s: float, col: Color) -> void:
+	var palm := Rect2(c + Vector2(-9, -2) * s, Vector2(18, 16) * s)
+	for k in 4:
+		var x := c.x + (-7.5 + k * 5.0) * s
+		var h: float = [11.0, 14.0, 13.0, 10.0][k] * s
+		draw_line(Vector2(x, palm.position.y + 2.0 * s), Vector2(x, palm.position.y - h), INK, 6.5 * s)
+		draw_line(Vector2(x, palm.position.y + 2.0 * s), Vector2(x, palm.position.y - h), WHITE, 4.0 * s)
+	draw_line(c + Vector2(-8, 8) * s, c + Vector2(-16, -1) * s, INK, 6.5 * s)
+	draw_line(c + Vector2(-8, 8) * s, c + Vector2(-16, -1) * s, WHITE, 4.0 * s)
+	draw_rect(palm.grow(1.2 * s), INK)
+	draw_rect(palm, WHITE)
+	draw_circle(palm.get_center() + Vector2(0, 1) * s, 3.0 * s, Color(col, 0.6))
+
+
+static func _cone_pts(o: Vector2, r: float, ang: float, half: float, n := 18) -> PackedVector2Array:
+	var pts := PackedVector2Array([o])
+	for k in n + 1:
+		var a := ang - half + 2.0 * half * k / n
+		pts.append(o + Vector2(cos(a), sin(a)) * r)
+	return pts
+
+
+## Kahlschlag warning (D-110): a red 90° cone with a dashed edge, the fill grows
+## from him outward until the stamp comes down; "GESTRICHEN" on it.
+func _draw_kahlschlag(pos: Vector2, r: float, ang: float, life: float, amt: float) -> void:
+	var half := deg_to_rad(float(Content.BOSS["kahl_arc"])) * 0.5
+	var c := Doodle.desat_amt(DANGER, amt)
+	var k := clampf(1.0 - life, 0.0, 1.0)
+	draw_colored_polygon(_cone_pts(pos, r, ang, half), Color(c, 0.1))
+	draw_colored_polygon(_cone_pts(pos, maxf(6.0, r * k), ang, half), Color(c, 0.3))
+	var segs := PackedVector2Array()
+	var a0 := pos + Vector2(cos(ang - half), sin(ang - half)) * r
+	var a1 := pos + Vector2(cos(ang + half), sin(ang + half)) * r
+	_dash_line(segs, pos, a0, 12.0, anim_time)
+	_dash_line(segs, pos, a1, 12.0, anim_time)
+	var arc := _cone_pts(pos, r, ang, half, 18)
+	for j in range(1, arc.size() - 1):
+		_dash_line(segs, arc[j], arc[j + 1], 12.0, anim_time)
+	draw_multiline(segs, Color(c, 0.95), 3.5)
+	_queue_stamp(pos, ang, r, 1.0 + 0.1 * k, Color(STAMP_RED, 0.55 + 0.4 * k))
+
+
+## Kahlschlag impact: the cone flashes and fades, the stamp is down.
+func _draw_kahlschlag_hit(pos: Vector2, r: float, ang: float, life: float, amt: float, v: int) -> void:
+	var half := deg_to_rad(float(Content.BOSS["kahl_arc"])) * 0.5
+	var a := clampf(life * 2.0, 0.0, 1.0)
+	var c := Doodle.desat_amt(DANGER, amt)
+	var pts := _cone_pts(pos, r, ang, half)
+	draw_colored_polygon(pts, Color(c, 0.45 * a))
+	pts.append(pos)
+	draw_polyline(pts, Color(INK, 0.8 * a), 3.0)
+	for j in 7:
+		var d := ang + (Doodle.noise(v * 7 + j) * 0.9) * half
+		var p0 := pos + Vector2(cos(d), sin(d)) * r * (0.3 + 0.1 * j)
+		draw_line(p0, p0 + Vector2(cos(d), sin(d)) * 22.0, Color(INK, 0.6 * a), 2.5)
+	_queue_stamp(pos, ang, r, 1.15, Color(STAMP_RED, a))
+
+
+## Queues a "GESTRICHEN" stamp inside a cone (origin, direction, length). Two
+## cones (35 %) or a warning next to an impact never stack their stamps: a stamp
+## too close to an earlier one moves further out along its own cone.
+func _queue_stamp(origin: Vector2, ang: float, r: float, s: float, col: Color) -> void:
+	var dir := Vector2(cos(ang), sin(ang))
+	var side := Vector2(-dir.y, dir.x)
+	var best := origin + dir * r * 0.55
+	var best_d := -1.0
+	for cand in [[0.55, 0.0], [0.85, 0.0], [0.55, 60.0], [0.55, -60.0], [0.85, 60.0], [0.85, -60.0], [0.3, 0.0]]:
+		var c: Vector2 = origin + dir * r * float(cand[0]) + side * float(cand[1])
+		var free := true
+		var dmin := INF
+		for q in _stamp_q:
+			dmin = minf(dmin, (q["pos"] as Vector2).distance_to(c))
+			if stamps_clash(q["pos"], q["ang"], c, ang):
+				free = false
+		if free:
+			best = c
+			break
+		if dmin > best_d:
+			best_d = dmin
+			best = c
+	_stamp_q.append({"pos": best, "ang": ang, "s": s, "col": col})
+
+
+## Would two GESTRICHEN stamps (about 200 × 40 px, long side along their cone)
+## overlap? Same orientation: compare in the stamp's frame; else by distance.
+static func stamps_clash(p1: Vector2, a1: float, p2: Vector2, a2: float) -> bool:
+	var d := absf(angle_difference(a1, a2))
+	if d < 0.3 or absf(d - PI) < 0.3:
+		var local := (p2 - p1).rotated(-a1)
+		return absf(local.x) < 200.0 and absf(local.y) < 44.0
+	return p1.distance_to(p2) < 150.0
+
+
+## The queued stamps, above players and enemies so nothing hides the word. Each
+## box is sized to its text and turned along its cone but always readable.
+func _draw_stamps() -> void:
+	var text := tr("FX_GESTRICHEN")
+	var tw := _type.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
+	for q in _stamp_q:
+		var rot: float = q["ang"]
+		if cos(rot) < 0.0:
+			rot += PI
+		var col: Color = q["col"]
+		draw_set_transform(q["pos"], rot - 0.12, Vector2(q["s"], q["s"]))
+		var box := Rect2(-tw * 0.5 - 14.0, -20, tw + 28.0, 34)
+		draw_rect(box, Color(1, 1, 1, col.a * 0.45))
+		draw_polyline(Doodle.rect_pts(box, 2, 2.0), col, 3.5)
+		Doodle.text(self, text, Vector2(0, 7), 22, col, _type)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 func _dashed_circle(c: Vector2, r: float, col: Color, w: float, n: int, rot := 0.0) -> void:
@@ -718,9 +1097,12 @@ func _draw_pickups(vs: ViewState, st: int) -> void:
 func _draw_summons(vs: ViewState, st: int) -> void:
 	var t_turb := Content.SUMMON_ORDER.find("turbine")
 	var t_gen := Content.SUMMON_ORDER.find("genosse")
+	var t_info := Content.SUMMON_ORDER.find("infostand")
 	var face := PackedFloat32Array()
 	face.resize(vs.s_pos.size())
 	face.fill(1.0)
+	var fa := own_fx
+	var mod := Color(1, 1, 1, fa)
 	for i in vs.s_pos.size():
 		var ty: int = vs.s_type[i]
 		if ty >= Content.SUMMON_ORDER.size():
@@ -741,7 +1123,7 @@ func _draw_summons(vs: ViewState, st: int) -> void:
 				if d < best:
 					best = d
 					sx = -1.0 if _ppos[k].x > pos.x else 1.0
-			draw_polyline(Doodle.ellipse_pts(vs.s_pos[i] + Vector2(0, 19), 13, 4, v), Color(0.75, 0.12, 0.12, 0.5), 2.0)
+			draw_polyline(Doodle.ellipse_pts(vs.s_pos[i] + Vector2(0, 19), 13, 4, v), Color(0.75, 0.12, 0.12, 0.5 * fa), 2.0)
 		elif ty == _t_overall:
 			# Weißer Overall: sprinting at the nearest enemy, little dust dashes behind
 			var ph := anim_time * 16.0 + i * 1.9
@@ -753,18 +1135,59 @@ func _draw_summons(vs: ViewState, st: int) -> void:
 				var dx := vs.s_pos[i].x - _s_prev[i].x
 				if absf(dx) > 0.2 and absf(dx) < 40.0:
 					sx = signf(dx)
-			var dc := Color(0.35, 0.33, 0.3, 0.4)
+			var dc := Color(0.35, 0.33, 0.3, 0.4 * fa)
 			for k in 3:
 				var y := vs.s_pos[i].y + 4.0 + k * 6.0
 				var x0 := vs.s_pos[i].x - sx * (14.0 + fmod(anim_time * 60.0 + k * 7.0, 10.0))
 				draw_line(Vector2(x0, y), Vector2(x0 - sx * (8.0 + k * 3.0), y), dc, 2.0)
-		draw_mesh(_mesh(K_SUMMON, ty, st, v), null, Transform2D(rot, Vector2(sx, 1.0), 0.0, pos))
-		if ty == _t_overall:
+		elif _t_mobile.has(ty):
+			# Demo-Sani walking behind you, Lauti driving its circle: face where they move
+			var ph := anim_time * 9.0 + i * 1.3
+			sx = _s_face[i] if i < _s_face.size() else 1.0
+			if i < _s_prev.size():
+				var dx := vs.s_pos[i].x - _s_prev[i].x
+				if absf(dx) > 0.15 and absf(dx) < 40.0:
+					sx = signf(dx)
+			if ty == _t_lauti:
+				rot = sin(anim_time * 14.0 + i) * 0.025
+				_draw_ska_notes(vs.s_pos[i], fa, i)
+			else:
+				rot = sin(ph) * 0.05
+				pos.y -= absf(sin(ph)) * 2.0
+		elif ty == _t_papp:
+			rot = sin(anim_time * 2.6 + i) * 0.05   # cardboard wobbling on its stand
+		elif ty == _t_laterne:
+			draw_circle(pos + Vector2(14, -50), 16.0, Color(1.0, 0.92, 0.55, 0.25 * fa))
+		var sc := 1.0
+		if ty == t_info:
+			sc = INFOSTAND_SCALE
+			pos.y += INFOSTAND_FOOT * (1.0 - sc)
+		draw_mesh(_mesh(K_SUMMON, ty, st, v), null, Transform2D(rot, Vector2(sx * sc, sc), 0.0, pos), mod)
+		if ty == _t_overall or _t_mobile.has(ty):
 			face[i] = sx
 		if ty == t_turb:
-			draw_mesh(_mesh(K_MISC, M_BLADES, st, v), null, Transform2D(anim_time * 2.2 + i, pos + Vector2(0, -78)))
+			draw_mesh(_mesh(K_MISC, M_BLADES, st, v), null, Transform2D(anim_time * 2.2 + i, pos + Vector2(0, -78)), mod)
+		if ty == _t_papp and i < vs.s_hp.size() and vs.s_hp[i] < 0.999:
+			# Pappkamerad HP bar (s_hp, D-093)
+			var bw := 38.0
+			var bp := vs.s_pos[i] + Vector2(-bw * 0.5, -86)
+			draw_rect(Rect2(bp, Vector2(bw, 5)), Color(1, 1, 1, 0.85 * fa))
+			draw_rect(Rect2(bp, Vector2(bw * vs.s_hp[i], 5)), Color(0.78, 0.6, 0.35, fa))
+			draw_rect(Rect2(bp, Vector2(bw, 5)), Color(INK, fa), false, 1.5)
 	_s_prev = vs.s_pos.duplicate()
 	_s_face = face
+
+
+## Lauti: little ska notes bobbing up from the loudspeakers.
+func _draw_ska_notes(pos: Vector2, fa: float, i: int) -> void:
+	for k in 3:
+		var u := fmod(anim_time * 0.9 + k / 3.0 + i * 0.37, 1.0)
+		var np := pos + Vector2(-14.0 + k * 14.0 + sin(u * 9.0 + k) * 5.0, -44.0 - u * 34.0)
+		var c := Color(INK, (1.0 - u) * 0.85 * fa)
+		draw_circle(np, 3.2, c)
+		draw_line(np + Vector2(2.8, 0), np + Vector2(2.8, -11), c, 1.6)
+		if k % 2 == 0:
+			draw_line(np + Vector2(2.8, -11), np + Vector2(8, -8), c, 1.6)
 
 
 func _draw_projectiles(vs: ViewState, st: int) -> void:
@@ -774,10 +1197,12 @@ func _draw_projectiles(vs: ViewState, st: int) -> void:
 	var tab := _table(K_PROJ, Content.PROJ_ORDER.size(), st)
 	var na := vs.p_ang.size()
 	var brei_marks := PackedInt32Array()   # filled on the first Kartoffelbrei blob
+	var own_mod := Color(1, 1, 1, own_fx)
 	for i in n:
 		var ty: int = vs.p_type[i]
 		var ang := vs.p_ang[i] if i < na else 0.0
 		var pos := vs.p_pos[i]
+		var mod := own_mod if ty < _own_proj.size() and _own_proj[ty] == 1 else Color.WHITE
 		if _t_spin.has(ty):
 			ang += t9 + i
 		elif ty == _t_brei:
@@ -786,7 +1211,7 @@ func _draw_projectiles(vs: ViewState, st: int) -> void:
 				brei_marks = _brei_marks(vs)
 			var h := _brei_height(vs, brei_marks, pos, ang)
 			var ss := 1.0 - h * 0.004
-			draw_mesh(_mesh(K_MISC, M_DROP, st, 0), null, Transform2D(0.0, Vector2(ss, ss), 0.0, pos + Vector2(0, 8)))
+			draw_mesh(_mesh(K_MISC, M_DROP, st, 0), null, Transform2D(0.0, Vector2(ss, ss), 0.0, pos + Vector2(0, 8)), mod)
 			pos.y -= h
 			ang = sin(anim_time * 7.0 + i) * 0.25
 		var idx := ty * Doodle.VARIANTS + posmod(fr + i, Doodle.VARIANTS)
@@ -794,7 +1219,7 @@ func _draw_projectiles(vs: ViewState, st: int) -> void:
 		if m == null:
 			m = _mesh(K_PROJ, ty, st, idx % Doodle.VARIANTS)
 			tab[idx] = m
-		draw_mesh(m, null, Transform2D(ang, pos))
+		draw_mesh(m, null, Transform2D(ang, pos), mod)
 
 
 ## Hazard indices of all Kartoffelbrei target markers ([-1] when there are none,
@@ -845,6 +1270,7 @@ func _draw_enemies(vs: ViewState, st: int) -> void:
 	var tab := _table(K_ENEMY, nt, st)
 	var tab_hit := _table(K_ENEMY, nt, st, true)
 	var nfl := vs.e_flags.size()
+	var nfl2 := vs.e_flags2.size()
 	for i in n:
 		var ty: int = vs.e_type[i]
 		var pos := vs.e_pos[i]
@@ -895,6 +1321,9 @@ func _draw_enemies(vs: ViewState, st: int) -> void:
 					best = d
 					tx = _ppos[k].x
 			sx = -1.0 if tx < pos.x else 1.0
+		var fl2: int = vs.e_flags2[i] if i < nfl2 else 0
+		if fl2 & ViewState.EF2_REVERSED:
+			sx = -sx   # "Rolle rückwärts": turned away, walking backwards
 		if fl & ViewState.EF_PARKED:
 			rot = 0.0
 			bob = 0.0
@@ -911,6 +1340,18 @@ func _draw_enemies(vs: ViewState, st: int) -> void:
 			var bs := clampf(-top / 30.0, 0.8, 2.6)
 			draw_mesh(_mesh(K_MISC, M_HIT, st, v), null, Transform2D(ph, Vector2(bs, bs), 0.0, at + Vector2(0, top * 0.45)))
 			scl = Vector2(sx * 1.1, 0.93)
+		if fl2 & ViewState.EF2_PRESSE:
+			# Pressekonferenz (D-102): invulnerable, a pulsing golden outline
+			var wm: ArrayMesh = tab_hit[idx]
+			if wm == null:
+				wm = _mesh(K_ENEMY, ty, st, v, true)
+				tab_hit[idx] = wm
+			var g := 1.24 + 0.04 * sin(t * 7.0)
+			var er := float(Content.ENEMIES[Content.ENEMY_ORDER[ty]]["radius"])
+			draw_set_transform(at + Vector2(0, 2), 0.0, Vector2(1.0, 0.35))
+			draw_circle(Vector2.ZERO, er * 1.6, Color(GOLD, 0.35))
+			draw_set_transform_matrix(Transform2D.IDENTITY)
+			draw_mesh(wm, null, Transform2D(rot, scl * Vector2(g, g * 0.97), 0.0, at + Vector2(0, 3)), Color(GOLD, 1.0))
 		if fl & ViewState.EF_ELITE:
 			draw_mesh(mesh, null, Transform2D(rot, scl * Vector2(1.09, 1.07), 0.0, at + Vector2(0, 1)), Color(0, 0, 0, 1))
 		draw_mesh(mesh, null, Transform2D(rot, scl, 0.0, at), mod)
@@ -931,6 +1372,10 @@ func _draw_enemies(vs: ViewState, st: int) -> void:
 			for k in cnt:
 				var a := t * 0.9 + TAU * k / cnt
 				draw_mesh(gm, null, Transform2D(a * 0.5, pos + Vector2(cos(a) * gr, sin(a) * gr * 0.7 - 10.0)))
+		if fl2 != 0:
+			_draw_status_icons(at, top, sx, fl2, id)
+		if fl2 & (ViewState.EF2_PRESSE | ViewState.EF2_STANDFEST):
+			_draw_boss_marks(at, top, fl2, id)
 		if ty == _t_startup:
 			var sp := at + Vector2(9 * sx, -21)
 			var fl_r := 3.0 + 2.0 * absf(sin(t * 25.0 + ph))
@@ -950,6 +1395,117 @@ func _draw_enemies(vs: ViewState, st: int) -> void:
 
 
 # --- Players ----------------------------------------------------------------------
+
+## Symbols of the v0.3 status effects (GDD §11, D-092), one per effect so they
+## read at a glance: a waiting ticket (In Bearbeitung), "↺" (Rolle rückwärts),
+## a stack of file sheets (Aktenkundig) and a sticker on the body (Soli-Sticker).
+## They belong to the enemy, so they never fade with own_fx_opacity.
+func _draw_status_icons(at: Vector2, top: float, sx: float, fl2: int, id: int) -> void:
+	var head := at + Vector2(0, top - 14)
+	var silenced := (fl2 & ViewState.EF2_SILENCED) != 0
+	var reversed := (fl2 & ViewState.EF2_REVERSED) != 0
+	if fl2 & ViewState.EF2_STICKER:
+		var sp := at + Vector2(-4.0 * sx, top * 0.45 + 2.0)
+		draw_circle(sp, 5.0, Color("f06aa7"))
+		draw_arc(sp, 5.0, 0, TAU, 12, INK, 1.4)
+		_heart_icon(sp, 2.4, WHITE)
+	if silenced:
+		# "Nr. 552": a numbered waiting ticket, swaying a little
+		var tp := head + Vector2(-16.0 if reversed else 0.0, 0)
+		draw_set_transform(tp, sin(anim_time * 3.0 + id) * 0.08, Vector2.ONE)
+		var r := Rect2(-27, -10, 54, 19)
+		draw_rect(r, Color("fffdf2"))
+		draw_rect(Rect2(-27, -10, 54, 4), Color("d8262e"))
+		draw_polyline(Doodle.rect_pts(r, id % Doodle.VARIANTS, 1.0), INK, 1.6)
+		Doodle.text(self, tr("FX_WAITING_NO") % (552 + id % 48), Vector2(0, 6), 11, INK, _type)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+	if reversed:
+		var c := head + Vector2(16.0 if silenced else 0.0, -2)
+		var blue := Color("2e6db4")
+		draw_arc(c, 9.0, -PI * 0.15, PI * 1.45, 16, Color(1, 1, 1, 0.9), 6.0)
+		draw_arc(c, 9.0, -PI * 0.15, PI * 1.45, 16, blue, 3.0)
+		var tip := c + Vector2(cos(-PI * 0.15), sin(-PI * 0.15)) * 9.0
+		draw_colored_polygon(PackedVector2Array([tip + Vector2(-6, -2), tip + Vector2(4, -5), tip + Vector2(2, 5)]), blue)
+	var files := ViewState.file_stacks(fl2)
+	if files > 0:
+		# Aktenkundig: 1-5 sheets stacked beside the head, the top one with a red stamp
+		var base := at + Vector2(-20.0 * sx, top + 6)
+		for k in files:
+			var o := base + Vector2(sin(k * 1.7) * 1.5, -k * 3.5)
+			var sheet := Rect2(o + Vector2(-8, -5), Vector2(16, 10))
+			draw_rect(sheet, Color("fbf8ee"))
+			draw_rect(sheet, INK, false, 1.2)
+		var top_o := base + Vector2(0, -(files - 1) * 3.5)
+		draw_line(top_o + Vector2(-5, -1), top_o + Vector2(5, -1), Color(0.4, 0.4, 0.45), 1.0)
+		draw_circle(top_o + Vector2(3, 1.5), 2.2, Color(STAMP_RED, 0.85))
+
+
+## Boss rules marks (D-102, D-107): microphones during the Pressekonferenz, the
+## press-spokesperson shield while "Standfest" makes the unit immune to stuns.
+func _draw_boss_marks(at: Vector2, top: float, fl2: int, id: int) -> void:
+	if fl2 & ViewState.EF2_PRESSE:
+		for k in 2:
+			var sgn := -1.0 if k == 0 else 1.0
+			var base := at + Vector2(sgn * (-top * 0.55 + 18.0), top * 0.35)
+			var head := base + Vector2(-sgn * 14.0, -16.0 + sin(anim_time * 5.0 + k) * 2.0)
+			draw_line(base + Vector2(sgn * 10.0, 10.0), head, INK, 3.0)
+			draw_circle(head, 6.5, INK)
+			draw_circle(head, 4.5, Color(0.55, 0.55, 0.6))
+			draw_rect(Rect2(head + Vector2(-5, 5), Vector2(10, 5)), Color("d8262e"))
+		_sparkle(at + Vector2(-top * 0.4, top - 4), 6.0, GOLD)
+		_sparkle(at + Vector2(top * 0.45, top + 10), 5.0, GOLD)
+	elif fl2 & ViewState.EF2_STANDFEST:
+		var c := at + Vector2(0, top - 34 + sin(anim_time * 3.0 + id) * 1.5)
+		var pts := PackedVector2Array([c + Vector2(-13, -14), c + Vector2(13, -14), c + Vector2(13, 1),
+			c + Vector2(7, 10), c + Vector2(0, 15), c + Vector2(-7, 10), c + Vector2(-13, 1)])
+		draw_colored_polygon(pts, NAVY)
+		pts.append(pts[0])
+		draw_polyline(pts, INK, 2.0)
+		draw_circle(c + Vector2(0, -5), 4.0, WHITE)
+		draw_line(c + Vector2(0, -2), c + Vector2(0, 7), WHITE, 2.0)
+		draw_arc(c + Vector2(0, -3), 6.5, 0.3, PI - 0.3, 8, WHITE, 1.5)
+		Doodle.text(self, tr("FX_STANDFEST"), c + Vector2(0, -20), 14, NAVY, _hand, 4)
+
+
+## Over every player while the Geschichtslehrer counts down his Wende (cast
+## "wende", D-112): a 180° arrow and 3 – 2 – 1.
+func _draw_wende_countdown(vs: ViewState) -> void:
+	if vs.boss_cast() != "wende":
+		return
+	var left := 1.0 - float(vs.boss.get("cast_t", 0.0))
+	var n := clampi(int(ceil(left * 3.0)), 1, 3)
+	var spin := (1.0 - fmod(left * 3.0, 1.0)) * PI
+	for p in vs.players:
+		if int(p.get("state", 0)) != 0:
+			continue
+		var c: Vector2 = p.get("pos", Vector2.ZERO) + Vector2(0, -104)
+		draw_set_transform(c, spin, Vector2.ONE)
+		draw_arc(Vector2.ZERO, 22.0, 0.3, PI - 0.1, 14, Color(WHITE, 0.9), 8.0)
+		draw_arc(Vector2.ZERO, 22.0, 0.3, PI - 0.1, 14, WENDE_PINK, 4.5)
+		var tip := Vector2(cos(0.3), sin(0.3)) * 22.0
+		draw_colored_polygon(PackedVector2Array([tip + Vector2(-9, -2), tip + Vector2(7, -8), tip + Vector2(4, 9)]), WENDE_PINK)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+		Doodle.text(self, str(n), c + Vector2(0, 12), 34, WENDE_PINK, _hand, 6)
+
+
+## A straight double arrow (Teilwende: which axis is flipped).
+func _double_arrow(c: Vector2, vertical: bool, len: float, col: Color) -> void:
+	var d: Vector2 = Vector2(0, 1) if vertical else Vector2(1, 0)
+	var n := Vector2(-d.y, d.x)
+	var a := c - d * len * 0.5
+	var b := c + d * len * 0.5
+	draw_line(a, b, col, 3.5)
+	for e in [[a, -1.0], [b, 1.0]]:
+		var p: Vector2 = e[0]
+		var s: float = e[1]
+		draw_colored_polygon(PackedVector2Array([p + d * s * 4.0, p - d * s * 8.0 + n * 7.0, p - d * s * 8.0 - n * 7.0]), col)
+
+
+func _heart_icon(c: Vector2, r: float, col: Color) -> void:
+	draw_circle(c + Vector2(-r * 0.5, -r * 0.2), r * 0.55, col)
+	draw_circle(c + Vector2(r * 0.5, -r * 0.2), r * 0.55, col)
+	draw_colored_polygon(PackedVector2Array([c + Vector2(-r, 0), c + Vector2(r, 0), c + Vector2(0, r)]), col)
+
 
 func _draw_players(vs: ViewState, st: int) -> void:
 	var meta := get_meta_dict()
@@ -1048,6 +1604,9 @@ func _draw_players(vs: ViewState, st: int) -> void:
 			var head := pos + Vector2(0, -50)
 			if flags & ViewState.PF_REVERSED:
 				Doodle.text(self, tr("HUD_REVERSED"), head + Vector2(0, -6), 22, Color(0.75, 0.1, 0.5), _hand, 5)
+				if flags & (ViewState.PF_REVERSE_X | ViewState.PF_REVERSE_Y):
+					# Teilwende: only one axis flipped (D-112)
+					_double_arrow(head + Vector2(48, -12), (flags & ViewState.PF_REVERSE_Y) != 0, 26.0, Color(0.75, 0.1, 0.5))
 				head.y -= 22
 			if flags & ViewState.PF_STUNNED:
 				_clock(head + Vector2(-46, -12), 10.0)
@@ -1101,9 +1660,9 @@ func _draw_critical_mass(pos: Vector2, hd: Vector2, st: int, v: int, pid: int, r
 	for k in range(4, 0, -1):
 		var lane := (1.0 if k % 2 == 1 else -1.0) * 14.0
 		var off := -dir * (14.0 + 34.0 * k) + nrm * (lane + sin(t * 7.0 + k * 1.3 + pid) * 3.0)
-		var a := 1.18 - k * 0.18
+		var a := (1.18 - k * 0.18) * own_fx
 		_draw_bike(pos + off, sx, roll + k * 11.0, st, v + k, Color(1, 1, 1, a), true)
-	var lc := Color(0.25, 0.55, 0.3, 0.6)
+	var lc := Color(0.25, 0.55, 0.3, 0.6 * own_fx)
 	for k in 6:
 		var lane := (float(k) - 2.5) * 9.0
 		var ph := fmod(t * 3.0 + k * 0.37, 1.0)
@@ -1137,7 +1696,7 @@ func _draw_bike_lines(pos: Vector2, face: float, k: float, pid: int) -> void:
 
 ## Tarifrunde: soft red union-vest glow behind a player.
 func _draw_tarif_glow(pos: Vector2, pid: int) -> void:
-	var a := clampf(_eff_tarif / 0.5, 0.0, 1.0)
+	var a := clampf(_eff_tarif / 0.5, 0.0, 1.0) * own_fx
 	var pulse := 0.5 + 0.5 * sin(anim_time * 6.0 + pid)
 	var c := Color(0.85, 0.12, 0.1)
 	var v := Doodle.frame % Doodle.VARIANTS
@@ -1193,7 +1752,7 @@ func _draw_formular_notes(vs: ViewState, st: int) -> void:
 ## Antrag gestellt: sheets of paper and rubber stamps drift across the arena.
 func _draw_paper_storm(st: int) -> void:
 	var t := anim_time
-	var a := antrag_vis
+	var a := antrag_vis * own_fx
 	var span := ARENA.x + 240.0
 	var sheet := _mesh(K_MISC, M_SHEET, st, Doodle.frame % Doodle.VARIANTS)
 	var stamp := _mesh(K_MISC, M_STAMP, st, Doodle.frame % Doodle.VARIANTS)
@@ -1221,7 +1780,8 @@ func _draw_followers(n: int, pos: Vector2, st: int, pid: int) -> void:
 		var fp := pos + Vector2(cos(a) * rad, sin(a) * rad * 0.7 + 6)
 		var fs := -1.0 if sin(a) < 0.0 else 1.0
 		draw_mesh(_mesh(K_FOLLOWER, k % 6, st, Doodle.variant(k + pid)), null,
-			Transform2D(sin(t * 9.0 + k) * 0.06, Vector2(fs, 1), 0.0, fp + Vector2(0, -absf(sin(t * 9.0 + k)) * 2.0)))
+			Transform2D(sin(t * 9.0 + k) * 0.06, Vector2(fs, 1), 0.0, fp + Vector2(0, -absf(sin(t * 9.0 + k)) * 2.0)),
+			Color(1, 1, 1, own_fx))
 
 
 func _draw_weapons(wb, pos: Vector2, aim: float, st: int, v: int, radius := 36.0) -> void:
@@ -1238,7 +1798,7 @@ func _draw_weapons(wb, pos: Vector2, aim: float, st: int, v: int, radius := 36.0
 		var off := (float(i) - (n - 1) * 0.5) * 0.8
 		var a := aim + off
 		var wp := pos + Vector2(0, -8) + Vector2(cos(a), sin(a) * 0.85) * radius
-		draw_mesh(_mesh(K_WEAPON, wi, st, v), null, Transform2D(aim, flip, 0.0, wp))
+		draw_mesh(_mesh(K_WEAPON, wi, st, v), null, Transform2D(aim, flip, 0.0, wp), Color(1, 1, 1, own_fx))
 
 
 func _sparkle(p: Vector2, r: float, c: Color) -> void:
@@ -1409,6 +1969,10 @@ func _person(sk: Doodle.Sketch, o: Dictionary) -> Dictionary:
 			hrr = shr + Vector2(7 * s, -13 * k)
 		"point":
 			hrr = shr + Vector2(14 * s, -4 * k)
+		"chain":
+			# Menschenkette: both arms out sideways, hands at the neighbours'
+			hl = shl + Vector2(-11 * s, 8 * k)
+			hrr = shr + Vector2(11 * s, 8 * k)
 		"banner":
 			er = shr + Vector2(5 * s, 6 * k)
 			hrr = shr + Vector2(8 * s, -4 * k)
@@ -2026,6 +2590,26 @@ func _b_proj(sk: Doodle.Sketch, id: String) -> void:
 			sk.line2(Vector2(-1, 0.3), Vector2(4, 0.3), 0.8, INK)
 			sk.line2(Vector2(-1, 2.7), Vector2(5.5, 2.7), 0.8, Color("2e6db4"))
 			sk.dot(Vector2(6, 0.3), 1.0, Color(0.5, 0.45, 0.4))
+		"akte":
+			# Kleine Anfrage: a buff file folder with a red tab and a paper sticking out
+			sk.shape(PackedVector2Array([Vector2(-9, -6), Vector2(9, -6), Vector2(9, 6), Vector2(-9, 6)]), Color("e8d29a"), true, 1.5)
+			sk.fill(PackedVector2Array([Vector2(-8, -5.5), Vector2(-3, -5.5), Vector2(-3, 5.5), Vector2(-8, 5.5)]), Color("d8c286"), false)
+			sk.rect(Rect2(2, -9, 6, 3.5), Color("d8262e"), true, 1.0)
+			sk.line2(Vector2(-1, -2.5), Vector2(6, -2.5), 0.8, INK)
+			sk.line2(Vector2(-1, 0.5), Vector2(7, 0.5), 0.8, INK)
+			sk.line2(Vector2(-1, 3.5), Vector2(4, 3.5), 0.8, INK)
+		"aktenblatt":
+			# Lobbyregister: a sheet with typed lines and a punched margin
+			sk.rect(Rect2(-6, -7.5, 12, 15), WHITE, true, 1.3)
+			sk.dot(Vector2(-4, -4), 0.9, INK)
+			sk.dot(Vector2(-4, 4), 0.9, INK)
+			for k in 4:
+				sk.line2(Vector2(-2, -4.5 + k * 3), Vector2(4, -4.5 + k * 3), 0.7, Color(0.3, 0.3, 0.35))
+		"sticker":
+			# Soli-Sticker: a round pink sticker with a white heart and a peeled corner
+			sk.circle(Vector2.ZERO, 7.0, Color("f06aa7"), true, 1.5)
+			sk.fill(PackedVector2Array([Vector2(-3.2, -1.4), Vector2(0, 2.8), Vector2(3.2, -1.4), Vector2(1.6, -3.2), Vector2(0, -1.8), Vector2(-1.6, -3.2)]), WHITE, false)
+			sk.fill(PackedVector2Array([Vector2(4, 4), Vector2(7, 1), Vector2(6.5, 5.5)]), Color("fbf6e6"), false)
 		_:
 			sk.circle(Vector2.ZERO, 5.0, RED)
 
@@ -2157,6 +2741,75 @@ func _b_summon(sk: Doodle.Sketch, id: String) -> void:
 					k.circle(hl, 2.0, Color("6ccf8a"), true, 0.8)
 					var hr: Vector2 = a["hr"]
 					k.circle(hr, 2.0, Color("6ccf8a"), true, 0.8)})
+		"laterne":
+			# Menschenkette solo anchor: a city lamppost with a ribbon tied to it
+			_shadow(sk, Vector2(0, 18), 18)
+			sk.rect(Rect2(-5, 12, 10, 6), Color("4a5260"), true, 1.4)
+			sk.stroke(Vector2(0, 12), Vector2(0, -54), 3.0, Color("4a5260"))
+			sk.line(PackedVector2Array([Vector2(0, -54), Vector2(6, -62), Vector2(14, -62)]), 2.6, Color("4a5260"))
+			sk.shape(PackedVector2Array([Vector2(8, -63), Vector2(20, -63), Vector2(17, -56), Vector2(11, -56)]), Color("3a404c"), true, 1.3)
+			sk.ellipse(Vector2(14, -55), 4.0, 2.0, Color("fff2a8"), true, 0.9)
+			sk.line(PackedVector2Array([Vector2(-1, -6), Vector2(8, -4), Vector2(12, 2)]), 2.4, Color("d63a2e"))
+			sk.line(PackedVector2Array([Vector2(-1, -6), Vector2(-8, -1)]), 2.0, Color("d63a2e"))
+		"pappkamerad":
+			# a faceless cardboard figure on a stand holding a crossed-out schnitzel sign
+			# (invented "Verbotspartei"); no real person, no real group (D-095)
+			_shadow(sk, Vector2(0, 18), 26)
+			var card := Color("c9a36b")
+			sk.line2(Vector2(-12, 18), Vector2(12, 18), 2.4, Color("8a6a3a"))
+			sk.line2(Vector2(0, 18), Vector2(6, 4), 1.8, Color("8a6a3a"))
+			var body := PackedVector2Array([Vector2(-10, 16), Vector2(10, 16), Vector2(11, -12), Vector2(7, -18), Vector2(-7, -18),
+				Vector2(-11, -12)])
+			sk.shape(body, card, true, 1.8)
+			sk.circle(Vector2(0, -28), 9.0, card, true, 1.8)
+			sk.line2(Vector2(-6, 2), Vector2(-3, 6), 0.9, Color("a8824e"))
+			sk.line2(Vector2(4, -6), Vector2(7, -3), 0.9, Color("a8824e"))
+			# the sign on a stick
+			sk.line2(Vector2(14, 6), Vector2(14, -40), 1.8, Color("8a6a3a"))
+			sk.rect(Rect2(2, -66, 26, 26), WHITE, true, 1.6)
+			var schnitzel := PackedVector2Array()
+			for i in 10:
+				var a := TAU * i / 10.0
+				schnitzel.append(Vector2(15, -53) + Vector2(cos(a) * 7.5, sin(a) * 5.0 + (0.8 if i % 2 else -0.4)))
+			sk.shape(schnitzel, Color("d9a24a"), true, 1.0)
+			sk.line(sk.ellipse_pts(Vector2(15, -53), 10.5, 10.5, 16), 2.2, Color("d8262e"), true)
+			sk.line2(Vector2(8, -60), Vector2(22, -46), 2.2, Color("d8262e"))
+		"sani":
+			# Demosanitäter:in: high-vis vest with a green cross (not the protected Red
+			# Cross emblem, D-095), a first-aid bag, competent and friendly
+			_shadow(sk, Vector2(0, 19), 20)
+			_person(sk, {"x": 0.0, "y": 18.0, "s": 0.92, "body": Color("f2d22e"), "pants": Color("33406a"),
+				"sleeve": Color("e9e6dc"), "hair": "ponytail", "hair_c": Color("6a3e22"), "eyes": "dots", "mouth": "smile",
+				"blush": true, "arms": "hold", "wb": 6.8, "wt": 7.8, "shoes": Color("2e2e34"),
+				"deco": func(k: Doodle.Sketch, a: Dictionary):
+					var c: Vector2 = a["chest"] + Vector2(0, 1)
+					k.rect(Rect2(c + Vector2(-4, -4), Vector2(8, 8)), WHITE, true, 0.8)
+					k.fill(PackedVector2Array([c + Vector2(-1, -3), c + Vector2(1, -3), c + Vector2(1, 3), c + Vector2(-1, 3)]), Color("2f9a4c"), false)
+					k.fill(PackedVector2Array([c + Vector2(-3, -1), c + Vector2(3, -1), c + Vector2(3, 1), c + Vector2(-3, 1)]), Color("2f9a4c"), false)
+					var hp: Vector2 = a["hip"]
+					k.line(PackedVector2Array([hp + Vector2(-6, -4), hp + Vector2(6, -4)]), 1.4, Color("c9c9c9")),
+				"after": func(k: Doodle.Sketch, a: Dictionary):
+					var h: Vector2 = a["hr"]
+					k.rect(Rect2(h + Vector2(-2, 0), Vector2(11, 8)), Color("2f9a4c"), true, 1.2)
+					k.line2(h + Vector2(3.5, 1.5), h + Vector2(3.5, 6.5), 1.2, WHITE)
+					k.line2(h + Vector2(1, 4), h + Vector2(6, 4), 1.2, WHITE)})
+		"lauti":
+			# Lauti: a small sound truck with two horn speakers and a banner
+			_shadow(sk, Vector2(0, 16), 40)
+			sk.shape(PackedVector2Array([Vector2(-26, 12), Vector2(22, 12), Vector2(22, -6), Vector2(14, -16), Vector2(-26, -16)]),
+				Color("e8742a"), true, 1.8)
+			sk.shape(PackedVector2Array([Vector2(14, -14), Vector2(21, -6), Vector2(14, -6)]), Color("bfe3f2"), true, 1.2)
+			sk.rect(Rect2(-23, -10, 32, 11), WHITE, true, 1.2)
+			sk.line2(Vector2(-20, -6), Vector2(4, -6), 1.4, Color("d8262e"))
+			sk.line2(Vector2(-20, -2.5), Vector2(-2, -2.5), 1.0, INK)
+			for x in [-14.0, 6.0]:
+				sk.circle(Vector2(x, 13), 5.0, Color("2e2e34"), true, 1.4)
+				sk.dot(Vector2(x, 13), 1.5, Color("c0c4ca"))
+			for d in [-1.0, 1.0]:
+				var b := Vector2(-6 + d * 9, -16)
+				sk.line2(b, b + Vector2(0, -6), 1.6, INK)
+				sk.shape(PackedVector2Array([b + Vector2(-2, -6), b + Vector2(2, -6), b + Vector2(7 * d, -13), b + Vector2(-1 * d, -14)]),
+					Color("c0c4ca"), true, 1.2)
 		"turbine":
 			_shadow(sk, Vector2(0, 2), 30)
 			sk.shape(PackedVector2Array([Vector2(-5, 0), Vector2(5, 0), Vector2(2, -76), Vector2(-2, -76)]), WHITE)
@@ -2166,7 +2819,25 @@ func _b_summon(sk: Doodle.Sketch, id: String) -> void:
 
 # --- Misc ---------------------------------------------------------------------------------
 
+## Menschenkette activist (four looks): ordinary people, arms out to hold the
+## neighbours' hands, feet at y = 18 (GDD §11 v0.3).
+func _b_kette(sk: Doodle.Sketch, look: int) -> void:
+	var looks := [
+		{"body": Color("d63a2e"), "pants": DENIM, "hair": "short", "hair_c": Color("3a2a1e")},
+		{"body": Color("2e6db4"), "pants": PANTS, "hair": "long", "hair_c": Color("a8742e")},
+		{"body": Color("3f8f4f"), "pants": CHINO, "hair": "bun", "hair_c": Color("d8d8d8")},
+		{"body": Color("8e44ad"), "pants": DENIM, "hair": "bob", "hair_c": Color("1e1e22")},
+	]
+	var o: Dictionary = looks[look % looks.size()].duplicate()
+	o.merge({"x": 0.0, "y": 18.0, "s": 0.9, "eyes": "dots", "mouth": "smile", "arms": "chain", "wb": 6.5, "wt": 7.5})
+	_shadow(sk, Vector2(0, 19), 18)
+	_person(sk, o)
+
+
 func _b_misc(sk: Doodle.Sketch, id: int) -> void:
+	if id >= M_KETTE and id < M_KETTE + KETTE_LOOKS:
+		_b_kette(sk, id - M_KETTE)
+		return
 	match id:
 		M_BG:
 			sk.jit = 0.5
@@ -3179,5 +3850,51 @@ func _b_weapon(sk: Doodle.Sketch, id: String) -> void:
 			sk.line(PackedVector2Array([Vector2(-12, 7), Vector2(-8, 4), Vector2(-5, 7), Vector2(-1, 4)]), 1.2, Color("f28fb1"))
 			sk.shape(PackedVector2Array([Vector2(-6, -3), Vector2(7, -8), Vector2(9, -4), Vector2(-4, 1)]), Color("f28fb1"), true, 1.2)
 			sk.shape(PackedVector2Array([Vector2(-3, 3), Vector2(10, 0), Vector2(11, 4), Vector2(-2, 7)]), Color("8fc8f2"), true, 1.2)
+		"kleine_anfrage":
+			_b_proj(sk, "akte")
+		"lobbyregister":
+			# a Leitz folder: grey spine with the ring and label, red-brown cover
+			sk.shape(PackedVector2Array([Vector2(-6, -10), Vector2(7, -10), Vector2(7, 10), Vector2(-6, 10)]), Color("8a3a2e"), true, 1.4)
+			sk.rect(Rect2(-6, -10, 5, 20), Color("6a6e78"), true, 1.2)
+			sk.rect(Rect2(-5.5, -6, 4, 6), WHITE, true, 0.8)
+			sk.circle(Vector2(-3.5, 5), 1.8, Color("d8d8d8"), true, 0.8)
+			sk.line2(Vector2(1, -6), Vector2(5, -6), 0.8, Color(1, 1, 1, 0.6))
+		"faktencheck":
+			# a magnifying glass over a green tick
+			sk.line2(Vector2(3, 3), Vector2(10, 10), 2.6, Color("8a5a35"))
+			sk.circle(Vector2(-2, -2), 7.0, Color("dff1fa"), true, 1.8)
+			sk.line(PackedVector2Array([Vector2(-6, -2), Vector2(-3, 1.5), Vector2(2.5, -5)]), 1.8, Color("2f9a4c"))
+		"soli_sticker":
+			_b_proj(sk, "sticker")
+			sk.circle(Vector2(6, -6), 4.0, Color("8fc8f2"), true, 1.0)
+		"menschenkette":
+			# three little people holding hands
+			for k in 3:
+				var x := -9.0 + k * 9.0
+				sk.circle(Vector2(x, -6), 2.6, FACE, true, 0.9)
+				sk.stroke(Vector2(x, -3), Vector2(x, 4), 3.0, [Color("d63a2e"), Color("2e6db4"), Color("f2c418")][k])
+				sk.line2(Vector2(x, 4), Vector2(x - 1.5, 9), 1.2, INK)
+				sk.line2(Vector2(x, 4), Vector2(x + 1.5, 9), 1.2, INK)
+			sk.line2(Vector2(-13, -1), Vector2(13, -1), 1.2, INK)
+		"pappkamerad":
+			# a cardboard sign with a crossed-out schnitzel
+			sk.line2(Vector2(0, 2), Vector2(0, 11), 1.8, Color("8a6a3a"))
+			sk.rect(Rect2(-8, -10, 16, 13), Color("c9a36b"), true, 1.4)
+			sk.ellipse(Vector2(0, -3.5), 4.0, 2.6, Color("d9a24a"), true, 0.8)
+			sk.line(sk.ellipse_pts(Vector2(0, -3.5), 5.5, 5.5, 12), 1.4, Color("d8262e"), true)
+			sk.line2(Vector2(-4, -7.5), Vector2(4, 0.5), 1.4, Color("d8262e"))
+		"demo_sanis":
+			# a green first-aid bag with a white cross
+			sk.rect(Rect2(-9, -5, 18, 12), Color("2f9a4c"), true, 1.5)
+			sk.line(PackedVector2Array([Vector2(-4, -5), Vector2(-4, -8), Vector2(4, -8), Vector2(4, -5)]), 1.4, INK)
+			sk.fill(PackedVector2Array([Vector2(-1.2, -2.5), Vector2(1.2, -2.5), Vector2(1.2, 4.5), Vector2(-1.2, 4.5)]), WHITE, false)
+			sk.fill(PackedVector2Array([Vector2(-4, -0.2), Vector2(4, -0.2), Vector2(4, 2.2), Vector2(-4, 2.2)]), WHITE, false)
+		"lauti":
+			# a horn loudspeaker with a note
+			sk.shape(PackedVector2Array([Vector2(-8, -3), Vector2(-2, -3), Vector2(8, -9), Vector2(8, 9), Vector2(-2, 3), Vector2(-8, 3)]), Color("c0c4ca"), true, 1.4)
+			sk.rect(Rect2(-11, -3, 3, 6), Color("e8742a"), true, 1.0)
+			sk.circle(Vector2(12, -8), 2.0, INK, false)
+			sk.dot(Vector2(12, -8), 2.0, INK)
+			sk.line2(Vector2(13.8, -8), Vector2(13.8, -15), 1.2, INK)
 		_:
 			sk.circle(Vector2.ZERO, 4, GOLD)

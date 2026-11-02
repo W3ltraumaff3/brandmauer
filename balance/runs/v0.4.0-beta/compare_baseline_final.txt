@@ -1,0 +1,140 @@
+== Build calibration (solo): wins/runs, median wave, mean wave
+-- Umfrage level 0
+  crit           base 4/4 w21.0 21.00   final 4/4 w21.0 21.00
+  crit/oma       base 4/4 w21.0 21.00   final 4/4 w21.0 21.00
+  melee          base 3/4 w21.0 20.75   final 1/4 w20.0 20.25
+  melee/oma      base 1/4 w20.0 20.25   final 0/4 w19.0 17.25
+  ranged         base 4/4 w21.0 21.00   final 4/4 w21.0 21.00
+  status         base 2/4 w13.0 13.00   final 0/4 w5.0   5.00
+  status/oma     base 0/4 w10.0 10.25   final 0/4 w9.5   9.50
+  summon         base 4/4 w21.0 21.00   final 4/4 w21.0 21.00
+  summon/oma     base 1/4 w15.5 14.75   final 0/4 w13.5 13.50
+  tank           base 0/4 w20.0 16.75   final 0/4 w20.0 20.00
+  tank/oma       base 0/4 w16.0 15.75   final 0/4 w20.0 17.25
+-- Umfrage level 2
+  crit           base 1/4 w13.5 13.00   final 2/4 w16.0 14.25
+  crit/oma       base 4/4 w21.0 21.00   final 4/4 w21.0 21.00
+  melee          base 2/4 w20.5 18.25   final 0/4 w14.0 13.75
+  melee/oma      base 0/4 w10.5 11.75   final 0/4 w8.5   9.00
+  ranged         base 4/4 w21.0 21.00   final 3/4 w21.0 18.50
+  status         base 0/4 w8.0  10.25   final 1/4 w11.0 12.00
+  status/oma     base 0/4 w7.5   7.75   final 0/4 w8.0   7.75
+  summon         base 3/4 w21.0 20.75   final 4/4 w21.0 21.00
+  summon/oma     base 0/4 w11.0 10.00   final 0/4 w11.0 10.50
+  tank           base 0/4 w13.5 13.25   final 0/4 w7.0  10.00
+  tank/oma       base 0/4 w16.5 16.00   final 0/4 w14.5 14.50
+-- Umfrage level 5
+  crit           base 1/4 w4.0   8.00   final 0/4 w4.0   4.50
+  crit/oma       base 0/4 w6.5   6.50   final 0/4 w6.0   5.75
+  melee          base 0/4 w9.5  11.75   final 0/4 w12.0 13.75
+  melee/oma      base 0/4 w7.0   7.25   final 0/4 w7.0   7.00
+  ranged         base 1/4 w9.0  11.25   final 1/4 w7.5  10.50
+  status         base 0/4 w5.0   5.00   final 0/4 w5.0   5.00
+  status/oma     base 0/4 w7.0   7.00   final 0/4 w6.5   6.50
+  summon         base 1/4 w9.5  11.75   final 3/4 w21.0 20.75
+  summon/oma     base 0/4 w6.5   7.75   final 0/4 w6.5   7.00
+  tank           base 0/4 w7.0   7.75   final 0/4 w7.5   8.00
+  tank/oma       base 0/4 w10.0  9.50   final 0/4 w9.0   8.75
+-- paired final - base per build (all Umfrage), mean +- SE
+  crit           -0.75 +- 1.92 (n=12)
+  crit/oma       -0.25 +- 0.18 (n=12)
+  melee          -1.00 +- 1.58 (n=12)
+  melee/oma      -2.00 +- 1.18 (n=12)
+  ranged         -1.08 +- 0.88 (n=12)
+  status         -2.08 +- 2.26 (n=12)
+  status/oma     -0.42 +- 0.38 (n=12)
+  summon         +3.08 +- 1.57 (n=12)
+  summon/oma     -0.50 +- 1.72 (n=12)
+  tank           +0.08 +- 1.66 (n=12)
+  tank/oma       -0.25 +- 0.93 (n=12)
+  all            -0.47 +- 0.43 (n=132)
+
+== Boss kill times, mortal solo, own character: median s (killed/fights, f = fled)
+  crit                       | w5   23s (8/8)   ->   25s (7/8)1f  | w10   24s (7/7)   ->   32s (7/7)    | w15   29s (6/7)   ->   37s (4/6)2f  | w20   29s (6/7)   ->   57s (6/6)   
+  melee                      | w5   23s (12/12) ->   17s (12/12)  | w10   26s (9/10)  ->   26s (10/11)1f | w15   27s (1/8)   ->   28s (1/7)6f  | w20  182s (5/8)   ->  386s (1/6)   
+  ranged                     | w5   28s (9/12)  ->   25s (6/12)6f | w10   23s (9/10)  ->   29s (8/9)1f  | w15   29s (8/9)   ->   35s (7/8)1f  | w20   22s (9/9)   ->   59s (8/8)   
+  status                     | w5   23s (4/12)  ->   21s (4/12)   | w10   18s (4/4)   ->   29s (3/3)    | w15   25s (3/3)   ->   39s (1/1)    | w20   26s (2/3)   ->  106s (1/1)   
+  summon                     | w5   33s (4/12)  ->   33s (8/12)4f | w10   24s (6/10)  ->   34s (10/12)2f | w15   38s (4/9)   ->   37s (3/12)9f | w20   46s (8/9)   ->  100s (11/12) 
+  tank                       | w5   23s (4/12)  ->   19s (4/12)8f | w10   54s (3/6)   ->   49s (4/6)2f  | w15    - (0/5)    ->   60s (1/5)4f  | w20    - (0/5)    ->    - (0/5)    
+
+== Boss kill times, immortal builds (no survival bias): median s (killed/fights, f = fled)
+  crit U0                    | w5   20s (2/2)   ->   23s (2/2)    | w10   24s (2/2)   ->   27s (2/2)    | w15   25s (1/2)   ->   29s (2/2)    | w20   32s (2/2)   ->   40s (2/2)   
+  crit U2                    | w5   25s (1/2)   ->   28s (1/2)1f  | w10   36s (2/2)   ->   51s (1/2)1f  | w15   52s (1/2)   ->    - (0/2)2f   | w20   37s (2/2)   ->  130s (2/2)   
+  melee U0                   | w5   21s (2/2)   ->   14s (2/2)    | w10   23s (2/2)   ->   21s (2/2)    | w15   50s (1/2)   ->   28s (1/2)1f  | w20  243s (2/2)   ->    - (0/2)    
+  melee U2                   | w5   23s (2/2)   ->   20s (2/2)    | w10   35s (2/2)   ->   32s (1/2)1f  | w15    - (0/2)    ->    - (0/2)2f   | w20  250s (1/2)   ->    - (0/2)    
+  ranged U0                  | w5   19s (2/2)   ->   23s (2/2)    | w10   17s (2/2)   ->   25s (2/2)    | w15   28s (2/2)   ->   26s (2/2)    | w20   21s (2/2)   ->   50s (2/2)   
+  ranged U2                  | w5   22s (1/2)   ->   26s (1/2)1f  | w10   37s (2/2)   ->   32s (1/2)1f  | w15   37s (1/2)   ->   48s (2/2)    | w20   44s (2/2)   ->   58s (2/2)   
+  status U0                  | w5   20s (2/2)   ->   20s (2/2)    | w10   17s (2/2)   ->   25s (2/2)    | w15   23s (2/2)   ->   44s (2/2)    | w20   30s (2/2)   ->   62s (2/2)   
+  status U2                  | w5   30s (2/2)   ->   24s (2/2)    | w10   25s (2/2)   ->   37s (2/2)    | w15   47s (2/2)   ->   39s (1/2)1f  | w20   60s (2/2)   ->  106s (1/2)   
+  summon U0                  | w5   30s (2/2)   ->   24s (2/2)    | w10   21s (2/2)   ->   28s (2/2)    | w15   22s (1/2)   ->   37s (1/2)1f  | w20   30s (2/2)   ->   65s (2/2)   
+  summon U2                  | w5   35s (1/2)   ->   31s (2/2)    | w10   22s (1/2)   ->   38s (2/2)    | w15   48s (1/2)   ->   47s (1/2)1f  | w20   43s (2/2)   ->   90s (2/2)   
+  tank U0                    | w5   23s (2/2)   ->   18s (2/2)    | w10   46s (2/2)   ->   38s (2/2)    | w15    - (0/2)    ->   60s (1/2)1f  | w20    - (0/2)    ->    - (0/2)    
+  tank U2                    | w5   27s (1/2)   ->   23s (1/2)1f  | w10    - (0/2)    ->   56s (1/2)1f  | w15    - (0/2)    ->    - (0/2)2f   | w20    - (0/2)    ->    - (0/2)    
+
+== Boss kill times, co-op mortal, Umfrage 20 %: median s (killed/fights, f = fled)
+  2p melee                   | w5   25s (1/2)   ->   23s (2/2)    | w10   36s (1/1)   ->   49s (2/2)    | w15    - (0/1)    ->    - (0/0)     | w20  410s (1/1)   ->    - (0/0)    
+  2p ranged                  | w5    - (0/2)    ->    - (0/2)2f   | w10   30s (2/2)   ->   47s (2/2)    | w15   58s (1/2)   ->   54s (1/2)1f  | w20   41s (2/2)   ->   77s (2/2)   
+  2p status                  | w5   29s (1/2)   ->   37s (1/2)    | w10   26s (1/1)   ->   21s (1/1)    | w15   44s (1/1)   ->    - (0/0)     | w20   40s (1/1)   ->    - (0/0)    
+  2p summon                  | w5   33s (1/2)   ->   29s (2/2)    | w10   43s (2/2)   ->   35s (1/2)1f  | w15    - (0/2)    ->    - (0/2)2f   | w20  142s (2/2)   ->  256s (2/2)   
+  4p melee                   | w5    - (0/2)    ->   30s (2/2)    | w10    - (0/2)    ->   50s (2/2)    | w15    - (0/1)    ->    - (0/0)     | w20    - (0/0)    ->    - (0/0)    
+  4p ranged                  | w5    - (0/2)    ->   38s (1/2)1f  | w10   39s (2/2)   ->   32s (1/1)    | w15   37s (1/2)   ->   41s (1/1)    | w20   38s (2/2)   ->   45s (1/1)   
+  4p status                  | w5   26s (1/2)   ->   21s (2/2)    | w10   26s (2/2)   ->   35s (2/2)    | w15   45s (1/1)   ->   41s (1/2)1f  | w20   41s (1/1)   ->  143s (2/2)   
+  4p summon                  | w5    - (0/2)    ->   31s (2/2)    | w10   49s (2/2)   ->   32s (2/2)    | w15    - (0/2)    ->   35s (1/2)1f  | w20   74s (2/2)   ->   50s (2/2)   
+
+== Boss kill times, equal footing (Oma + build start weapon): median s (killed/fights, f = fled)
+  status/oma+kleber:1        | w5   29s (5/8)   ->   26s (4/8)4f  | w10   28s (7/7)   ->   34s (6/6)    | w15   35s (3/5)   ->   39s (3/6)3f  | w20   41s (5/5)   ->   83s (6/6)   
+  summon/oma+infostand:1     | w5   32s (2/8)   ->   34s (6/8)2f  | w10   27s (2/7)   ->   43s (5/8)3f  | w15   44s (1/6)   ->   39s (2/8)6f  | w20   85s (3/6)   ->  221s (8/8)   
+
+== Pressure: immortal priority bots, damage taken per wave (x max HP), median
+  1p U0: normal waves mean 1.01 -> 0.76; waves 11-19 1.52 -> 1.09
+    base   0.0  0.0  0.5  0.0  0.1  0.2  0.8  1.1  1.5  0.2  1.7  1.6  1.2  1.7  0.4  1.6  1.1  1.7  1.6
+    final  0.0  0.0  0.5  0.0  0.0  0.5  0.3  0.4  1.6  0.4  0.5  1.3  0.8  1.9  0.6  0.9  1.0  1.6  0.7
+  1p U2: normal waves mean 1.51 -> 1.17; waves 11-19 2.06 -> 1.71
+    base   0.0  0.0  0.2  0.4  0.0  1.5  1.6  2.0  1.9  0.4  1.8  1.4  2.3  2.2  1.3  3.1  1.9  1.9  1.9
+    final  0.0  0.0  0.2  0.4  0.0  0.8  1.2  1.5  0.9  0.5  2.0  2.0  1.2  1.4  0.8  1.9  1.7  2.0  1.4
+  2p U2: normal waves mean 1.58 -> 1.05; waves 11-19 2.06 -> 1.50
+    base   0.0  0.0  0.0  0.2  0.3  1.1  2.9  2.2  2.3  0.1  1.9  1.8  2.0  2.9  0.4  2.2  1.5  2.5  1.7
+    final  0.0  0.0  0.1  0.2  0.1  0.8  0.9  1.1  1.7  0.6  1.5  1.6  1.5  1.5  0.5  1.3  1.7  1.8  1.1
+  4p U2: normal waves mean 2.24 -> 1.52; waves 11-19 3.92 -> 2.71
+    base   0.0  0.0  0.2  0.2  0.2  0.7  1.0  1.2  1.1  0.4  3.6  5.2  4.2  5.7  0.5  3.1  3.8  2.8  3.0
+    final  0.0  0.1  0.1  0.1  0.2  0.6  0.6  0.5  0.7  0.4  3.9  2.8  3.8  3.3  0.4  2.8  1.8  2.2  1.1
+
+== Delivery (solo + eq runs): dmg/cast, enemy-s per cast, zone busy, summon busy, hit%
+  kleber              111.1/cast en-s 2.35 busy 48% sbusy  0% hit  0% (n 20)        ->  191.7/cast en-s 3.58 busy 59% sbusy  0% hit  0% (n 20)
+  strassenkreide        3.3/cast en-s 0.11 busy  4% sbusy  0% hit  0% (n 11)        ->    7.6/cast en-s 0.12 busy  4% sbusy  0% hit  0% (n 5)
+  kartoffelbrei        55.0/cast en-s 0.00 busy  0% sbusy  0% hit  0% (n 15)        ->  163.4/cast en-s 0.00 busy  0% sbusy  0% hit  0% (n 16)
+  brandmauer_ziegel   332.7/cast en-s 4.76 busy 15% sbusy  0% hit  0% (n 11)        ->  401.2/cast en-s 4.47 busy 14% sbusy  0% hit  0% (n 12)
+  infostand           585.5/cast en-s 0.00 busy  0% sbusy 89% hit 77% (n 21)        -> 1188.8/cast en-s 0.00 busy  0% sbusy 85% hit 75% (n 20)
+  weisser_overall     179.8/cast en-s 0.00 busy  0% sbusy 100% hit  0% (n 7)        ->  217.0/cast en-s 0.00 busy  0% sbusy 99% hit  0% (n 13)
+  lauti               206.1/cast en-s 0.00 busy  0% sbusy 89% hit  0% (n 13)        ->  144.1/cast en-s 0.00 busy  0% sbusy 86% hit  0% (n 14)
+  menschenkette       152.9/cast en-s 0.00 busy  0% sbusy 92% hit  0% (n 10)        ->  125.2/cast en-s 0.00 busy  0% sbusy 89% hit  0% (n 14)
+  kleine_anfrage       69.4/cast en-s 0.00 busy  0% sbusy  0% hit 81% (n 7)         ->  102.8/cast en-s 0.00 busy  0% sbusy  0% hit 84% (n 6)
+  soli_sticker         38.3/cast en-s 0.00 busy  0% sbusy  0% hit 71% (n 7)         ->   51.0/cast en-s 0.00 busy  0% sbusy  0% hit 83% (n 12)
+  faktencheck         213.5/cast en-s 0.00 busy  0% sbusy  0% hit  0% (n 10)        ->  156.9/cast en-s 0.00 busy  0% sbusy  0% hit  0% (n 7)
+  lobbyregister        25.1/cast en-s 0.00 busy  0% sbusy  0% hit 88% (n 11)        ->   31.6/cast en-s 0.00 busy  0% sbusy  0% hit 86% (n 9)
+
+== Krankenschein vs Umverteilung, HP per stat point and minute (solo builds)
+  base  Krankenschein 1.45 (24042 pt-min)  Umverteilung 0.61 (6626 pt-min)
+  final Krankenschein 1.15 (23755 pt-min)  Umverteilung 0.90 (7097 pt-min)
+
+== Wave-1 income (Pfand at the 1st Spaeti, Oma with each start weapon; Gewerkschaft own)
+  doener                21.4 ->  21.4
+  farbbeutel            16.4 ->  16.4
+  gendersternchen       19.2 ->  19.2
+  infostand             18.2 ->  20.2
+  kleber                17.4 ->  16.8
+  megafon               18.2 ->  18.2
+  own:gewerkschaft      19.4 ->  19.4
+  pfandflasche          19.5 ->  19.5
+  stricknadeln          17.8 ->  17.8
+  transparent           15.9 ->  15.9
+
+== Equal footing (Oma; summon/status with their start weapon), Umfrage 10 / 20 %
+  crit/oma                     U0: base 4/4 mean 21.00  final 4/4 mean 21.00
+  crit/oma                     U2: base 4/4 mean 21.00  final 4/4 mean 21.00
+  ranged                       U0: base 4/4 mean 21.00  final 4/4 mean 21.00
+  ranged                       U2: base 4/4 mean 21.00  final 3/4 mean 18.50
+  status/oma+kleber:1          U0: base 4/4 mean 21.00  final 4/4 mean 21.00
+  status/oma+kleber:1          U2: base 1/4 mean 12.75  final 2/4 mean 13.50
+  summon/oma+infostand:1       U0: base 3/4 mean 20.75  final 4/4 mean 21.00
+  summon/oma+infostand:1       U2: base 0/4 mean 15.00  final 4/4 mean 21.00
