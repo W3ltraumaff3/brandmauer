@@ -311,6 +311,7 @@ const ENEMY_ORDER: Array[String] = [
 	"ju_schnoesel", "hinterbaenkler", "lobbyist", "porsche_suv", "immobilienerbe",
 	"golfclub_vorstand", "fdp_jungunternehmer", "startup", "privatjet",
 	"sylt_member", "geschichtslehrer", "sauerlaender", "eidgenossin",
+	"briefkasten",
 ]
 
 const ENEMIES := {
@@ -349,6 +350,9 @@ const ENEMIES := {
 		"pfand": 90, "xp": 60.0, "from_wave": 99, "weight": 0, "say": []},
 	"eidgenossin": {"faction": "elite", "ai": "boss", "hp": 6500.0, "speed": 90.0, "dmg": 14.0, "radius": 36.0,
 		"pfand": 0, "xp": 0.0, "from_wave": 99, "weight": 0, "say": []},
+	# Briefkastenfirmen (GDD §14, D-142): her phase-3 add; HP set from her max HP, no reward
+	"briefkasten": {"faction": "elite", "ai": "add", "hp": 1.0, "speed": 0.0, "dmg": 0.0, "radius": 26.0,
+		"pfand": 0, "xp": 0.0, "from_wave": 99, "weight": 0, "say": []},
 }
 
 ## Factions the Töchter count as "old men in suits".
@@ -367,6 +371,7 @@ const HAZARD_ORDER: Array[String] = [
 	"kleber", "mietzone", "kerosin", "lob_marker", "sitzblockade", "explosion", "abschiebezone",
 	"push_ring", "farbklecks", "brei_marker", "ziegel", "paragraf", "kreide",
 	"kette", "abstimmung", "plenum", "kahlschlag", "kahlschlag_hit",
+	"ansturm_bahn", "rotor", "reichweite", "reichweite_hit",
 ]
 const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse", "overall",
 	"laterne", "pappkamerad", "sani", "lauti"]
@@ -418,7 +423,7 @@ const ENCOUNTERS := {
 
 ## Boss casts (GDD §14, D-107, D-108): interruptible by a stun, shown in the boss bar.
 ## Append only: the snapshot sends 1 + index.
-const BOSS_CASTS: Array[String] = ["wende", "abstimmung", "kahlschlag", "ansturm", "remigration"]
+const BOSS_CASTS: Array[String] = ["wende", "abstimmung", "kahlschlag", "ansturm", "remigration", "reichweite"]
 
 ## Boss rules (GDD §14 "Boss rules", D-102 to D-112). Starting values for the balancing round.
 ## [a, b] pairs run linearly from Umfrage 10 % (level 0) to 35 % (level 5).
@@ -445,6 +450,24 @@ const BOSS := {
 	# Remigrantin: Die Brandmauer hält (D-104, D-111)
 	"band": 110.0, "band_l3": 150.0, "band_per_player": 10.0, "ring_every": [3.5, 2.6], "remig_warn": 2.0,
 	"ansturm_warn": 0.8,   # her charge wind-up: a targeted impact needs 0.8 s (B8; was 0.7)
+	# Remigrantin, final exam (GDD §14 "Final boss", D-140 to D-145)
+	# P1 Ansturm-Kette (D-143): chains of charges with a lane telegraph; turbines she hits fall
+	"kette_every": 3.5, "kette_len": 2, "kette_len_l4": 3, "kette_coop_from": 3, "kette_gap": 0.25,
+	"ansturm_len": 380.0, "ansturm_speed": 760.0, "ansturm_dmg": 1.5, "lane_w": 84.0,
+	"turbine_pull": 160.0,                   # a turbine this close to her target draws the charge
+	"rotor_len": 260.0, "rotor_w": 44.0, "rotor_warn": 1.0, "rotor_time": 3.0, "rotor_dmg": 1.0,
+	"wing_every": [2.2, 2.6], "wing_count": 3, "wing_count_l3": 5,   # wing fans in P1 and (new) P2
+	# P2/P3 Reichweite (D-141): arena-wide, safe only in front of intact Brandmauer segments
+	# warning in the arena-change class (B8: 2.0 s minimum): from the middle the nearest safe strip
+	# is up to ~550 px away, 2.5 s at player speed; 3.0 s (2.4 s at 35 %) leaves time to shoot first
+	"reich_first": 6.0, "reich_every": [16.0, 13.0], "reich_every_p3": [14.0, 11.0], "reich_warn": 3.0,
+	"reich_dmg": 2.0, "reich_safe": 160.0, "reich_ring": true,
+	# P3 Briefkastenfirmen (D-142): letterboxes recharge the gold-bar shield
+	# letterboxes: 3 solo, +1 from 2 players; the shield breaks with the last one, all reopen together
+	"shield": 0.2, "brief_count": 3, "brief_coop": 1, "brief_hp": 0.007, "brief_regen": 0.001, "brief_back": [25.0, 18.0],
+	"brief_inset": 200.0, "p3_ring_every": 4.5, "gold_every": 1.2,
+	# Wahlabend (D-144): soft enrage of the final fight
+	"wahl_from": 150.0, "wahl_from_l4": 120.0, "wahl_every": 15.0, "wahl_step": 0.1, "wahl_max": 5,
 }
 
 # --- Organisationen (GDD §10) ------------------------------------------------
@@ -464,7 +487,7 @@ const BALANCE := {
 	"diff_hp": 0.15, "diff_dmg": 0.10, "diff_spawn": 0.08,   # Umfrage level L: × (1 + k·L)
 	# elites and bosses
 	"elite_base": 0.6, "elite_coop": 0.3,    # HP × (base + coop·(players − 1))
-	"final_boss_mult": 4.5,                  # Die Remigrantin's HP on top
+	"final_boss_mult": 5.5,                  # Die Remigrantin's HP on top (D-145; was 4.5, D-118)
 	"diff_boss_hp": 0.15,                    # encounter units only: × (1 + k·L) on top of diff_hp (D-102)
 	"melee_vs_boss": 2.0,                   # melee weapons against encounter units (D-121)
 	"elite_wave_exp": 0.6,                   # elite HP × (enemy HP curve(wave) / curve(5)) ^ this

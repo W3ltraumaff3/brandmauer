@@ -261,13 +261,13 @@ func test_final_boss_recharges_ultimates_at_each_phase_change() -> void:
 
 func test_boss_hp_lever() -> void:
 	var s := _sim(["oma"])
-	# v0.4 values (D-118): hp_mult 1.25 / 2.2 / 2.0, final_boss_mult 4.5, elite_coop 0.3
+	# v0.4 values (D-118): hp_mult 1.25 / 2.2 / 2.0, elite_coop 0.3; final_boss_mult 5.5 (v0.4.1, D-145)
 	assert_near(s.encounter_hp_scale("sylt_clique"), 0.6 * 1.25, 0.0001, "solo, 10 %, hp_mult 1.25")
 	assert_near(s.encounter_hp_scale("geschichtslehrer"), 0.6 * 2.2, 0.0001, "hp_mult 2.2")
 	assert_near(s.encounter_hp_scale("sauerlaender"), 0.6 * 2.0, 0.0001, "hp_mult 2.0")
-	assert_near(s.encounter_hp_scale("eidgenossin"), 0.6 * 4.5, 0.0001, "final_boss_mult 4.5")
+	assert_near(s.encounter_hp_scale("eidgenossin"), 0.6 * 5.5, 0.0001, "final_boss_mult 5.5")
 	var t := _sim(["oma", "antifa", "lastenrad", "toechter"], 5)
-	assert_near(t.encounter_hp_scale("eidgenossin"), (0.6 + 0.3 * 3) * 1.75 * 4.5, 0.0001, "4 players, 35 %")
+	assert_near(t.encounter_hp_scale("eidgenossin"), (0.6 + 0.3 * 3) * 1.75 * 5.5, 0.0001, "4 players, 35 %")
 	assert_near(t.encounter_hp_scale("geschichtslehrer"), (0.6 + 0.3 * 3) * 1.75 * 2.2, 0.0001, "diff_boss_hp on top")
 	# the spawned unit really gets it, on top of the normal Umfrage HP
 	var boss := _boss(t, "geschichtslehrer", 10)

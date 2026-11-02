@@ -95,9 +95,9 @@
 | counts | u16 | exact |
 | `wall` (intact segments) | u64 bitmask, 38 bits used (`Snapshot.VERSION` 2 since D-082; version 1 had a u16 with 12 bits) | exact |
 | hazard angle `h_ang` | 1 byte, TAU/256 (cones such as Kahlschlag; 0 for round hazards) | TAU/512 |
-| `boss` | presence byte, then `enc`, `hp`, `phase`, `shield`, `cast` (u8: 0 = none, else 1 + index into `Content.BOSS_CASTS`), `cast_t` (u8 progress 0..1) | as above |
+| `boss` | presence byte, then `enc`, `hp`, `phase`, `shield`, `cast` (u8: 0 = none, else 1 + index into `Content.BOSS_CASTS`), `cast_t` (u8 progress 0..1), `hoch` (u8 final-boss Wahlabend step, version 5) | as above |
 
-- **Version history:** 1 = MVP; 2 = `wall` as u64 (D-082); 3 = second enemy flag byte `e_flags2` and summon hp `s_hp` (status effects In Bearbeitung, Aktenkundig, Rolle rückwärts, Soli-Sticker and the Pappkamerad's HP bar, D-093); **4 = hazard angle `h_ang`, boss `cast` and `cast_t`, `e_flags2` bits for Standfest and Pressekonferenz** (boss rules, D-108). The protocol version went up each time (§7.1), so mismatched builds get a clean `NET_ERR_VERSION` instead of silently undecodable snapshots.
+- **Version history:** 1 = MVP; 2 = `wall` as u64 (D-082); 3 = second enemy flag byte `e_flags2` and summon hp `s_hp` (status effects In Bearbeitung, Aktenkundig, Rolle rückwärts, Soli-Sticker and the Pappkamerad's HP bar, D-093); **4 = hazard angle `h_ang`, boss `cast` and `cast_t`, `e_flags2` bits for Standfest and Pressekonferenz** (boss rules, D-108); **5 = boss `hoch`** (the final boss's Wahlabend step, D-144; her new hazards `ansturm_bahn`, `rotor`, `reichweite`, `reichweite_hit` and the enemy `briefkasten` are appended ids). The protocol version went up each time (§7.1), so mismatched builds get a clean `NET_ERR_VERSION` instead of silently undecodable snapshots.
 - **Per-entity cost:**
   - **enemy:** 12 bytes
   - **projectile:** 6 bytes
@@ -162,7 +162,7 @@
 6. **Stable RPC ids:** the handshake RPCs are named `_rpc_00_hello`, `_rpc_01_reject` and `_rpc_02_welcome`.
    - Godot numbers RPCs by sorted method name, so these keep the same ids across game versions, and an old client still gets a clean version error.
    - Never rename them or change their arguments. New RPCs (`_rpc_session`, `_rpc_resume`, `_rpc_bye`, `_rpc_host_closed`, …) sort after them.
-7. **Protocol version:** `PROTOCOL_VERSION` is **5** since snapshot version 4 (§6.1, D-108); 4 came with snapshot version 3 (D-093). Version 3 added `_rpc_want_run` for rejoining after a crash (§7.5), version 2 the reconnect RPCs. New RPCs shift the ids of every later RPC; a new snapshot version also bumps the protocol, so the handshake rejects a mismatched build.
+7. **Protocol version:** `PROTOCOL_VERSION` is **6** since snapshot version 5 (§6.1, D-144); 5 came with snapshot version 4 (D-108); 4 came with snapshot version 3 (D-093). Version 3 added `_rpc_want_run` for rejoining after a crash (§7.5), version 2 the reconnect RPCs. New RPCs shift the ids of every later RPC; a new snapshot version also bumps the protocol, so the handshake rejects a mismatched build.
 
 ### 7.2 Lobby
 - **Ownership:** the host owns `Net.lobby` (`{player_id: {name, char, ready}}`), `Net.org` and `Net.difficulty`, and pushes all three to every client on every change. Each push emits `lobby_changed`.

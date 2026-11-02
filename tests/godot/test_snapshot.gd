@@ -227,7 +227,7 @@ func test_v3_status_flags_and_summon_hp() -> void:
 ## D-108: version 4 carries the hazard angle (cones), the boss cast and its
 ## progress and the Standfest / Pressekonferenz bits; version 3 is rejected.
 func test_v4_boss_cast_hazard_angle_and_flags() -> void:
-	assert_eq(Snapshot.VERSION, 4)
+	assert_true(Snapshot.VERSION >= 4, "v4 fields still in (v5: D-144)")
 	var vs := ViewState.new()
 	vs.e_id.append(1); vs.e_type.append(Content.ENEMY_ORDER.find("sauerlaender")); vs.e_pos.append(Vector2(500, 400))
 	vs.e_hp.append(0.66); vs.e_flags.append(ViewState.EF_ELITE)

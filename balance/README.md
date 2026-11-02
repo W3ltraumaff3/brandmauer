@@ -9,6 +9,12 @@ Red-item review (2026-11-02/03, bot 3, `buy=<item>:8` A/B, final code `ddac79751
 [balancing.md](../docs/specs/balancing.md) §2 "Red items (v0.4.1)", decisions D-127 to D-136.
 Folder layout and code hashes: [runs/v0.4.1-beta/README.md](runs/v0.4.1-beta/README.md).
 
+## runs/v0.4.1-beta/final_boss/
+
+Die Remigrantin as the final exam (2026-11-02, D-140 to D-146): 80 paired runs before/after (boss waves
+mortal with Boss-Wiederholung at Umfrage 10 / 20 / 35 %, co-op, immortal timing) and the tuning rounds;
+see its [README](runs/v0.4.1-beta/final_boss/README.md).
+
 ## runs/v0.4.0-beta/
 
 Balancing round for v0.4.0-beta (2026-11-02, bot 3, Godot 4.7.2, 16 jobs); summary in

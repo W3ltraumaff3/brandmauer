@@ -1,0 +1,80 @@
+players=4 umfrage=2 seed=1 build=ranged mortal=15,20 retry
+players=4 umfrage=2 seed=2 build=ranged mortal=15,20 retry
+players=4 umfrage=2 seed=1 build=summon mortal=15,20 retry
+players=4 umfrage=2 seed=2 build=summon mortal=15,20 retry
+players=2 umfrage=2 seed=1 build=ranged mortal=15,20 retry
+players=2 umfrage=2 seed=2 build=ranged mortal=15,20 retry
+players=2 umfrage=2 seed=1 build=summon mortal=15,20 retry
+players=2 umfrage=2 seed=2 build=summon mortal=15,20 retry
+players=1 umfrage=5 seed=1 build=ranged mortal=15,20 retry
+players=1 umfrage=5 seed=2 build=ranged mortal=15,20 retry
+players=1 umfrage=5 seed=3 build=ranged mortal=15,20 retry
+players=1 umfrage=5 seed=4 build=ranged mortal=15,20 retry
+players=1 umfrage=5 seed=1 build=summon mortal=15,20 retry
+players=1 umfrage=5 seed=2 build=summon mortal=15,20 retry
+players=1 umfrage=5 seed=3 build=summon mortal=15,20 retry
+players=1 umfrage=5 seed=4 build=summon mortal=15,20 retry
+players=1 umfrage=5 seed=1 build=status mortal=15,20 retry
+players=1 umfrage=5 seed=2 build=status mortal=15,20 retry
+players=1 umfrage=5 seed=3 build=status mortal=15,20 retry
+players=1 umfrage=5 seed=4 build=status mortal=15,20 retry
+players=1 umfrage=5 seed=1 build=melee mortal=15,20 retry
+players=1 umfrage=5 seed=2 build=melee mortal=15,20 retry
+players=1 umfrage=5 seed=3 build=melee mortal=15,20 retry
+players=1 umfrage=5 seed=4 build=melee mortal=15,20 retry
+players=1 umfrage=2 seed=1 build=ranged mortal=15,20 retry
+players=1 umfrage=2 seed=2 build=ranged mortal=15,20 retry
+players=1 umfrage=2 seed=3 build=ranged mortal=15,20 retry
+players=1 umfrage=2 seed=4 build=ranged mortal=15,20 retry
+players=1 umfrage=2 seed=1 build=summon mortal=15,20 retry
+players=1 umfrage=2 seed=2 build=summon mortal=15,20 retry
+players=1 umfrage=2 seed=3 build=summon mortal=15,20 retry
+players=1 umfrage=2 seed=4 build=summon mortal=15,20 retry
+players=1 umfrage=2 seed=1 build=status mortal=15,20 retry
+players=1 umfrage=2 seed=2 build=status mortal=15,20 retry
+players=1 umfrage=2 seed=3 build=status mortal=15,20 retry
+players=1 umfrage=2 seed=4 build=status mortal=15,20 retry
+players=1 umfrage=2 seed=1 build=melee mortal=15,20 retry
+players=1 umfrage=2 seed=2 build=melee mortal=15,20 retry
+players=1 umfrage=2 seed=3 build=melee mortal=15,20 retry
+players=1 umfrage=2 seed=4 build=melee mortal=15,20 retry
+players=1 umfrage=0 seed=1 build=ranged mortal=15,20 retry
+players=1 umfrage=0 seed=2 build=ranged mortal=15,20 retry
+players=1 umfrage=0 seed=3 build=ranged mortal=15,20 retry
+players=1 umfrage=0 seed=4 build=ranged mortal=15,20 retry
+players=1 umfrage=0 seed=1 build=summon mortal=15,20 retry
+players=1 umfrage=0 seed=2 build=summon mortal=15,20 retry
+players=1 umfrage=0 seed=3 build=summon mortal=15,20 retry
+players=1 umfrage=0 seed=4 build=summon mortal=15,20 retry
+players=1 umfrage=0 seed=1 build=status mortal=15,20 retry
+players=1 umfrage=0 seed=2 build=status mortal=15,20 retry
+players=1 umfrage=0 seed=3 build=status mortal=15,20 retry
+players=1 umfrage=0 seed=4 build=status mortal=15,20 retry
+players=1 umfrage=0 seed=1 build=melee mortal=15,20 retry
+players=1 umfrage=0 seed=2 build=melee mortal=15,20 retry
+players=1 umfrage=0 seed=3 build=melee mortal=15,20 retry
+players=1 umfrage=0 seed=4 build=melee mortal=15,20 retry
+players=1 umfrage=5 seed=1 build=ranged immortal
+players=1 umfrage=5 seed=2 build=ranged immortal
+players=1 umfrage=5 seed=1 build=summon immortal
+players=1 umfrage=5 seed=2 build=summon immortal
+players=1 umfrage=5 seed=1 build=status immortal
+players=1 umfrage=5 seed=2 build=status immortal
+players=1 umfrage=5 seed=1 build=melee immortal
+players=1 umfrage=5 seed=2 build=melee immortal
+players=1 umfrage=2 seed=1 build=ranged immortal
+players=1 umfrage=2 seed=2 build=ranged immortal
+players=1 umfrage=2 seed=1 build=summon immortal
+players=1 umfrage=2 seed=2 build=summon immortal
+players=1 umfrage=2 seed=1 build=status immortal
+players=1 umfrage=2 seed=2 build=status immortal
+players=1 umfrage=2 seed=1 build=melee immortal
+players=1 umfrage=2 seed=2 build=melee immortal
+players=1 umfrage=0 seed=1 build=ranged immortal
+players=1 umfrage=0 seed=2 build=ranged immortal
+players=1 umfrage=0 seed=1 build=summon immortal
+players=1 umfrage=0 seed=2 build=summon immortal
+players=1 umfrage=0 seed=1 build=status immortal
+players=1 umfrage=0 seed=2 build=status immortal
+players=1 umfrage=0 seed=1 build=melee immortal
+players=1 umfrage=0 seed=2 build=melee immortal

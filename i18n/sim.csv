@@ -39,3 +39,8 @@ SAY_VOTE_FAIL,Keine Mehrheit? Dann halt nächste Woche.
 SAY_VOTE_PASS,"Mir doch egal, wer zustimmt."
 SAY_KAHLSCHLAG,Das nennt man Reform.
 SAY_REMIG_LUECKE,Irgendwo findet sich immer eine Lücke.
+SAY_REICHWEITE,Meine Reichweite geht überall hin!
+SAY_BRANDMAUER_STEHT,Hier endet eure Reichweite. Die Brandmauer steht!
+SAY_BRIEFKASTEN,Das Steuerparadies hat viele Briefkästen.
+SAY_BRIEFKASTEN_NEU,"Neue Adresse, gleiche Firma."
+SAY_HOCHRECHNUNG,Neue Hochrechnung: Wir legen zu!

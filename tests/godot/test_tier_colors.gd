@@ -1,5 +1,5 @@
 extends TestCase
-## Weapon tiers I–IV in the item rarity colors (GDD §6a, D-150).
+## Weapon tiers I–IV in the item rarity colors (GDD §6a, D-147).
 
 const AREAS := ["ui"]  # ci-cd.md §2a
 
