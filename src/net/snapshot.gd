@@ -13,7 +13,8 @@ class_name Snapshot
 ## 2: wall mask u64 (38 segments, four walls, D-082)
 ## 3: second enemy flag byte e_flags2 and summon hp s_hp (v0.3 status effects, D-093)
 ## 4: hazard angle h_ang, boss cast + cast_t, e_flags2 Standfest/Pressekonferenz (boss rules, D-108)
-const VERSION := 4
+## 5: boss Wahlabend step "hoch" (final boss, D-144)
+const VERSION := 5
 
 const MAX_PLAYERS := 8
 const MAX_WEAPONS := 16
@@ -125,6 +126,7 @@ static func encode(vs: ViewState) -> PackedByteArray:
 		b.put_u8(_frac(float(vs.boss.get("shield", 0.0))))
 		b.put_u8(clampi(int(vs.boss.get("cast", 0)), 0, 255))
 		b.put_u8(_frac(float(vs.boss.get("cast_t", 0.0))))
+		b.put_u8(clampi(int(vs.boss.get("hoch", 0)), 0, 255))
 	return b.data_array
 
 
@@ -224,7 +226,7 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 	vs.s_hp = _get_fracs(b, ns)
 
 	if b.get_u8() == 1:
-		if not _need(b, 6):
+		if not _need(b, 7):
 			return null
 		vs.boss = {
 			"enc": b.get_u8(),
@@ -233,6 +235,7 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 			"shield": b.get_u8() * FRAC_STEP,
 			"cast": b.get_u8(),
 			"cast_t": b.get_u8() * FRAC_STEP,
+			"hoch": b.get_u8(),
 		}
 	return vs
 

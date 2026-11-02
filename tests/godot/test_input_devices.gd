@@ -3,6 +3,8 @@ extends TestCase
 ## device 0. Analog keyboards (e.g. Keychron HE) also register as joypads and can take
 ## device 0, which made a PlayStation controller on device 1 do nothing at all.
 
+const AREAS := ["ui"]  # ci-cd.md §2a
+
 const ACTIONS := ["move_left", "move_right", "move_up", "move_down", "ultimate", "streik", "pause",
 	"ui_accept", "ui_cancel", "ui_page_left", "ui_page_right"]
 

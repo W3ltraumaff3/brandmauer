@@ -110,7 +110,7 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
   - **"Bereit" must be unmistakable** (co-op Späti and lobby):
     - Not ready: a normal paper button "Bereit?".
     - Ready: the button turns **solid green with white text "Bereit!"**, and a line next to it says **"Du bist bereit"**, plus who the group is still waiting for. Pressing it again takes it back.
-  - Prices rise by 8 % per wave. Weapon tiers I–IV cost ×1.0 / 1.8 / 3.2 / 5.5.
+  - Prices rise with the wave, faster than 8 % per wave because the curve is cubic (balancing.md §5): ×2.4 in the Späti after wave 8, ×3.1 after wave 10, ×5.0 after wave 14, ×8.5 after wave 19. Weapon tiers I–IV cost ×1.0 / 1.8 / 3.2 / 5.5.
   - A **Statistik** button (section 6c) and the weapon/item management below.
   - A **character portrait:** the local player's character drawn exactly as in the arena, at the **current Zusammenhalt stage**, with the stage name and progress to the next stage. Kept **small and calm**; it must not crowd the Späti, which is already dense (no held weapons, no extra panels; it fits into existing free space such as the header area or the bottom bar). It reminds you who you play and shows how far the team has come.
 - **Character selection** (lobby) uses the same in-game drawings (stage 4, confident) instead of separate icons, so lobby and arena look alike.
@@ -123,6 +123,7 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
 | **Combine** | Two weapons with the same id and the same tier become **one weapon of the next tier** (max tier IV), freeing a slot. Three ways: **automatic on buying** (an offer that matches a weapon you own is marked "kombiniert zu …" and needs no free slot), the **Kombinieren button** on an owned weapon that has a twin, and the button always asks for a **confirmation** ("Auseinandernehmen geht nicht."). Without a twin: "Zum Kombinieren brauchst du zwei gleiche Waffen gleicher Stufe." |
 | **Sell** | Refund is 40 % of the current weapon price. **Asks for confirmation** ("Weg ist weg"). You can't sell your last weapon |
 | **Throw away items** | Click an item in the item list: choose how many, or all. **No refund.** For undoing accidental buys (e.g. Schuldenbremse) |
+| **Tier colors** (D-147) | Weapon tiers use the item rarity colors (section 12): **I green, II blue, III purple, IV red**. A weapon offer gets the border and tier tag in its tier color like an item card (tier IV also the tinted background). The tier is colored wherever a weapon is named with it: the owned-weapon list, "kombiniert zu …" and the Kombinieren button (in the color of the tier it becomes), and the Statistik damage rows (sold or combined rows stay grey) |
 
 ### 6b. Targeting
 
@@ -336,7 +337,7 @@ Every status effect goes through the one immunity check (D-087): **the Reichsbü
 
 Soli-Sticker's poison is its own effect (it doesn't replace a Tofu poison and isn't replaced by one); it shows as the usual poison tint plus a small sticker on the enemy.
 
-## 12. Items (57, incl. 2 hidden)
+## 12. Items (61 in the shop pool, incl. 2 hidden)
 
 Every item is a stat change and/or a rule flag. Throwing items away: section 6a.
 
@@ -348,7 +349,9 @@ Every item is a stat change and/or a rule flag. Throwing items away: section 6a.
 | 3 | purple | very good bonus, malus if very very good | from wave 4 (0.35·(*w*−3)) |
 | 4 | red | game-changing, only for one specific build | from wave 8, rare (0.12·(*w*−7)) |
 
-Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"ROT · Build-Item"** stamp in the Späti. Item prices grow by 8 % per wave.
+Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"ROT · Build-Item"** stamp in the Späti. Item prices grow with the wave like weapon prices (section 6).
+
+**What a red item has to be worth (D-127):** when it shows up (Späti after wave 8–12) a red item costs about as much as a whole Späti visit's Pfand (90 base → about 220 after wave 8, 280 after wave 10, 450 after wave 14, against 200 / 245 / 510 Pfand on arrival in bot runs). So a red item must clearly beat what that visit would otherwise buy (2–3 blue or purple items, or a weapon tier): for its build it is the run's big step, about ×1.5–2 on what the build lives on, with a malus for everything else. Money items must pay back their price within about 3 waves and keep their value while prices grow, so their amounts scale with the price factor instead of being fixed.
 
 ### Green
 | Item | Effect |
@@ -413,13 +416,13 @@ Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"RO
 | Item | Build | Effect |
 |---|---|---|
 | Hausbesetzung | melee | melee weapons ×2 damage, all others ×0.5 |
-| Wurfmaschine | ranged | projectiles pierce +1 target and fly 50 % faster; melee ×0.5 |
-| Genossenschaftsanteil | saving | each wave end +15 % of your Pfand (max 50), but only 2 purchases per Späti visit |
+| Wurfmaschine | ranged | every weapon that scales with Durchschlagskraft ×1.4 damage; every player projectile (shots and the 9-Euro-Ticket fan) pierces +1 target and flies 50 % faster; melee ×0.5 (D-128, was pierce and speed only, and the fan was left out) |
+| Genossenschaftsanteil | saving | price 60: at every wave end a **dividend on your Pfand**: 30 %, +5 % for every wave end you have held the share (up to 50 %), at most as much as a new share costs in that Späti. No purchase limit (D-129, was price 80, +15 % up to 50 Pfand and only 2 purchases per visit) |
 | Ehrenamtskarte | summons | every weapon that scales with Ehrenamt (Infostand, Brandmauer-Ziegel, Weißer Overall, Menschenkette, Pappkamerad, Demo-Sanis, Lauti) and the Genoss:innen: ×1.5 damage and healing, twice the duration; all other weapons ×0.6 (D-114, was ×2 for summon kinds only and ×0.6 for Ziegel and Overall) |
 | Kompost | status | poison and glue ×2, poison spreads to neighbors on death, direct damage ×0.7 |
-| Kritische Masse | crit | crits hit ×1.5 harder, all other hits ×0.7 |
-| Robin-Hood-Kostüm | lifesteal | Umverteilung heals ×3, but Krankenschein no longer works |
-| Tarnkappe | dodge | Schwarzfahren cap 80 % instead of 60 %, but Kündigungsschutz drops to 0 |
+| Kritische Masse | crit | +15 Direkte Aktion; weapon crits hit ×2 harder, all other weapon hits ×0.75 (D-131, was no crit, ×1.5 / ×0.7: a loss below ~30 % crit chance, where the crit build stands when red items show up) |
+| Robin-Hood-Kostüm | lifesteal | +10 Umverteilung; every Umverteilung heal is 4 HP instead of 1; your Krankenschein counts as Umverteilung (it no longer heals over time, its points are added to Umverteilung) (D-134, was ×3 heals and Krankenschein simply stopped working) |
+| Tarnkappe | dodge | +50 Schwarzfahren, cap 80 % instead of 60 %, but Kündigungsschutz drops to 0 (D-135, was without the +50) |
 
 ### Hidden
 | Item | Effect |
@@ -440,10 +443,12 @@ Twelve items built on real German political events of 2016–2026. The sources a
 | BER-Eröffnungstermin | purple | waves 1–9: −10 Wut; from wave 10: +40 Wut, +20 Akkord | BER airport |
 | Puma-Schützenpanzer | purple | +25 Durchschlagskraft, +10 Kündigungsschutz; every 18 s all weapons fail for 3 s | all 18 Pumas failed, 2022 |
 | Zweiter Wahlgang | purple | once per run: when you'd go down, you're back at 50 % Solidarität instead; −10 Wut | chancellor election in the second round, 2025 |
-| Cum-Ex-Erstattung | red (saving build) | at wave end your unspent Pfand is refunded once more (+100 %, max +40); at the end of wave 15 the Betriebsprüfung takes half your Pfand (once) | Cum-Ex |
-| Doppelwumms | red (ranged build) | every kill by you explodes twice (150 px, damage 10 + 2 × Durchschlagskraft, scaled by Wut); explosions don't chain; −15 Kündigungsschutz | "Doppel-Wumms", 2022 |
+| Cum-Ex-Erstattung | red (saving build) | price 60 (was 80); at wave end your unspent Pfand is refunded once more (+100 %, max +40 × the price factor of the next Späti, so the cap keeps its value; D-130, was a flat 40); at the end of wave 15 (or the first wave end after it) the Betriebsprüfung takes half your Pfand (once) | Cum-Ex |
+| Doppelwumms | red (ranged build) | every kill by you explodes twice (150 px, damage 20 + 3 × Durchschlagskraft, scaled by Wut; D-133, was 10 + 2 ×); explosions don't chain; −10 Kündigungsschutz (was −15) | "Doppel-Wumms", 2022 |
 | Brandmauer-Fertigputz | red (armor build) | +50 Kündigungsschutz, enemies touching you are knocked back, −30 Deutschlandticket | the Brandmauer |
-| Entlassungsurkunde | red (crit build) | +20 Direkte Aktion; a crit on a non-elite enemy under 30 % HP takes it out at once; −15 Durchschlagskraft | Ampel-Aus, 2024 |
+| Entlassungsurkunde | red (crit build) | +30 Direkte Aktion; a crit on a normal enemy under 40 % HP takes it out at once, a crit on an elite, miniboss or boss deals ×1.5 instead; −10 Vernetzung (D-132, was +20, under 30 %, −15 Durchschlagskraft, which took the crit build's damage away) | Ampel-Aus, 2024 |
+
+All twelve politics items are in the item definitions; the four red ones are in the shop pool since D-127 (before, none of the twelve could be offered; the eight others are an open question).
 
 ## 13. Enemies
 
@@ -513,9 +518,44 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 ### Final boss: Die Remigrantin (Weidel parody)
 - **Phase 1 "Windmühlen der Schande":** she tears down the wind turbines in the arena, which are your cover. She charges like Don Quixote. Quote weidel-05.
 - **Phase 2 "Remigration":** push waves drive all players toward the Brandmauer wall nearest to her, and the arena edge (all four sides) becomes the danger zone.
-- **Phase 3 "Steuerparadies":** she retreats behind a vault shield of gold bars in a Swiss chalet, and the players have to break the shield.
+- **Phase 3 "Steuerparadies":** she retreats behind a vault shield of gold bars in a Swiss chalet, and the players have to break the shield (from v0.4.1 fed by Briefkastenfirmen, see "The final exam").
 - **Exit:** she **emigrates to Switzerland**. That's the closing joke: the only person in the game who actually "remigriert".
 - Content rule: none of her phases may summon or depict the groups she insults. Her attacks target only the players and the environment.
+
+#### The final exam (v0.4.1, D-140 to D-145)
+Playtest (solo, v0.4.0): the Sauerländer was harder to beat than she was. She has to be the hardest fight of the run and can fail on a first try; Boss-Wiederholung (balancing.md §8) catches that. Three signature attacks of her own, denser phases, a soft enrage and more HP. Every number lives in `Content.BOSS`; telegraphs follow the boss-rule standard below (red dashed + growing fill, "stand here" blue-turquoise with a hand), shrink with Umfrage and never fade with Eigene Effekte.
+
+| Phase | Her attacks (new in **bold**) | Cadence |
+|---|---|---|
+| 1 Windmühlen der Schande | **Ansturm-Kette** with falling turbines; wing fans (3, 5 from 25 %) | a chain every 3.5 s; wings every 2.2 s |
+| 2 Remigration | Die Brandmauer hält (band + push rings); **wing fans** (she had no aimed attack here); **Reichweite** | rings 3.5 → 2.6 s; wings 2.6 s; Reichweite 6 s after the band arms, then every 16 s (13 s at 35 %) |
+| 3 Steuerparadies | gold-bar shield 20 % (was 25 %) fed by **Briefkastenfirmen**; gold bars; push rings; **Reichweite** | gold every 1.2 s; rings every 4.5 s (was 6); Reichweite every 14 s (11 s at 35 %) |
+| any, after 150 s (120 s from 30 %) | **Wahlabend**: every 15 s +10 % tempo and cadence, up to +50 % | |
+
+**Signature attacks:**
+- **Ansturm-Kette (P1, rework of her charge).**
+  - Instead of one charge every 3 s she runs a chain of 2 charges (3 from Umfrage 30 %, +1 from 3 players), 0.25 s apart, every 3.5 s.
+  - Each charge: an 0.8 s wind-up (cast "Ansturm!") with a red dashed **lane** (84 px wide, 380 px + her radius long) whose fill runs to the tip, then she sprints 380 px at 760 px/s and hits for 1.5× contact damage, once per charge and player. Every charge of a chain picks a new random living player.
+  - Don Quixote: if a turbine stands within 160 px of her target, she charges the turbine. A turbine she runs into **falls in the charge direction**: a 1.0 s warning (the mast tips over a dashed red line), then the rotor lies there for 3 s as a 260 × 44 px line that hurts (1× contact damage per hit).
+  - **Answer:** sidestep the lane; don't hide behind a turbine she is aiming for (turbines still block her wing fans, so cover is a trade-off); a stun during a wind-up breaks the whole chain (D-106).
+  - **Satire:** the windmill speech (`weidel-05`, on the intro card): Don Quixote who actually wins against the windmills, and the players lose the cover the turbines gave them.
+- **Reichweite (P2 and P3, new).**
+  - Her broadcast floods the whole arena: a 3.0 s warning (cast "Reichweite sendet …", 2.4 s at 35 %; an arena change, B8; from the middle the nearest safe strip can be ~550 px away), the arena fills red from her outward. Only the strips **in front of intact Brandmauer segments that aren't next to a hole** stay blue-turquoise ("Brandmauer", hand icon), 160 px deep. Without any hole every segment is safe (the old 70 px band still burns along the wall then).
+  - At the end every living player outside a safe strip takes 2× her contact damage, once. One safe player answers: "Hier endet eure Reichweite. Die Brandmauer steht!" (invented).
+  - Combined pattern: the cast opens with a push ring toward the holes, so players get shoved toward exactly the places where they are not safe.
+  - **Answer:** run to an intact stretch of wall, dodge or absorb the ring; stun interrupts it. Every hole the run left open (and every Sauerländer vote that passed) costs safe wall here, so repairing in the Späti and the Antifa-Ortsgruppe pay off. Co-op: start holes (one per player) leave fewer safe strips, teammates have to share them.
+  - **Satire:** her message only reaches this far because a billionaire's platform amplifies it (the live talk on X, context of `weidel-03`); where the Brandmauer holds, her reach ends. That's the game's title as a mechanic: the players stand together at the firewall, they don't run from her.
+- **Briefkastenfirmen (P3, new; research R3).**
+  - With her gold-bar shield (20 % of max HP) come **letterboxes** ("Briefkastenfirma", a gold box covered in company plates): 3 solo, 4 from 2 players, in the corners 200 px from the walls. They don't move or attack; each has 0.7 % of her max HP (so they scale with players and Umfrage like she does).
+  - While a letterbox stands, a gold dashed line with coins runs from it to her and it **recharges her shield** by 0.1 % of her max HP per second (up to the 20 %).
+  - **When the last one falls, her shield breaks** ("Das Steuerparadies hat Risse!"). 25 s later (18 s at 35 %) all of them open again together at new free spots (corners and the middles of the sides, never her chalet): "Neue Adresse, gleiche Firma." (invented), and the shield regrows from zero. So the fight has a rhythm: clear the letterboxes, then a window on her. Single boxes don't come back on their own. They are not encounter units: she can be beaten with letterboxes standing.
+  - **Answer:** switch targets (target mode "closest" and walk to a corner), split up in co-op (one person per corner), put summons in the corners.
+  - **Satire:** structure, not person (content guidelines §2): the tax haven as an address with a hundred company plates. No money bag, no greed caricature, and no claim that she evades taxes; `weidel-09` (inheritance tax "gegen Null") and `weidel-10` ("Ich zahle hier meine Steuern", her Swiss residence) stand on the cards next to it.
+- **Wahlabend (soft enrage, research R4).** From 150 s of her fight (120 s from Umfrage 30 %), every 15 s one step: +10 % movement, wing/gold tempo and signature cadence, up to 5 steps (+50 %). Her bubble "Neue Hochrechnung: Wir legen zu!" (invented); the boss bar shows "Hochrechnung +20 %". Keeps slow builds from sitting the fight out; with Boss-Wiederholung a failed try costs time, not the run.
+
+**HP and tuning (D-145):** `final_boss_mult` 4.5 → 5.5, measurements in balancing.md §7 "Final boss (v0.4.1)". Target: with the same build she takes clearly longer than the Sauerländer; strong builds 90–150 s at the top Umfrage; a first try can fail.
+
+**Co-op (networking.md: one code path):** chain length +1 from 3 players; every charge re-picks a random target; a fourth letterbox from 2 players and letterbox HP follows her max HP (which scales with the team); Reichweite and the safe strips work the same for everyone; the HUD and view read everything from the snapshot (letterboxes are enemies, lanes/rotors/Reichweite are hazards with `h_ang`, the Wahlabend step `hoch` is in the boss block: snapshot version 5, protocol 6).
 
 ### Boss rules (spec, D-102 to D-104; design in research/boss_ideen.md)
 Goal: bosses take long enough for their mechanics to matter (elites 25–45 s, final boss 60–90 s for a strong build), and ultimates help without ending the fight. Normal waves stay as they are; only encounter units (elites, minibosses, boss) change. All numbers are starting values for the next balancing round.
@@ -526,7 +566,7 @@ Goal: bosses take long enough for their mechanics to matter (elites 25–45 s, f
 - **Resistance:** a stun on an encounter unit lasts half as long, then the unit is **"Standfest"** for 10 s (15 s from Umfrage 30 %): immune to further stuns, shown by a press-spokesperson shield icon. Every stun **interrupts the ability the boss is casting** ("UNTERBROCHEN"). Slow from any source (Kleber, Straßenblockade, Antrag gestellt, …) is capped at 40 % on bosses and minibosses (the Sylt-Clique, tier 1, stays uncapped).
 - **Melee hits harder:** melee weapons deal ×2 damage to elites, minibosses and bosses (v0.4, D-121); they have to stand next to them.
 - **Ultimates:** "Fragen Sie mal uns" makes the Sauerländer take ×1.5 damage (was ×2) for 6 s. Against the final boss every player's ultimate recharges at each of her phase changes (up to 3 uses in the fight). Critical Mass and Urlaubsantrag stay unchanged.
-- **HP:** new `diff_boss_hp` +0.15 per Umfrage level (×1.0 at 10 % up to ×1.75 at 35 %), on top of `diff_hp`, only for encounter units. Tuned in the v0.4 balancing round (D-118): `final_boss_mult` 4.5 (D-102: 1.6), per-encounter `hp_mult` Sylt-Clique 1.25, Geschichtslehrer 2.2, Sauerländer 2.0 (D-102: 1.0 / 1.4 / 1.6), `elite_coop` 0.3 (D-102: 0.5; co-op teams deal less damage per player than solo, so elites fled at the wave timer).
+- **HP:** new `diff_boss_hp` +0.15 per Umfrage level (×1.0 at 10 % up to ×1.75 at 35 %), on top of `diff_hp`, only for encounter units. Tuned in the v0.4 balancing round (D-118): `final_boss_mult` 4.5 (D-102: 1.6; 5.5 since v0.4.1, D-145), per-encounter `hp_mult` Sylt-Clique 1.25, Geschichtslehrer 2.2, Sauerländer 2.0 (D-102: 1.0 / 1.4 / 1.6), `elite_coop` 0.3 (D-102: 0.5; co-op teams deal less damage per player than solo, so elites fled at the wave timer).
 - **Telegraphs:** enemy danger is red with a dashed edge and a fill that grows until impact; lasting zones are red hatching; "stand here" zones are a solid blue-turquoise ring with a hand icon. Minimum warning times: 0.8 s for a targeted impact, 1.2 s for arena-wide attacks, 2.0 s for arena changes; Umfrage shortens them by at most 25 %. Boss telegraphs never fade with **Eigene Effekte**.
 
 **New abilities:**
@@ -635,7 +675,7 @@ Offers a set of modifier options; the result applies for **4 waves** (`Content.V
 - 1 arena with the Brandmauer
 - 8 characters, plus Die Töchter as an unlock
 - 3 Organisationen
-- 12 weapons, 57 items (green/blue/purple/red)
+- 12 weapons, 61 items in the shop pool (green/blue/purple/red; 12 red)
 - 20 waves (ramping), with 3 elites/minibosses (waves 5/10/15) and 1 boss (wave 20)
 - The Späti with combine, sell, discard and statistics
 - Zusammenhalt progression
@@ -678,10 +718,15 @@ The whole game is fully playable with a gamepad (Xbox/PlayStation/Switch layouts
 | Confirm in menus | A / ✕ | Enter |
 | Back / close dialog | B / ○ | Esc |
 | Späti tabs/sections | LB / RB jump between the sections Angebote, Waffen, Items, Kasse, Mauer, Vertrag, Bereit and Werte; the right stick scrolls lists | — |
+| Lobby areas | LB / RB jump between Einstellungen (Organisation, Umfrage, Boss-Wiederholung), Charaktere (your selected card) and the bottom row (Bereit, else Los; D-124) | — |
 
 - **Every menu, dialog and the Späti are navigable with focus:** there's a visible focus frame, focus never gets lost, and the first sensible button gets focus.
 - **Directions mean directions:** right moves to the control on the right, down to the one below, and so on.
 - **In the Späti, the D-pad, left stick and arrow keys stay inside the current section.** At the edge of a section, focus stays where it is. Only LB / RB change the section.
+- **Focus stays where you were when an action removes the focused control** (buy, sell, combine, discard):
+  - After a buy, focus goes to the next offer you can still buy. From the last offer it wraps to the first.
+  - With no buyable offer left, focus goes to Neu würfeln. Otherwise it goes to the first control of the same section. It never jumps to the header (Statistik) (D-126).
+- **The level-up options are one row:** left / right walk the options in order and never stop on the reroll below them. Down goes to the reroll; up from the reroll goes back to the option you came from (D-123).
 - **The character grid in the lobby is read like text:**
   - Right on the last card of a row goes to the first card of the next row.
   - Left on the first card of a row goes to the last card of the previous row.

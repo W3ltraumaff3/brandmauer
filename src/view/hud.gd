@@ -514,6 +514,12 @@ func _draw_boss(vs: ViewState, sz: Vector2, ult_r := Rect2()) -> Rect2:
 		draw_arc(c, 5.5, 0, TAU, 10, INK, 1.5)
 	var bar := Rect2(r.position + Vector2(14, 32), Vector2(w - 28, 16))
 	_bar(bar, float(b.get("hp", 0.0)), Color(0.75, 0.12, 0.12), Color(1, 1, 1, 0.6), 7)
+	var hoch := int(b.get("hoch", 0))
+	if hoch > 0:
+		# Wahlabend (D-144): the final fight speeds up, shown left of the phase dots
+		var pct := int(round(hoch * float(Content.BOSS["wahl_step"]) * 100.0))
+		_txt(tr("HUD_HOCHRECHNUNG") % pct, Vector2(r.position.x + w * 0.45, r.position.y + 22), 16, RED.darkened(0.15),
+			null, HORIZONTAL_ALIGNMENT_RIGHT, w * 0.55 - 74.0)
 	_draw_boss_cast(vs, r)
 	var sh: float = b.get("shield", 0.0)
 	if sh > 0.0:

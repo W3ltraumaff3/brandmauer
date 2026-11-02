@@ -38,6 +38,11 @@ Source of truth for how difficulty, economy and player power scale. Every number
   - `prefer=<weapon|item>[,...]`: bought first whenever offered and affordable, in every
     mode; a preferred weapon with full slots sells the lowest-tier non-preferred weapon.
     `prefer` only biases purchases; use `start=` to guarantee a weapon is played.
+  - `buy=<item>:<wave>[,...]`: from the Späti after that wave on, until the bot owns it, the
+    item is added as a fifth offer at its normal shop price and bought first once the bot
+    can pay for it (D-136). Measures an item at the price and wave a player would really buy
+    it (a red item first shows up after wave 7), unlike `item=`, which gives it for free
+    from wave 1. A run that never affords it is identical to the run without `buy=`.
   - **Behaviour switches** (bot 3, D-105; on by default except `castult`; `=0` turns one off for A/B):
     - `ult=smart|1|boss|0` (default `smart`): the ultimate, once per wave (the final boss
       recharges it at her phase changes). `smart`: heal ultimates (Urlaubsantrag, Kaffee
@@ -67,6 +72,18 @@ Source of truth for how difficulty, economy and player power scale. Every number
   - `jobs=N`, `tag=<text>`: only recorded in the JSON line.
   - `stop=<wave>`: end the run at the Späti after that wave, e.g. `stop=1` for the wave-1
     income of a start weapon (D-117); the report then prints only the "Wave-1 income" table.
+  - `retry`: Boss-Wiederholung on (§8): a lost boss wave starts over, the run goes on.
+  - `mortal=<wave>[,...]`: the bots can't die except in these waves (healed every frame
+    elsewhere, like `immortal`). `mortal=15,20 retry` plays the Sauerländer and the final
+    boss for real with the loadout of a full run at any Umfrage, even 35 % where mortal
+    bots never get there (D-146). The JSON line has `mortal`, `retry`, `retries`.
+  - Boss waves record (D-146): `retries` (Boss-Wiederholungen in the wave), `enc_kill`
+    (kill time of the winning attempt) and `enc_total` (incl. failed attempts), `tele_on`
+    (share of the fight with a boss cast or boss telegraph up), `tele_in` (share of living
+    player time inside an enemy danger zone: lob markers, cones, lanes, rotors, the band,
+    the Reichweite outside its safe strips; `Sim.danger_at`), `enc_by` (damage taken by
+    source during the fight, × max HP per player), `casts` (boss casts started, by id),
+    `interrupts`, `phase_t` (seconds into the attempt at which each phase began).
   - Unknown ids or values stop the run with an error on stderr and no JSON line; so does a
     run that fails (e.g. a script error in the game code).
   - All bots of a run get the same options. For A/B, run the same seeds with and without an
@@ -90,6 +107,10 @@ Source of truth for how difficulty, economy and player power scale. Every number
     keeping the wanted distance to the nearest enemy (or the focused boss), strafing
     sideways, the bot's own Plenum circle during an Abstimmung (the first
     `plenum_needed()` living bots by id each take one), revives, pickups, smooth movement.
+  - **Final boss (D-146):** her lanes, rotor lines and the Reichweite cost what `Sim.danger_at`
+    says; during a Reichweite the bot walks to `Sim.reich_safe_spot` (the nearest safe strip in
+    front of the intact wall). While letterboxes stand it focuses and targets the nearest one
+    (target mode "closest"), like a player who switches targets.
   - **Klimakleber:in** gets a standing bonus; with weapons that only work while moving
     (`trail`: Straßenkreide) it walks for a share of every 3 s cycle equal to
     (trail weapons ÷ weapons), so the marks keep coming.
@@ -304,6 +325,40 @@ Data: `balance/runs/v0.4.0-beta/` (final code 3589912e33); decisions D-113 to D-
   summon build with Gewerkschaft is now the strongest bot build at 35 % (watch in playtests; the
   lever would be the passive's own-summon count); the rest of the boss-rule numbers.
 
+### Red items (v0.4.1, 2026-11-03; bot 3, `buy=<item>:8`, solo)
+Data: `balance/runs/v0.4.1-beta/` (final code ddac79751b); decisions D-127 to D-136. Each item
+is offered from the Späti after wave 8 on at its shop price and bought first once affordable
+(typically after wave 8–9, 145–250 Pfand), paired with the same seeds without it. Outcome = wave
+reached (21 = won), B−A ± SE over the pairs.
+
+| Item (build) | Before (v0.4.0) | After (final) | n | Wins A → B (after) |
+|---|---|---|---|---|
+| Hausbesetzung (melee, unchanged) | +0.25 ± 0.11 | +0.75 ± 0.56 | 16 | 4 → 8; final boss 105 → 81 s |
+| Wurfmaschine (ranged) | −0.56 ± 0.56 | +1.25 ± 0.85 | 16 | 14 → 16 |
+| Doppelwumms (ranged) | −0.12 ± 0.09 | +1.25 ± 0.85 | 16 | 14 → 16 |
+| Genossenschaftsanteil (ranged / crit) | −2.38 ± 1.07 / — | +0.50 ± 0.65 / +0.06 ± 0.82 | 16 / 16 | 14 → 15 / 8 → 8 |
+| Cum-Ex-Erstattung (ranged / crit) | −2.44 ± 1.09 / — | −0.12 ± 0.92 / +0.69 ± 1.05 | 16 / 16 | 14 → 14 / 8 → 9 |
+| Ehrenamtskarte (summon, unchanged) | 0 (ceiling) | 0 (ceiling) | 16 | 15 → 15; final boss 165 → 92 s |
+| Kompost (status Oma + Kleber, unchanged) | 0 (ceiling) | +0.56 ± 0.56 | 16 | 11 → 12 |
+| Kritische Masse (crit) | −0.81 ± 1.09 | +2.75 ± 1.44 | 16 | 8 → 13; final boss 47 → 31 s |
+| Entlassungsurkunde (crit) | −4.25 ± 1.40 | +1.38 ± 1.30 | 16 | 8 → 10 |
+| Tarnkappe (crit / ranged) | −2.50 ± 1.19 / — | +1.12 ± 1.53 / +0.12 ± 0.92 | 16 / 16 | 8 → 10 / 14 → 14 |
+| Robin-Hood-Kostüm (melee) | −1.62 ± 1.01 | +0.56 ± 1.00 | 16 | 4 → 5 |
+| Brandmauer-Fertigputz (melee / tank, unchanged) | +0.50 ± 0.57 / +0.06 | +1.12 ± 0.73 / +0.06 ± 0.06 | 16 / 16 | 4 → 5 / 0 → 1 |
+
+- "Before" cells: `before2` (v0.4.0, ranged and crit at Umfrage 20 / 35 %, the others 10 / 20 %) and
+  `r2before` (melee); the "after" cells are crit and ranged at 20 % with 16 seeds, the others 10 / 20 %
+  with 8 seeds each (summon 20 / 35 %). The bases differ a little between them because the four red
+  politics items are now in the shop pool (D-127).
+- Money items: with the Genossenschaftsanteil the bot spends 345 instead of 261 Pfand in the very next
+  Späti and 1.5–1.8× as much from wave 12 on; Cum-Ex about +100 per visit until the audit at wave 15.
+  The bot converts the extra money into few extra wins because ranged is at the win ceiling at 20 %
+  and it never saves on purpose; a saving player gets more.
+- Nothing trivializes the run: the largest gain is Kritische Masse (+2.8 waves, the crit bot from
+  8 to 13 wins of 16 at Umfrage 20 %). Tarnkappe still costs armor builds (tank: −0.7 ± 0.6 waves with +40 in round 1); that
+  build has Brandmauer-Fertigputz. The tank bot affords a red item in only 2–3 of 16 runs (it is poor
+  and dies early), so tank numbers are thin.
+
 ## 3. Enemies
 
 - **HP:** `base × (1 + hp_lin·w + hp_quad·w² + hp_cubic·w³) × Umfrage hp × co-op hp`, where
@@ -390,7 +445,7 @@ not wave income), computed for every player at once from the values before any t
 ## 6. Lifesteal (like Brotato)
 
 - 1 Lebensraub point = **1 % chance per hit** to heal 1 HP; at most 10 heals per second.
-- The red lifesteal build keeps its bigger heal per proc.
+- The red lifesteal build (Robin-Hood-Kostüm) heals 4 HP per proc instead of 1 and turns Krankenschein points into Umverteilung (D-134).
 - **Krankenschein (HP regen): 0.08 HP per second per point** (v0.4, D-119; was 0.12), level-up
   +3 as before. Measured as HP actually healed per stat point and minute in bot runs, it now
   sits in the same band as Umverteilung (see "After tuning (v0.4.0)"; before 1.01–1.45 vs 0.47–0.61).
@@ -401,7 +456,7 @@ not wave income), computed for every player at once from the values before any t
   scales with the team (`elite_base` 0.6 solo, + `elite_coop` 0.3 per extra player; v0.4, D-118,
   was 0.5). `diff_boss_hp` (0.15 per Umfrage level L) and the per-encounter `hp_mult`
   (`Content.ENCOUNTERS`: Sylt-Clique 1.25, Geschichtslehrer 2.2, Sauerländer 2.0; were 1.0 / 1.4 / 1.6)
-  act only on encounter units. Die Remigrantin additionally × `final_boss_mult` (4.5, was 1.6). D-102, D-118.
+  act only on encounter units. Die Remigrantin additionally × `final_boss_mult` (5.5 since v0.4.1, D-145; 4.5 in v0.4.0, D-118; 1.6 before). D-102, D-118.
 - **Melee against encounter units: ×2** (`melee_vs_boss`, v0.4, D-121): every melee weapon deals
   double damage to elites, minibosses and bosses, because it has to stand next to them.
 - **Elites grow with the waves:** × `(enemy HP curve(wave) / curve(5)) ^ elite_wave_exp`, so the
@@ -412,6 +467,22 @@ not wave income), computed for every player at once from the values before any t
   this replaced the old "phase 2 at 50 %" switch. Movement and basic attacks run `Content.BOSS.phase_tempo`
   (×1.0 / ×1.2 / ×1.4) as fast per phase; signature abilities keep real time. Every boss-rule knob lives in `Content.BOSS`.
 - Unique multi-phase bosses: spec in GDD §14 "Boss rules" (D-102 to D-104), tuned in the next balancing round.
+
+### Final boss (v0.4.1, D-140 to D-146)
+Data: `balance/runs/v0.4.1-beta/final_boss/` (80 paired runs, `mortal=15,20 retry` and `immortal`; the
+Sauerländer's wave came out identical in all 80 pairs). Every number of her kit lives in `Content.BOSS`
+(`kette_*`, `ansturm_*`, `rotor_*`, `reich_*`, `brief_*`, `wahl_*`, `shield`, `p3_ring_every`).
+- **Why the Sauerländer felt harder:** he flees at his 60 s wave timer (killed 0 of 12 times by ranged,
+  summon and status at Umfrage 35 %), he deals as much or more damage per minute (35 %: ranged 0.78 vs her
+  0.66 × max HP), and ~70 % of her damage was unavoidable push-ring chip damage.
+- **Median kill time, solo (before → after):** ranged 37 → 49 s / 59 → 71 s / 133 → 155 s at 10 / 20 / 35 %;
+  summon 109 → 96 / 89 → 134 / 104 → 145 s; status 81 → 123 / 66 → 126 / 392 → 201 s. 4 players at 20 %:
+  ranged 60 → 77 s, summon 50 → 87 s. Immortal ranged 50 / 58 / 113 → 60 / 71 / 138 s.
+- **Pressure at 35 %:** damage taken per minute ranged 0.66 → 1.13, summon 0.42 → 0.71 (Sauerländer 0.78 /
+  0.72); time inside a danger zone 0.14 → 0.25 and 0.10 → 0.26. First tries lost at 35 %: ranged 1 → 2 of 4.
+- **Open:** summon and status lose much damage in phase 3 (stands and zones stay behind while they walk to the
+  letterboxes and the safe strips; immortal summon at 20 % 90 → 309 s); melee still can't finish her (open
+  questions); at 10–20 % the bot hardly ever loses a first try, humans will. Check in playtests.
 
 ## 8. Retry for boss waves (option)
 

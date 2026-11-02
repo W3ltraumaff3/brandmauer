@@ -2,6 +2,8 @@ extends TestCase
 ## Controller support helpers (GDD §19b) and the menu frame cap (GDD §4).
 ## The full screen-by-screen navigation check is tools/gamepad_nav_check.gd.
 
+const AREAS := ["ui"]  # ci-cd.md §2a
+
 
 func after_each() -> void:
 	InputGlyphs.set_device(InputGlyphs.Device.KEYBOARD, "xbox")

@@ -2,6 +2,8 @@ extends TestCase
 ## Option "Eigene Effekte" (GDD §19a, D-086): what counts as the players' side,
 ## the clamp, and the Fx layer that fades as a group.
 
+const AREAS := ["view"]  # ci-cd.md §2a
+
 
 func test_projectiles_classified() -> void:
 	# every weapon projectile is the players', every enemy projectile is not

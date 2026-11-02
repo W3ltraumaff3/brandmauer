@@ -8,13 +8,18 @@ extends SceneTree
 ## build's own character unless char= is given), char=<id>[,<id>...] (bot i plays
 ## the i-th character, cycling), start=<weapon>[:tier][,...] (replaces the start
 ## weapon), item=<item>[,...] (start items), prefer=<weapon|item>[,...] (bought
-## first whenever offered), jobs=N / tag=<text> (only recorded).
+## first whenever offered), buy=<item>:<wave>[,...] (offered in every Späti from that
+## wave on until owned, at the shop price, and bought first once affordable),
+## jobs=N / tag=<text> (only recorded).
 ## Behaviour switches for A/B runs (default first): ult=smart|1|boss|0,
 ## move=1|0 (planner / v2 kiting), dodge=1|0, spread=1|0, target=1|0, pickup=1|0,
 ## shop=1|0, streik=1|0, castult=1|0, metrics=1|0 (weapon delivery metrics).
 ## Game-rule experiments: place=target|lead|cluster|between (where ground weapons land),
 ## zonetime=<k> (puddles and walls live k x as long at 1/k damage per second).
 ## stop=<wave>: end the run at the Späti after that wave (quick early-game probes).
+## retry: Boss-Wiederholung on (balancing.md §8); mortal=<wave>[,...]: bots can't die
+## except in these waves (e.g. mortal=15,20: boss fights with a full-run loadout at any
+## Umfrage). Boss waves record retries, enc_total, tele_on / tele_in, enc_by, casts.
 ## tools/balance_matrix.sh runs many of these in parallel; tools/balance_report.py
 ## turns the JSON lines into tables.
 
@@ -79,6 +84,7 @@ var _loadout := {}   # player id -> [{"w", "weapons", "stats", "dmg"}, ...] per 
 var _pressure := {}  # player id -> damage taken in the last wave (× max HP)
 var _shop_log := {}  # player id -> {"sold", "lu_rerolls", "repairs"}
 var _prefer: Array = []
+var _buy: Array = []   # buy=: [[item id, first Späti wave], ...], offered and bought at the shop price
 
 
 func _initialize() -> void:
@@ -87,7 +93,7 @@ func _initialize() -> void:
 		save.persist = false
 	_bot = Bot.new()
 	var cfg := {"n": 1, "umfrage": 0, "seed": 1, "immortal": false, "chars": [], "start": [], "items": [],
-		"jobs": 0, "tag": "", "place": "", "zonetime": 1.0, "stop": 0}
+		"jobs": 0, "tag": "", "place": "", "zonetime": 1.0, "stop": 0, "retry": false, "mortal": []}
 	var bad := []
 	var switches := {"move": true, "dodge": true, "spread": true, "target": true, "pickup": true, "shop": true,
 		"streik": true, "castult": false, "metrics": true}
@@ -104,6 +110,14 @@ func _initialize() -> void:
 			cfg["immortal"] = true
 		elif a == "random":
 			_random = true
+		elif a == "retry":
+			cfg["retry"] = true
+		elif a.begins_with("mortal="):
+			for e in _list(v):
+				if str(e).is_valid_int() and int(e) >= 1 and int(e) <= Content.WAVE_COUNT:
+					cfg["mortal"].append(int(e))
+				else:
+					bad.append("mortal " + str(e))
 		elif a.begins_with("char="):
 			cfg["chars"] = _list(v)
 			for c in cfg["chars"]:
@@ -135,6 +149,15 @@ func _initialize() -> void:
 					_prefer.append(id)
 				else:
 					bad.append("prefer " + id)
+		elif a.begins_with("buy="):
+			for e in _list(v):
+				var es := str(e)
+				var id := es.get_slice(":", 0)
+				var at := int(es.get_slice(":", 1)) if es.contains(":") else 1
+				if Content.ITEMS.has(id) and at >= 1:
+					_buy.append([id, at])
+				else:
+					bad.append("buy " + es)
 		elif a.begins_with("ult="):
 			if v in ["0", "1", "boss", "smart"]:
 				_bot.ult = v
@@ -238,7 +261,8 @@ func _run(cfg: Dictionary) -> Dictionary:
 	var n: int = cfg["n"]
 	var seed: int = cfg["seed"]
 	var umfrage: int = cfg["umfrage"]
-	var immortal: bool = cfg["immortal"]
+	var mortal: Array = cfg["mortal"]
+	var immortal: bool = cfg["immortal"] or not mortal.is_empty()
 	var chars: Array = cfg["chars"]
 	var players := []
 	for i in n:
@@ -252,7 +276,7 @@ func _run(cfg: Dictionary) -> Dictionary:
 		players.append({"id": i + 1, "name": "bot%d" % (i + 1), "char": c})
 	var s := Sim.new()
 	s.start_run({"seed": seed, "players": players, "org": Content.ORG_ORDER[seed % Content.ORG_ORDER.size()],
-		"difficulty": umfrage, "skip_intro": true})
+		"difficulty": umfrage, "skip_intro": true, "boss_retry": cfg["retry"]})
 	if cfg["place"] != "":
 		s.place_mode = cfg["place"]
 	s.zone_time_mult = cfg["zonetime"]
@@ -267,6 +291,9 @@ func _run(cfg: Dictionary) -> Dictionary:
 	var steps := 0
 	var last_phase := -1
 	var enc_start := -1.0
+	var enc_first := -1.0     # start of the first attempt (Boss-Wiederholung)
+	var retries0 := 0
+	var fight := {}           # boss-fight extras of the current wave (frames, telegraphs, casts)
 	var started := Time.get_ticks_msec()
 	var game_t := 0.0
 	# per player-run extras
@@ -306,6 +333,10 @@ func _run(cfg: Dictionary) -> Dictionary:
 					p.set_meta("taken0", float(p.log["dmg_taken"]))
 					p.set_meta("dealt0", float(p.damage))
 				enc_start = -1.0
+				enc_first = -1.0
+				retries0 = s.retries
+				fight = {"frames": 0, "on": 0, "in": 0, "alive": 0, "by": {}, "casts": {}, "int": 0, "cast": ""}
+				acc["fight"] = fight
 			_bot.tick()
 			for p in s.players.values():
 				if p.state == 0:
@@ -350,6 +381,8 @@ func _run(cfg: Dictionary) -> Dictionary:
 				if taken_now > 0.0:
 					var src := _damage_source(s, p, b[3])
 					taken_by[p.id][src] = float(taken_by[p.id].get(src, 0.0)) + taken_now
+					if enc_start >= 0.0:
+						fight["by"][src] = float(fight["by"].get(src, 0.0)) + taken_now / maxf(1.0, p.stats["max_hp"]) / n
 				if states[p.id] == 0 and p.state == 0 and s.phase == Sim.Phase.WAVE:
 					alive_t[p.id] += DT
 					if p.still_time >= STILL_BONUS_AFTER:
@@ -369,27 +402,40 @@ func _run(cfg: Dictionary) -> Dictionary:
 			cur["hp_min"] = minf(float(cur["hp_min"]), team_hp / maxf(1.0, team_max))
 			var taken := 0.0
 			var dealt := 0.0
+			var imm_now := immortal and not mortal.has(s.wave)
 			for p in s.players.values():
 				taken += (float(p.log["dmg_taken"]) - float(p.get_meta("taken0"))) / maxf(1.0, p.stats["max_hp"])
 				dealt += float(p.damage) - float(p.get_meta("dealt0"))
-				if immortal:
+				if imm_now:
 					if p.state == 1:
 						p.state = 0
 					p.hp = p.stats["max_hp"]
 			cur["taken"] = snappedf(taken / n, 0.01)
 			cur["dps"] = snappedf(dealt / maxf(1.0, cur["t"]) / n, 0.1)
 			if s.encounter != "":
+				if s.retries > retries0 + int(cur.get("retries", 0)):
+					# Boss-Wiederholung: the kill time counts from the new attempt
+					cur["retries"] = s.retries - retries0
+					enc_start = cur["t"]
+					fight.erase("ph")
+					fight["f0"] = fight["frames"]   # phase times count from the new attempt
 				if enc_start < 0.0 and s._encounter_alive():
 					enc_start = cur["t"]
+					enc_first = cur["t"]
 					cur["enc"] = s.encounter
 				elif enc_start >= 0.0 and not cur.has("enc_kill") and not s._encounter_alive():
 					cur["enc_kill"] = snappedf(cur["t"] - enc_start, 0.1)
+					cur["enc_total"] = snappedf(cur["t"] - enc_first, 0.1)
+				if enc_start >= 0.0 and s._encounter_alive():
+					_fight_frame(s, fight)
 				if enc_start >= 0.0 and s._encounter_alive():
 					# HP share the encounter still has (the last value before the wave ends):
 					# > 0 without enc_kill = it fled at the wave timer or the team died
 					cur["enc_left"] = snappedf(s._enc_frac(s.encounter), 0.001)
 		last_phase = ph
-		s.take_events()
+		for ev in s.take_events():
+			if ev[0] == "interrupt" and enc_start >= 0.0:
+				fight["int"] += 1
 		steps += 1
 		# A wave that lasts 10 minutes is stuck (e.g. a boss the bots can't kill): end the run.
 		if ph == Sim.Phase.WAVE and float(cur.get("t", 0.0)) > STUCK_S:
@@ -429,9 +475,10 @@ func _run(cfg: Dictionary) -> Dictionary:
 	var secs := (Time.get_ticks_msec() - started) / 1000.0
 	return {"players": n, "umfrage": umfrage, "seed": seed, "immortal": immortal, "random": _random, "build": _build,
 		"char": ",".join(chars), "start": cfg["start"].map(func(e): return "%s:%d" % e), "item": cfg["items"],
-		"prefer": _prefer, "ult": _bot.ult, "dodge": _bot.dodge, "switches": cfg["switches"], "tune": cfg.get("tune", ""),
+		"prefer": _prefer, "buy": _buy.map(func(e): return "%s:%d" % e), "ult": _bot.ult, "dodge": _bot.dodge, "switches": cfg["switches"], "tune": cfg.get("tune", ""),
 		"place": s.place_mode, "zonetime": cfg["zonetime"], "bot": BOT_VERSION,
 		"content": content_hash(), "code": code_hash(), "jobs": cfg["jobs"], "tag": cfg["tag"],
+		"mortal": mortal, "retry": cfg["retry"], "retries": s.retries,
 		"won": won, "wave": s.wave, "secs": snappedf(secs, 0.1),
 		"ms_per_game_s": snappedf(secs * 1000.0 / maxf(1.0, game_t), 0.1), "waves": waves, "final": final}
 
@@ -502,6 +549,74 @@ func _close_wave(cur: Dictionary, acc: Dictionary, _n: int) -> void:
 			cur["effects"][k] = snappedf(acc[k] / es, 0.01)
 	cur["summons_max"] = acc["summons_max"]
 	cur["summons_mean"] = snappedf(acc["summons"] / maxf(1.0, acc["frames"]), 0.1)
+	var f: Dictionary = acc.get("fight", {})
+	if int(f.get("frames", 0)) > 0:
+		# boss fight: share of time with a boss telegraph up / a living player inside a
+		# danger zone, damage taken by source (× max HP per player), casts, interrupts
+		cur["tele_on"] = snappedf(float(f["on"]) / f["frames"], 0.01)
+		cur["tele_in"] = snappedf(float(f["in"]) / maxf(1.0, f["alive"]), 0.01)
+		var by := {}
+		for k in f["by"]:
+			by[k] = snappedf(f["by"][k], 0.01)
+		cur["enc_by"] = by
+		cur["casts"] = f["casts"]
+		cur["interrupts"] = f["int"]
+		if f.has("ph"):
+			cur["phase_t"] = f["ph"]
+
+
+## Telegraph types the fight metrics count (owner-0 hazards); the rest are pictures.
+const TELE_TYPES := ["lob_marker", "kerosin", "abschiebezone", "push_ring", "abstimmung", "plenum", "kahlschlag",
+	"ansturm_bahn", "rotor", "reichweite", "briefkasten_link"]
+
+
+## One boss-fight frame: is a boss telegraph up, is each living player inside a danger
+## zone (circles, cones, lanes, the band, an arena-wide wave outside its safe strips).
+func _fight_frame(s: Sim, f: Dictionary) -> void:
+	f["frames"] += 1
+	for e in s.enemies:
+		if e.alive and e.encounter != "" and e.phase >= f.get("ph", [0]).size():
+			# fight time (s since this attempt's encounter start) at which each phase began
+			if not f.has("ph"):
+				f["ph"] = [0.0]
+			f["ph"].append(snappedf((f["frames"] - int(f.get("f0", 0))) * DT, 0.1))
+	if s.boss_cast != "" and s.boss_cast != f["cast"]:
+		f["casts"][s.boss_cast] = int(f["casts"].get(s.boss_cast, 0)) + 1
+	f["cast"] = s.boss_cast
+	var on := s.boss_cast != ""
+	var tele := []
+	for h in s.hazards:
+		if h.alive and h.owner == 0:
+			var tn: String = Content.HAZARD_ORDER[h.type]
+			if tn in TELE_TYPES:
+				on = true
+				tele.append([tn, h])
+	if on:
+		f["on"] += 1
+	for p in s.players.values():
+		if p.state != 0:
+			continue
+		f["alive"] += 1
+		for x in tele:
+			if _in_danger(s, x[0], x[1], p.pos):
+				f["in"] += 1
+				break
+
+
+func _in_danger(s: Sim, tn: String, h, pos: Vector2) -> bool:
+	var pr := Content.PLAYER_RADIUS
+	match tn:
+		"lob_marker", "kerosin":
+			return pos.distance_to(h.pos) < h.radius + pr
+		"abschiebezone":
+			return not h.data.get("warn", false) and s.in_band(pos, h.radius)
+		"push_ring":
+			return absf(pos.distance_to(h.pos) - h.radius) < 24.0
+		"kahlschlag":
+			return Sim.in_cone(h.pos, h.ang, deg_to_rad(float(Content.BOSS["kahl_arc"])) * 0.5, h.radius, pos, pr)
+	if s.has_method("danger_at"):
+		return s.danger_at(h, pos)   # her own hazards (lanes, rotor lines, the Reichweite wave)
+	return false
 
 
 ## Enemy projectiles close to a player before a step (to find what hit them).
@@ -585,6 +700,7 @@ func _shop_all(s: Sim) -> Dictionary:
 			s.request(p.id, "levelup", best)
 			lu_rerolls = 0
 		_note_offers(p)
+		var forced := _offer_forced(s, p)
 		for attempt in 8:
 			var bought := false
 			var order: Array = range(p.offers.size())
@@ -595,6 +711,9 @@ func _shop_all(s: Sim) -> Dictionary:
 			elif _shop3 and _pressure.get(p.id, 0.0) > PRESSURE_HIGH:
 				order = _defensive_first(p, order)
 			order = _prefer_first(p, order)
+			if forced >= 0 and not p.offers[forced]["sold"]:
+				order.erase(forced)
+				order.push_front(forced)
 			for i in order:
 				var o: Dictionary = p.offers[i]
 				if o["sold"] or o["price"] > p.pfand:
@@ -602,7 +721,7 @@ func _shop_all(s: Sim) -> Dictionary:
 				if o["kind"] == "weapon" and p.weapons.size() >= p.max_weapons and Sim.find_twin(p, o["id"], o["tier"], -1) < 0:
 					if not (o["id"] in _prefer and _make_room(s, p)) and not _swap_off_build(s, p, o):
 						continue
-				if o["kind"] == "item" and o["id"] in AVOID and not o["id"] in _prefer:
+				if o["kind"] == "item" and o["id"] in AVOID and not o["id"] in _prefer and i != forced:
 					continue
 				var price: int = o["price"]
 				if s.request(p.id, "buy", i):
@@ -622,6 +741,7 @@ func _shop_all(s: Sim) -> Dictionary:
 				if s.request(p.id, "reroll"):
 					out["rerolls"] += 1
 					_note_offers(p)
+					forced = _offer_forced(s, p)
 			elif not bought:
 				break
 		if _shop3 and not _random:
@@ -720,6 +840,21 @@ func _note_loadout(s: Sim, p) -> void:
 	if not _loadout.has(p.id):
 		_loadout[p.id] = []
 	_loadout[p.id].append({"w": s.wave, "weapons": weapons, "stats": stats, "dmg": dmg})
+
+
+## buy=<item>:<wave>: from the Späti after that wave on, until the player owns the item,
+## it is added as an extra offer at its normal shop price (the rolled offers stay, so a
+## run that never buys it is the same as without buy=), and the bot buys it before
+## anything else once it can pay for it, like a player who sees a red item and saves
+## for it. Returns the offer index (-1 = none). Added again after a shop reroll.
+func _offer_forced(s: Sim, p) -> int:
+	for e in _buy:
+		if s.wave < int(e[1]) or p.items.has(e[0]):
+			continue
+		p.offers.append({"kind": "item", "id": e[0], "tier": 1, "rarity": int(Content.ITEMS[e[0]]["rarity"]),
+			"price": s._price(Content.item_price(e[0], s.wave + 1)), "sold": false})
+		return p.offers.size() - 1
+	return -1
 
 
 ## prefer=: preferred offers first, keeping the rest of the order (and adding them

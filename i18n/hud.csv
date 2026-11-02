@@ -82,3 +82,7 @@ FX_STANDFEST,Standfest
 FX_GESTRICHEN,GESTRICHEN
 FX_PLENUM,Plenum
 FX_ABSTIMMUNG,Abstimmung
+CAST_REICHWEITE,Reichweite sendet …
+FX_REICHWEITE_SAFE,Brandmauer
+FX_BRIEFKASTEN,Briefkastenfirma
+HUD_HOCHRECHNUNG,Hochrechnung +%d %%

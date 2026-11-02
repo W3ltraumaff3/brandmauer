@@ -1,0 +1,228 @@
+melee_base players=1 umfrage=0 seed=1 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=0 seed=1 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=0 seed=2 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=0 seed=2 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=0 seed=3 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=0 seed=3 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=0 seed=4 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=0 seed=4 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=0 seed=5 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=0 seed=5 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=0 seed=6 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=0 seed=6 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=2 seed=1 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=2 seed=1 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=2 seed=2 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=2 seed=2 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=2 seed=3 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=2 seed=3 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=2 seed=4 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=2 seed=4 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=2 seed=5 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=2 seed=5 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+melee_base players=1 umfrage=2 seed=6 build=melee jobs=16 tag=melee_base
+melee_haus players=1 umfrage=2 seed=6 build=melee jobs=16 tag=melee_haus buy=hausbesetzung:8
+tank_base players=1 umfrage=0 seed=1 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=0 seed=1 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=0 seed=1 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=0 seed=1 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=0 seed=1 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=0 seed=2 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=0 seed=2 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=0 seed=2 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=0 seed=2 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=0 seed=2 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=0 seed=3 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=0 seed=3 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=0 seed=3 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=0 seed=3 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=0 seed=3 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=0 seed=4 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=0 seed=4 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=0 seed=4 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=0 seed=4 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=0 seed=4 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=0 seed=5 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=0 seed=5 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=0 seed=5 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=0 seed=5 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=0 seed=5 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=0 seed=6 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=0 seed=6 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=0 seed=6 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=0 seed=6 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=0 seed=6 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=2 seed=1 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=2 seed=1 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=2 seed=1 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=2 seed=1 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=2 seed=1 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=2 seed=2 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=2 seed=2 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=2 seed=2 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=2 seed=2 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=2 seed=2 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=2 seed=3 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=2 seed=3 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=2 seed=3 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=2 seed=3 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=2 seed=3 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=2 seed=4 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=2 seed=4 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=2 seed=4 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=2 seed=4 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=2 seed=4 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=2 seed=5 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=2 seed=5 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=2 seed=5 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=2 seed=5 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=2 seed=5 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+tank_base players=1 umfrage=2 seed=6 build=tank jobs=16 tag=tank_base
+tank_putz players=1 umfrage=2 seed=6 build=tank jobs=16 tag=tank_putz buy=brandmauer_fertigputz:8
+tank_robin players=1 umfrage=2 seed=6 build=tank jobs=16 tag=tank_robin buy=robin_hood:8
+tank_tarn players=1 umfrage=2 seed=6 build=tank jobs=16 tag=tank_tarn buy=tarnkappe:8
+tank_geno players=1 umfrage=2 seed=6 build=tank jobs=16 tag=tank_geno buy=genossenschaftsanteil:8
+status_base players=1 umfrage=0 seed=1 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=0 seed=1 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=0 seed=2 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=0 seed=2 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=0 seed=3 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=0 seed=3 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=0 seed=4 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=0 seed=4 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=0 seed=5 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=0 seed=5 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=0 seed=6 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=0 seed=6 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=2 seed=1 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=2 seed=1 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=2 seed=2 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=2 seed=2 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=2 seed=3 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=2 seed=3 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=2 seed=4 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=2 seed=4 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=2 seed=5 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=2 seed=5 build=status jobs=16 tag=status_kompost buy=kompost:8
+status_base players=1 umfrage=2 seed=6 build=status jobs=16 tag=status_base
+status_kompost players=1 umfrage=2 seed=6 build=status jobs=16 tag=status_kompost buy=kompost:8
+summon_base players=1 umfrage=0 seed=1 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=0 seed=1 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=0 seed=2 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=0 seed=2 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=0 seed=3 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=0 seed=3 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=0 seed=4 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=0 seed=4 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=0 seed=5 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=0 seed=5 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=0 seed=6 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=0 seed=6 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=2 seed=1 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=2 seed=1 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=2 seed=2 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=2 seed=2 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=2 seed=3 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=2 seed=3 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=2 seed=4 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=2 seed=4 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=2 seed=5 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=2 seed=5 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+summon_base players=1 umfrage=2 seed=6 build=summon jobs=16 tag=summon_base
+summon_ehren players=1 umfrage=2 seed=6 build=summon jobs=16 tag=summon_ehren buy=ehrenamtskarte:8
+crit_base players=1 umfrage=0 seed=1 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=0 seed=1 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=0 seed=1 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=0 seed=2 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=0 seed=2 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=0 seed=2 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=0 seed=3 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=0 seed=3 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=0 seed=3 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=0 seed=4 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=0 seed=4 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=0 seed=4 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=0 seed=5 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=0 seed=5 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=0 seed=5 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=0 seed=6 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=0 seed=6 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=0 seed=6 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=2 seed=1 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=2 seed=1 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=2 seed=1 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=2 seed=2 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=2 seed=2 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=2 seed=2 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=2 seed=3 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=2 seed=3 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=2 seed=3 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=2 seed=4 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=2 seed=4 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=2 seed=4 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=2 seed=5 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=2 seed=5 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=2 seed=5 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+crit_base players=1 umfrage=2 seed=6 build=crit jobs=16 tag=crit_base
+crit_krit players=1 umfrage=2 seed=6 build=crit jobs=16 tag=crit_krit buy=kritische_masse:8
+crit_entl players=1 umfrage=2 seed=6 build=crit jobs=16 tag=crit_entl buy=entlassungsurkunde:8
+ranged_base players=1 umfrage=0 seed=1 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=0 seed=1 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=0 seed=1 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=0 seed=1 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=0 seed=1 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=0 seed=2 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=0 seed=2 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=0 seed=2 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=0 seed=2 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=0 seed=2 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=0 seed=3 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=0 seed=3 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=0 seed=3 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=0 seed=3 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=0 seed=3 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=0 seed=4 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=0 seed=4 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=0 seed=4 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=0 seed=4 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=0 seed=4 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=0 seed=5 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=0 seed=5 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=0 seed=5 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=0 seed=5 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=0 seed=5 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=0 seed=6 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=0 seed=6 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=0 seed=6 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=0 seed=6 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=0 seed=6 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=2 seed=1 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=2 seed=1 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=2 seed=1 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=2 seed=1 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=2 seed=1 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=2 seed=2 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=2 seed=2 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=2 seed=2 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=2 seed=2 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=2 seed=2 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=2 seed=3 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=2 seed=3 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=2 seed=3 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=2 seed=3 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=2 seed=3 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=2 seed=4 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=2 seed=4 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=2 seed=4 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=2 seed=4 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=2 seed=4 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=2 seed=5 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=2 seed=5 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=2 seed=5 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=2 seed=5 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=2 seed=5 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8
+ranged_base players=1 umfrage=2 seed=6 build=ranged jobs=16 tag=ranged_base
+ranged_wurf players=1 umfrage=2 seed=6 build=ranged jobs=16 tag=ranged_wurf buy=wurfmaschine:8
+ranged_wumms players=1 umfrage=2 seed=6 build=ranged jobs=16 tag=ranged_wumms buy=doppelwumms:8
+ranged_geno players=1 umfrage=2 seed=6 build=ranged jobs=16 tag=ranged_geno buy=genossenschaftsanteil:8
+ranged_cumex players=1 umfrage=2 seed=6 build=ranged jobs=16 tag=ranged_cumex buy=cumex_erstattung:8

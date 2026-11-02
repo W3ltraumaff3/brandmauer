@@ -612,6 +612,14 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 				_draw_kahlschlag(pos, r, vs.h_ang[i] if i < vs.h_ang.size() else 0.0, life, amt)
 			"kahlschlag_hit":
 				_draw_kahlschlag_hit(pos, r, vs.h_ang[i] if i < vs.h_ang.size() else 0.0, life, amt, v)
+			"ansturm_bahn":
+				_draw_lane(pos, r, vs.h_ang[i] if i < vs.h_ang.size() else 0.0, life, amt)
+			"rotor":
+				_draw_rotor(pos, r, vs.h_ang[i] if i < vs.h_ang.size() else 0.0, life, amt, st, v)
+			"reichweite":
+				_draw_reichweite(vs, pos, life, amt, v)
+			"reichweite_hit":
+				_draw_reichweite_hit(pos, life, amt, v)
 			"push_ring":
 				var c := Doodle.desat_amt(Color(0.75, 0.2, 0.1, 0.85 * life), amt)
 				draw_polyline(Doodle.circle_pts(pos, r, v), c, 6.0)
@@ -634,6 +642,7 @@ func _draw_hazards(vs: ViewState, st: int) -> void:
 		_draw_ziegel(vs, st)
 	if not _kette.is_empty():
 		_draw_kette(vs, st)
+	_draw_brief_links(vs)
 
 
 # --- Weapon hazards (GDD §11 "New weapons") -------------------------------------------
@@ -1011,6 +1020,150 @@ func _draw_kahlschlag_hit(pos: Vector2, r: float, ang: float, life: float, amt: 
 		var p0 := pos + Vector2(cos(d), sin(d)) * r * (0.3 + 0.1 * j)
 		draw_line(p0, p0 + Vector2(cos(d), sin(d)) * 22.0, Color(INK, 0.6 * a), 2.5)
 	_queue_stamp(pos, ang, r, 1.15, Color(STAMP_RED, a))
+
+
+## The corners of a lane from `o` along `ang`, `length` long, `w` wide.
+static func _lane_pts(o: Vector2, ang: float, length: float, w: float) -> PackedVector2Array:
+	var d := Vector2(cos(ang), sin(ang))
+	var n := d.orthogonal() * (w * 0.5)
+	return PackedVector2Array([o + n, o + d * length + n, o + d * length - n, o - n])
+
+
+func _dashed_poly(pts: PackedVector2Array, col: Color, w: float, dash := 12.0) -> void:
+	var segs := PackedVector2Array()
+	for k in pts.size():
+		_dash_line(segs, pts[k], pts[(k + 1) % pts.size()], dash, anim_time)
+	draw_multiline(segs, col, w)
+
+
+## Ansturm-Kette lane (D-143): a red dashed lane in the charge direction, the fill
+## runs from her to the tip until she goes; chevrons show the direction.
+func _draw_lane(pos: Vector2, r: float, ang: float, life: float, amt: float) -> void:
+	var c := Doodle.desat_amt(DANGER, amt)
+	var w := float(Content.BOSS["lane_w"])
+	var k := clampf(1.0 - life, 0.0, 1.0)
+	draw_colored_polygon(_lane_pts(pos, ang, r, w), Color(c, 0.1))
+	draw_colored_polygon(_lane_pts(pos, ang, maxf(4.0, r * k), w), Color(c, 0.32))
+	_dashed_poly(_lane_pts(pos, ang, r, w), Color(c, 0.95), 3.5)
+	var d := Vector2(cos(ang), sin(ang))
+	var n := d.orthogonal() * (w * 0.28)
+	for j in 4:
+		var tip := pos + d * (r * (0.3 + 0.18 * j) + fmod(anim_time * 60.0, 30.0))
+		draw_polyline(PackedVector2Array([tip - d * 16.0 + n, tip, tip - d * 16.0 - n]), Color(c, 0.85), 4.0)
+
+
+## A falling turbine (D-143): life 1 -> 0.5 it tips over (red dashed line that
+## fills), 0.5 -> 0 the rotor lies there: mast and blades on red hatching.
+func _draw_rotor(pos: Vector2, r: float, ang: float, life: float, amt: float, st: int, v: int) -> void:
+	var c := Doodle.desat_amt(DANGER, amt)
+	var w := float(Content.BOSS["rotor_w"])
+	var d := Vector2(cos(ang), sin(ang))
+	var pts := _lane_pts(pos, ang, r, w)
+	if life > 0.5:
+		var k := clampf((1.0 - life) * 2.0, 0.0, 1.0)
+		draw_colored_polygon(pts, Color(c, 0.08 + 0.2 * k))
+		_dashed_poly(pts, Color(c, 0.95), 3.0)
+		# the mast tipping toward the lane
+		var tip := pos + d.rotated(-(1.0 - k) * PI * 0.5) * r
+		draw_line(pos, tip, INK, 7.0)
+		draw_line(pos, tip, Color("e8e8e2"), 4.0)
+		return
+	var a := clampf(life * 4.0, 0.0, 1.0)
+	draw_colored_polygon(pts, Color(c, 0.22 * a))
+	var hs := PackedVector2Array()
+	var n := d.orthogonal() * (w * 0.5)
+	var step := 22.0
+	var t := fmod(anim_time * 30.0, step)
+	while t < r:
+		var p0 := pos + d * t
+		hs.append(p0 - n)
+		hs.append(p0 + d * minf(w, r - t) + n)
+		t += step
+	draw_multiline(hs, Color(c, 0.4 * a), 5.0)
+	draw_polyline(PackedVector2Array([pts[0], pts[1], pts[2], pts[3], pts[0]]), Color(c, 0.9 * a), 2.5)
+	var tip := pos + d * (r - 26.0)
+	draw_line(pos, tip, Color(INK, a), 8.0)
+	draw_line(pos, tip, Color("e8e8e2", a), 5.0)
+	draw_mesh(_mesh(K_MISC, M_BLADES, st, v), null, Transform2D(ang * 0.5 + 0.4, Vector2(0.9, 0.9), 0.0, tip), Color(1, 1, 1, a))
+
+
+## Strips in front of the wall that are safe from the Reichweite (Arena.reich_mask),
+## merged per side like the Abschiebezone.
+func _reich_rects(vs: ViewState, depth: float) -> Array[Rect2]:
+	var mask := Arena.reich_mask(vs.wall & ((1 << WALL_SEGMENTS) - 1))
+	var rects: Array[Rect2] = []
+	var prev := -2
+	var prev_side := -1
+	for seg in WALL_SEGMENTS:
+		if not (mask & (1 << seg)):
+			continue
+		if seg == prev + 1 and Arena.side_of(seg) == prev_side and not rects.is_empty():
+			rects[rects.size() - 1] = rects[rects.size() - 1].merge(_band_rect(seg, depth))
+		else:
+			rects.append(_band_rect(seg, depth))
+		prev = seg
+		prev_side = Arena.side_of(seg)
+	return rects
+
+
+## Reichweite warning (D-141): her broadcast floods the arena red from her outward,
+## only the strips in front of the intact Brandmauer stay blue-turquoise ("stand
+## here", with a hand and "Brandmauer").
+func _draw_reichweite(vs: ViewState, pos: Vector2, life: float, amt: float, v: int) -> void:
+	var c := Doodle.desat_amt(DANGER, amt)
+	var k := clampf(1.0 - life, 0.0, 1.0)
+	draw_rect(INNER, Color(c, 0.05 + 0.13 * k))
+	for j in 4:
+		var rr := fmod(k * 1.6 + j * 0.25, 1.0) * 1900.0
+		_dashed_circle(pos, rr, Color(c, 0.55 * (1.0 - rr / 1900.0)), 4.0, 48, anim_time * 0.3)
+	draw_arc(pos, k * 1900.0, 0.0, TAU, 96, Color(c, 0.5), 6.0)
+	var depth := float(Content.BOSS["reich_safe"])
+	var pulse := 0.5 + 0.5 * sin(anim_time * 5.0)
+	for b in _reich_rects(vs, depth):
+		draw_rect(b, Color(TEAL, 0.3 + 0.12 * pulse))
+		draw_rect(b, TEAL, false, 4.0)
+		if b.size.x > 90.0 and b.size.y > 90.0 or b.size.x > 260.0 or b.size.y > 260.0:
+			var cc := b.get_center()
+			_hand_icon(cc + Vector2(0, -10 - sin(anim_time * 5.0) * 3.0), 1.3, TEAL.darkened(0.25))
+			Doodle.text(self, tr("FX_REICHWEITE_SAFE"), cc + Vector2(0, 32), 22, TEAL.darkened(0.45), _hand, 4)
+
+
+## Reichweite impact: a red wave rolls over the arena and fades.
+func _draw_reichweite_hit(pos: Vector2, life: float, amt: float, v: int) -> void:
+	var c := Doodle.desat_amt(DANGER, amt)
+	var a := clampf(life / 0.6, 0.0, 1.0)
+	draw_rect(INNER, Color(c, 0.22 * a))
+	var rr := (1.0 - a) * 1900.0
+	draw_polyline(Doodle.circle_pts(pos, maxf(10.0, rr), v), Color(c, 0.8 * a), 10.0)
+
+
+## Briefkastenfirmen (D-142): a pulsing gold dashed line from every letterbox to
+## her while it feeds her shield, coins running along it.
+func _draw_brief_links(vs: ViewState) -> void:
+	var t_box := Content.ENEMY_ORDER.find("briefkasten")
+	var t_boss := Content.ENEMY_ORDER.find("eidgenossin")
+	var boss := Vector2.INF
+	for i in vs.e_type.size():
+		if vs.e_type[i] == t_boss:
+			boss = vs.e_pos[i]
+	if boss == Vector2.INF:
+		return
+	var segs := PackedVector2Array()
+	for i in vs.e_type.size():
+		if vs.e_type[i] != t_box:
+			continue
+		var a := vs.e_pos[i] + Vector2(0, -14)
+		_dash_line(segs, a, boss, 14.0, -anim_time)
+		var l := a.distance_to(boss)
+		for j in 3:
+			var f := fmod(anim_time * 0.45 + j / 3.0, 1.0)
+			var q := a.lerp(boss, f)
+			draw_circle(q, 6.0, Color(INK, 0.8))
+			draw_circle(q, 4.5, GOLD)
+		if l > 0.0:
+			Doodle.text(self, tr("FX_BRIEFKASTEN"), vs.e_pos[i] + Vector2(0, 52), 15, GOLD.darkened(0.5), _hand, 4)
+	if not segs.is_empty():
+		draw_multiline(segs, Color(GOLD, 0.5 + 0.3 * sin(anim_time * 6.0)), 3.0)
 
 
 ## Queues a "GESTRICHEN" stamp inside a cone (origin, direction, length). Two
@@ -2344,6 +2497,20 @@ func _b_enemy(sk: Doodle.Sketch, id: String) -> void:
 					var h: Vector2 = a["hr"]
 					k.rect(Rect2(h + Vector2(1, -4), Vector2(8, 5)), WHITE, true, 0.9)})
 			_person(sk, o)
+		"briefkasten":
+			# Briefkastenfirma (D-142): a letterbox on a post, covered in little company
+			# plates, a gold slot. A structure, not a person: no money bag, no face (§2).
+			_shadow(sk, Vector2(0, 30), 40)
+			sk.rect(Rect2(-3, 4, 6, 26), Color("6b6f75"), true, 1.4)
+			sk.shape(PackedVector2Array([Vector2(-24, -30), Vector2(24, -30), Vector2(26, 6), Vector2(-26, 6)]), Color("c9a227"))
+			sk.rect(Rect2(-14, -26, 28, 4), Color("3a2c10"), true, 1.0)
+			var plates := [Color("f4f1e6"), Color("dfe7ef"), Color("f2e3c4"), Color("e6e6e6")]
+			for row in 3:
+				for col in 3:
+					var pr := Rect2(-21 + col * 14.5, -18 + row * 7.6, 12.5, 6.0)
+					sk.rect(pr, plates[(row * 3 + col) % plates.size()], true, 0.7)
+					sk.line2(pr.position + Vector2(2, 3), pr.position + Vector2(9, 3), 0.7, Color("55534c"))
+			sk.line2(Vector2(-26, 6), Vector2(26, 6), 1.6, INK)
 		"porsche_suv":
 			_shadow(sk, Vector2(0, 18), 64)
 			sk.shape(PackedVector2Array([Vector2(-34, 12), Vector2(-35, -2), Vector2(-28, -6), Vector2(-16, -8), Vector2(-9, -20),

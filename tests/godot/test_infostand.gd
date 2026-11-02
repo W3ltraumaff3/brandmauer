@@ -2,6 +2,8 @@ extends TestCase
 ## Infostand stands per copy by tier 2 / 2 / 3 / 4, lifetime 10 / 10 / 15 / 20 s,
 ## no cap per player (D-100).
 
+const AREAS := ["sim"]  # ci-cd.md §2a
+
 
 func _sim() -> Sim:
 	var s := Sim.new()

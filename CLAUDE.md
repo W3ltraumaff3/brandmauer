@@ -18,7 +18,7 @@ German political-satire arena roguelite, built in Godot 4. Single player plus 1โ
 
 ## GDScript pitfalls (Godot 4.7)
 
-- **Run the headless tests after every GDScript change.** `godot --headless --path . -s res://tests/godot/run_tests.gd` first checks that every script in `src/`, `tools/` and `tests/` compiles, then runs the tests; parse errors and script errors count as failures.
+- **Run the affected headless tests after every GDScript change:** `python tools/affected_tests.py --run` (ci-cd.md ยง2a). It first checks that every script in `src/`, `tools/` and `tests/` compiles, then runs the tests of the touched areas; parse errors and script errors count as failures. Run the full suite (`--all --run`) only before a PR or release. New test files declare `const AREAS := [...]`; new source folders go into `tests/test_areas.json`.
 - **Inner-class `match` patterns can't be variables.** Use `if`/`elif` when comparing against local variables.
 
 ## Shell

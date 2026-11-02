@@ -250,8 +250,6 @@ LOBBY_ULT_HINT,%s · einmal pro Sitzungswoche
 SPAETI_SLOT_CUT,GESTRICHEN
 SPAETI_SLOT_CUT_WHY,Koalitionsvertrag „%s“: ein Angebot weniger. Steht so im Formular.
 DENY_VOTE_FIRST,"Erst abstimmen (oder enthalten), dann Feierabend."
-DENY_BUY_LIMIT,Genossenschaftsanteil: nur 2 Käufe pro Besuch. Satzung ist Satzung.
-DENY_BUY_LIMIT_SHORT,Satzung!
 DENY_NO_TWIN,Zum Kombinieren brauchst du zwei gleiche Waffen gleicher Stufe.
 MENU_BUG,Bug melden
 # Späti: Seltenheit / Wegwerfen / Kombinieren / Enthalten

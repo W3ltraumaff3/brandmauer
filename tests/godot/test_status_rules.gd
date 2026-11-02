@@ -2,6 +2,8 @@ extends TestCase
 ## Status immunity (D-087), damage-over-time attribution (D-088) and the
 ## Brandmauer-Ziegel tick rule (D-089).
 
+const AREAS := ["sim"]  # ci-cd.md §2a
+
 
 func _sim(chars: Array, seed := 7) -> Sim:
 	var players := []

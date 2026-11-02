@@ -2,6 +2,8 @@ extends TestCase
 ## Content data is complete: every id has translated texts, quotes exist,
 ## references between tables are valid.
 
+const AREAS := ["content"]  # ci-cd.md §2a
+
 
 func _translated(key: String) -> bool:
 	return TranslationServer.translate(key) != key

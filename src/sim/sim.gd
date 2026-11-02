@@ -84,6 +84,7 @@ class SimPlayer:
 	var ult_ready := true              # ultimate: once per wave
 	var second_round_used := false     # Zweiter Wahlgang (once per run)
 	var cumex_audited := false
+	var coop_waves := 0                # Genossenschaftsanteil: wave ends held (dividend grows, D-129)
 	var puma_down := false
 	var ult_t := 0.0                   # Urlaubsantrag: lying on the sun lounger
 	var dash_t := 0.0                  # Critical Mass dash
@@ -433,6 +434,10 @@ func _recompute(p: SimPlayer) -> void:
 		s["hp_regen"] += 1.0
 	if p.flags.has("dodge_build"):
 		s["armor"] = 0.0
+	if p.flags.has("lifesteal_build"):
+		# Robin-Hood-Kostüm: Krankenschein counts as Umverteilung (D-134)
+		s["lifesteal"] += maxf(0.0, s["hp_regen"])
+		s["hp_regen"] = 0.0
 	s["max_hp"] = maxf(1.0, s["max_hp"])
 	p.max_weapons = int(Content.CHARACTERS[p.char_id].get("max_weapons", Content.MAX_WEAPONS)) + p.items.count("lastenrad_anhaenger")
 	p.stats = s
@@ -631,7 +636,8 @@ func _end_wave() -> void:
 		if p.flags.has("maut"):
 			p.pfand = maxi(0, p.pfand - Content.RED_BUILD["maut_wave"])
 		if p.flags.has("cumex"):
-			var refund := mini(Content.RED_BUILD["cumex_max"], p.pfand)
+			# the cap grows with the prices, so it keeps its value late in the run (D-130)
+			var refund := mini(int(round(Content.RED_BUILD["cumex_max"] * Content.price_mult(wave + 1))), p.pfand)
 			_give_pfand(p, refund)
 			p.log["pfand_income"] += refund
 			if wave >= Content.RED_BUILD["cumex_audit_wave"] and not p.cumex_audited:
@@ -639,7 +645,8 @@ func _end_wave() -> void:
 				p.pfand = p.pfand / 2
 				_event(["say", p.pos, "SAY_BETRIEBSPRUEFUNG", ""])
 		if p.flags.has("coop_economy"):
-			var interest := mini(Content.RED_BUILD["coop_interest_max"], int(p.pfand * Content.RED_BUILD["coop_interest"]))
+			var interest := coop_dividend(p)
+			p.coop_waves += 1
 			_give_pfand(p, interest)
 			p.log["pfand_income"] += interest
 		if p.flags.has("streikkasse"):
@@ -1234,6 +1241,16 @@ func _lay_chalk(p: SimPlayer, w: Dictionary, def: Dictionary) -> void:
 	hazards.append(mark)
 
 
+## Genossenschaftsanteil (GDD §12, D-129): the dividend at this wave end. The rate grows
+## with every wave end the share was held; it is capped at what a new share costs in the
+## coming Späti, so it keeps its value while prices grow.
+func coop_dividend(p: SimPlayer) -> int:
+	var b := Content.RED_BUILD
+	var rate := minf(b["coop_rate_max"], b["coop_rate"] + b["coop_rate_step"] * p.coop_waves)
+	var cap := _price(Content.item_price("genossenschaftsanteil", wave + 1))
+	return mini(cap, int(p.pfand * rate))
+
+
 ## Wahlversprechen and BER-Eröffnungstermin change Wut over time.
 func dyn_damage(p: SimPlayer) -> float:
 	var b := Content.RED_BUILD
@@ -1275,8 +1292,11 @@ func _build_mult(p: SimPlayer, def: Dictionary) -> float:
 	var melee: bool = def.get("melee", false)
 	if p.flags.has("melee_build"):
 		m *= b["melee"] if melee else b["melee_other"]
-	if p.flags.has("ranged_build") and melee:
-		m *= b["ranged_other"]
+	if p.flags.has("ranged_build"):
+		if melee:
+			m *= b["ranged_other"]
+		elif def["scale"].has("ranged"):
+			m *= b["ranged"]   # every Durchschlagskraft weapon (D-128)
 	if p.flags.has("summon_build"):
 		m *= b["summon"] if def["scale"].has("summon") else b["summon_other"]   # every Ehrenamt weapon (D-114)
 	if p.flags.has("status_build"):
@@ -1472,6 +1492,9 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				pr.weapon = w["id"]
 				pr.source = _wkey(w)
 				pr.life = _weapon_range(p, def) / def["speed"]
+				if p.flags.has("ranged_build"):   # Wurfmaschine covers the fan too (D-128)
+					pr.pierce += Content.RED_BUILD["ranged_pierce"]
+					pr.vel *= Content.RED_BUILD["ranged_speed"]
 				projectiles.append(pr)
 			_event(["sfx", "shoot", p.pos])
 		"swarm":
@@ -1657,9 +1680,12 @@ func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kd
 	if src and e.expose_t > 0.0 and not crit and rng.randf() * 100.0 < Content.WEAPONS["scheinwerfer"]["expose_crit"]:
 		crit = true
 		amount *= 1.5
-	if src and crit and src.flags.has("entlassung") and not e.elite and e.hp < e.max_hp * Content.RED_BUILD["entlassung_hp"]:
-		amount = maxf(amount, e.hp + e.shield)
-		_event(["say", e.pos, "SAY_ENTLASSEN", ""])
+	if src and crit and src.flags.has("entlassung"):
+		if e.elite or e.encounter != "":
+			amount *= Content.RED_BUILD["entlassung_boss"]   # bosses can't be dismissed, but crits hit them harder (D-132)
+		elif e.hp < e.max_hp * Content.RED_BUILD["entlassung_hp"]:
+			amount = maxf(amount, e.hp + e.shield)
+			_event(["say", e.pos, "SAY_ENTLASSEN", ""])
 	if src and src.flags.has("crit_build") and source.begins_with("w"):
 		amount *= Content.RED_BUILD["crit_extra"] if crit else Content.RED_BUILD["crit_other"]
 	if e.armored:
@@ -1840,7 +1866,8 @@ func run_stats(p: SimPlayer) -> Dictionary:
 
 
 func _wumms(p: SimPlayer, pos: Vector2) -> void:
-	var dmg: float = (10.0 + 2.0 * p.stats["ranged"]) * maxf(0.1, 1.0 + p.stats["damage"] / 100.0)
+	var b := Content.RED_BUILD
+	var dmg: float = (b["wumms_dmg"] + b["wumms_ranged"] * p.stats["ranged"]) * maxf(0.1, 1.0 + p.stats["damage"] / 100.0)
 	for o in _query(pos, Content.RED_BUILD["wumms_radius"]):
 		_damage_enemy(o, dmg, p, false, (o.pos - pos).normalized(), 60.0, "wumms")
 	_event(["sfx", "explosion", pos])
@@ -3205,8 +3232,11 @@ func _cancel_cast(e: SimEnemy) -> void:
 		"kahlschlag":
 			e.data["kahl_cd"] = _kahl_every()
 		"ansturm":
+			# the whole Ansturm-Kette breaks off (D-143)
 			e.state = 0
-			e.timer = 3.0
+			e.data["kette_cd"] = Content.BOSS["kette_every"]
+		"reichweite":
+			e.data["reich_cd"] = _by_level(Content.BOSS["reich_every_p3" if e.phase >= 2 else "reich_every"])
 	_end_cast(e)
 	_clear_cast_hazards(e)
 	e.data.erase("vote_segs")
@@ -3666,44 +3696,23 @@ static func in_cone(origin: Vector2, ang: float, half: float, reach: float, pos:
 	return absf(angle_difference(ang, d.angle())) <= half + asin(minf(1.0, pad / l))
 
 
-## Die Remigrantin: Windmühlen der Schande / Die Brandmauer hält / Steuerparadies.
+## Die Remigrantin, the final exam (GDD §14 "Final boss", D-140 to D-145):
+## P1 Windmühlen der Schande (Ansturm-Kette, falling turbines, wing fans),
+## P2 Remigration (Die Brandmauer hält, push rings, wing fans, Reichweite),
+## P3 Steuerparadies (gold-bar shield fed by Briefkastenfirmen, gold bars, push
+## rings, Reichweite); Wahlabend speeds everything up in long fights.
 func _boss_eidgenossin(e: SimEnemy, spd: float, dt: float) -> void:
 	_boss_phase(e)
-	var p := _target_player(e)
 	var b := Content.BOSS
+	var k := _wahlabend(e)
+	var p := _target_player(e)
 	match e.phase:
 		0:
-			# Windmühlen der Schande: dash at players, tear down turbines
-			match e.state:
-				0:
-					if p:
-						_move_toward(e, p.pos, spd * 0.7, dt)
-					e.timer -= dt
-					if e.timer <= 0.0 and p:
-						e.state = 1
-						e.target = (p.pos - e.pos).normalized()
-						_start_cast(e, "ansturm", _telegraph(b["ansturm_warn"]))
-				1:
-					# wind-up (cast "ansturm"); a stun interrupts it (_cancel_cast)
-					e.cast_t += _ab_dt(e)
-					if e.cast_t >= e.cast_time:
-						_end_cast(e)
-						e.state = 2
-						e.timer2 = 0.6
-				2:
-					e.pos += e.target * spd * 4.0 * dt
-					e.timer2 -= dt
-					for s in summons:
-						if s.alive and s.type == Content.idx(Content.SUMMON_ORDER, "turbine") and s.pos.distance_to(e.pos) < 50.0:
-							s.alive = false
-							_event(["say", s.pos, "SAY_WINDMUEHLE", ""])
-					if e.timer2 <= 0.0:
-						e.state = 0
-						e.timer = 3.0
-			e.timer3 -= dt
-			if e.timer3 <= 0.0 and p:
-				e.timer3 = 2.2
-				_spread(e, "fluegel", p.pos, 3, 0.7, 260.0, e.dmg * 0.6)
+			_ansturm_kette(e, p, spd * k, dt)
+			e.timer3 -= dt * k
+			if e.timer3 <= 0.0 and p and e.state == 0:
+				e.timer3 = float(b["wing_every"][0])
+				_wings(e, p)
 		1:
 			# Die Brandmauer hält (D-104, D-111): the Abschiebezone only in front of holes
 			var z := _absch_zone()
@@ -3717,8 +3726,8 @@ func _boss_eidgenossin(e: SimEnemy, spd: float, dt: float) -> void:
 				if not wall.has(false):
 					_event(["say", e.pos, "SAY_REMIG_LUECKE", ""])   # no hole: the old band along every wall
 			z.radius = band_width()
-			if p:
-				_move_toward(e, p.pos, spd * 0.5, dt)
+			if e.cast != "reichweite" and p:
+				_move_toward(e, p.pos, spd * 0.5 * k, dt)
 			if z.data.get("warn", false):
 				# 2 s warning at phase start (B8): no damage, no push rings yet
 				if e.cast != "remigration":
@@ -3730,30 +3739,374 @@ func _boss_eidgenossin(e: SimEnemy, spd: float, dt: float) -> void:
 					z.data["warn"] = false
 					z.life = z.max_life
 					e.data["ring_cd"] = 0.0
+					e.data["reich_cd"] = float(b["reich_first"])
 				return
-			e.data["ring_cd"] = float(e.data.get("ring_cd", 0.0)) - _ab_dt(e)
+			e.data["ring_cd"] = float(e.data.get("ring_cd", 0.0)) - _ab_dt(e) * k
 			if e.data["ring_cd"] <= 0.0:
 				e.data["ring_cd"] = _by_level(b["ring_every"])
 				_push_ring(e.pos, e.dmg * 0.3, true)
+			e.timer3 -= dt * k
+			if e.timer3 <= 0.0 and p and e.cast == "":
+				e.timer3 = float(b["wing_every"][1])
+				_wings(e, p)
+			_reichweite_step(e, b["reich_every"], k)
 		2:
-			# Steuerparadies: gold-bar shield at the top
+			# Steuerparadies: gold-bar shield at the top, fed by the Briefkastenfirmen (D-142)
 			if e.state == 0:
 				e.state = 1
-				e.shield_max = e.max_hp * 0.25
+				e.shield_max = e.max_hp * float(b["shield"])
 				e.shield = e.shield_max
 				var z := _absch_zone()
 				if z and z.data.get("warn", false):
 					z.data["warn"] = false   # the band stays into phase 3 (D-111)
 					z.life = z.max_life
-			_move_toward(e, Vector2(Arena.CENTER.x, Arena.INNER.position.y + 128.0), spd, dt)
-			e.timer -= dt
-			if e.timer <= 0.0 and p:
-				e.timer = 1.2
+				e.data["reich_cd"] = float(b["reich_first"])
+				e.data["boxes"] = []
+				e.data["box_back"] = 0.0
+				for i in brief_count():
+					_spawn_briefkasten(e, i)
+				_event(["say", e.pos, "SAY_BRIEFKASTEN", ""])
+			_briefkasten_step(e)
+			if e.cast != "reichweite":
+				_move_toward(e, Vector2(Arena.CENTER.x, Arena.INNER.position.y + 128.0), spd * k, dt)
+			e.timer -= dt * k
+			if e.timer <= 0.0 and p and e.cast == "":
+				e.timer = float(b["gold_every"])
 				_spread(e, "goldbarren", p.pos, 5, 1.0, 280.0, e.dmg * 0.5)
-			e.timer2 -= dt
+			e.timer2 -= _ab_dt(e) * k
 			if e.timer2 <= 0.0:
-				e.timer2 = 6.0
+				e.timer2 = float(b["p3_ring_every"])
 				_push_ring(e.pos, e.dmg * 0.3)
+			_reichweite_step(e, b["reich_every_p3"], k)
+
+
+func _wings(e: SimEnemy, p: SimPlayer) -> void:
+	var b := Content.BOSS
+	var n: int = b["wing_count_l3"] if difficulty >= 3 else b["wing_count"]
+	_spread(e, "fluegel", p.pos, n, 0.7 + 0.1 * (n - 3), 260.0, e.dmg * 0.6)
+
+
+# --- Remigrantin P1: Ansturm-Kette (D-143) -----------------------------------------
+
+## Charges per chain: 2 (3 from Umfrage 30 %), +1 from 3 players.
+func kette_len() -> int:
+	var b := Content.BOSS
+	var n: int = b["kette_len_l4"] if difficulty >= 4 else b["kette_len"]
+	return n + (1 if num_players() >= int(b["kette_coop_from"]) else 0)
+
+
+## e.state: 0 walking, 1 wind-up (cast "ansturm", lane telegraph), 2 charging, 3 gap
+## before the next charge of the chain. Each charge aims at a random living player,
+## or at a turbine standing next to that player (Don Quixote).
+func _ansturm_kette(e: SimEnemy, p: SimPlayer, spd: float, dt: float) -> void:
+	var b := Content.BOSS
+	var d := e.data
+	match e.state:
+		0:
+			if p:
+				_move_toward(e, p.pos, spd * 0.7, dt)
+			d["kette_cd"] = float(d.get("kette_cd", 1.5)) - _ab_dt(e) * _wahl_k(e)
+			if d["kette_cd"] <= 0.0 and p:
+				d["kette_left"] = kette_len()
+				_ansturm_windup(e, p)
+		1:
+			# wind-up (cast "ansturm"); a stun interrupts the whole chain (_cancel_cast)
+			e.cast_t += _ab_dt(e)
+			for h in _cast_hazards(e, Content.idx(Content.HAZARD_ORDER, "ansturm_bahn")):
+				h.life = maxf(0.001, 1.0 - _cast_progress(e))
+			if e.cast_t >= e.cast_time:
+				_end_cast(e)
+				_clear_cast_hazards(e)
+				e.state = 2
+				d["dash_left"] = float(b["ansturm_len"])
+				d["dash_hit"] = {}
+		2:
+			var step := float(b["ansturm_speed"]) * _real_dt
+			var start := e.pos
+			e.pos = Arena.clamp_inner(e.pos + e.target * step, e.radius)
+			d["dash_left"] = float(d["dash_left"]) - step
+			var hit: Dictionary = d["dash_hit"]
+			for q in players.values():
+				if q.state == 0 and not hit.has(q.id) and q.pos.distance_to(e.pos) < e.radius + Content.PLAYER_RADIUS + 6.0:
+					hit[q.id] = true
+					damage_player(q, e.dmg * float(b["ansturm_dmg"]))
+			var t_turb := Content.idx(Content.SUMMON_ORDER, "turbine")
+			for s in summons:
+				if s.alive and s.type == t_turb and s.pos.distance_to(e.pos) < e.radius + 28.0:
+					s.alive = false
+					_topple(e, s.pos, e.target)
+			if d["dash_left"] <= 0.0 or e.pos.distance_to(start) < step * 0.5:
+				# chain on (after a short gap) or back to walking
+				d["kette_left"] = int(d.get("kette_left", 1)) - 1
+				if int(d["kette_left"]) > 0:
+					e.state = 3
+					d["gap"] = float(b["kette_gap"])
+				else:
+					e.state = 0
+					d["kette_cd"] = float(b["kette_every"])
+		3:
+			d["gap"] = float(d.get("gap", 0.0)) - _ab_dt(e)
+			if d["gap"] <= 0.0:
+				var alive: Array = players.values().filter(func(o): return o.state == 0)
+				if alive.is_empty():
+					e.state = 0
+					d["kette_cd"] = float(b["kette_every"])
+				else:
+					_ansturm_windup(e, alive[rng.randi_range(0, alive.size() - 1)])
+
+
+func _ansturm_windup(e: SimEnemy, p: SimPlayer) -> void:
+	var b := Content.BOSS
+	var aim := p.pos
+	var t_turb := Content.idx(Content.SUMMON_ORDER, "turbine")
+	var best := float(b["turbine_pull"])
+	for s in summons:
+		if s.alive and s.type == t_turb and s.pos.distance_to(p.pos) < best:
+			best = s.pos.distance_to(p.pos)
+			aim = s.pos
+	e.target = (aim - e.pos).normalized() if aim.distance_to(e.pos) > 1.0 else Vector2.RIGHT.rotated(rng.randf() * TAU)
+	var h := SimHazard.new()
+	h.type = Content.idx(Content.HAZARD_ORDER, "ansturm_bahn")
+	h.pos = e.pos
+	h.radius = float(b["ansturm_len"]) + e.radius
+	h.ang = e.target.angle()
+	h.data = {"cast": true, "enemy": e.id}
+	hazards.append(h)
+	_start_cast(e, "ansturm", _telegraph(b["ansturm_warn"]))
+	e.state = 1
+
+
+## A turbine she ran into falls in the charge direction: 1 s warning, then the
+## rotor line hurts for 3 s (D-143).
+func _topple(e: SimEnemy, at: Vector2, dir: Vector2) -> void:
+	var b := Content.BOSS
+	var h := SimHazard.new()
+	h.type = Content.idx(Content.HAZARD_ORDER, "rotor")
+	h.pos = at
+	h.radius = b["rotor_len"]
+	h.ang = dir.angle()
+	h.life = 1.0
+	h.max_life = 1.0
+	h.data = {"enemy": e.id, "t": 0.0, "warn": _telegraph(b["rotor_warn"]), "time": float(b["rotor_time"]),
+		"dmg": e.dmg * float(b["rotor_dmg"])}
+	hazards.append(h)
+	_event(["say", at, "SAY_WINDMUEHLE", ""])
+	_event(["sfx", "explosion", at])
+
+
+## Is a circle (pos, pad) inside the lane from `origin` along `ang`, `length` long
+## and 2 × half_w wide?
+static func in_lane(origin: Vector2, ang: float, length: float, half_w: float, pos: Vector2, pad: float) -> bool:
+	var local := (pos - origin).rotated(-ang)
+	return local.x >= -pad and local.x <= length + pad and absf(local.y) <= half_w + pad
+
+
+# --- Remigrantin P2/P3: Reichweite (D-141) ---------------------------------------
+
+## Depth of the safe strip in front of intact segments.
+func reich_depth() -> float:
+	return float(Content.BOSS["reich_safe"])
+
+
+## Safe from the Reichweite wave here? (Arena.reich_safe with the current wall.)
+func reich_safe(pos: Vector2) -> bool:
+	return Arena.reich_safe(pos, _wall_mask(), reich_depth())
+
+
+## The nearest safe point (for the balance bot), or INF if none is left.
+func reich_safe_spot(pos: Vector2) -> Vector2:
+	var mask := Arena.reich_mask(_wall_mask())
+	var best := Vector2.INF
+	var bd := INF
+	var depth := reich_depth() * 0.5
+	for seg in WALL_SEGMENTS:
+		if not (mask & (1 << seg)):
+			continue
+		var c := Arena.seg_inner(seg, depth)
+		var inward := Arena.inward(seg)
+		var along := Vector2(-inward.y, inward.x)
+		var half := Arena.seg_len(seg) * 0.5 - 24.0
+		var t := clampf((pos - c).dot(along), -half, half)
+		var q := c + along * t
+		if pos.distance_to(q) < bd:
+			bd = pos.distance_to(q)
+			best = q
+	return best
+
+
+func _reichweite_step(e: SimEnemy, every: Array, k: float) -> void:
+	var b := Content.BOSS
+	if e.cast == "reichweite":
+		e.cast_t += _ab_dt(e)
+		for h in _cast_hazards(e, Content.idx(Content.HAZARD_ORDER, "reichweite")):
+			h.life = maxf(0.001, 1.0 - _cast_progress(e))
+			h.pos = e.pos
+		if e.cast_t >= e.cast_time:
+			_end_cast(e)
+			_clear_cast_hazards(e)
+			_reichweite_hit(e)
+			e.data["reich_cd"] = _by_level(every)
+		return
+	e.data["reich_cd"] = float(e.data.get("reich_cd", b["reich_first"])) - _ab_dt(e) * k
+	if e.data["reich_cd"] > 0.0 or e.cast != "":
+		return
+	var h := SimHazard.new()
+	h.type = Content.idx(Content.HAZARD_ORDER, "reichweite")
+	h.pos = e.pos
+	h.radius = Arena.INNER.size.length()
+	h.data = {"cast": true, "enemy": e.id}
+	hazards.append(h)
+	_start_cast(e, "reichweite", _telegraph(b["reich_warn"]))
+	_event(["say", e.pos, "SAY_REICHWEITE", ""])
+	if b["reich_ring"]:
+		_push_ring(e.pos, e.dmg * 0.3, true)   # combined pattern: shoved toward a hole first
+
+
+func _reichweite_hit(e: SimEnemy) -> void:
+	var safe_one: SimPlayer = null
+	for p in players.values():
+		if p.state != 0:
+			continue
+		if reich_safe(p.pos):
+			safe_one = p if safe_one == null else safe_one
+		else:
+			damage_player(p, e.dmg * float(Content.BOSS["reich_dmg"]))
+	var h := SimHazard.new()
+	h.type = Content.idx(Content.HAZARD_ORDER, "reichweite_hit")
+	h.pos = e.pos
+	h.radius = Arena.INNER.size.length()
+	h.life = 0.6
+	h.max_life = 0.6
+	hazards.append(h)
+	_event(["sfx", "explosion", e.pos])
+	if safe_one:
+		_event(["say", safe_one.pos, "SAY_BRANDMAUER_STEHT", ""])   # the players answer
+
+
+## For the balance bot and its metrics: is pos inside one of her danger hazards
+## (lane, falling or lying rotor, the Reichweite wave outside the safe strips)?
+func danger_at(h: SimHazard, pos: Vector2) -> bool:
+	var b := Content.BOSS
+	var tn: String = Content.HAZARD_ORDER[h.type]
+	match tn:
+		"ansturm_bahn":
+			return in_lane(h.pos, h.ang, h.radius, float(b["lane_w"]) * 0.5, pos, Content.PLAYER_RADIUS)
+		"rotor":
+			return in_lane(h.pos, h.ang, h.radius, float(b["rotor_w"]) * 0.5, pos, Content.PLAYER_RADIUS)
+		"reichweite":
+			return not reich_safe(pos)
+	return false
+
+
+# --- Remigrantin P3: Briefkastenfirmen (D-142) -----------------------------------
+
+## Where letterboxes stand: the four corners first, then the middles of the sides
+## (never the top middle, her chalet), brief_inset px from the walls.
+func _brief_spots() -> Array:
+	var r := Arena.INNER.grow(-float(Content.BOSS["brief_inset"]))
+	return [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y),
+		Vector2(r.position.x, r.get_center().y), Vector2(r.end.x, r.get_center().y), Vector2(r.get_center().x, r.end.y)]
+
+
+func _spawn_briefkasten(e: SimEnemy, slot := -1) -> void:
+	var spots := _brief_spots()
+	var pos: Vector2 = spots[slot] if slot >= 0 and slot < spots.size() else Vector2.INF
+	if pos == Vector2.INF:
+		# a new address: a free spot, away from the other boxes
+		var free := []
+		for s in spots:
+			var ok := true
+			for id in e.data["boxes"]:
+				var o := _enemy_by_id(int(id))
+				if o and o.alive and o.pos.distance_to(s) < 200.0:
+					ok = false
+			if ok:
+				free.append(s)
+		if free.is_empty():
+			free = spots
+		pos = free[rng.randi_range(0, free.size() - 1)]
+	var box := spawn_enemy("briefkasten", pos)
+	box.max_hp = e.max_hp * float(Content.BOSS["brief_hp"])
+	box.hp = box.max_hp
+	box.no_reward = true
+	box.data["box_of"] = e.id
+	e.data["boxes"].append(box.id)
+
+
+func _enemy_by_id(id: int) -> SimEnemy:
+	for o in enemies:
+		if o.id == id:
+			return o
+	return null
+
+
+## Living letterboxes recharge her shield (brief_regen of her max HP per second
+## each). When the last one falls her shield breaks; brief_back s later all of them
+## open again at new addresses and the shield regrows from zero (D-142).
+func _briefkasten_step(e: SimEnemy) -> void:
+	var b := Content.BOSS
+	var keep := []
+	for id in e.data["boxes"]:
+		var o := _enemy_by_id(int(id))
+		if o and o.alive:
+			keep.append(id)
+	var had: int = e.data["boxes"].size()
+	e.data["boxes"] = keep
+	if keep.size() > 0:
+		if e.shield_max > 0.0:
+			e.shield = minf(e.shield_max, e.shield + keep.size() * float(b["brief_regen"]) * e.max_hp * _ab_dt(e))
+		return
+	if had > 0:
+		# the last letterbox is gone: the Steuerparadies cracks
+		e.shield = 0.0
+		e.data["box_back"] = _by_level(b["brief_back"])
+		_event(["say", e.pos, "SAY_SHIELD_BROKEN", ""])
+		meta_dirty = true
+	e.data["box_back"] = float(e.data.get("box_back", 0.0)) - _ab_dt(e)
+	if e.data["box_back"] <= 0.0:
+		for i in brief_count():
+			_spawn_briefkasten(e)
+		_event(["say", e.pos, "SAY_BRIEFKASTEN_NEU", ""])
+
+
+## Letterboxes per round: 3 solo, 4 from 2 players (one per corner, D-142).
+func brief_count() -> int:
+	var b := Content.BOSS
+	return int(b["brief_count"]) + (int(b["brief_coop"]) if num_players() >= 2 else 0)
+
+
+## Number of living letterboxes (HUD, bot, tests).
+func briefkasten_alive() -> int:
+	var t := Content.idx(Content.ENEMY_ORDER, "briefkasten")
+	var n := 0
+	for o in enemies:
+		if o.alive and o.type == t:
+			n += 1
+	return n
+
+
+# --- Wahlabend (D-144) ------------------------------------------------------------
+
+## Advances her fight clock and returns the Wahlabend tempo factor: from wahl_from s
+## (wahl_from_l4 from Umfrage 30 %) one step every wahl_every s, each step +wahl_step.
+func _wahlabend(e: SimEnemy) -> float:
+	var b := Content.BOSS
+	e.data["fight_t"] = float(e.data.get("fight_t", 0.0)) + _real_dt
+	var from: float = b["wahl_from_l4"] if difficulty >= 4 else b["wahl_from"]
+	var t: float = e.data["fight_t"]
+	var step := 0
+	if t >= from:
+		step = mini(int(b["wahl_max"]), 1 + int((t - from) / float(b["wahl_every"])))
+	if step != int(e.data.get("wahl", 0)):
+		e.data["wahl"] = step
+		_event(["say", e.pos, "SAY_HOCHRECHNUNG", ""])
+		_event(["hochrechnung", step])
+		meta_dirty = true
+	return _wahl_k(e)
+
+
+func _wahl_k(e: SimEnemy) -> float:
+	return 1.0 + float(Content.BOSS["wahl_step"]) * int(e.data.get("wahl", 0))
 
 
 func _absch_zone() -> SimHazard:
@@ -3961,6 +4314,7 @@ func _step_hazards(dt: float) -> void:
 	var t_sitz := Content.idx(Content.HAZARD_ORDER, "sitzblockade")
 	var t_absch := Content.idx(Content.HAZARD_ORDER, "abschiebezone")
 	var t_ring := Content.idx(Content.HAZARD_ORDER, "push_ring")
+	var t_rotor := Content.idx(Content.HAZARD_ORDER, "rotor")
 	var ziegel_hit := {}   # "owner/weapon/wall/enemy" already damaged this tick (D-089)
 	var boss_ids := {}     # living enemies that own cast telegraphs
 	for e in enemies:
@@ -3985,6 +4339,24 @@ func _step_hazards(dt: float) -> void:
 			for p in players.values():
 				if p.state == 0 and p.iframes <= 0.0 and in_band(p.pos, h.radius):
 					damage_player(p, h.dps * 0.5)
+			continue
+		if h.type == t_rotor:
+			# a fallen turbine (D-143): life 1 -> 0.5 while it falls (warning), 0.5 -> 0
+			# while the rotor line lies there and hurts
+			var rt: float = float(h.data["t"]) + dt
+			h.data["t"] = rt
+			var warn: float = h.data["warn"]
+			var lie: float = h.data["time"]
+			if rt < warn:
+				h.life = 1.0 - 0.5 * rt / warn
+			elif rt < warn + lie:
+				h.life = 0.5 * (1.0 - (rt - warn) / lie)
+				var half: float = float(Content.BOSS["rotor_w"]) * 0.5
+				for p in players.values():
+					if p.state == 0 and p.iframes <= 0.0 and in_lane(h.pos, h.ang, h.radius, half, p.pos, Content.PLAYER_RADIUS):
+						damage_player(p, h.data["dmg"])
+			else:
+				h.alive = false
 			continue
 		h.life -= dt
 		if h.type == t_ring:
@@ -4550,8 +4922,6 @@ func request(peer: int, action: String, arg = null) -> bool:
 			var limit := _spend_limit(p)
 			if limit >= 0 and p.spent + o["price"] > limit:
 				return _deny(p, "DENY_SPEND_LIMIT")
-			if p.flags.has("coop_economy") and p.buys >= Content.RED_BUILD["coop_buys"]:
-				return _deny(p, "DENY_BUY_LIMIT")
 			if o["kind"] == "weapon":
 				var twin := find_twin(p, o["id"], o["tier"], -1)
 				if twin < 0 and p.weapons.size() >= p.max_weapons:
@@ -4843,6 +5213,7 @@ func build_view(vs: ViewState) -> void:
 	var boss_max := 0.0
 	var boss_phase := 0
 	var boss_shield := 0.0
+	var boss_hoch := 0
 	for e in enemies:
 		if not e.alive:
 			continue
@@ -4879,10 +5250,11 @@ func build_view(vs: ViewState) -> void:
 			boss_phase = e.phase
 			if e.shield_max > 0.0:
 				boss_shield = e.shield / e.shield_max
+			boss_hoch = maxi(boss_hoch, int(e.data.get("wahl", 0)))
 	if boss_max > 0.0:
 		vs.boss = {"enc": Content.idx(Content.ENCOUNTER_ORDER, encounter), "hp": boss_hp / maxf(boss_max, _enc_max_hp),
 			"phase": boss_phase, "shield": boss_shield,
-			"cast": (1 + Content.BOSS_CASTS.find(boss_cast)) if boss_cast != "" else 0, "cast_t": boss_cast_t}
+			"cast": (1 + Content.BOSS_CASTS.find(boss_cast)) if boss_cast != "" else 0, "cast_t": boss_cast_t, "hoch": boss_hoch}
 	for pr in projectiles:
 		if pr.alive:
 			vs.p_type.append(pr.type)

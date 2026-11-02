@@ -2,6 +2,8 @@ extends TestCase
 ## Simulation tests (GDD §4–§16). The full-run tests drive a bot through all
 ## 20 waves so every enemy, encounter and shop path executes at least once.
 
+const AREAS := ["sim", "content"]  # ci-cd.md §2a
+
 
 func _sim(chars: Array, org := "gewerkschaft", seed := 7) -> Sim:
 	var players := []

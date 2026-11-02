@@ -1,6 +1,8 @@
 extends TestCase
 ## Audio autoload (architecture §8): assets exist, pure helpers, headless safety.
 
+const AREAS := ["audio"]  # ci-cd.md §2a
+
 const AudioScript := preload("res://src/autoload/audio.gd")
 
 

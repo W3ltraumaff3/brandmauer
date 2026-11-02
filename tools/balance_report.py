@@ -470,7 +470,7 @@ def ab(path_a, path_b, fields, min_n):
     header(b, "B " + path_b)
     for name, runs in (("A", a), ("B", b)):
         opts = Counter(" ".join(f"{k}={','.join(r[k]) if isinstance(r[k], list) else r[k]}"
-                                for k in ("start", "item", "prefer", "char", "ult", "dodge") if k in r and r[k] not in ("", [])) for r in runs)
+                                for k in ("start", "item", "prefer", "buy", "char", "ult", "dodge") if k in r and r[k] not in ("", [])) for r in runs)
         print(f"  {name} options: {dict(opts)}")
     ia = {}
     for r in a:
@@ -511,7 +511,7 @@ def ab(path_a, path_b, fields, min_n):
             mb = f"{statistics.median(kb):.0f}s" if kb else "-"
             print(f"  wave {bw:>2} boss: {ma} ({len(ka)}/{fa}) -> {mb} ({len(kb)}/{fb})")
     # the weapons/items under test
-    focus = sorted({e.split(":")[0] for _, y in pairs for k in ("start", "prefer", "item") for e in y.get(k, [])})
+    focus = sorted({e.split(":")[0] for _, y in pairs for k in ("start", "prefer", "item", "buy") for e in y.get(k, [])})
     for wid in focus:
         own_b = [p for _, y in pairs for p in y["final"] if wid in p.get("items", []) or wid in p.get("weapon_dmg", {})
                  or any(w.split(":")[0] == wid for w in p["weapons"])]

@@ -2,6 +2,8 @@ extends TestCase
 ## The eight v0.3 status and summon weapons and their status effects
 ## (GDD §11 "Status and summon weapons", D-091 to D-096).
 
+const AREAS := ["sim", "view", "net"]  # ci-cd.md §2a
+
 const DT := 1.0 / 60.0
 
 
@@ -74,7 +76,7 @@ func test_new_weapons_are_complete() -> void:
 	# new ids sit at the end of the order lists (stable network ids)
 	assert_eq(Content.PROJ_ORDER.slice(-3), ["akte", "aktenblatt", "sticker"])
 	assert_eq(Content.HAZARD_ORDER.find("kette"), 13, "kette keeps its id; the boss telegraphs (D-108) come after it")
-	assert_eq(Content.HAZARD_ORDER.slice(14), ["abstimmung", "plenum", "kahlschlag", "kahlschlag_hit"])
+	assert_eq(Content.HAZARD_ORDER.slice(14, 18), ["abstimmung", "plenum", "kahlschlag", "kahlschlag_hit"])   # then the final boss's (D-144)
 	assert_eq(Content.SUMMON_ORDER.slice(-4), ["laterne", "pappkamerad", "sani", "lauti"])
 
 

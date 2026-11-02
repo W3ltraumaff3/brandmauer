@@ -1,0 +1,48 @@
+melee_base players=1 umfrage=0 seed=1 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=1 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=1 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=0 seed=2 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=2 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=2 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=0 seed=3 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=3 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=3 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=0 seed=4 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=4 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=4 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=0 seed=5 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=5 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=5 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=0 seed=6 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=6 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=6 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=0 seed=7 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=7 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=7 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=0 seed=8 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=0 seed=8 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=0 seed=8 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=1 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=1 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=1 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=2 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=2 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=2 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=3 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=3 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=3 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=4 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=4 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=4 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=5 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=5 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=5 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=6 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=6 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=6 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=7 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=7 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=7 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8
+melee_base players=1 umfrage=2 seed=8 build=melee jobs=16 tag=melee_base
+melee_robin players=1 umfrage=2 seed=8 build=melee jobs=16 tag=melee_robin buy=robin_hood:8
+melee_putz players=1 umfrage=2 seed=8 build=melee jobs=16 tag=melee_putz buy=brandmauer_fertigputz:8

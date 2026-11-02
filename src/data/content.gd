@@ -194,6 +194,11 @@ const ITEM_ORDER: Array[String] = [
 	"kritische_masse",
 	"robin_hood",
 	"tarnkappe",
+	# red politics items (GDD §12 "Politics items"; in the shop pool since D-127)
+	"cumex_erstattung",
+	"doppelwumms",
+	"brandmauer_fertigputz",
+	"entlassungsurkunde",
 ]
 
 const ITEMS := {
@@ -252,12 +257,12 @@ const ITEMS := {
 	# red: game-changing, only for specific builds
 	"hausbesetzung": {"mods": {}, "flags": ["melee_build"], "price": 90, "rarity": 4},
 	"wurfmaschine": {"mods": {}, "flags": ["ranged_build"], "price": 90, "rarity": 4},
-	"genossenschaftsanteil": {"mods": {}, "flags": ["coop_economy"], "price": 80, "rarity": 4},
+	"genossenschaftsanteil": {"mods": {}, "flags": ["coop_economy"], "price": 60, "rarity": 4},
 	"ehrenamtskarte": {"mods": {}, "flags": ["summon_build"], "price": 90, "rarity": 4},
 	"kompost": {"mods": {}, "flags": ["status_build"], "price": 85, "rarity": 4},
-	"kritische_masse": {"mods": {}, "flags": ["crit_build"], "price": 90, "rarity": 4},
-	"robin_hood": {"mods": {}, "flags": ["lifesteal_build"], "price": 85, "rarity": 4},
-	"tarnkappe": {"mods": {}, "flags": ["dodge_build"], "price": 85, "rarity": 4},
+	"kritische_masse": {"mods": {"crit": 15.0}, "flags": ["crit_build"], "price": 90, "rarity": 4},
+	"robin_hood": {"mods": {"lifesteal": 10.0}, "flags": ["lifesteal_build"], "price": 85, "rarity": 4},
+	"tarnkappe": {"mods": {"dodge": 50.0}, "flags": ["dodge_build"], "price": 85, "rarity": 4},
 	# politics items (GDD §12 "Politics items")
 	"erinnerungsluecke": {"mods": {"dodge": 15.0, "xp": -10.0}, "price": 50, "rarity": 3},
 	"treuhandkonto": {"mods": {}, "flags": ["treuhand"], "price": 26, "rarity": 2},
@@ -267,23 +272,24 @@ const ITEMS := {
 	"ber_eroeffnungstermin": {"mods": {}, "flags": ["ber"], "price": 50, "rarity": 3},
 	"puma": {"mods": {"ranged": 25.0, "armor": 10.0}, "flags": ["puma"], "price": 60, "rarity": 3},
 	"zweiter_wahlgang": {"mods": {"damage": -10.0}, "flags": ["zweiter_wahlgang"], "price": 55, "rarity": 3},
-	"cumex_erstattung": {"mods": {}, "flags": ["cumex"], "price": 80, "rarity": 4},
-	"doppelwumms": {"mods": {"armor": -15.0}, "flags": ["doppelwumms"], "price": 90, "rarity": 4},
+	"cumex_erstattung": {"mods": {}, "flags": ["cumex"], "price": 60, "rarity": 4},
+	"doppelwumms": {"mods": {"armor": -10.0}, "flags": ["doppelwumms"], "price": 90, "rarity": 4},
 	"brandmauer_fertigputz": {"mods": {"armor": 50.0, "speed": -30.0}, "flags": ["fertigputz"], "price": 90, "rarity": 4},
-	"entlassungsurkunde": {"mods": {"crit": 20.0, "ranged": -15.0}, "flags": ["entlassung"], "price": 85, "rarity": 4},
+	"entlassungsurkunde": {"mods": {"crit": 30.0, "xp": -10.0}, "flags": ["entlassung"], "price": 85, "rarity": 4},
 }
 
 ## Item rarities (GDD §12): 1 green, 2 blue, 3 purple, 4 red.
 const RARITY_COLORS := {1: Color("3f8f4f"), 2: Color("2e6db4"), 3: Color("8e44ad"), 4: Color("c0392b")}
-const RED_BUILD := {"melee": 2.0, "melee_other": 0.5, "ranged_pierce": 1, "ranged_speed": 1.5, "ranged_other": 0.5,
-	"coop_interest": 0.15, "coop_interest_max": 50, "coop_buys": 2, "summon": 1.5, "summon_life": 2.0, "summon_other": 0.6,
-	"status": 2.0, "status_direct": 0.7, "status_spread": 100.0, "crit_extra": 1.5, "crit_other": 0.7,
-	"lifesteal_heal": 3.0, "dodge_cap": 80.0,
+const RED_BUILD := {"melee": 2.0, "melee_other": 0.5, "ranged": 1.4, "ranged_pierce": 1, "ranged_speed": 1.5, "ranged_other": 0.5,
+	"coop_rate": 0.3, "coop_rate_step": 0.05, "coop_rate_max": 0.5, "summon": 1.5, "summon_life": 2.0, "summon_other": 0.6,
+	"status": 2.0, "status_direct": 0.7, "status_spread": 100.0, "crit_extra": 2.0, "crit_other": 0.75,
+	"lifesteal_heal": 4.0, "dodge_cap": 80.0,
 	"treuhand_chance": 0.5, "treuhand_pfand": 30, "aufhoeren_after": 2.0, "aufhoeren_regen": 8.0, "aufhoeren_armor": 10.0,
 	"wahl_time": 10.0, "wahl_early": 40.0, "wahl_late": -10.0, "maut_now": 60, "maut_wave": 8,
 	"ber_wave": 10, "ber_early": -10.0, "ber_late_dmg": 40.0, "ber_late_as": 20.0,
 	"puma_period": 18.0, "puma_down": 3.0, "second_round_hp": 0.5, "cumex_max": 40, "cumex_audit_wave": 15,
-	"wumms_radius": 150.0, "wumms_delay": 0.35, "fertigputz_knock": 600.0, "entlassung_hp": 0.3}
+	"wumms_radius": 150.0, "wumms_delay": 0.35, "wumms_dmg": 20.0, "wumms_ranged": 3.0,
+	"fertigputz_knock": 600.0, "entlassung_hp": 0.4, "entlassung_boss": 1.5}
 
 ## Shop weight of an item rarity at a given wave (luck shifts towards rarer tiers).
 static func rarity_weight(rarity: int, wave: int, luck: float) -> float:
@@ -305,6 +311,7 @@ const ENEMY_ORDER: Array[String] = [
 	"ju_schnoesel", "hinterbaenkler", "lobbyist", "porsche_suv", "immobilienerbe",
 	"golfclub_vorstand", "fdp_jungunternehmer", "startup", "privatjet",
 	"sylt_member", "geschichtslehrer", "sauerlaender", "eidgenossin",
+	"briefkasten",
 ]
 
 const ENEMIES := {
@@ -343,6 +350,9 @@ const ENEMIES := {
 		"pfand": 90, "xp": 60.0, "from_wave": 99, "weight": 0, "say": []},
 	"eidgenossin": {"faction": "elite", "ai": "boss", "hp": 6500.0, "speed": 90.0, "dmg": 14.0, "radius": 36.0,
 		"pfand": 0, "xp": 0.0, "from_wave": 99, "weight": 0, "say": []},
+	# Briefkastenfirmen (GDD §14, D-142): her phase-3 add; HP set from her max HP, no reward
+	"briefkasten": {"faction": "elite", "ai": "add", "hp": 1.0, "speed": 0.0, "dmg": 0.0, "radius": 26.0,
+		"pfand": 0, "xp": 0.0, "from_wave": 99, "weight": 0, "say": []},
 }
 
 ## Factions the Töchter count as "old men in suits".
@@ -361,6 +371,7 @@ const HAZARD_ORDER: Array[String] = [
 	"kleber", "mietzone", "kerosin", "lob_marker", "sitzblockade", "explosion", "abschiebezone",
 	"push_ring", "farbklecks", "brei_marker", "ziegel", "paragraf", "kreide",
 	"kette", "abstimmung", "plenum", "kahlschlag", "kahlschlag_hit",
+	"ansturm_bahn", "rotor", "reichweite", "reichweite_hit",
 ]
 const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse", "overall",
 	"laterne", "pappkamerad", "sani", "lauti"]
@@ -412,7 +423,7 @@ const ENCOUNTERS := {
 
 ## Boss casts (GDD §14, D-107, D-108): interruptible by a stun, shown in the boss bar.
 ## Append only: the snapshot sends 1 + index.
-const BOSS_CASTS: Array[String] = ["wende", "abstimmung", "kahlschlag", "ansturm", "remigration"]
+const BOSS_CASTS: Array[String] = ["wende", "abstimmung", "kahlschlag", "ansturm", "remigration", "reichweite"]
 
 ## Boss rules (GDD §14 "Boss rules", D-102 to D-112). Starting values for the balancing round.
 ## [a, b] pairs run linearly from Umfrage 10 % (level 0) to 35 % (level 5).
@@ -439,6 +450,24 @@ const BOSS := {
 	# Remigrantin: Die Brandmauer hält (D-104, D-111)
 	"band": 110.0, "band_l3": 150.0, "band_per_player": 10.0, "ring_every": [3.5, 2.6], "remig_warn": 2.0,
 	"ansturm_warn": 0.8,   # her charge wind-up: a targeted impact needs 0.8 s (B8; was 0.7)
+	# Remigrantin, final exam (GDD §14 "Final boss", D-140 to D-145)
+	# P1 Ansturm-Kette (D-143): chains of charges with a lane telegraph; turbines she hits fall
+	"kette_every": 3.5, "kette_len": 2, "kette_len_l4": 3, "kette_coop_from": 3, "kette_gap": 0.25,
+	"ansturm_len": 380.0, "ansturm_speed": 760.0, "ansturm_dmg": 1.5, "lane_w": 84.0,
+	"turbine_pull": 160.0,                   # a turbine this close to her target draws the charge
+	"rotor_len": 260.0, "rotor_w": 44.0, "rotor_warn": 1.0, "rotor_time": 3.0, "rotor_dmg": 1.0,
+	"wing_every": [2.2, 2.6], "wing_count": 3, "wing_count_l3": 5,   # wing fans in P1 and (new) P2
+	# P2/P3 Reichweite (D-141): arena-wide, safe only in front of intact Brandmauer segments
+	# warning in the arena-change class (B8: 2.0 s minimum): from the middle the nearest safe strip
+	# is up to ~550 px away, 2.5 s at player speed; 3.0 s (2.4 s at 35 %) leaves time to shoot first
+	"reich_first": 6.0, "reich_every": [16.0, 13.0], "reich_every_p3": [14.0, 11.0], "reich_warn": 3.0,
+	"reich_dmg": 2.0, "reich_safe": 160.0, "reich_ring": true,
+	# P3 Briefkastenfirmen (D-142): letterboxes recharge the gold-bar shield
+	# letterboxes: 3 solo, +1 from 2 players; the shield breaks with the last one, all reopen together
+	"shield": 0.2, "brief_count": 3, "brief_coop": 1, "brief_hp": 0.007, "brief_regen": 0.001, "brief_back": [25.0, 18.0],
+	"brief_inset": 200.0, "p3_ring_every": 4.5, "gold_every": 1.2,
+	# Wahlabend (D-144): soft enrage of the final fight
+	"wahl_from": 150.0, "wahl_from_l4": 120.0, "wahl_every": 15.0, "wahl_step": 0.1, "wahl_max": 5,
 }
 
 # --- Organisationen (GDD §10) ------------------------------------------------
@@ -458,7 +487,7 @@ const BALANCE := {
 	"diff_hp": 0.15, "diff_dmg": 0.10, "diff_spawn": 0.08,   # Umfrage level L: × (1 + k·L)
 	# elites and bosses
 	"elite_base": 0.6, "elite_coop": 0.3,    # HP × (base + coop·(players − 1))
-	"final_boss_mult": 4.5,                  # Die Remigrantin's HP on top
+	"final_boss_mult": 5.5,                  # Die Remigrantin's HP on top (D-145; was 4.5, D-118)
 	"diff_boss_hp": 0.15,                    # encounter units only: × (1 + k·L) on top of diff_hp (D-102)
 	"melee_vs_boss": 2.0,                   # melee weapons against encounter units (D-121)
 	"elite_wave_exp": 0.6,                   # elite HP × (enemy HP curve(wave) / curve(5)) ^ this

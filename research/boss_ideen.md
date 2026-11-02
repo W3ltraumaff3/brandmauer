@@ -474,3 +474,38 @@ Ein anderer Agent baut das Werkzeug gerade aus (`char=`, A/B-Modus). Das hier se
   - Ort des Sylt-Videos (Pfingsten 2024)
   - Alle drei sind im GDD schon Grundlage. Für neue Flavor-Texte eine Quelle in `research/` ablegen.
 - **Gefundene Doku-Lücke:** balancing.md §7 verweist auf einen Eintrag in open-questions.md, den es nicht gibt.
+
+## 11. Endboss als Abschlussprüfung (v0.4.1, 2026-11-02)
+
+Spielertest solo (v0.4.0-beta): "Der Sauerländer war schwerer zu schlagen als die Remigrantin." Spec: GDD §14 "The final exam", Entscheidungen D-140 bis D-145, Messung `balance/runs/v0.4.1-beta/final_boss/`.
+
+### 11.1 Warum der Sauerländer schwerer wirkte
+
+Belege aus dem Code (v0.4.0) und aus Bot-Läufen (Tabelle in balancing.md §7 "Final boss v0.4.1"):
+
+- **Er hat eine Uhr, sie nicht.** Welle 15 dauert 60 s; wer ihn bis dahin nicht absetzt, sieht ihn fliehen ("Kein Kommentar …"), ohne Lohn. Mit `hp_mult` 2,0 fliehen mehr als die Hälfte der Sauerländer in Bot-Läufen (`balance/runs/v0.4.0-beta/final_solo.jsonl`, solo sterblich, getötet/Kämpfe: Fernkampf 7/8, Krit 12/14, Status 1/1, Beschwörung 3/14, Nahkampf 1/10, Tank 1/10). "Nicht geschafft" fühlt sich schwer an. Die Remigrantin hat keinen Timer, sie fällt also immer irgendwann.
+- **Er zwingt zum Handeln, sie lässt sich aussitzen.** Er hat in jeder Phase eine Aufgabe (Abstimmung: Plenum besetzen oder Schaden machen, sonst Loch + 4 + 2·n AfD-Gegner; Kahlschlag: Kegel, löscht Beschwörungen und Zonen; Sondervermögen: Scheine heilen ihn). Sie hatte in **Phase 2 gar keinen gezielten Angriff** (nur Band + Druckring alle 3,5 s, Laufen mit halbem Tempo), in Phase 3 nur Goldbarren aus einer festen Position oben.
+- **Ihre Treffer kommen aus wenigen Quellen.** In den Bot-Läufen stammt ihr Schaden fast nur von Goldbarren und Druckringen; der Ansturm (0,7–0,8 s Ansage, 216 px) trifft kaum.
+- **Dichte:** gemessen als Zeitanteil mit Boss-Telegraph und Anteil der Zeit, in der eine Person in einer Gefahrenzone steht (`tele_on`, `tele_in`, neu in `balance_sim.gd`).
+
+### 11.2 Was übernommen wurde (aus §3.4 und neu)
+
+| Name | Phase | Herkunft | Telegraph | Antwort | Satire |
+|---|---|---|---|---|---|
+| **Ansturm-Kette** | P1 | R1 (Umbau) | rote gestrichelte Bahn 0,8 s, Füllung läuft zur Spitze; fallendes Windrad 1,0 s als gestrichelte Linie | ausweichen, nicht hinter dem angepeilten Windrad stehen, Betäubung bricht die ganze Kette ab | Windmühlen-Rede (`weidel-05`): Don Quijote, der gegen die Windräder tatsächlich gewinnt; die Spieler:innen verlieren ihre Deckung |
+| **Reichweite** | P2, P3 | neu | ganze Arena 2,0 s rot von ihr aus, sichere Streifen blau-türkis vor intakten Segmenten (nicht neben einem Loch), Hand + "Brandmauer" | an die intakte Mauer laufen, vorher Druckring abfangen, Betäubung bricht ab; Löcher reparieren lohnt sich | ihre Botschaft reicht nur so weit, weil eine Milliardärs-Plattform sie verstärkt (Live-Gespräch auf X, Kontext von `weidel-03`); wo die Brandmauer steht, endet ihre Reichweite. Die Figuren antworten: "Hier endet eure Reichweite. Die Brandmauer steht!" (erfunden) |
+| **Briefkastenfirmen** | P3 | R3 (geändert: 3 solo / 4 ab 2 Personen; fällt der letzte, bricht der Schild, alle kommen nach 15 s gemeinsam an neuen Adressen zurück; einzeln nachwachsend war in Bot-Läufen ein Patt bei 33 %) | goldene gestrichelte Linie mit Münzen von jedem Briefkasten zu ihr | Ziel wechseln ("nächstes" + hinlaufen), dann das Fenster nutzen; Koop: aufteilen | Steueroase als Struktur (content-guidelines §2); keine Behauptung von Steuerhinterziehung, `weidel-09`/`weidel-10` nur auf Karten |
+| **Wahlabend** | ab 150 s | R4 | "Hochrechnung +x %" in der Boss-Leiste, Blase | Schaden machen; Boss-Wiederholung fängt ab | Wahlabend, Hochrechnung kippt |
+
+**Verworfen:**
+- "Fake-Telegraphen" (Alternative Fakten: von drei Markierungen ist nur eine echt): nicht lesbar, Frust statt Prüfung.
+- "Dexit" (Arena in Inseln teilen): zu nah an Grenzbildern; Grenzen und Zäune sind bei ihr tabu (§10).
+- Jedes Zitat über Migrant:innen (`weidel-01`, `-02`, `-07`) als Grundlage: nein (§10).
+- `weidel-06` ("rot lackierte Nazis" über Gegendemonstrierende): würde als Mechanik die Beleidigung bebildern; bleibt Karten-/Album-Material.
+
+### 11.3 Content-Prüfung
+
+- Keine Phase zeigt oder beschwört die Gruppen, die sie beleidigt; alle Angriffe treffen Spieler:innen und Umgebung (Windräder, Mauer).
+- Keine Abschiebe-Bildsprache: die Reichweite ist eine rote Welle, kein Flugzeug, kein Bus, keine Koffer. Niemand wird "abgeschoben"; der Druckring schiebt wie bisher zu den Löchern.
+- Briefkasten: Firmenschilder und ein Goldschlitz, kein Geldsack, kein Gesicht, keine Fäden (§2).
+- Alle Sprechblasen im Kampf sind erfunden; echte Zitate nur auf Karte und im Album.

@@ -60,7 +60,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `k_type`, `k_pos` | PackedByteArray, PackedVector2Array | pickups, index into `Content.PICKUP_ORDER` |
 | `h_type`, `h_pos`, `h_rad`, `h_life`, `h_ang` | PackedByteArray, PackedVector2Array, PackedFloat32Array, PackedFloat32Array, PackedFloat32Array | hazards and zones, index into `Content.HAZARD_ORDER`; life is 0..1 remaining; `h_ang` is the direction of a cone (Kahlschlag), 0 for round hazards (D-108). A Menschenkette is 5 consecutive `kette` hazards along the chain, from its owner to its other end; the host moves them every tick and leaves them out while the chain is torn |
 | `s_type`, `s_pos`, `s_hp` | PackedByteArray, PackedVector2Array, PackedFloat32Array | summons, index into `Content.SUMMON_ORDER`; `s_hp` 0..1 is the HP of summons that can be hurt (Pappkamerad), 1 for all others. A Menschenkette's lamppost (`laterne`) is only sent while the chain hangs on it |
-| `boss` | Dictionary | `{}` or `{enc:int (index into Content.ENCOUNTER_ORDER), hp:float 0..1, phase:int, shield:float 0..1, cast:int (0 none, else 1 + index into Content.BOSS_CASTS), cast_t:float 0..1 progress}` (D-108) |
+| `boss` | Dictionary | `{}` or `{enc:int (index into Content.ENCOUNTER_ORDER), hp:float 0..1, phase:int, shield:float 0..1, cast:int (0 none, else 1 + index into Content.BOSS_CASTS), cast_t:float 0..1 progress, hoch:int final-boss Wahlabend step}` (D-108, D-144) |
 
 ## 4. Meta state (slow state, Dictionary)
 `Sim.build_meta()` returns the per-run slow state. The host sends it reliably whenever it changes (at most 10 Hz), and **all UI reads `Game.meta`**, both on the host and on clients.
@@ -156,7 +156,7 @@ Each machine updates **its own** save from the `result` entry for its own peer i
 Peer ids in signals, `lobby`, meta and the `Sim` are **player ids**: the ENet peer id of a player's first join. After a reconnect only `Net` maps it to the new ENet peer (networking.md §7.4).
 ```
 const PORT := 24713                 # game port (UDP); LAN discovery uses PORT + 1
-const PROTOCOL_VERSION := 5         # networking.md §7.1 (5: snapshot v4, D-108)
+const PROTOCOL_VERSION := 6         # networking.md §7.1 (6: snapshot v5, D-144)
 const GRACE_S := 60.0               # host: away players are kept this long
 const RECONNECT_S := 60.0 / RETRY_INTERVAL_S := 2.0   # client reconnect budget / interval
 signal lobby_changed                # lobby dict, org or difficulty changed

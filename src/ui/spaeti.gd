@@ -10,6 +10,7 @@ var preview_meta: Dictionary = {}
 var _root_box: VBoxContainer
 var _refresh_queued := false
 var _focus_name := ""
+var _focus_section := ""   # SECTIONS name of the focused control (D-126)
 var _quote_id := ""
 var _last_hash := 0
 ## Scroll positions (by ScrollContainer name) carried over a rebuild, so lists
@@ -85,6 +86,8 @@ func _me() -> Dictionary:
 func _on_focus_changed(c: Control) -> void:
 	if c and _root_box and _root_box.is_ancestor_of(c):
 		_focus_name = c.name
+		var sec := _section_of(c)
+		_focus_section = String(sec.name) if sec else ""
 
 
 ## Topmost open overlay (Optionen above Statistik), or null.
@@ -328,6 +331,7 @@ static func buy_block_reason(o: Dictionary, me: Dictionary) -> String:
 
 func _rebuild() -> void:
 	var keep := _focus_name
+	var keep_sec := _focus_section
 	_last_hash = _state_hash()
 	# A restore still pending (two rebuilds in one frame) wins over the fresh, unscrolled lists.
 	if _keep_scroll.is_empty():
@@ -363,11 +367,39 @@ func _rebuild() -> void:
 	if _top_overlay() != null:
 		return  # focus stays in the overlay
 	if keep != "":
-		var target := _root_box.find_child(keep, true, false) as Control
-		if target and UINav.can_focus(target):
+		var target := _refocus_target(keep, keep_sec)
+		if target:
 			UIKit.focus_later(target)
 		else:
 			UIKit.focus_first(_root_box)
+
+
+## What gets focus after a rebuild or a closed dialog (D-126): the same control
+## if it's still usable; after a buy the next buyable offer (wrapping), else
+## Neu würfeln; else the first usable control of the same section. Null: none
+## of these, the caller falls back to the panel's first control.
+func _refocus_target(keep: String, sec_name: String) -> Control:
+	var same := _root_box.find_child(keep, true, false) as Control
+	if UINav.can_focus(same):
+		return same
+	if keep.begins_with("buy_"):
+		var n := 0
+		while _root_box.find_child("buy_%d" % n, true, false) != null:
+			n += 1
+		var i := int(keep.trim_prefix("buy_"))
+		for step in range(1, n + 1):
+			var b := _root_box.find_child("buy_%d" % posmod(i + step, n), true, false) as Control
+			if UINav.can_focus(b):
+				return b
+		var rr := _root_box.find_child("reroll", true, false) as Control
+		if UINav.can_focus(rr):
+			return rr
+	var sec := _root_box.find_child(sec_name, true, false) as Control if sec_name != "" else null
+	if sec != null:
+		for c in sec.find_children("*", "Control", true, false):
+			if UINav.can_focus(c):
+				return c
+	return null
 
 
 ## Puts the lists back where they were before the rebuild. Waits for the new
@@ -547,6 +579,7 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 		var row := UIKit.hbox(12)
 		row.alignment = BoxContainer.ALIGNMENT_CENTER
 		row.size_flags_vertical = SIZE_EXPAND_FILL
+		var opt_btns: Array[Button] = []
 		for i in options.size():
 			var o: Dictionary = options[i]
 			var stat := str(o.get("stat", ""))
@@ -566,6 +599,7 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 			b.tooltip_text = UIKit.trk("STAT_%s_DESC" % stat.to_upper())
 			UIKit.tilt(b, UIKit.tilt_for(i, 1.2))
 			row.add_child(b)
+			opt_btns.append(b)
 		lp[1].add_child(row)
 		# Level-up reroll (GDD §6): free rerolls first, then its own rising price.
 		var lfree := int(me.get("free_rerolls", 0))
@@ -577,6 +611,7 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 		lr.tooltip_text = tr("SPAETI_LEVELUP_REROLL_TIP")
 		lr_row.add_child(lr)
 		lp[1].add_child(lr_row)
+		_link_levelup_focus(opt_btns, lr)
 		lp[0].size_flags_vertical = SIZE_EXPAND_FILL
 		return lp[0]
 
@@ -608,6 +643,25 @@ func _shop_card(meta: Dictionary, me: Dictionary) -> Control:
 	return parts[0]
 
 
+## Level-up options are one row (D-123): left/right walk the options in order
+## (the centered reroll below used to sit between them for the geometric
+## search), down goes to the reroll, up from it back to the last option.
+static func _link_levelup_focus(opts: Array[Button], reroll: Control) -> void:
+	var n := opts.size()
+	for k in n:
+		var b := opts[k]
+		b.focus_neighbor_left = b.get_path_to(opts[k - 1]) if k > 0 else NodePath(".")
+		b.focus_neighbor_right = b.get_path_to(opts[k + 1]) if k < n - 1 else NodePath(".")
+		b.focus_neighbor_bottom = b.get_path_to(reroll)
+		b.focus_previous = b.focus_neighbor_left
+		b.focus_next = b.focus_neighbor_right
+		b.focus_entered.connect(func(): reroll.focus_neighbor_top = reroll.get_path_to(b))
+	reroll.focus_neighbor_left = NodePath(".")
+	reroll.focus_neighbor_right = NodePath(".")
+	if n > 0:
+		reroll.focus_neighbor_top = reroll.get_path_to(opts[0])
+
+
 func _cut_slot_card(vertrag_id: String) -> Control:
 	var c := UIKit.card(UITheme.PAPER_DARK, UITheme.GREY, 1.2)
 	c.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -632,9 +686,9 @@ func _offer_card(i: int, o: Dictionary, meta: Dictionary, me: Dictionary) -> Con
 	var kind := "WEAPON" if weapon else "ITEM"
 	var sold := bool(o.get("sold", false))
 	var price := int(o.get("price", 0))
-	# Items: border and tag in their rarity color (GDD §12); red = build item.
-	var rarity := 0 if weapon else UIKit.item_rarity(id, o)
-	var rcol := UIKit.rarity_color(rarity) if rarity > 0 else UITheme.INK
+	# Border and tag in the rarity color (GDD §12; red = build item); weapons by tier (§6a).
+	var rarity := clampi(int(o.get("tier", 1)), 1, 4) if weapon else UIKit.item_rarity(id, o)
+	var rcol := UIKit.rarity_color(rarity)
 	var bg := Color.WHITE.lerp(UITheme.PAPER, 0.5)
 	if rarity == 4:
 		bg = bg.lerp(rcol, 0.1)
@@ -650,7 +704,7 @@ func _offer_card(i: int, o: Dictionary, meta: Dictionary, me: Dictionary) -> Con
 	n.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	top.add_child(n)
 	if weapon:
-		top.add_child(UIKit.label(tr("SPAETI_WEAPON_TIER") % UIKit.roman(int(o.get("tier", 1))), 16, UITheme.BLUE))
+		top.add_child(UIKit.label(tr("SPAETI_WEAPON_TIER") % UIKit.roman(int(o.get("tier", 1))), 16, rcol))
 	else:
 		top.add_child(UIKit.label(tr("SPAETI_ITEM"), 16, rcol))
 	v.add_child(top)
@@ -672,7 +726,8 @@ func _offer_card(i: int, o: Dictionary, meta: Dictionary, me: Dictionary) -> Con
 		why.mouse_filter = MOUSE_FILTER_PASS
 		bottom.add_child(why)
 	elif not sold and offer_combines(o, me):
-		var hint := UIKit.label(tr("SPAETI_OFFER_COMBINES") % UIKit.roman(int(o.get("tier", 1)) + 1), 15, UITheme.GREEN)
+		var hint := UIKit.label(tr("SPAETI_OFFER_COMBINES") % UIKit.roman(int(o.get("tier", 1)) + 1), 15,
+			UIKit.tier_color(int(o.get("tier", 1)) + 1))
 		hint.name = "combines_%d" % i
 		hint.tooltip_text = tr("SPAETI_OFFER_COMBINES_TIP")
 		hint.mouse_filter = MOUSE_FILTER_PASS
@@ -710,7 +765,8 @@ func _weapons_card(meta: Dictionary, me: Dictionary) -> Control:
 		var tier := int(w.get("tier", 1))
 		var row := UIKit.hbox(6)
 		row.size_flags_horizontal = SIZE_EXPAND_FILL
-		var n := UIKit.label("%s %s" % [UIKit.content_text("WEAPON", id), UIKit.roman(tier)], 18)
+		var n := UIKit.label("%s %s" % [UIKit.content_text("WEAPON", id), UIKit.roman(tier)], 18, UIKit.tier_color(tier))
+		n.name = "weapon_%d" % i
 		n.size_flags_horizontal = SIZE_EXPAND_FILL
 		n.clip_text = true
 		n.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -722,7 +778,7 @@ func _weapons_card(meta: Dictionary, me: Dictionary) -> Control:
 		if twin >= 0:
 			var cb := UIKit.compact(_btn(tr("SPAETI_COMBINE") % UIKit.roman(tier + 1), "combine_%d" % i,
 				_ask_combine.bind(i), 15), 0, 6)
-			cb.add_theme_color_override("font_color", UITheme.GREEN)
+			cb.add_theme_color_override("font_color", UIKit.tier_color(tier + 1))
 			cb.tooltip_text = "%s\n%s" % [tr("SPAETI_COMBINE_TIP"), n.tooltip_text]
 			row.add_child(cb)
 		var refund := _sell_refund(meta, w)
@@ -1083,8 +1139,8 @@ func _on_dialog_closed(d: UIDialog, focus_back: String) -> void:
 	if top != null:
 		UIKit.focus_first(top)
 		return
-	var b := _root_box.find_child(focus_back, true, false) as Control
-	if b and b.focus_mode != FOCUS_NONE and not (b is BaseButton and (b as BaseButton).disabled):
+	var b := _refocus_target(focus_back, _focus_section)
+	if b:
 		UIKit.focus_later(b)
 	else:
 		UIKit.focus_first(_root_box)

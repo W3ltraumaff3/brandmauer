@@ -1,0 +1,43 @@
+name: Pick affected tests
+description: >-
+  Runs tools/affected_tests.py (docs/specs/ci-cd.md §2a). On a pull request it
+  compares the PR against its base and selects the touched test areas; on any
+  other event (push to main, workflow_dispatch) it selects everything.
+
+outputs:
+  godot:
+    description: '"true" if Godot tests have to run'
+    value: ${{ steps.pick.outputs.godot }}
+  godot_args:
+    description: Arguments for run_tests.gd after "--" (empty = all tests)
+    value: ${{ steps.pick.outputs.godot_args }}
+  spaeti_layout:
+    description: '"true" if the Späti layout check has to run'
+    value: ${{ steps.pick.outputs.spaeti_layout }}
+  net_smoke:
+    description: '"true" if the net smoke test has to run'
+    value: ${{ steps.pick.outputs.net_smoke }}
+  quotes:
+    description: '"true" if the quote data checks have to run'
+    value: ${{ steps.pick.outputs.quotes }}
+  summary:
+    description: The selected areas, for notices
+    value: ${{ steps.pick.outputs.summary }}
+
+runs:
+  using: composite
+  steps:
+    - name: Pick affected tests
+      id: pick
+      shell: bash
+      env:
+        EVENT: ${{ github.event_name }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+        if [ "$EVENT" = "pull_request" ] && [ -n "$BASE_SHA" ]; then
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          python3 tools/affected_tests.py --base "$BASE_SHA" --github-output
+        else
+          python3 tools/affected_tests.py --all --github-output
+        fi

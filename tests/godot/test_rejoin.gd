@@ -2,6 +2,8 @@ extends TestCase
 ## Rejoin after a crash (networking.md §7.5): the saved session (Save, memory
 ## only in tests) and when Game keeps or drops it.
 
+const AREAS := ["net", "save"]  # ci-cd.md §2a
+
 var game: Node
 var save: Node
 const SESSION := {"ip": "10.0.0.5", "port": 24713, "token": "secret", "player": 4242}
