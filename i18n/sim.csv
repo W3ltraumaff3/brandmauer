@@ -29,3 +29,6 @@ SAY_ZWEITER_WAHLGANG,Zweiter Wahlgang! Knapp gewählt.
 SAY_ENTLASSEN,Entlassen!
 SAY_NICHTIG,Nichtig erklärt!
 SAY_BETRIEBSPRUEFUNG,Betriebsprüfung! Die Hälfte ist weg.
+SAY_BOSS_RETRY,Nochmal! Diesmal mit Plan.
+SAY_ENRAGE,Jetzt reicht’s aber!
+SAY_REICHENSTEUER,Reichensteuer! Wer viel hat, gibt ab.

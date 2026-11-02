@@ -49,6 +49,7 @@ func _ready() -> void:
 	Net.peer_left.connect(_on_peer_left)
 	Net.peer_away.connect(_on_peer_away)
 	Net.peer_back.connect(_on_peer_back)
+	Net.run_resent.connect(_on_run_resent)
 	Net.reconnected.connect(_on_reconnected)
 	Net.disconnected.connect(_on_disconnected)
 	Net.connected.connect(_on_connected)
@@ -137,6 +138,18 @@ func open_join(ip: String, port: int, player_name: String) -> void:
 	Net.join(ip, port, player_name)
 
 
+## Main menu "Zurück ins Spiel" (networking.md §7.5): back into the co-op run
+## this machine left by crashing or losing the connection.
+func open_rejoin() -> bool:
+	var info := Save.rejoin_info()
+	if info.is_empty():
+		return false
+	_reset_run()
+	mode = Mode.CLIENT
+	Net.rejoin(info["ip"], info["port"], info["token"], info["player"])
+	return true
+
+
 func start_run() -> void:
 	if not is_host_side() or is_running():
 		return
@@ -149,7 +162,7 @@ func start_run() -> void:
 		return
 	var cfg := {
 		"seed": randi(), "players": players, "org": Net.org,
-		"difficulty": Net.difficulty, "blackrock": blackrock,
+		"difficulty": Net.difficulty, "blackrock": blackrock, "boss_retry": Net.boss_retry,
 	}
 	Net.broadcast_run_start(cfg)
 
@@ -176,7 +189,11 @@ func back_to_lobby() -> void:
 		Net.return_to_lobby()
 
 
-func quit_to_menu() -> void:
+## keep_rejoin: the run goes on without us (lost connection), so the saved
+## session stays for "Zurück ins Spiel". Every deliberate exit drops it.
+func quit_to_menu(keep_rejoin := false) -> void:
+	if not keep_rejoin:
+		Save.clear_rejoin()
 	_reset_run()
 	Net.leave()
 	mode = Mode.NONE
@@ -209,7 +226,8 @@ func _on_connection_failed(_reason: String) -> void:
 func _on_disconnected(reason: String) -> void:
 	if mode == Mode.CLIENT:
 		message.emit(reason)
-		quit_to_menu()
+		# Lost mid-run: the host keeps our character, so a rejoin stays possible.
+		quit_to_menu(reason == "NET_ERR_LOST" and is_running())
 
 
 func _on_run_start(cfg: Dictionary) -> void:
@@ -225,6 +243,9 @@ func _on_run_start(cfg: Dictionary) -> void:
 	else:
 		_buffer = SnapshotBuffer.new()
 		meta = {}
+		var session := Net.session_info()
+		if mode == Mode.CLIENT and not session.is_empty():
+			Save.set_rejoin(session)
 	meta_changed.emit()
 	run_started.emit()
 	if mode != Mode.SERVER:
@@ -296,10 +317,27 @@ func _on_peer_back(peer: int) -> void:
 		_flush_events()
 
 
+## Host: a client rejoined from the menu and got the run config; it needs a
+## full meta after that (one sent before the config is dropped by its run start).
+func _on_run_resent(_peer: int) -> void:
+	if sim:
+		sim.meta_dirty = true
+		_meta_timer = 0.0
+
+
+## Closing the window is a deliberate leave (Net says goodbye): no rejoin.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		Save.clear_rejoin()
+
+
 ## Client: back in the run after a lost connection. Drop stale snapshots and
 ## predicted inputs the host never saw; the next snapshot takes over.
 func _on_reconnected() -> void:
-	if is_host_side() or not is_running():
+	if is_host_side():
+		return
+	if not is_running():
+		Net.request_run()  # rejoined from the menu: the host sends the run config
 		return
 	_buffer = SnapshotBuffer.new()
 	_inputs.clear()
@@ -308,6 +346,7 @@ func _on_reconnected() -> void:
 
 
 func _on_returned_to_lobby() -> void:
+	Save.clear_rejoin()
 	_reset_run()
 	if mode == Mode.SERVER:
 		return
@@ -467,6 +506,7 @@ func _show_end() -> void:
 		print("[Brandmauer] Run beendet: %s, Welle %d" % ["Sieg" if result.get("won", false) else "Niederlage", result.get("wave", 0)])
 		get_tree().create_timer(5.0).timeout.connect(func(): Net.return_to_lobby())
 		return
+	Save.clear_rejoin()
 	last_unlocks = Save.apply_result(result, local_id())
 	run_finished.emit(result)
 	screen_requested.emit("end")

@@ -17,6 +17,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `src/data/content.gd` (`Content`) | all game content as data: stats, characters, weapons, items, enemies, encounters, organisations, difficulty, Koalitionsvertrag |
 | `src/data/quotes.gd` (`Quotes`) | loads `research/zitate_de.json` plus `research/auswahl.json` (the curated selection) |
 | `src/sim/sim.gd` (`Sim`) | the simulation |
+| `src/sim/arena.gd` (`Arena`) | arena geometry (sheet, four Brandmauer walls, inner arena), wall maths (segments, line of sight, staging walk) and the `Arena.WALL` tunables (GDD §5a); pure static, shared by sim, view, HUD and tools |
 | `src/sim/view_state.gd` (`ViewState`) | render and snapshot contract (§3) |
 | `src/net/snapshot.gd` (`Snapshot`) | `ViewState` ⇄ bytes |
 | `src/net/snapshot_buffer.gd` (`SnapshotBuffer`) | client interpolation buffer |
@@ -45,7 +46,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `wave` | int | current wave 1..20 |
 | `wave_time_left` | float | seconds left; `-1` in the boss wave |
 | `stage` | int | Zusammenhalt stage 0..4 |
-| `wall` | int | bitmask of intact wall segments (bit i = segment i intact, 12 segments) |
+| `wall` | int | bitmask of intact wall segments (bit i = segment i intact, `Arena.WALL_SEGMENTS` = 38 segments, clockwise from the top-left: 0–11 top, 12–18 right, 19–30 bottom, 31–37 left; GDD §5a). Geometry and wall tunables live in `Arena` (`src/sim/arena.gd`), shared by sim and view |
 | `players` | Array[Dictionary] | `{id:int, char:int, pos:Vector2, hp:float, max_hp:float, state:int (0 alive, 1 downed, 2 gone, 3 away: connection lost, frozen, invulnerable, untargeted; networking.md §7.4), aim:float, flags:int, followers:int, weapons:PackedByteArray, seq:int (last input seq the host applied for this player, for client reconciliation)}`. Player flags: 1 reversed controls, 2 stunned, 4 standing still (Klimakleber), 8 invulnerable, 16 reviving someone |
 | `e_id` | PackedInt32Array | enemy ids |
 | `e_type` | PackedByteArray | index into `Content.ENEMY_ORDER` |
@@ -80,7 +81,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
       "items": [String],
       "offers": [{"kind": "weapon"|"item", "id": String, "tier": int, "price": int, "sold": bool}],
       "reroll_price": int, "free_rerolls": int, "spend_left": int (-1 = unlimited),
-      "levelups": int, "levelup_options": [{"stat": String, "amount": float}],
+      "levelups": int, "levelup_options": [{"stat": String, "amount": float}], "levelup_reroll_price": int,
       "ready": bool, "paid_in": int, "taken_out": int, "kills": int, "damage": int
   }},
   "result": {}                              # filled when phase == OVER, see §6
@@ -96,6 +97,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `reroll` | — |
 | `sell` | weapon index |
 | `levelup` | option index |
+| `levelup_reroll` | — (new level-up options; free reroll first, else `levelup_reroll_price`) |
 | `ready` | bool |
 | `kasse_in` | — |
 | `kasse_out` | — |

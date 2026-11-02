@@ -36,6 +36,24 @@ func test_solo_run_through_first_wave() -> void:
 	assert_eq(game.sim.wave, 2, "ready starts wave 2")
 
 
+## GDD §5: after a won wave the Späti opens only after a short break, so you see
+## "Feierabend! Welle N geschafft"; starting the screen in the Späti opens it at once.
+func test_spaeti_opens_after_the_wave_won_break() -> void:
+	var rs := RunScreen.new()
+	var dt := 1.0 / 60.0
+	assert_false(rs._spaeti_due(0, dt), "no Späti during a wave")
+	var frames := 0
+	while not rs._spaeti_due(1, dt) and frames < 1000:
+		frames += 1
+	assert_near(frames * dt, RunScreen.WAVE_WON_PAUSE, 0.05, "Späti after the break")
+	assert_true(RunScreen.WAVE_WON_PAUSE >= 1.5, "long enough to read")
+	assert_true(rs._spaeti_due(1, dt), "stays open")
+	rs.free()
+	var joined := RunScreen.new()
+	assert_true(joined._spaeti_due(1, dt), "joining in the Späti: at once")
+	joined.free()
+
+
 func test_pause_only_in_solo() -> void:
 	if game == null:
 		return

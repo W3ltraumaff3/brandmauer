@@ -8,7 +8,7 @@ HUD_WAVE_BOSS,Koalitionsverhandlungen
 HUD_WAVE_START_SUB,Die Sitzung ist eröffnet.
 HUD_WAVE_BOSS_SUB,Das kann dauern.
 HUD_WAVE_END,Feierabend!
-HUD_WAVE_END_SUB,Ab in den Späti.
+HUD_WAVE_END_SUB,Welle %d geschafft – ab in den Späti.
 HUD_ZUSAMMENHALT,Zusammenhalt
 HUD_LEVEL,Stufe %d
 HUD_LEVELUP,Zusammenhalt Stufe %d!

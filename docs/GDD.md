@@ -41,6 +41,8 @@ A funny, slightly crass political-satire **arena roguelite** in the vein of the 
 
 **Time budget:** about 16 min of waves plus 1.5–2 min of boss, so **about 18 min of fighting**. Time in the Späti is **not** counted: players can stay as long as they like, so a run may take longer than 20 minutes.
 
+**Wave won, short break:** when a wave is over, the arena stays visible for **2 s** with "Feierabend! Welle N geschafft – ab in den Späti." Then the Späti opens. Joining or rejoining while the Späti is open shows it at once.
+
 **Späti without a timer:** the next wave starts when **every player has pressed "Bereit"**. In single player, that's just you. Players who are away (disconnected) don't block the Späti. If a Koalitionsvertrag vote is open, "Bereit" is only possible after voting or abstaining (section 16).
 
 **Giving up / leaving:** the pause menu has *Aufgeben* and *Verlassen*, both with a confirmation ("Wirklich? Nochmal drücken.").
@@ -52,10 +54,43 @@ A funny, slightly crass political-satire **arena roguelite** in the vein of the 
 ## 5. Arena
 
 - **View:** top-down, one fixed arena per run.
-- **Brandmauer:** a narrow wall strip along the **top edge, at most about 10% of the area**. The rest is open arena.
-  - AfD enemies gather behind the wall.
-  - CDU-type enemies "abstimmen" during waves and knock holes in the wall. **Each hole becomes a spawn gate.**
+- **Brandmauer:** a **rectangle of four straight walls** along the arena edges (top, bottom, left, right), closed all the way around (D-082, supersedes the top-only strip of D-007). It is not round: four straight sides meeting in four corner pillars. The wall and the staging area behind it together stay a narrow frame; the open arena inside is the rest.
+  - AfD enemies gather **behind the wall on every side** and walk along it to the nearest hole.
+  - CDU-type enemies "abstimmen" during waves and knock holes in the wall, **on any side**. **Each hole becomes a spawn gate.**
   - Holes can be repaired in the Späti with Pfand. The trade-off: leave holes open for more enemies and more loot, or pay to repair them.
+
+### 5a. Arena geometry and wall pressure (D-082)
+
+All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry constants plus the `Arena.WALL` dict of tunables. Sim, view, HUD and tools read them from there.
+
+| What | Value | Why |
+|---|---|---|
+| Sheet (whole world) | 1904 × 1224 px | staging + wall + arena on every side |
+| Staging area ("Aufmarschgebiet") | the outer 78 px on every side; AfD enemies stand on a line 40 px from the sheet edge | same depth as the old top strip |
+| Wall | 24 px thick, from 78 to 102 px in from every edge | same as the old top wall |
+| Inner arena (players) | 1700 × 1020 px (x 102–1802, y 102–1122) | **+21 % area** over the old 1600 × 898, so 4 players have room |
+| Segments | top and bottom **12** each (141.7 px), left and right **7** each (145.7 px): **38** in total | segment length stays about the old 133 px, so a hole is as wide as before |
+| Corner pillars | four 24 × 24 px pillars, always intact | the corners never become holes; shots never pass them |
+| Segment order | clockwise: 0–11 top (left → right), 12–18 right (top → bottom), 19–30 bottom (right → left), 31–37 left (bottom → top) | one index walks the ring |
+
+**Start holes: one per player, at most four.** The middle segment of each side, in the order top, bottom, left, right. Solo keeps the single top hole ("Es gibt immer einen, der mit denen redet."), 2 players get top and bottom, 4 players one per side.
+
+**Where AfD enemies spawn:** each spawn picks a side with weight `side_base + side_hole × holes on that side` (1 + 3 × holes), then a random point along that side's staging line. Every side can always get spawns; sides with holes get more. With one hole per player the spread evens out as the team grows (solo: about half the spawns at the top; 4 players: about a quarter per side).
+
+**Behind the wall** AfD enemies walk along the staging band, around the corners, to the nearest hole (by distance along the ring) at **1.5× speed** (`staging_speed`), then step through it into the arena. With no hole at all they pace along their side, grumbling.
+
+**Other spawns:** Union and Kapital enemies appear just inside the wall on all four sides (uniform over the whole edge), at least 260 px from every living player. The Privatjet still flies in from the left or right, over the wall.
+
+**Hole opening scales with team size and wave:** a JU-Schnösel walks to the nearest intact segment on any side and votes for `vote_time / (1 + 0.25 × (players − 1) + 0.03 × (wave − 1))` seconds (`vote_per_player`, `vote_per_wave`). Base 3 s: solo wave 1 = 3 s, 4 players wave 1 = 1.7 s, 4 players wave 20 = 1.3 s.
+
+**Everything else that touches the wall works on all four sides:**
+- **Players** can't leave the inner arena; non-AfD enemies and enemies that came through a hole stay inside too. Pickups land inside.
+- **Line of sight** (§6b): a shot or target line is blocked where it crosses an intact segment or a corner pillar, on any side; holes let it through. Projectiles hitting an intact segment or pillar disappear; bouncing projectiles bounce off the inner wall faces.
+- **Repairs** (Späti, Koalitionskasse, Antifa-Ortsgruppe every 2nd wave) close the first hole in segment order. An Antifa-Ortsgruppe player standing within 60 px of a hole on any side repairs it in 3 s.
+- **"Remigration" pushes:** an Identitärer Hipster pushes the player toward the wall **nearest to the player**. Each push ring of the Remigrantin drives everyone it hits toward **one** wall, the one **nearest to her** when she sends it (in "Steuerparadies" that is the top wall in front of her chalet, as before).
+- **Abschiebezone** (Remigrantin phase 2): the 70 px band along the inside of **all four** walls hurts.
+- Encounter, boss, turbine and respawn positions are placed relative to the arena centre.
+- **HUD:** the wall panel shows the hole count plus a tiny map of the rectangle with holes as red gaps.
 - **Visual progression:** the arena starts grey and desaturated and gains color with every Zusammenhalt stage (section 7).
 - **Later arenas (not in the MVP):** Marktplatz, Bahnhof, Kleingartenanlage.
 
@@ -65,6 +100,16 @@ A funny, slightly crass political-satire **arena roguelite** in the vein of the 
 - **The Späti** (shop between waves):
   - Weapons (**6 slots**; Lastenrad-Grüne has 7), items and stat upgrades (level-ups).
   - Reroll (some characters start with free rerolls), plus Brandmauer repairs.
+  - **Weapon offers favour your style.** Each weapon scales with melee, ranged, status or summon. The shop looks at how the weapons you hold scale (the starting weapon counts) and favours weapons with the same scaling:
+    - chance weight = 1 + 2 × (how well the weapon's scaling matches your weapons' scaling, 0–1)
+    - Example: holding only melee weapons makes melee weapons 3× as likely as the others.
+    - It is never exclusive: other weapons still show up.
+  - **Level-ups can be rerolled too:** a "Neu würfeln" button on the level-up card draws 4 new stat options.
+    - It costs the same as a shop reroll (`Content.reroll_price(wave, n)`), but with its own counter `n`. The counter resets in every Späti and whenever a level-up is picked.
+    - Free rerolls (Sozialtourist:in) are one shared pool for both and are used first.
+  - **"Bereit" must be unmistakable** (co-op Späti and lobby):
+    - Not ready: a normal paper button "Bereit?".
+    - Ready: the button turns **solid green with white text "Bereit!"**, and a line next to it says **"Du bist bereit"**, plus who the group is still waiting for. Pressing it again takes it back.
   - Prices rise by 8 % per wave. Weapon tiers I–IV cost ×1.0 / 1.8 / 3.2 / 5.5.
   - A **Statistik** button (section 6c) and the weapon/item management below.
   - A **character portrait:** the local player's character drawn exactly as in the arena, at the **current Zusammenhalt stage**, with the stage name and progress to the next stage. Kept **small and calm**; it must not crowd the Späti, which is already dense (no held weapons, no extra panels; it fits into existing free space such as the header area or the bottom bar). It reminds you who you play and shows how far the team has come.
@@ -84,7 +129,7 @@ A funny, slightly crass political-satire **arena roguelite** in the vein of the 
 - **No lead aiming:** shots fly at where the target is now.
 - **Option Zielauswahl** (per player, default *Nächste:r Gegner:in*): **closest**, **most HP** (elites and bosses first) or **least HP** (clean up fast). Applies to all auto-aiming weapons and turrets.
 - **Weapons face their target**; the character's facing follows the shots.
-- **Line of sight:** AfD enemies behind the Brandmauer can be targeted and hit **only through holes**. An intact wall segment between you and them blocks the shot.
+- **Line of sight:** AfD enemies behind the Brandmauer can be targeted and hit **only through holes**, on any of the four sides. An intact wall segment or a corner pillar between you and them blocks the shot (§5a).
 
 ### 6c. Statistics panel
 
@@ -95,7 +140,9 @@ The Späti has a **Statistik** button (Esc closes it): a recap after the last wa
 
 ## 7. In-run progression: Zusammenhalt
 
-**Zusammenhalt** replaces XP. You earn it by defeating enemies, with a **bonus when you're close to teammates or your own summons**. A level-up gives a stat choice as usual.
+**Zusammenhalt** replaces XP. You earn it by defeating enemies, with a **bonus when you're close to teammates or your own summons**. Team levels drive the stages below.
+
+**Level-up picks** come per Späti visit instead: 1 after waves 1–4, 2 after waves 5–11, 3 after waves 12–19, the same for everyone. Each option has a rarity like the items (green/blue/purple/red, ×1/×2/×3/×5 of the base amount). Fewer, bigger picks keep the Späti short (docs/specs/balancing.md §4).
 
 Characters start **exhausted by circumstances** and get stronger and more visibly confident as they band together:
 
@@ -119,7 +166,7 @@ Characters start **exhausted by circumstances** and get stronger and more visibl
 |---|---|---|
 | Max HP | **Solidarität** | |
 | HP regen | **Krankenschein** | |
-| Heal on hit | **Umverteilung** | you take from the enemies |
+| Heal on hit | **Umverteilung** | you take from the enemies: each point is a 1 % chance per hit to heal 1 HP (at most 10 per second, like Brotato) |
 | Damage % | **Wut** | |
 | Melee damage | **Handarbeit** | manual labor |
 | Ranged damage | **Durchschlagskraft** | all ranged weapons |
@@ -149,7 +196,7 @@ Each character's insult-quote appears on the unlock card and may also appear on 
 | **Das Stadtbild** | Crowd that grows: you collect passers-by during the wave; the bigger and more mixed the crowd, the stronger you are | A crowd of everyone who keeps the city running: Pflegerin, Dönermann, Busfahrerin, Späti-Betreiber, Bauarbeiter, student, Oma. Nobody is drawn as a stereotype; each is simply their job. Barely moved by "Abschiebung" knockback, because it's a whole city |
 | **Sozialtourist:in** | Economy: lots of starting money, free rerolls | |
 | **Bürgergeld-Empfänger:in** | Extra Pfand each wave (Nebenjob +8), −% damage | The "lazy" build actually wins through economy |
-| **Klimakleber:in** | Huge damage while standing still, slows enemies | |
+| **Klimakleber:in** | Huge damage while standing still (+80 % after 0.6 s), slows enemies nearby; −10 Deutschlandticket, +3 Ziviler Ungehorsam | |
 | **Lastenrad-Grüne** | Fast, ramming damage, extra weapon slots in the cargo box | |
 | **Gewerkschaftsmitglied** | Team/aura: stronger near other players (in solo, near own summons) | |
 | **Antifa-Aktivist:in** | Fast, hits hard, bonus against Brandmauer gates | |
@@ -182,7 +229,7 @@ Each character's insult-quote appears on the unlock card and may also appear on 
 | Sozialtourist:in | **Urlaubsantrag** | 4 s on a sun lounger: invulnerable, can't move, heals |
 | Bürgergeld-Empfänger:in | **Antrag gestellt** | paperwork storm: all enemies 60 % slower for 6 s |
 | Klimakleber:in | **Straßenblockade** | a glue strip across the whole arena at your height; enemies get stuck for 6 s |
-| Lastenrad-Grüne | **Critical Mass** | dash ramming everything in the way, then double speed for 5 s |
+| Lastenrad-Grüne | **Critical Mass** | dash ramming everything in the way, then double speed for 5 s; invulnerable for the whole time (dash + 5 s) |
 | Gewerkschaftsmitglied | **Tarifrunde** | +50 % damage for all players and summons for 8 s |
 | Antifa-Aktivist:in | **Schwarzer Block** | 6 comrades storm out for 6 s, push enemies back and deal damage |
 | Oma gegen Rechts | **Kaffee und Kuchen** | heals the whole team fully, revives downed teammates, +regeneration for 10 s |
@@ -200,7 +247,7 @@ Chosen before the run, by the group in co-op:
 
 **Later:** Mieterverein, Seenotrettung, Tafel.
 
-## 11. Weapons (12)
+## 11. Weapons (23)
 
 All weapons have tiers I–IV (combine two of the same tier, section 6a). Values from `Content.WEAPONS`:
 
@@ -213,11 +260,11 @@ All weapons have tiers I–IV (combine two of the same tier, section 6a). Values
 | **Döner-Spieß** | melee cone (25°) | 12 / 20 / 32 / 50 | 0.9 s | Handarbeit | |
 | **Grundgesetz** | melee cone (120°) | 9 / 15 / 24 / 38 | 1.2 s | Handarbeit | Article 1: strong knockback |
 | **Transparent** | melee 360° | 7 / 12 / 19 / 30 | 1.4 s | Handarbeit | |
-| **Mietspiegel** | melee orbit | 4 / 7 / 11 / 18 | 0.5 s | Handarbeit | orbits you, two orbiters from tier III |
-| **Tofu** | shot | 2 / 3 / 5 / 8 | 1.0 s | Ziviler Ungehorsam | poison (3 / 5 / 8 / 13 over 3 s) |
-| **Farbbeutel** | shot, splash | 5 / 8 / 13 / 20 | 1.3 s | Ziviler Ungehorsam, Durchschlagskraft | slows 40 % |
-| **Kleber** | puddle | 2 / 4 / 6 / 10 | 2.2 s | Ziviler Ungehorsam | slows 70 % for 3 s |
-| **Infostand** | turret (max 2) | 4 / 7 / 11 / 17 | 5.0 s | Ehrenamt | fires leaflets for 10 s |
+| **Mietspiegel** | melee orbit | 6 / 10 / 16 / 26 | 0.5 s | Handarbeit | orbits you, two orbiters from tier III |
+| **Tofu** | shot | 3 / 5 / 8 / 13 | 1.0 s | Ziviler Ungehorsam | poison (5 / 8 / 13 / 21 over 3 s) |
+| **Farbbeutel** | shot, splash | 7 / 11 / 18 / 29 | 1.3 s | Ziviler Ungehorsam, Durchschlagskraft | slows 40 % |
+| **Kleber** | puddle | 4 / 7 / 11 / 18 per s | 2.2 s | Ziviler Ungehorsam | puddle for 3 s: damage per second to everything inside, slows 70 % |
+| **Infostand** | turret (max 2) | 4 / 6 / 10 / 15 | 5.0 s | Ehrenamt (0.8) | fires leaflets for 10 s |
 
 ### New weapons (v0.2, spec; from `research/waffen_ideen.md`)
 Each one fills a niche no other weapon covers. Tier damage follows the existing curve (×1.67 / ×2.67 / ×4.3 of tier I).
@@ -225,13 +272,23 @@ Each one fills a niche no other weapon covers. Tier damage follows the existing 
 | Weapon | Kind | Tier-I dmg | Cooldown | Range | Scales with | Special / niche |
 |---|---|---|---|---|---|---|
 | **Kartoffelbrei** | lob | 18 | 3.0 s | 340 | Durchschlagskraft | target marker on the ground, impact after 0.8 s, radius 110; pure area burst, no slow. Flavor: keep your distance from paintings |
-| **Trillerpfeife** | cone 360° | 4 | 2.0 s | 150 | Handarbeit 0.6 | stuns everything around for 0.6 s instead of knockback; control, barely any damage |
+| **Trillerpfeife** | cone 360° | 5 | 2.0 s | 150 | Handarbeit 0.6 | stuns everything around for 0.6 s instead of knockback; control, barely any damage |
 | **Brandmauer-Ziegel** | line wall | 3 per 0.5 s | 4.0 s | 220 | Ehrenamt | a wall 140 px wide across the target direction for 6 s, slows enemies inside by 40 % and damages them; max 2 |
-| **Normenkontrolle** | mark | 30 | 4.5 s | 360 | Ziviler Ungehorsam | marks the strongest enemy in range; after 3 s it's "nichtig erklärt" (burst); boss killer |
+| **Normenkontrolle** | mark | 45 | 4.5 s | 360 | Ziviler Ungehorsam | marks the strongest enemy in range; after 3 s it's "nichtig erklärt" (burst); boss killer |
 | **Unterschriftenliste** | chain | 5 | 1.4 s | 260 | Durchschlagskraft 0.9 | instant hit that jumps to 3 more enemies within 120 px, −20 % per jump |
 | **Enthüllungs-Scheinwerfer** | beam | 14 | 2.2 s | 400 | Durchschlagskraft | instant straight beam that hits everything in line; hit enemies are "enthüllt": +15 % crit chance against them for 5 s |
-| **9-Euro-Ticket** | fan | 2 × 9 tickets | 1.5 s | 180 | Durchschlagskraft 0.5 | 9 projectiles in a 60° fan; from wave 4 only 5 ("läuft ab") |
+| **9-Euro-Ticket** | fan | 3 × 9 tickets | 1.5 s | 180 | Durchschlagskraft 0.5 | 9 projectiles in a 60° fan; from wave 4 only 5 ("läuft ab") |
 | **Weißer Overall** | swarm | 6 per activist | 4.0 s | 300 | Ehrenamt | 3 activists in white overalls each run at a different enemy, hit once, leave |
+
+### More melee and zone weapons (v0.3, spec; user choice)
+
+| Weapon | Kind | Tier-I dmg | Cooldown | Range | Scales with | Special / niche |
+|---|---|---|---|---|---|---|
+| **Demo-Fahnenstange** | melee thrust | 10 | 1.0 s | 190 | Handarbeit 0.9 | jabs straight at the target and hits everything in a 18 px wide line; small knockback. Niche: melee with reach |
+| **Bierkiste vom Späti** | melee 360° | 22 | 2.4 s | 120 | Handarbeit 1.2 | slow, heavy slam all around: big knockback (220), stuns non-elites for 0.3 s. Niche: heavy hitter |
+| **Straßenkreide** | trail zone | 9 per s | 0.35 s | — | Ziviler Ungehorsam 0.8 | needs no target: leaves chalk marks (radius 26, 4 s) behind you while you move; enemies on them take damage per second. Standing still renews the last mark instead of stacking. Niche: kiting, making enemies chase you over your trail |
+
+Like every weapon, they damage status-immune enemies too (D-079). Tier damage follows the usual curve.
 
 ## 12. Items (57, incl. 2 hidden)
 
@@ -251,11 +308,11 @@ Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"RO
 | Item | Effect |
 |---|---|
 | Bierdeckel-Steuererklärung | Does absolutely nothing. The tooltip is the joke |
-| Thermoskanne | +2 Krankenschein |
-| Kirschkernkissen | +1 Krankenschein |
+| Thermoskanne | +3 Krankenschein |
+| Kirschkernkissen | +2 Krankenschein |
 | Soli-Button | +10 Solidarität |
-| Fahrradhelm | +4 Solidarität |
-| Isomatte | +1 Kündigungsschutz |
+| Fahrradhelm | +6 Solidarität |
+| Isomatte | +2 Kündigungsschutz |
 | Strickliesel | +3 Durchschlagskraft |
 | Frisbee | +2 Durchschlagskraft |
 | Deutschlandticket-Abo | +10 Deutschlandticket |
@@ -276,10 +333,10 @@ Luck (**Eltern**) shifts the weights toward rarer tiers. Red items carry a **"RO
 | Schuldenbremse | +15 Wut. **Curse:** you may only spend a limited amount per Späti visit (30 + 10 per wave) |
 | DB-Ticket | +30 Deutschlandticket. **Curse:** random "Verspätung" stuns |
 | Betriebsrat | +3 Kündigungsschutz, −3 Deutschlandticket |
-| Mate-Kiste | +15 Akkord, −3 Solidarität |
+| Mate-Kiste | +12 Akkord, −3 Solidarität |
 | Gewerkschaftsweste | +2 Kündigungsschutz, +5 Solidarität |
-| Wut-Tagebuch | +12 Wut |
-| Lautsprecherwagen | +3 Durchschlagskraft, +30 Reichweite |
+| Wut-Tagebuch | +10 Wut |
+| Lautsprecherwagen | +2 Durchschlagskraft, +30 Reichweite |
 | Bolzenschneider | +5 Direkte Aktion, +2 Handarbeit |
 | Schwarzfahrer:innen-Mütze | +8 Schwarzfahren |
 | Spendendose | +2 Umverteilung |
@@ -354,7 +411,7 @@ There are **no animal metaphors** for capitalists (no "Miethai"; see content gui
 | **Besorgte:r Bürger:in** | basic swarm | slow, lots of them. Speech bubble: "Man wird ja wohl noch sagen dürfen…" (an invented line) |
 | **Telegram-Onkel** | ranged | throws a **Kettenbrief** that splits on every bounce ("forwarded") |
 | **Identitärer Hipster** | fast melee | hits **push the player toward the Brandmauer** ("Remigration") |
-| **Reichsbürger** | tank | **immune to status effects** (doesn't recognize your authority). Drops a worthless "Reichsausweis" (easter egg) |
+| **Reichsbürger** | tank | **immune to status effects** (doesn't recognize your authority): no slow, poison or stun. Every weapon still damages him (Kleber hurts, it just doesn't slow him). Drops a worthless "Reichsausweis" (easter egg) |
 
 ### Union
 | Enemy | Role | Mechanic and joke |
@@ -409,7 +466,7 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 
 ### Final boss: Die Remigrantin (Weidel parody)
 - **Phase 1 "Windmühlen der Schande":** she tears down the wind turbines in the arena, which are your cover. She charges like Don Quixote. Quote weidel-05.
-- **Phase 2 "Remigration":** push waves drive all players toward the Brandmauer, and the arena edge becomes the danger zone.
+- **Phase 2 "Remigration":** push waves drive all players toward the Brandmauer wall nearest to her, and the arena edge (all four sides) becomes the danger zone.
 - **Phase 3 "Steuerparadies":** she retreats behind a vault shield of gold bars in a Swiss chalet, and the players have to break the shield.
 - **Exit:** she **emigrates to Switzerland**. That's the closing joke: the only person in the game who actually "remigriert".
 - Content rule: none of her phases may summon or depict the groups she insults. Her attacks target only the players and the environment.
@@ -447,6 +504,14 @@ There's a **pool per tier**. Each run randomly picks one encounter from each poo
 - **Repairs from the Kasse:** a Brandmauer repair paid from the pot costs **30 % less**. Shared things are paid from the pot **only on purpose**, never automatically.
 - The end screen shows **Eingezahlt / Entnommen / Steuermoral** per player. Achievement *Kassenwart:in*: pay in 200 in one run.
 
+### Reichensteuer (co-op only)
+Whoever collects far more Pfand in a wave than the others (e.g. thanks to Pfandradar) gives some of it away at the end of the wave. Exact rules: docs/specs/balancing.md §5a.
+- Only Pfand **picked up** in that wave counts (not wave income).
+- Taxed is only the part above **+50 % over the average of the players poorer than you**, at **50 / 60 / 70 %** for 2 / 3 / 4 players.
+- The money goes to the **poorest first**. Givers always keep at least 10 % more than every receiver and never fall below anyone who was poorer. Under 5 Pfand of excess nothing happens.
+- Examples, 4 players: 300 / 100 / 100 / 100 → 195 / 135 / 135 / 135; 300 / 300 / 100 / 100 → 223 / 223 / 177 / 177.
+- The Späti shows what you paid or received; the end screen shows the totals.
+
 ### Koalitionsvertrag (vote before waves 4, 8, 12, 16)
 Offers a set of modifier options; the result applies for **4 waves** (`Content.VERTRAG`, worse options have a higher "badness"):
 
@@ -473,7 +538,8 @@ Offers a set of modifier options; the result applies for **4 waves** (`Content.V
 
 - **Unlocks** (characters, weapons, items) come from achievements, e.g. "Win as Bürgergeld-Empfänger without buying a weapon" or "Finish a run with an intact Brandmauer" (*Unmöglich*).
 - **Zitat-Album:** collectible quote cards with source, date and context, unlocked by beating bosses and elites.
-- **Difficulty = Umfrage levels:** 10% → 15% → 20% → 25% …, each step adding a modifier.
+- **Difficulty = Umfrage levels:** 10% → 15% → 20% → 25% → 30% → 35%, each step harder (docs/specs/balancing.md §3). **All levels can be picked from the start**; the menu records the highest one beaten. 35 % should be hardly beatable.
+- **Boss-Wiederholung (host option in the lobby, off by default):** if the team dies in a wave with an elite or boss (5, 10, 15, 20), that wave starts over instead of ending the run (docs/specs/balancing.md §8).
 - **Achievements (8):** Döp dödö döp (Sylt-Clique), 180 Grad (Geschichtslehrer), Abgesetzt (Sauerländer, unlocks Die Töchter), Remigration (Remigrantin), Unmöglich (intact Brandmauer), Faul, aber effizient (win as Bürgergeld-Empfänger:in without buying a weapon), Kassenwart:in (co-op), Fliegenschiss (hidden Vogelschiss).
 - **Saves are stored locally per player.** A host never stores a client's progress.
 - **Co-op-only content is hidden in solo:** the Koalitionskasse, its end-screen columns and the achievement *Kassenwart:in*, and the item Erste-Hilfe-Kurs (not offered in the shop).
@@ -516,6 +582,8 @@ Saved immediately.
 | **Sprechblasen** | opacity (default 70 %), *aus* |
 
 The main menu also has a **Bug melden** button that opens the GitHub bug-report form.
+
+After a crash or a lost connection during a co-op run, the main menu shows a green **"Zurück ins Spiel"** button on top. It brings you back into the same run as the same character, as long as that run is still going (networking.md §7.5).
 
 ### 19b. Controller support
 The whole game is fully playable with a gamepad (Xbox/PlayStation/Switch layouts via Godot's joypad mapping), without touching mouse or keyboard.

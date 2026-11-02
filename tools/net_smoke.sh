@@ -39,6 +39,20 @@ RECON_JOIN=$?
 wait "$RUN_HOST_PID"
 RECON_HOST=$?
 
-echo "net_smoke: join-badversion=$BAD join=$GOOD reconnect-join=$RECON_JOIN reconnect-host=$RECON_HOST"
-[ "$BAD" -eq 0 ] && [ "$GOOD" -eq 0 ] && [ "$RECON_JOIN" -eq 0 ] && [ "$RECON_HOST" -eq 0 ] && exit 0
+# Rejoin after a crash: the client kills itself mid-run, a fresh process rejoins
+# with the saved session (networking.md §7.5).
+run host-run &
+REJOIN_HOST_PID=$!
+sleep 2
+run join-crash
+# Give the host time to notice the dead peer (ENet drops it after 5-15 s).
+sleep 16
+run rejoin
+REJOIN=$?
+wait "$REJOIN_HOST_PID"
+REJOIN_HOST=$?
+
+echo "net_smoke: join-badversion=$BAD join=$GOOD reconnect-join=$RECON_JOIN reconnect-host=$RECON_HOST rejoin=$REJOIN rejoin-host=$REJOIN_HOST"
+[ "$BAD" -eq 0 ] && [ "$GOOD" -eq 0 ] && [ "$RECON_JOIN" -eq 0 ] && [ "$RECON_HOST" -eq 0 ] \
+	&& [ "$REJOIN" -eq 0 ] && [ "$REJOIN_HOST" -eq 0 ] && exit 0
 exit 1

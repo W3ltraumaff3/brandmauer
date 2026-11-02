@@ -14,6 +14,7 @@ var _org_desc: Label
 var _diff_pick: OptionButton
 var _diff_label: Label
 var _diff_desc: Label
+var _retry_check: CheckBox
 var _conn_box: VBoxContainer
 var _ready_btn: Button
 var _start_btn: Button
@@ -114,14 +115,11 @@ func _build_left() -> Control:
 	org.add_child(_org_desc)
 
 	var diff := _section(tr("LOBBY_DIFF"), col, -0.5)
-	var max_diff := clampi(int(UIApi.save_data().get("max_umfrage", 0)), 0, Content.DIFFICULTY_PERCENT.size() - 1)
 	if UIApi.is_host():
+		# Every Umfrage level from the start (balancing.md §3).
 		_diff_pick = OptionButton.new()
 		for i in Content.DIFFICULTY_PERCENT.size():
 			_diff_pick.add_item(_diff_name(i), i)
-			if i > max_diff:
-				_diff_pick.set_item_disabled(i, true)
-				_diff_pick.set_item_text(i, _diff_name(i) + "  " + tr("LOBBY_DIFF_LOCKED"))
 		_diff_pick.name = "diff_pick"
 		_diff_pick.item_selected.connect(_on_diff)
 		diff.add_child(_diff_pick)
@@ -130,6 +128,15 @@ func _build_left() -> Control:
 		diff.add_child(_diff_label)
 	_diff_desc = UIKit.para("", 16, UITheme.INK_SOFT)
 	diff.add_child(_diff_desc)
+	# Boss-Wiederholung (balancing.md §8): the host decides, everyone sees it.
+	_retry_check = CheckBox.new()
+	_retry_check.name = "boss_retry"
+	_retry_check.text = tr("LOBBY_BOSS_RETRY")
+	_retry_check.tooltip_text = tr("LOBBY_BOSS_RETRY_TIP")
+	_retry_check.add_theme_font_size_override("font_size", 18)
+	_retry_check.disabled = not UIApi.is_host()
+	_retry_check.toggled.connect(func(on: bool) -> void: UIApi.call_opt(UIApi.net(), "set_boss_retry", [on]))
+	diff.add_child(_retry_check)
 	return col
 
 
@@ -234,6 +241,14 @@ func _my_entry() -> Dictionary:
 	return UIApi.by_peer(UIApi.lobby(), UIApi.local_id())
 
 
+## Flavor line plus the real multipliers from Content.BALANCE (never stale).
+func _diff_text(i: int) -> String:
+	var m := Content.difficulty_mult(i)
+	var stats := tr("LOBBY_DIFF_NORMAL") if i == 0 else tr("LOBBY_DIFF_STATS") % [
+		roundi((float(m["hp"]) - 1.0) * 100.0), roundi((float(m["dmg"]) - 1.0) * 100.0), roundi((float(m["spawn"]) - 1.0) * 100.0)]
+	return "%s %s" % [UIKit.trk("DIFF_%d_DESC" % i), stats]
+
+
 func _diff_name(i: int) -> String:
 	var t := UIKit.trk("DIFF_%d" % i)
 	return t if t != "" else tr("LOBBY_DIFF_FALLBACK") % Content.DIFFICULTY_PERCENT[i]
@@ -298,7 +313,9 @@ func refresh() -> void:
 		_diff_pick.select(diff)
 	if _diff_label:
 		_diff_label.text = _diff_name(diff)
-	_diff_desc.text = UIKit.trk("DIFF_%d_DESC" % diff)
+	_diff_desc.text = _diff_text(diff)
+	if _retry_check:
+		_retry_check.set_pressed_no_signal(bool(UIApi.net_value("boss_retry", false)))
 
 	# Connection info (host in co-op).
 	if _conn_box:
@@ -326,6 +343,8 @@ func refresh() -> void:
 	_ready_btn.visible = not solo
 	_ready_btn.set_pressed_no_signal(bool(me.get("ready", false)))
 	_ready_btn.text = tr("LOBBY_READY_ON") if _ready_btn.button_pressed else tr("LOBBY_READY")
+	UIKit.ready_look(_ready_btn, _ready_btn.button_pressed)
+	_ready_btn.tooltip_text = tr("READY_TAKE_BACK_TIP") if _ready_btn.button_pressed else ""
 	_start_btn.visible = host
 	_start_btn.disabled = not (solo or all_ready) or my_char == ""
 	UINav.sync_disabled(_start_btn)
@@ -449,12 +468,13 @@ func _on_org(i: int) -> void:
 
 func _on_diff(i: int) -> void:
 	UIApi.call_opt(UIApi.net(), "set_difficulty", [i])
-	_diff_desc.text = UIKit.trk("DIFF_%d_DESC" % i)
+	_diff_desc.text = _diff_text(i)
 
 
 func _on_ready() -> void:
 	UIApi.call_opt(UIApi.net(), "set_ready", [_ready_btn.button_pressed])
 	_ready_btn.text = tr("LOBBY_READY_ON") if _ready_btn.button_pressed else tr("LOBBY_READY")
+	UIKit.ready_look(_ready_btn, _ready_btn.button_pressed)
 
 
 func _on_start() -> void:

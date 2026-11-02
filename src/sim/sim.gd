@@ -6,16 +6,13 @@ extends RefCounted
 
 enum Phase { WAVE, SHOP, OVER }
 
-const ARENA := Vector2(1600, 1000)
-const WALL_TOP := 78.0
-const WALL_BOTTOM := 102.0
-const WALL_SEGMENTS := 12
-const SEG_W := 1600.0 / 12.0
-const STAGING_Y := 40.0
-const PLAYER_MIN_Y := WALL_BOTTOM + Content.PLAYER_RADIUS
+## Geometry and Brandmauer tunables live in Arena (GDD §5a): a rectangle of four
+## walls around the inner arena, AfD staging behind every side.
+const ARENA := Arena.SIZE
+const WALL_SEGMENTS := Arena.WALL_SEGMENTS
 const CELL := 80.0
-const GRID_W := 20
-const GRID_H := 13
+const GRID_W := 24                   # 24 * 80 >= Arena.SIZE.x
+const GRID_H := 16                   # 16 * 80 >= Arena.SIZE.y
 const INTRO_DELAY := 2.5
 const IFRAMES := 0.5
 const REVIVE_TIME := 2.5
@@ -23,6 +20,7 @@ const REVIVE_RANGE := 60.0
 const SAY_INTERVAL := 3.5
 const STREIK_TIME := 5.0
 const DMG_EVENTS_PER_FRAME := 24
+const STYLE_BIAS := 2.0             # shop: weapons matching your style weigh up to 1 + 2 (GDD §6)
 const KASSE_IN := 10
 ## Player targeting preference (options): which enemy in range the weapons pick.
 enum Target { CLOSEST, MOST_HP, LEAST_HP }
@@ -61,6 +59,9 @@ class SimPlayer:
 	var offers: Array = []
 	var rerolls_done := 0
 	var free_rerolls := 0
+	var levelup_rerolls := 0           # paid level-up rerolls since the last pick (GDD §6)
+	var collected_wave := 0            # Pfand picked up this wave (Reichensteuer, balancing.md §5a)
+	var tax_wave := 0                  # Reichensteuer of the last wave: < 0 paid, > 0 received
 	var spent := 0
 	var buys := 0                      # purchases this Späti visit (Genossenschaftsanteil limit)
 	var levelups := 0
@@ -94,7 +95,7 @@ class SimPlayer:
 	var sources := {}                  # source key -> {"kind", "id", "tier", "sold"}
 	var log := {
 		"lifesteal": 0.0, "regen": 0.0, "dmg_taken": 0.0, "dmg_blocked": 0.0, "dodges": 0,
-		"crits": 0, "pfand_collected": 0, "pfand_income": 0, "pfand_spent": 0, "ults": 0,
+		"crits": 0, "tax_paid": 0, "tax_received": 0, "pfand_collected": 0, "pfand_income": 0, "pfand_spent": 0, "ults": 0,
 	}
 
 
@@ -137,6 +138,7 @@ class SimEnemy:
 	var vuln_t := 0.0
 	var poison_key := ""               # stats source of the poison/glue ticking on this enemy
 	var expose_t := 0.0                # Enthüllungs-Scheinwerfer: extra crit chance against this enemy
+	var phase2 := false                # elite/boss below BALANCE.enrage_at HP: acts faster
 	var no_reward := false
 	var encounter := ""
 
@@ -234,6 +236,8 @@ var encounter_pending := -1.0
 var intro_wait := false              # boss card shown, world paused until everyone continues
 var intro_done := {}
 var skip_intro := false              # bots/tests
+var retries := 0                     # Boss-Wiederholung used (balancing.md §8)
+var last_encounter := ""             # encounter of the current/last boss wave (for a retry)
 var encounters_beaten: Array[String] = []
 var result := {}
 var meta_dirty := true
@@ -265,7 +269,9 @@ func start_run(cfg: Dictionary) -> void:
 	wall.clear()
 	for i in WALL_SEGMENTS:
 		wall.append(true)
-	wall[WALL_SEGMENTS / 2] = false   # "Es gibt immer einen, der mit denen redet."
+	# "Es gibt immer einen, der mit denen redet." One per player, max 4 (GDD §5a).
+	for h in Arena.start_holes((cfg.get("players", []) as Array).size()):
+		wall[h] = false
 	_grid.resize(GRID_W * GRID_H)
 	for pd in cfg.get("players", []):
 		var p := SimPlayer.new()
@@ -408,8 +414,8 @@ static func move_player(pos: Vector2, dir: Vector2, speed: float, dt: float) -> 
 
 
 static func clamp_player(pos: Vector2) -> Vector2:
-	var r := Content.PLAYER_RADIUS
-	return Vector2(clampf(pos.x, r, ARENA.x - r), clampf(pos.y, PLAYER_MIN_Y, ARENA.y - r))
+	# inside the Brandmauer rectangle on all four sides (GDD §5a)
+	return Arena.clamp_inner(pos, Content.PLAYER_RADIUS)
 
 
 # --- Main loop ---------------------------------------------------------------
@@ -483,7 +489,7 @@ func _query(pos: Vector2, radius: float) -> Array:
 
 # --- Waves -------------------------------------------------------------------
 
-func _begin_wave(n: int) -> void:
+func _begin_wave(n: int, force_encounter := "") -> void:
 	_resolve_vertrag()
 	wave = n
 	wave_time = 0.0
@@ -505,12 +511,13 @@ func _begin_wave(n: int) -> void:
 		_recompute(p)
 		p.hp = p.stats["max_hp"]
 		var ang := TAU * i / maxf(1, alive.size())
-		p.pos = Vector2(800, 600) + (Vector2.RIGHT.rotated(ang) * 60.0 if alive.size() > 1 else Vector2.ZERO)
+		p.pos = Arena.CENTER + (Vector2.RIGHT.rotated(ang) * 60.0 if alive.size() > 1 else Vector2.ZERO)
 		p.knock = Vector2.ZERO
 		p.reversed = 0.0
 		p.stunned = 0.0
 		p.pending_shots.clear()
 		p.dmg_wave.clear()
+		p.collected_wave = 0
 		p.ult_ready = true
 		p.ult_t = 0.0
 		p.dash_t = 0.0
@@ -526,7 +533,8 @@ func _begin_wave(n: int) -> void:
 	encounter_pending = -1.0
 	if Content.ENCOUNTER_POOLS.has(n):
 		var pool: Array = Content.ENCOUNTER_POOLS[n]
-		encounter = pool[rng.randi_range(0, pool.size() - 1)]
+		encounter = force_encounter if force_encounter != "" else pool[rng.randi_range(0, pool.size() - 1)]
+		last_encounter = encounter
 		encounter_pending = INTRO_DELAY
 		intro_wait = not skip_intro
 		intro_done = {}
@@ -534,7 +542,7 @@ func _begin_wave(n: int) -> void:
 	if org == "omas" and summons.is_empty():
 		var s := SimSummon.new()
 		s.type = Content.idx(Content.SUMMON_ORDER, "oma")
-		s.pos = Vector2(760, 640)
+		s.pos = Arena.CENTER + Vector2(-40, 40)
 		summons.append(s)
 	_event(["wave_start", n])
 	_event(["sfx", "wave_start", Vector2.INF])
@@ -555,6 +563,7 @@ func _end_wave() -> void:
 			if p:
 				_give_pfand(p, k.value)
 	pickups.clear()
+	_apply_reichensteuer()
 	var v := _vertrag_def()
 	for p in players.values():
 		if p.state == 2:
@@ -599,8 +608,10 @@ func _end_wave() -> void:
 		p.spent = 0
 		p.buys = 0
 		p.rerolls_done = 0
+		p.levelup_rerolls = 0
 		p.free_rerolls = int(Content.CHARACTERS[p.char_id].get("free_rerolls", 0))
 		p.ready = false
+		p.levelups += Content.levelups_after_wave(wave)
 		_make_offers(p)
 		_make_levelup_options(p)
 	if org == "antifa":
@@ -635,7 +646,7 @@ func _resolve_vertrag() -> void:
 	for p in players.values():
 		_recompute(p)
 	if chosen != "":
-		_event(["say", Vector2(800, 500), "VERTRAG_%s_NAME" % chosen.to_upper(), ""])
+		_event(["say", Arena.CENTER - Vector2(0, 100), "VERTRAG_%s_NAME" % chosen.to_upper(), ""])
 
 
 ## Unanimous vote picks that option, otherwise the worst one (exposed for tests).
@@ -665,9 +676,10 @@ func _step_spawning(dt: float) -> void:
 	if wave_len > 0.0 and wave_time > wave_len - 1.5:
 		return
 	var n := num_players()
-	var rate = (0.45 + 0.17 * wave) * diff["spawn"] * (1.0 + 0.6 * (n - 1))
+	var b := Content.BALANCE
+	var rate = (float(b["spawn_base"]) + float(b["spawn_lin"]) * wave) * diff["spawn"] * (1.0 + b["coop_spawn"] * (n - 1))
 	if encounter != "" and _encounter_alive():
-		rate *= 0.4
+		rate *= Content.BALANCE["boss_wave_spawn"]
 	_spawn_acc += dt * rate
 	while _spawn_acc >= 1.0:
 		_spawn_acc -= 1.0
@@ -693,25 +705,26 @@ func _spawn_random() -> void:
 			break
 	var count := (2 + wave / 7) if pick == "besorgter_buerger" else 1
 	var base := _spawn_pos(pick)
+	# a group stands side by side along its wall
+	var sideways := Arena.staging_side(base) % 2 == 1 and not Arena.is_inside(base, 0.0)
 	for i in count:
-		spawn_enemy(pick, base + Vector2(rng.randf_range(-30, 30), rng.randf_range(-10, 10)))
+		var jit := Vector2(rng.randf_range(-30, 30), rng.randf_range(-10, 10))
+		spawn_enemy(pick, base + (Vector2(jit.y, jit.x) if sideways else jit))
 
 
+## Spawn positions (GDD §5a): AfD behind any of the four walls (sides with holes
+## weigh more), Union/Kapital just inside the wall on any side, away from players.
 func _spawn_pos(tid: String) -> Vector2:
 	var d: Dictionary = Content.ENEMIES[tid]
 	if d["faction"] == "afd":
-		return Vector2(rng.randf_range(40, ARENA.x - 40), STAGING_Y)
+		return _staging_spawn_pos()
 	if d["ai"] == "flyer":
 		var left := rng.randf() < 0.5
-		return Vector2(-40 if left else ARENA.x + 40, rng.randf_range(200, ARENA.y - 100))
-	var best := Vector2(ARENA.x / 2, ARENA.y - 20)
+		return Vector2(-40 if left else ARENA.x + 40, rng.randf_range(Arena.INNER.position.y + 100, Arena.INNER.end.y - 100))
+	var edge := Arena.INNER.grow(-float(Arena.WALL["inner_spawn_inset"]))
+	var best := Arena.perimeter_point(edge, 0.0)
 	for attempt in 8:
-		var side := rng.randi_range(0, 2)
-		var p := Vector2.ZERO
-		match side:
-			0: p = Vector2(20, rng.randf_range(WALL_BOTTOM + 60, ARENA.y - 20))
-			1: p = Vector2(ARENA.x - 20, rng.randf_range(WALL_BOTTOM + 60, ARENA.y - 20))
-			_: p = Vector2(rng.randf_range(20, ARENA.x - 20), ARENA.y - 20)
+		var p := Arena.perimeter_point(edge, rng.randf() * Arena.perimeter(edge))
 		best = p
 		var ok := true
 		for pl in players.values():
@@ -720,6 +733,23 @@ func _spawn_pos(tid: String) -> Vector2:
 		if ok:
 			break
 	return best
+
+
+## A point on the staging line behind a wall. Side weight: base + per hole on
+## that side (Arena.WALL), so every side gets spawns and sides with holes more.
+func _staging_spawn_pos() -> Vector2:
+	var w := Arena.side_weights(wall)
+	var total := 0.0
+	for x in w:
+		total += x
+	var r := rng.randf() * total
+	var side := 3
+	for i in 4:
+		r -= w[i]
+		if r < 0.0:
+			side = i
+			break
+	return Arena.staging_point(side, rng.randf())
 
 
 func spawn_enemy(tid: String, pos: Vector2, elite_scale := 1.0) -> SimEnemy:
@@ -737,12 +767,16 @@ func spawn_enemy(tid: String, pos: Vector2, elite_scale := 1.0) -> SimEnemy:
 	var vs: float = 1.0 + _vertrag_def().get("enemy_speed", 0.0)
 	if d["faction"] == "elite":
 		e.elite = true
-		e.max_hp = d["hp"] * diff["hp"] * elite_scale
+		# Elites grow with the waves like the other enemies, relative to wave 5 (balancing.md §7).
+		var grow := pow(Content.enemy_hp_curve(wave) / Content.enemy_hp_curve(5), float(Content.BALANCE["elite_wave_exp"]))
+		e.max_hp = d["hp"] * diff["hp"] * elite_scale * maxf(1.0, grow)
 		e.dmg = d["dmg"] * diff["dmg"] * vd * (1.0 + 0.03 * (wave - 1))
 	else:
 		var w := float(wave - 1)
-		e.max_hp = d["hp"] * (1.0 + 0.16 * w + 0.012 * w * w) * diff["hp"] * vh
-		e.dmg = d["dmg"] * (0.6 + 0.08 * w) * diff["dmg"] * vd
+		var b := Content.BALANCE
+		var coop := 1.0 + float(b["coop_hp"]) * (num_players() - 1)
+		e.max_hp = d["hp"] * Content.enemy_hp_curve(wave) * diff["hp"] * vh * coop
+		e.dmg = d["dmg"] * (b["dmg_base"] + b["dmg_lin"] * w) * diff["dmg"] * vd
 	e.hp = e.max_hp
 	e.speed = d["speed"] * vs * rng.randf_range(0.92, 1.08)
 	e.behind = d["faction"] == "afd"
@@ -763,12 +797,15 @@ func _step_encounter_spawn(dt: float) -> void:
 		return
 	encounter_pending = -1.0
 	var enc: Dictionary = Content.ENCOUNTERS[encounter]
-	var scale := 1.0 + 0.75 * (num_players() - 1)
+	var b := Content.BALANCE
+	var scale := float(b["elite_base"]) + float(b["elite_coop"]) * (num_players() - 1)
+	if encounter == "eidgenossin":
+		scale *= float(b["final_boss_mult"])
 	var units: Array = enc["units"]
 	for i in units.size():
-		var pos := Vector2(800, 380)
+		var pos := Arena.CENTER + Vector2(0, -230)
 		if units.size() > 1:
-			pos = Vector2(300 + i * 330, ARENA.y - 120)
+			pos = Vector2(Arena.CENTER.x + (i - (units.size() - 1) * 0.5) * 330.0, Arena.INNER.end.y - 120.0)
 		var e := spawn_enemy(units[i], pos, scale)
 		e.encounter = encounter
 		e.behind = false
@@ -781,7 +818,8 @@ func _step_encounter_spawn(dt: float) -> void:
 
 
 func _place_turbines() -> void:
-	for p in [Vector2(400, 350), Vector2(1200, 350), Vector2(400, 780), Vector2(1200, 780)]:
+	for o in [Vector2(-420, -230), Vector2(420, -230), Vector2(-420, 210), Vector2(420, 210)]:
+		var p: Vector2 = Arena.CENTER + o
 		var s := SimSummon.new()
 		s.type = Content.idx(Content.SUMMON_ORDER, "turbine")
 		s.pos = p
@@ -859,7 +897,7 @@ func _step_players(dt: float) -> void:
 				m += 0.03 * p.followers
 			"klimakleber":
 				if p.still_time >= 0.6:
-					m += 0.6
+					m += 0.8   # GDD §8: +80 % while standing still
 					for e in _query(p.pos, 120.0):
 						_apply_slow(e, 0.3, 0.3)
 			"gewerkschaft":
@@ -916,11 +954,9 @@ func _ram(p: SimPlayer) -> void:
 
 
 func _antifa_repair(p: SimPlayer, dt: float) -> void:
-	if p.pos.y > WALL_BOTTOM + 60.0:
-		p.repair_time = 0.0
-		return
-	var seg := clampi(int(p.pos.x / SEG_W), 0, WALL_SEGMENTS - 1)
-	if wall[seg]:
+	# a hole on any of the four walls, within reach (GDD §5a)
+	var seg := Arena.facing_seg(p.pos)
+	if Arena.edge_dist(p.pos) > float(Arena.WALL["repair_reach"]) or seg < 0 or wall[seg]:
 		p.repair_time = 0.0
 		return
 	p.repair_time += dt
@@ -1007,7 +1043,24 @@ func _check_game_over() -> void:
 	for p in players.values():
 		if p.state == 0 or p.state == 3:
 			return
+	if bool(config.get("boss_retry", false)) and Content.ENCOUNTER_POOLS.has(wave):
+		_retry_wave()
+		return
 	_finish(false)
+
+
+## Boss-Wiederholung (balancing.md §8): the lost elite/boss wave starts over with
+## the same encounter; everyone is back with full HP, gear and Pfand stay.
+func _retry_wave() -> void:
+	retries += 1
+	var enc := encounter
+	if enc == "":
+		enc = last_encounter
+	for p in players.values():
+		if p.state == 1 or p.state == 2:
+			p.state = 0
+	_begin_wave(wave, enc)
+	_event(["say", Arena.CENTER - Vector2(0, 100), "SAY_BOSS_RETRY", ""])
 
 
 # --- Weapons -----------------------------------------------------------------
@@ -1034,6 +1087,10 @@ func _step_weapons(dt: float) -> void:
 			w["cd"] -= dt * as_mult
 			if w["cd"] > 0.0:
 				continue
+			if def["kind"] == "trail":
+				w["cd"] = def["cd"]
+				_lay_chalk(p, w, def)
+				continue
 			var rng_r := _weapon_range(p, def)
 			var target := _pick_target(p.pos, rng_r, p.target_mode)
 			if target == null:
@@ -1049,6 +1106,28 @@ func _step_weapons(dt: float) -> void:
 				p.pending_shots.append({"t": 3.0, "w": wi, "dir": dir})
 			else:
 				_fire(p, w, dir, aim_at)
+
+
+## Straßenkreide: a chalk mark at the player's feet; standing still renews the
+## last mark instead of stacking new ones (GDD §11).
+func _lay_chalk(p: SimPlayer, w: Dictionary, def: Dictionary) -> void:
+	var t_kreide := Content.idx(Content.HAZARD_ORDER, "kreide")
+	var key := _wkey(w)
+	for h in hazards:
+		if h.alive and h.type == t_kreide and h.owner == p.id and h.data.get("src", "") == key \
+				and h.pos.distance_to(p.pos) < def["spacing"]:
+			h.life = h.max_life
+			return
+	var mark := SimHazard.new()
+	mark.type = t_kreide
+	mark.pos = p.pos
+	mark.radius = def["radius"]
+	mark.life = def["life"]
+	mark.max_life = mark.life
+	mark.dps = weapon_damage(p, w) * (Content.RED_BUILD["status"] / Content.RED_BUILD["status_direct"] if p.flags.has("status_build") else 1.0)
+	mark.owner = p.id
+	mark.data = {"src": key}
+	hazards.append(mark)
 
 
 ## Wahlversprechen and BER-Eröffnungstermin change Wut over time.
@@ -1234,6 +1313,18 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				cur = _nearest_enemy(cur.pos, def["jump_range"], hit)
 			_event(["chain", pts])
 			_event(["sfx", "shoot", p.pos])
+		"thrust":
+			# Demo-Fahnenstange: a straight jab, hits everything in a narrow line.
+			var reach := _weapon_range(p, def)
+			var tip: Vector2 = p.pos + dir * reach
+			for e in _query((p.pos + tip) * 0.5, reach * 0.5 + def["width"] + 40.0):
+				if e.behind and shot_blocked(p.pos, e.pos):
+					continue
+				var closest := Geometry2D.get_closest_point_to_segment(e.pos, p.pos, tip)
+				if closest.distance_to(e.pos) <= def["width"] + e.radius:
+					_damage_enemy(e, dmg, p, crit, dir, def.get("knock", 0.0), _wkey(w))
+			_event(["swing", p.pos, dir.angle(), reach, def["arc"], w["id"]])
+			_event(["sfx", "melee", p.pos])
 		"beam":
 			var to: Vector2 = p.pos + dir * _weapon_range(p, def)
 			for e in _query((p.pos + to) * 0.5, _weapon_range(p, def) * 0.5 + def["width"]):
@@ -1340,14 +1431,13 @@ func _pick_target(pos: Vector2, r: float, mode: int) -> SimEnemy:
 
 
 
-## True if an intact Brandmauer segment lies between a and b (shots can pass holes).
+## True if an intact Brandmauer segment or a corner pillar lies between a and b,
+## on any of the four walls (shots can pass holes, GDD §5a).
 func shot_blocked(a: Vector2, b: Vector2) -> bool:
-	var mid := (WALL_TOP + WALL_BOTTOM) * 0.5
-	if (a.y - mid) * (b.y - mid) > 0.0:
-		return false
-	var t := (mid - a.y) / (b.y - a.y) if b.y != a.y else 0.0
-	var x := a.x + (b.x - a.x) * t
-	return wall[clampi(int(x / SEG_W), 0, WALL_SEGMENTS - 1)]
+	for w in Arena.wall_crossings(a, b):
+		if w < 0 or wall[w]:
+			return true
+	return false
 
 
 func _nearest_enemy(pos: Vector2, r: float, exclude := {}) -> SimEnemy:
@@ -1417,7 +1507,7 @@ func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kd
 		_log_dmg(src, source, applied)
 		if crit:
 			src.log["crits"] += 1
-		if src.stats["lifesteal"] > 0.0 and src.lifesteal_cd <= 0.0 and rng.randf() * 100.0 < src.stats["lifesteal"] * 5.0:
+		if src.stats["lifesteal"] > 0.0 and src.lifesteal_cd <= 0.0 and rng.randf() * 100.0 < src.stats["lifesteal"] * Content.BALANCE["lifesteal_chance"]:
 			_heal(src, Content.RED_BUILD["lifesteal_heal"] if src.flags.has("lifesteal_build") else 1.0, "lifesteal")
 			src.lifesteal_cd = 0.1
 	if _dmg_events < DMG_EVENTS_PER_FRAME and amount > 0.0:
@@ -1461,7 +1551,7 @@ func _kill_enemy(e: SimEnemy, killer: SimPlayer) -> void:
 		_event(["kill", e.pos, e.type])
 		_event(["sfx", "kill", e.pos])
 	# loot
-	var value: int = e.def["pfand"]
+	var value := int(round(float(e.def["pfand"]) * float(Content.BALANCE["pfand_mult"])))
 	var v := _vertrag_def()
 	if v.has("pfand_drop"):
 		value = int(round(value * (1.0 - v["pfand_drop"])))
@@ -1493,10 +1583,7 @@ func _add_xp(xp: float) -> void:
 	team_xp += xp
 	while team_xp >= Content.xp_for_level(team_level):
 		team_xp -= Content.xp_for_level(team_level)
-		team_level += 1
-		for p in players.values():
-			if p.state != 2:
-				p.levelups += 1
+		team_level += 1   # stages only; level-up picks come per Späti (balancing.md §4)
 		_event(["levelup", team_level])
 		_event(["sfx", "levelup", Vector2.INF])
 		var st := Content.stage_for_level(team_level)
@@ -1519,7 +1606,7 @@ func _drop(type: int, pos: Vector2, value: int, life := -1.0) -> void:
 				return
 	var k := SimPickup.new()
 	k.type = type
-	k.pos = Vector2(clampf(pos.x, 10, ARENA.x - 10), clampf(pos.y, PLAYER_MIN_Y, ARENA.y - 10))
+	k.pos = Arena.clamp_inner(pos, Content.PLAYER_RADIUS)   # drops behind the wall land inside
 	k.value = value
 	k.life = life
 	pickups.append(k)
@@ -1654,7 +1741,7 @@ func _finish(won: bool) -> void:
 				quotes.append(q)
 	result = {
 		"won": won, "wave": wave, "time": time, "difficulty": difficulty,
-		"encounters_beaten": encounters_beaten.duplicate(), "wall_intact": holes == 0,
+		"encounters_beaten": encounters_beaten.duplicate(), "wall_intact": holes == 0, "retries": retries,
 		"players": res_players, "quotes": quotes,
 	}
 	_event(["over", won])
@@ -1745,8 +1832,8 @@ func _activate_ult(p: SimPlayer) -> void:
 		"antrag_gestellt", "tarifrunde":
 			effects[ult] = u["time"]
 		"strassenblockade":
-			var x: float = 35.0
-			while x < ARENA.x:
+			var x: float = Arena.INNER.position.x + 35.0
+			while x < Arena.INNER.end.x:
 				var h := SimHazard.new()
 				h.type = Content.idx(Content.HAZARD_ORDER, "kleber")
 				h.pos = Vector2(x, p.pos.y)
@@ -1763,7 +1850,7 @@ func _activate_ult(p: SimPlayer) -> void:
 			p.dash_dir = p.input.normalized() if p.input.length() > 0.1 else Vector2.RIGHT.rotated(p.aim)
 			p.dash_t = u["dash_time"]
 			p.boost_t = u["dash_time"] + u["boost_time"]
-			p.iframes = maxf(p.iframes, u["dash_time"])
+			p.iframes = maxf(p.iframes, p.boost_t)  # invulnerable for dash + boost (GDD §9a)
 		"schwarzer_block":
 			for i in int(u["count"]):
 				var s := SimSummon.new()
@@ -1898,23 +1985,34 @@ func _step_enemies(dt: float) -> void:
 		if e.behind:
 			_move_behind_wall(e, spd, dt)
 		else:
+			# Phase 2 (balancing.md §7): below enrage_at HP an elite/boss acts faster:
+			# moves and attacks enrage_tempo times as quickly.
+			var ai_dt := dt
+			if e.elite and e.encounter != "":
+				if e.phase2 == false and e.hp < e.max_hp * float(Content.BALANCE["enrage_at"]):
+					e.phase2 = true
+					_event(["say", e.pos, "SAY_ENRAGE", ""])
+				if e.phase2:
+					ai_dt = dt * float(Content.BALANCE["enrage_tempo"])
 			match e.def["ai"]:
-				"chase": _ai_chase(e, spd, dt)
-				"ranged": _ai_ranged(e, spd, dt)
-				"voter": _ai_voter(e, spd, dt)
-				"charger": _ai_charger(e, spd, dt)
-				"zone": _ai_zone(e, spd, dt)
-				"lob": _ai_lob(e, spd, dt)
-				"bomb": _ai_bomb(e, spd, dt)
-				"flyer": _ai_flyer(e, spd, dt)
-				"sylt": _ai_sylt(e, spd, dt)
-				"boss": _ai_boss(e, spd, dt)
+				"chase": _ai_chase(e, spd, ai_dt)
+				"ranged": _ai_ranged(e, spd, ai_dt)
+				"voter": _ai_voter(e, spd, ai_dt)
+				"charger": _ai_charger(e, spd, ai_dt)
+				"zone": _ai_zone(e, spd, ai_dt)
+				"lob": _ai_lob(e, spd, ai_dt)
+				"bomb": _ai_bomb(e, spd, ai_dt)
+				"flyer": _ai_flyer(e, spd, ai_dt)
+				"sylt": _ai_sylt(e, spd, ai_dt)
+				"boss": _ai_boss(e, spd, ai_dt)
 		if not e.alive:
 			continue
 		_separate(e)
 		if e.def["ai"] != "flyer":
-			var min_y = WALL_BOTTOM + e.radius if not e.behind else 0.0
-			e.pos = Vector2(clampf(e.pos.x, e.radius, ARENA.x - e.radius), clampf(e.pos.y, min_y + 2.0, ARENA.y - e.radius))
+			if e.behind:
+				e.pos = Vector2(clampf(e.pos.x, e.radius, ARENA.x - e.radius), clampf(e.pos.y, e.radius, ARENA.y - e.radius))
+			else:
+				e.pos = Arena.clamp_inner(e.pos, e.radius)   # inside the four walls
 		_contact(e)
 
 
@@ -1955,7 +2053,8 @@ func _contact(e: SimEnemy) -> void:
 				if p.flags.has("fertigputz") and not e.elite:
 					e.knock += (e.pos - p.pos).normalized() * Content.RED_BUILD["fertigputz_knock"]
 				if e.def.has("push_up"):
-					p.knock = Vector2(0, -e.def["push_up"]) * 2.0
+					# "Remigration": shoved toward the nearest wall (GDD §5a)
+					p.knock = Arena.toward_wall(p.pos) * float(e.def["push_up"]) * 2.0
 
 
 func _move_toward(e: SimEnemy, goal: Vector2, spd: float, dt: float) -> void:
@@ -1965,28 +2064,43 @@ func _move_toward(e: SimEnemy, goal: Vector2, spd: float, dt: float) -> void:
 		e.pos += e.dir * minf(spd * dt, d.length())
 
 
+## AfD enemies behind the wall walk along the staging line (around the corners)
+## to the nearest hole on any side, then step through it (GDD §5a).
 func _move_behind_wall(e: SimEnemy, spd: float, dt: float) -> void:
-	var holes := []
+	if Arena.is_inside(e.pos, e.radius):
+		e.behind = false   # through a hole (or knocked in): joins the fight
+		return
+	var ring := Arena.STAGING_RECT
+	var s := Arena.perimeter_param(ring, e.pos)
+	var best := -1
+	var bd := INF
 	for i in WALL_SEGMENTS:
 		if not wall[i]:
-			holes.append(i)
-	if holes.is_empty():
-		# pace along the wall, grumbling
+			var d := absf(Arena.perimeter_delta(ring, s, Arena.perimeter_param(ring, Arena.seg_staging(i))))
+			if d < bd:
+				bd = d
+				best = i
+	if best < 0:
+		# no hole anywhere: pace along the wall, grumbling
 		if e.target == Vector2.ZERO or e.pos.distance_to(e.target) < 10.0:
-			e.target = Vector2(rng.randf_range(40, ARENA.x - 40), rng.randf_range(20, WALL_TOP - 20))
-		_move_toward(e, e.target, spd * 0.5, dt)
+			e.target = Arena.perimeter_point(ring, s + rng.randf_range(-250.0, 250.0))
+		_walk_ring(e, Arena.perimeter_param(ring, e.target), spd * 0.5, dt)
 		return
-	var best: int = holes[0]
-	for h in holes:
-		if absf((h + 0.5) * SEG_W - e.pos.x) < absf((best + 0.5) * SEG_W - e.pos.x):
-			best = h
-	var cx := (best + 0.5) * SEG_W
-	if absf(e.pos.x - cx) > SEG_W * 0.3 and e.pos.y < WALL_TOP - 4.0:
-		_move_toward(e, Vector2(cx, minf(e.pos.y, WALL_TOP - 14.0)), spd, dt)
+	spd *= float(Arena.WALL["staging_speed"])
+	if bd > Arena.seg_len(best) * 0.3:
+		_walk_ring(e, Arena.perimeter_param(ring, Arena.seg_staging(best)), spd, dt)
 	else:
-		_move_toward(e, Vector2(cx, WALL_BOTTOM + e.radius + 12.0), spd, dt)
-		if e.pos.y >= WALL_BOTTOM + e.radius:
+		_move_toward(e, Arena.seg_inner(best, e.radius + 12.0), spd, dt)
+		if Arena.is_inside(e.pos, e.radius):
 			e.behind = false
+
+
+## One step along the staging line toward perimeter position goal_s.
+func _walk_ring(e: SimEnemy, goal_s: float, spd: float, dt: float) -> void:
+	var ring := Arena.STAGING_RECT
+	var s := Arena.perimeter_param(ring, e.pos)
+	var d := Arena.perimeter_delta(ring, s, goal_s)
+	_move_toward(e, Arena.perimeter_point(ring, s + signf(d) * minf(absf(d), 40.0)), spd, dt)
 
 
 func _target_player(e: SimEnemy) -> SimPlayer:
@@ -2041,9 +2155,9 @@ func _ai_voter(e: SimEnemy, spd: float, dt: float) -> void:
 	if e.seg < 0 or not wall[e.seg]:
 		e.seg = -1
 		var bd := INF
-		for i in WALL_SEGMENTS:
+		for i in WALL_SEGMENTS:   # nearest intact segment on any of the four walls
 			if wall[i]:
-				var d := absf((i + 0.5) * SEG_W - e.pos.x)
+				var d := e.pos.distance_to(Arena.seg_inner(i, 0.0))
 				if d < bd:
 					bd = d
 					e.seg = i
@@ -2051,7 +2165,7 @@ func _ai_voter(e: SimEnemy, spd: float, dt: float) -> void:
 			e.state = 2
 			return
 		e.state = 0
-	var spot := Vector2((e.seg + 0.5) * SEG_W, WALL_BOTTOM + e.radius + 4.0)
+	var spot := Arena.seg_inner(e.seg, e.radius + 4.0)
 	if e.state == 0:
 		_move_toward(e, spot, spd, dt)
 		if e.pos.distance_to(spot) < 8.0:
@@ -2059,7 +2173,8 @@ func _ai_voter(e: SimEnemy, spd: float, dt: float) -> void:
 			e.timer2 = 0.0
 	elif e.state == 1:
 		e.timer2 += dt
-		if e.timer2 >= e.def["vote_time"]:
+		# holes open faster with more players and later waves (GDD §5a)
+		if e.timer2 >= float(e.def["vote_time"]) / Arena.vote_speed(num_players(), wave):
 			wall[e.seg] = false
 			e.state = 2
 			_event(["say", e.pos, "SAY_JU_VOTE", ""])
@@ -2325,7 +2440,7 @@ func _boss_eidgenossin(e: SimEnemy, spd: float, dt: float) -> void:
 			if not hazards.any(func(h): return h.type == Content.idx(Content.HAZARD_ORDER, "abschiebezone")):
 				var z := SimHazard.new()
 				z.type = Content.idx(Content.HAZARD_ORDER, "abschiebezone")
-				z.pos = Vector2(800, WALL_BOTTOM + 35.0)
+				z.pos = Vector2(Arena.CENTER.x, Arena.INNER.position.y + 35.0)   # marker; the zone is the band along all four walls
 				z.radius = 35.0
 				z.life = 9999.0
 				z.max_life = 9999.0
@@ -2343,7 +2458,7 @@ func _boss_eidgenossin(e: SimEnemy, spd: float, dt: float) -> void:
 				e.state = 1
 				e.shield_max = e.max_hp * 0.25
 				e.shield = e.shield_max
-			_move_toward(e, Vector2(800, 230), spd, dt)
+			_move_toward(e, Vector2(Arena.CENTER.x, Arena.INNER.position.y + 128.0), spd, dt)
 			e.timer -= dt
 			if e.timer <= 0.0 and p:
 				e.timer = 1.2
@@ -2361,7 +2476,8 @@ func _push_ring(pos: Vector2, dmg: float) -> void:
 	h.radius = 0.0
 	h.life = 2.5
 	h.max_life = 2.5
-	h.data = {"dmg": dmg, "hit": {}}
+	# every ring drives everyone toward the same wall: the one nearest to her (GDD §5a)
+	h.data = {"dmg": dmg, "hit": {}, "dir": Arena.toward_wall(Arena.clamp_inner(pos, 0.0))}
 	hazards.append(h)
 
 
@@ -2403,17 +2519,20 @@ func _step_projectiles(dt: float) -> void:
 				continue
 		pr.pos += pr.vel * dt
 		if pr.wall_bounce:
-			if pr.pos.x < 0 or pr.pos.x > ARENA.x:
+			# bounce off the inner faces of the four walls
+			var inner := Arena.INNER
+			if (pr.pos.x < inner.position.x and pr.vel.x < 0.0) or (pr.pos.x > inner.end.x and pr.vel.x > 0.0):
 				pr.vel.x = -pr.vel.x
-			if pr.pos.y < WALL_BOTTOM or pr.pos.y > ARENA.y:
+			if (pr.pos.y < inner.position.y and pr.vel.y < 0.0) or (pr.pos.y > inner.end.y and pr.vel.y > 0.0):
 				pr.vel.y = -pr.vel.y
 		elif pr.pos.x < -50 or pr.pos.x > ARENA.x + 50 or pr.pos.y < -50 or pr.pos.y > ARENA.y + 50:
 			pr.alive = false
 			continue
 		if pr.harmless:
 			continue
-		# intact wall blocks shots
-		if pr.pos.y > WALL_TOP and pr.pos.y < WALL_BOTTOM and wall[clampi(int(pr.pos.x / SEG_W), 0, WALL_SEGMENTS - 1)]:
+		# intact wall segments and corner pillars block shots, on every side
+		var ws := Arena.wall_at(pr.pos)
+		if ws == -2 or (ws >= 0 and wall[ws]):
 			pr.alive = false
 			continue
 		if pr.owner == 0:
@@ -2486,6 +2605,7 @@ func _step_hazards(dt: float) -> void:
 	var t_lob := Content.idx(Content.HAZARD_ORDER, "lob_marker")
 	var t_brei := Content.idx(Content.HAZARD_ORDER, "brei_marker")
 	var t_ziegel := Content.idx(Content.HAZARD_ORDER, "ziegel")
+	var t_kreide := Content.idx(Content.HAZARD_ORDER, "kreide")
 	var t_paragraf := Content.idx(Content.HAZARD_ORDER, "paragraf")
 	var t_sitz := Content.idx(Content.HAZARD_ORDER, "sitzblockade")
 	var t_absch := Content.idx(Content.HAZARD_ORDER, "abschiebezone")
@@ -2500,15 +2620,15 @@ func _step_hazards(dt: float) -> void:
 				if p.state == 0 and not h.data["hit"].has(p.id) and absf(p.pos.distance_to(h.pos) - h.radius) < 24.0:
 					h.data["hit"][p.id] = true
 					var away = (p.pos - h.pos).normalized()
-					p.knock = (Vector2(0, -1) * 0.75 + away * 0.25).normalized() * 700.0
+					var wdir: Vector2 = h.data.get("dir", Arena.toward_wall(p.pos))
+					p.knock = (wdir * 0.75 + away * 0.25).normalized() * 700.0
 					damage_player(p, h.data["dmg"])
 		elif h.type == t_kleber:
 			for e in _query(h.pos, h.radius):
-				_apply_slow(e, h.slow, 0.3)
-				if not e.def.get("immune", false):
-					e.poison_src = h.owner
-					e.poison_key = h.data.get("src", "")
-					_damage_poison(e, h.dps * dt)
+				_apply_slow(e, h.slow, 0.3)  # status immunity only stops the slow (D-079)
+				e.poison_src = h.owner
+				e.poison_key = h.data.get("src", "")
+				_damage_poison(e, h.dps * dt)
 		elif h.type == t_miet:
 			for p in players.values():
 				if p.state == 0 and not p.flags.has("mietendeckel") and p.pos.distance_to(h.pos) < h.radius:
@@ -2524,7 +2644,7 @@ func _step_hazards(dt: float) -> void:
 					continue
 				var inside = p.pos.distance_to(h.pos) < h.radius + Content.PLAYER_RADIUS
 				if h.type == t_absch:
-					inside = p.pos.y < WALL_BOTTOM + 70.0
+					inside = Arena.edge_dist(p.pos) < float(Arena.WALL["abschiebe_band"])   # along all four walls
 				if inside and p.iframes <= 0.0:
 					damage_player(p, h.dps * 0.5)
 		elif h.type == t_brei and h.life <= 0.0:
@@ -2539,6 +2659,11 @@ func _step_hazards(dt: float) -> void:
 			boom.max_life = 0.4
 			hazards.append(boom)
 			_event(["sfx", "explosion", h.pos])
+		elif h.type == t_kreide:
+			for e in _query(h.pos, h.radius):
+				e.poison_src = h.owner
+				e.poison_key = h.data.get("src", "")
+				_damage_poison(e, h.dps * dt)
 		elif h.type == t_ziegel:
 			for e in _query(h.pos, h.radius):
 				_apply_slow(e, h.slow, 0.3)
@@ -2617,6 +2742,7 @@ func _step_pickups(dt: float) -> void:
 			if k.type == t_pfand or k.type == t_geld:
 				_give_pfand(best, k.value)
 				best.log["pfand_collected"] += k.value
+				best.collected_wave += k.value
 				_event(["sfx", "pickup", k.pos])
 			elif k.type == t_passant:
 				best.followers = mini(12, best.followers + 1)
@@ -2694,29 +2820,63 @@ func _make_offers(p: SimPlayer) -> void:
 	var count := 4 + int(_vertrag_def().get("offers", 0))
 	for i in count:
 		p.offers.append(_roll_offer(p))
+	_ensure_build_weapon(p)
+
+
+## balancing.md §5: every Späti offers at least one weapon for the player's build
+## (scaling match >= 0.5, or the same weapon as one they hold, to combine).
+func _ensure_build_weapon(p: SimPlayer) -> void:
+	if p.weapons.is_empty():
+		return
+	var style := weapon_style(p)
+	var owned := {}
+	for w in p.weapons:
+		owned[w["id"]] = true
+	var fits := func(id: String) -> bool: return owned.has(id) or style_match(style, id) >= 0.5
+	for o in p.offers:
+		if o["kind"] == "weapon" and fits.call(str(o["id"])):
+			return
+	var candidates := []
+	for id in Content.WEAPON_ORDER:
+		if fits.call(id):
+			candidates.append(id)
+	if candidates.is_empty():
+		return
+	var slot := p.offers.size() - 1
+	for i in p.offers.size():
+		if p.offers[i]["kind"] == "item":
+			slot = i
+			break
+	p.offers[slot] = _weapon_offer(p, candidates[rng.randi_range(0, candidates.size() - 1)])
+
+
+## A shop offer for weapon `id`; the tier is rolled by wave and Glück.
+func _weapon_offer(p: SimPlayer, id: String) -> Dictionary:
+	var luck: float = p.stats["luck"]
+	var next_wave := wave + 1
+	var max_tier := 1 + int(next_wave >= 4) + int(next_wave >= 8) + int(next_wave >= 12)
+	var weights := []
+	var total := 0.0
+	for t in range(1, max_tier + 1):
+		var w := maxf(1.0, 10.0 - next_wave * 0.5) if t == 1 else (1.5 + next_wave * 0.3) / (t - 1)
+		w *= 1.0 + luck / 100.0 * (t - 1) * 0.5
+		weights.append(w)
+		total += w
+	var r := rng.randf() * total
+	var tier := 1
+	for t in weights.size():
+		r -= weights[t]
+		if r <= 0.0:
+			tier = t + 1
+			break
+	return {"kind": "weapon", "id": id, "tier": tier, "price": _price(Content.weapon_price(id, tier, next_wave)), "sold": false}
 
 
 func _roll_offer(p: SimPlayer) -> Dictionary:
 	var luck: float = p.stats["luck"]
 	var next_wave := wave + 1
 	if rng.randf() < 0.35:
-		var id: String = Content.WEAPON_ORDER[rng.randi_range(0, Content.WEAPON_ORDER.size() - 1)]
-		var max_tier := 1 + int(next_wave >= 4) + int(next_wave >= 8) + int(next_wave >= 12)
-		var weights := []
-		var total := 0.0
-		for t in range(1, max_tier + 1):
-			var w := maxf(1.0, 10.0 - next_wave * 0.5) if t == 1 else (1.5 + next_wave * 0.3) / (t - 1)
-			w *= 1.0 + luck / 100.0 * (t - 1) * 0.5
-			weights.append(w)
-			total += w
-		var r := rng.randf() * total
-		var tier := 1
-		for t in weights.size():
-			r -= weights[t]
-			if r <= 0.0:
-				tier = t + 1
-				break
-		return {"kind": "weapon", "id": id, "tier": tier, "price": _price(Content.weapon_price(id, tier, next_wave)), "sold": false}
+		return _weapon_offer(p, _pick_weapon(p))
 	var pool := []
 	var total_w := 0.0
 	for id in Content.ITEM_ORDER:
@@ -2739,11 +2899,193 @@ func _roll_offer(p: SimPlayer) -> Dictionary:
 		"price": _price(Content.item_price(pick, next_wave)), "sold": false}
 
 
+## Shop weapon pick favouring the player's style (GDD §6): weight 1 + 2 × how
+## well a weapon's scaling matches the scaling of the weapons held.
+func _pick_weapon(p: SimPlayer) -> String:
+	var style := weapon_style(p)
+	var total := 0.0
+	var weights := []
+	for id in Content.WEAPON_ORDER:
+		var w := 1.0 + STYLE_BIAS * style_match(style, id)
+		weights.append(w)
+		total += w
+	var r := rng.randf() * total
+	for i in weights.size():
+		r -= weights[i]
+		if r <= 0.0:
+			return Content.WEAPON_ORDER[i]
+	return Content.WEAPON_ORDER[Content.WEAPON_ORDER.size() - 1]
+
+
+## Share of each scaling stat (melee/ranged/status/summon) across the weapons
+## held; every weapon counts once. {} without weapons.
+static func weapon_style(p: SimPlayer) -> Dictionary:
+	var style := {}
+	for w in p.weapons:
+		var scale: Dictionary = Content.WEAPONS[w["id"]].get("scale", {})
+		var sum := 0.0
+		for s in scale:
+			sum += float(scale[s])
+		for s in scale:
+			style[s] = float(style.get(s, 0.0)) + float(scale[s]) / sum / p.weapons.size()
+	return style
+
+
+## 0..1: how much of weapon `id`'s scaling lies in `style`.
+static func style_match(style: Dictionary, id: String) -> float:
+	var scale: Dictionary = Content.WEAPONS[id].get("scale", {})
+	var sum := 0.0
+	for s in scale:
+		sum += float(scale[s])
+	var m := 0.0
+	for s in scale:
+		m += float(style.get(s, 0.0)) * float(scale[s]) / sum
+	return m
+
+
 func _price(base: int) -> int:
 	var m = 1.0 + _vertrag_def().get("price", 0.0)
 	if streik_discount:
 		m *= 0.8
 	return maxi(1, int(round(base * m)))
+
+
+## End of a co-op wave: whoever picked up far more Pfand than the poorer players
+## gives part of it to the poorest (balancing.md §5a).
+func _apply_reichensteuer() -> void:
+	var collected := {}
+	for p in players.values():
+		p.tax_wave = 0
+		if p.state != 2:
+			collected[p.id] = p.collected_wave
+	if collected.size() < 2:
+		return
+	var delta := reichensteuer(collected)
+	for id in delta:
+		var d := int(delta[id])
+		if d == 0:
+			continue
+		var p: SimPlayer = players[id]
+		p.pfand = maxi(0, p.pfand + d)
+		p.tax_wave = d
+		if d < 0:
+			p.log["tax_paid"] += -d
+			_event(["say", p.pos, "SAY_REICHENSTEUER", ""])
+		else:
+			p.log["tax_received"] += d
+	meta_dirty = true
+
+
+## Reichensteuer (balancing.md §5a): Pfand change per player id for one wave's
+## collected Pfand (`collected`: id -> amount). Candidates pay rate × the part above
+## threshold × the average of the poorer players. Richest first: a candidate whom the
+## richer payers' pot would lift anyway receives instead of paying. The pot raises
+## the poorest first (water filling) and never lifts anyone above a payer's
+## remainder / (1 + reich_keep).
+static func reichensteuer(collected: Dictionary, benchmark := "") -> Dictionary:
+	var b := Content.BALANCE
+	var ids := collected.keys()
+	var n := ids.size()
+	var out := {}
+	for id in ids:
+		out[id] = 0
+	if n < 2:
+		return out
+	var rates: Dictionary = b["reich_rate"]
+	var rate := float(rates.get(n, rates[4]))
+	if benchmark == "":
+		benchmark = str(b["reich_benchmark"])
+	var poorer_only := benchmark == "poorer"
+	var cand := {}
+	for id in ids:
+		# Benchmark: average of the poorer players (or of all others).
+		var others := 0.0
+		var count := 0
+		for o in ids:
+			if o != id and (not poorer_only or float(collected[o]) < float(collected[id])):
+				others += float(collected[o])
+				count += 1
+		if count == 0:
+			continue
+		var excess := float(collected[id]) - float(b["reich_threshold"]) * others / count
+		if excess >= float(b["reich_min"]):
+			cand[id] = rate * excess
+	# Accept payers richest first (ties together); stop at a candidate that the pot of
+	# the richer payers would lift anyway: they and everyone poorer receive.
+	var values := []
+	for id in cand:
+		if not values.has(float(collected[id])):
+			values.append(float(collected[id]))
+	values.sort()
+	values.reverse()
+	var tax := {}
+	for v in values:
+		if not tax.is_empty():
+			var pot := 0.0
+			for g in tax:
+				pot += float(tax[g])
+			var below := []
+			for o in ids:
+				if not tax.has(o):
+					below.append(float(collected[o]))
+			if _water_level(below, pot) >= v:
+				break
+		for id in cand:
+			if float(collected[id]) == v:
+				tax[id] = cand[id]
+	if tax.is_empty():
+		return out
+	# A payer never falls below a non-paying player who was poorer.
+	for g in tax.keys():
+		var under := 0.0
+		for o in ids:
+			if not tax.has(o) and float(collected[o]) < float(collected[g]):
+				under = maxf(under, float(collected[o]))
+		tax[g] = minf(float(tax[g]), float(collected[g]) - under)
+	var pool := 0.0
+	var cap_level := INF
+	for g in tax:
+		pool += float(tax[g])
+		cap_level = minf(cap_level, (float(collected[g]) - float(tax[g])) / (1.0 + float(b["reich_keep"])))
+	var receivers := ids.filter(func(i): return not tax.has(i))
+	if receivers.is_empty() or pool <= 0.0:
+		return out
+	var levels := []
+	for r in receivers:
+		levels.append(float(collected[r]))
+	var level := minf(_water_level(levels, pool), cap_level)
+	var given := 0
+	for r in receivers:
+		var add := maxi(0, int(floor(level - float(collected[r]))))
+		out[r] = add
+		given += add
+	# The payers pay exactly what was handed out, in proportion to their tax.
+	var givers := tax.keys()
+	var paid := 0
+	for i in givers.size():
+		var share := given - paid if i == givers.size() - 1 else int(floor(given * float(tax[givers[i]]) / pool))
+		out[givers[i]] = -share
+		paid += share
+	return out
+
+
+## Water filling: the common level the lowest of `values` reach when `pot` is
+## poured onto them from the bottom up.
+static func _water_level(values: Array, pot: float) -> float:
+	if values.is_empty():
+		return -INF
+	var levels := values.duplicate()
+	levels.sort()
+	var level: float = levels[0]
+	var rem := pot
+	for i in levels.size():
+		var next: float = levels[i + 1] if i + 1 < levels.size() else INF
+		var need := (i + 1) * (next - level)
+		if need >= rem:
+			return level + rem / (i + 1)
+		rem -= need
+		level = next
+	return level
 
 
 func _make_levelup_options(p: SimPlayer) -> void:
@@ -2752,8 +3094,24 @@ func _make_levelup_options(p: SimPlayer) -> void:
 		return
 	var stats := Content.STATS.duplicate()
 	_shuffle(stats)
+	var mults: Array = Content.BALANCE["levelup_rarity_mult"]
 	for i in 4:
-		p.levelup_options.append({"stat": stats[i], "amount": Content.LEVELUP_AMOUNTS[stats[i]]})
+		# Rarity like the items (balancing.md §4): same weights per wave and Glück.
+		var total := 0.0
+		var weights := []
+		for r in range(1, 5):
+			var wgt := Content.rarity_weight(r, wave + 1, p.stats["luck"])
+			weights.append(wgt)
+			total += wgt
+		var roll := rng.randf() * total
+		var rarity := 1
+		for r in weights.size():
+			roll -= weights[r]
+			if roll <= 0.0:
+				rarity = r + 1
+				break
+		p.levelup_options.append({"stat": stats[i], "rarity": rarity,
+			"amount": Content.LEVELUP_AMOUNTS[stats[i]] * float(mults[rarity - 1])})
 
 
 func _spend_limit(p: SimPlayer) -> int:
@@ -2888,7 +3246,21 @@ func request(peer: int, action: String, arg = null) -> bool:
 			var o: Dictionary = p.levelup_options[i]
 			p.levelup_stats[o["stat"]] = p.levelup_stats.get(o["stat"], 0.0) + o["amount"]
 			p.levelups -= 1
+			p.levelup_rerolls = 0
 			_recompute(p)
+			_make_levelup_options(p)
+			return true
+		"levelup_reroll":
+			if p.levelups <= 0:
+				return false
+			var price := 0 if p.free_rerolls > 0 else Content.reroll_price(wave, p.levelup_rerolls)
+			if p.pfand < price:
+				return _deny(p, "DENY_NO_PFAND")
+			if p.free_rerolls > 0:
+				p.free_rerolls -= 1
+			else:
+				p.pfand -= price
+				p.levelup_rerolls += 1
 			_make_levelup_options(p)
 			return true
 		"kasse_in":
@@ -3033,6 +3405,7 @@ func build_meta() -> Dictionary:
 			"reroll_price": Content.reroll_price(wave, p.rerolls_done), "free_rerolls": p.free_rerolls,
 			"spend_left": (_spend_limit(p) - p.spent) if _spend_limit(p) >= 0 else -1,
 			"levelups": p.levelups, "levelup_options": p.levelup_options.duplicate(true), "buys": p.buys,
+			"levelup_reroll_price": Content.reroll_price(wave, p.levelup_rerolls), "tax_wave": p.tax_wave,
 			"ready": p.ready, "paid_in": p.paid_in, "taken_out": p.taken_out,
 			"kills": p.kills, "damage": int(p.damage),
 			"ult": Content.CHARACTERS[p.char_id].get("ult", ""), "ult_ready": p.ult_ready,

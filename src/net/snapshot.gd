@@ -10,7 +10,7 @@ class_name Snapshot
 ##   radii      u16, rounded             -> 0.5 px
 ##   ids        int32 (exact); player seq u32; player hp / max_hp, time, wave_time_left float32
 
-const VERSION := 1
+const VERSION := 2                     # 2: wall mask u64 (38 segments, four walls, D-082)
 
 const MAX_PLAYERS := 8
 const MAX_WEAPONS := 16
@@ -34,7 +34,7 @@ static func encode(vs: ViewState) -> PackedByteArray:
 	b.put_u8(clampi(vs.wave, 0, 255))
 	b.put_float(vs.wave_time_left)
 	b.put_u8(clampi(vs.stage, 0, 255))
-	b.put_u16(vs.wall & 0xFFFF)
+	b.put_u64(vs.wall & ((1 << Arena.WALL_SEGMENTS) - 1))
 
 	# Players
 	var np := mini(vs.players.size(), MAX_PLAYERS)
@@ -117,7 +117,7 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 	var b := StreamPeerBuffer.new()
 	b.big_endian = false
 	b.data_array = bytes
-	if not _need(b, 15) or b.get_u8() != VERSION:
+	if not _need(b, 21) or b.get_u8() != VERSION:
 		return null
 	var vs := ViewState.new()
 	vs.time = b.get_float()
@@ -125,7 +125,7 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 	vs.wave = b.get_u8()
 	vs.wave_time_left = b.get_float()
 	vs.stage = b.get_u8()
-	vs.wall = b.get_u16()
+	vs.wall = b.get_u64()
 
 	var np := b.get_u8()
 	for i in np:

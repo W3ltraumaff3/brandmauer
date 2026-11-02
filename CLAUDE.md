@@ -18,8 +18,7 @@ German political-satire arena roguelite, built in Godot 4. Single player plus 1â
 
 ## GDScript pitfalls (Godot 4.7)
 
-- **Never use `:=` when the right side is untyped (Variant).** That covers dictionary access (`d["x"]`), untyped loop variables (`for p in players.values()`), properties of untyped objects, and expressions mixing those. Godot fails with "Cannot infer the type", and the **whole script stops compiling**, which breaks every caller. Write an explicit type (`var pos: Vector2 = e.pos`) or plain `=`.
-- **Run the headless tests after every GDScript change.** `godot --headless --path . -s res://tests/godot/run_tests.gd` reports parse errors and script errors as failures.
+- **Run the headless tests after every GDScript change.** `godot --headless --path . -s res://tests/godot/run_tests.gd` first checks that every script in `src/`, `tools/` and `tests/` compiles, then runs the tests; parse errors and script errors count as failures.
 - **Inner-class `match` patterns can't be variables.** Use `if`/`elif` when comparing against local variables.
 
 ## Shell

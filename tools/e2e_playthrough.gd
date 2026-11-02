@@ -71,7 +71,7 @@ func _process(_delta: float) -> bool:
 			if p.levelup_stats.get("damage", 0.0) < 1500.0:
 				p.levelup_stats["damage"] = 1500.0
 				sim._recompute(p)
-			var target := Vector2(800, 600)
+			var target := Arena.CENTER
 			for e in sim.enemies:
 				if e.alive and e.elite:
 					target = e.pos

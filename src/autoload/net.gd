@@ -12,7 +12,7 @@ extends Node
 
 const PORT := 24713                 # game port (UDP); LAN discovery uses PORT + 1
 const LAN_PORT := PORT + 1
-const PROTOCOL_VERSION := 2
+const PROTOCOL_VERSION := 3
 const MAX_PLAYERS := 4
 const DEFAULT_CHAR := "stadtbild"
 const HANDSHAKE_TIMEOUT_S := 8.0
@@ -23,8 +23,9 @@ const LAN_MAGIC := "BRANDMAUER"
 const AUTOSTART_DELAY_S := 3.0
 const NAME_MAX_LEN := 20
 const UPNP_DESC := "Brandmauer"
-const GRACE_S := 60.0               # host: an away player is kept this long before removal
+const EMPTY_SERVER_S := 300.0       # dedicated server: run ends after this long with everyone away
 const RECONNECT_S := 60.0           # client: keep trying to reconnect this long ...
+const REJOIN_S := 15.0              # ... or this long when rejoining from the menu (§7.5) ...
 const RETRY_INTERVAL_S := 2.0       # ... one attempt every 2 s
 ## ENet peer timeouts (ENetPacketPeer.set_timeout): the limit is a factor on the
 ## round-trip time; a peer is never dropped before MIN ms without an ack and always
@@ -53,6 +54,7 @@ signal reconnected                  # client: back in the run after connection_l
 signal peer_left(peer: int)         # host: a client left (player id)
 signal peer_away(peer: int)         # host: a client's connection dropped mid-run (player id, grace period runs)
 signal peer_back(peer: int)         # host: an away client reconnected with its session token (player id)
+signal run_resent(peer: int)        # host: a rejoined client got the run config again (player id)
 signal lan_games_changed            # discovered LAN games changed
 signal run_start_received(config: Dictionary)
 signal snapshot_received(bytes: PackedByteArray)
@@ -65,6 +67,7 @@ signal returned_to_lobby
 var lobby := {}        # player id -> {"name": String, "char": String, "ready": bool}
 var org := "gewerkschaft"
 var difficulty := 0
+var boss_retry := false             # host option: a lost boss wave starts over (balancing.md §8)
 var dedicated := false
 var lan_games := []    # [{"name", "ip", "port", "players"}]
 var upnp_status := ""  # "" | "ok" | "failed: ..."
@@ -94,8 +97,8 @@ var _game_override: Node = null     # tests: stands in for /root/Game
 # host: reconnect bookkeeping
 var _tokens := {}                   # player id -> session token (String)
 var _peer_of := {}                  # player id -> current peer id, 0 while away; missing = the player id itself
-var _away := {}                     # player id -> deadline (host clock) for the grace period
-# client: session for reconnects (memory only)
+var _away := {}                     # player id -> time (host clock) it went away; kept until the run ends
+# client: session for reconnects (Game also saves it for rejoining after a crash)
 var _token := ""
 var _player_id := 0
 var _server_ip := ""
@@ -204,6 +207,36 @@ func join(ip: String, port: int, player_name: String) -> void:
 	_handshake_deadline = _now() + HANDSHAKE_TIMEOUT_S
 
 
+## Rejoin a running run from the menu with a saved session (networking.md §7.5):
+## the same resume handshake as a mid-run reconnect, with a shorter budget.
+func rejoin(ip: String, port: int, token: String, player: int) -> void:
+	leave()
+	_server_ip = ip.strip_edges()
+	_server_port = port
+	_token = token
+	_player_id = player
+	_session += 1
+	_mode = Mode.RECONNECTING
+	var now := _now()
+	_reconnect_deadline = now + REJOIN_S
+	_retry_at = now
+	_attempt_connected = false
+	_log("Rejoining %s:%d as player %d" % [_server_ip, port, player])
+
+
+## Client: the session to save for a rejoin, {} without one.
+func session_info() -> Dictionary:
+	if _token == "" or _server_ip == "" or _player_id == 0:
+		return {}
+	return {"ip": _server_ip, "port": _server_port, "token": _token, "player": _player_id}
+
+
+## Client after a rejoin from the menu: ask the host for the run config.
+func request_run() -> void:
+	if _mode == Mode.CLIENT:
+		_rpc_want_run.rpc_id(1)
+
+
 ## Closes the peer, removes the UPnP mapping and clears the lobby. Safe to call
 ## from inside any Net signal handler. A deliberate leave tells the other side
 ## (bye / host_closed), so nobody waits for a reconnect that never comes.
@@ -300,6 +333,13 @@ func set_difficulty(level: int) -> void:
 	if level == difficulty:
 		return
 	difficulty = level
+	_lobby_updated()
+
+
+func set_boss_retry(on: bool) -> void:
+	if not is_host() or on == boss_retry:
+		return
+	boss_retry = on
 	_lobby_updated()
 
 
@@ -449,10 +489,10 @@ func _on_peer_disconnected(id: int) -> void:
 	if pid == 0:
 		return
 	if _run_active():
-		# Mid-run: keep the player for GRACE_S, it may come back with its token.
+		# Mid-run: keep the player until the run ends, it may come back with its token.
 		_peer_of[pid] = 0
-		_away[pid] = _now() + GRACE_S
-		_log("%s lost the connection, waiting %d s for a reconnect" % [lobby[pid]["name"], int(GRACE_S)])
+		_away[pid] = _now()
+		_log("%s lost the connection, kept in the run for a rejoin" % lobby[pid]["name"])
 		peer_away.emit(pid)
 		return
 	_drop_player(pid)
@@ -476,14 +516,21 @@ func _drop_player(pid: int, end_if_empty := true) -> void:
 			game.call("back_to_lobby")
 
 
-## Host: away players whose grace period ran out are removed.
+## Away players stay until the run ends (networking.md §7.4). Only a dedicated
+## server with nobody connected for EMPTY_SERVER_S ends the run, so it never
+## waits forever.
 func _tick_away(now: float) -> void:
-	if _away.is_empty():
+	if _away.is_empty() or _mode != Mode.SERVER or not _run_active() or _away.size() < lobby.size():
 		return
-	for pid in _away.keys():
-		if now > float(_away[pid]):
-			_log("%s did not come back" % lobby.get(pid, {}).get("name", "?"))
-			_drop_player(int(pid))
+	var last := 0.0
+	for pid in _away:
+		last = maxf(last, float(_away[pid]))
+	if now <= last + EMPTY_SERVER_S:
+		return
+	var game := _game()
+	if game != null and game.has_method("back_to_lobby"):
+		_log("Nobody came back for %d s, ending the run" % int(EMPTY_SERVER_S))
+		game.call("back_to_lobby")
 
 
 ## Host: "" if this token may take over an existing player mid-run, else a reason
@@ -535,7 +582,7 @@ func _apply_ready(peer: int, is_ready: bool) -> void:
 ## Host: push the lobby to all clients and notify locally.
 func _lobby_updated() -> void:
 	for id in _client_ids():
-		_rpc_lobby.rpc_id(id, lobby, org, difficulty)
+		_rpc_lobby.rpc_id(id, lobby, org, difficulty, boss_retry)
 	_log_lobby()
 	_update_autostart()
 	lobby_changed.emit()
@@ -826,7 +873,7 @@ func _rpc_01_reject(reason) -> void:
 	elif _mode == Mode.RECONNECTING:
 		_log("Reconnect rejected: %s" % str(reason))
 		leave()
-		disconnected.emit("NET_ERR_LOST")
+		disconnected.emit(str(reason))
 
 
 @rpc("authority", "call_remote", "reliable", CH_LOBBY)
@@ -902,12 +949,13 @@ func _rpc_host_closed() -> void:
 
 
 @rpc("authority", "call_remote", "reliable", CH_LOBBY)
-func _rpc_lobby(new_lobby: Dictionary, new_org: String, new_difficulty: int) -> void:
+func _rpc_lobby(new_lobby: Dictionary, new_org: String, new_difficulty: int, new_boss_retry: bool) -> void:
 	if _mode != Mode.CLIENT:
 		return
 	lobby = new_lobby
 	org = new_org
 	difficulty = new_difficulty
+	boss_retry = new_boss_retry
 	lobby_changed.emit()
 
 
@@ -927,6 +975,21 @@ func _rpc_set_ready(is_ready: bool) -> void:
 func _rpc_run_start(config: Dictionary) -> void:
 	if _mode == Mode.CLIENT:
 		run_start_received.emit(config)
+
+
+## Client -> host after a rejoin from the menu: send me the run config again.
+@rpc("any_peer", "call_remote", "reliable", CH_RUN)
+func _rpc_want_run() -> void:
+	if _mode != Mode.HOST and _mode != Mode.SERVER:
+		return
+	var peer := multiplayer.get_remote_sender_id()
+	var pid := player_for_peer(peer)
+	var game := _game()
+	if pid == 0 or not _run_active() or game == null:
+		return
+	_rpc_run_start.rpc_id(peer, game.get("config"))
+	_log("Sent the run to %s (player %d)" % [lobby[pid]["name"], pid])
+	run_resent.emit(pid)
 
 
 @rpc("authority", "call_remote", "reliable", CH_RUN)

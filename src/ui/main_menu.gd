@@ -23,6 +23,22 @@ func build() -> void:
 	var sub := UIKit.label(tr("MENU_SUBTITLE"), 22, UITheme.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	body.add_child(sub)
 
+	# A co-op run this machine left by crashing or losing the connection (networking.md §7.5).
+	var rejoin = UIApi.call_opt(UIApi.save_node(), "rejoin_info", [], {})
+	if rejoin is Dictionary and not (rejoin as Dictionary).is_empty():
+		var rb := UIKit.button(tr("MENU_REJOIN"), _on_rejoin, 30)
+		rb.name = "rejoin"
+		rb.custom_minimum_size = Vector2(514, 56)
+		rb.tooltip_text = tr("MENU_REJOIN_TIP") % ("%s:%d" % [rejoin["ip"], int(rejoin["port"])])
+		UIKit.ready_look(rb, true)
+		UIKit.tilt(rb, -0.8)
+		var rc := CenterContainer.new()
+		rc.add_child(rb)
+		body.add_child(rc)
+		focus_target = rb
+		# A failed rejoin keeps this menu open (main.gd); Game shows the reason.
+		UIApi.connect_opt(UIApi.net(), "disconnected", _on_rejoin_failed)
+
 	var row := UIKit.hbox(40)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.size_flags_vertical = SIZE_EXPAND | SIZE_SHRINK_CENTER
@@ -107,6 +123,32 @@ func _on_solo() -> void:
 		ToastLayer.show_text(tr("UI_NOT_READY"))
 		return
 	UIApi.call_opt(g, "open_solo", [_player_name()])
+
+
+func _on_rejoin_failed(_reason: String) -> void:
+	_drop_rejoin.call_deferred()
+
+
+func _drop_rejoin() -> void:
+	var b := find_child("rejoin", true, false) as Button
+	if b == null or not is_inside_tree():
+		return
+	b.get_parent().queue_free()
+	UIKit.focus_later(_first_button)
+
+
+func _on_rejoin() -> void:
+	if bool(UIApi.call_opt(UIApi.net(), "is_reconnecting", [], false)):
+		return  # already on its way (button stays focusable for the gamepad)
+	var b := find_child("rejoin", true, false) as Button
+	if not bool(UIApi.call_opt(UIApi.game(), "open_rejoin", [], false)):
+		ToastLayer.show_text(tr("NET_ERR_SESSION"))
+		if b:
+			b.get_parent().queue_free()
+			UIKit.focus_later(_first_button)
+		return
+	if b:
+		b.text = tr("MENU_REJOIN_CONNECTING")
 
 
 func _on_host() -> void:
