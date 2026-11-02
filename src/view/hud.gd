@@ -16,6 +16,8 @@ const CARD := Color("fbf6e6")
 const RED := Color("c0392b")
 const GREEN := Color("3f8f4f")
 const GOLD := Color("e8b923")
+const ULT_POP_MAX := 1.3            # the ult panel grows up to this when it becomes ready (pivot bottom left)
+const BOSS_BAR_MIN_W := 380.0      # narrower than this beside the ult panel: the boss bar goes above it
 const BLUE := Color("2e6db4")
 const SLOT_COLORS := [Color("c0392b"), Color("2e6db4"), Color("3f8f4f"), Color("8e44ad")]
 const CARD_TIME := 4.2
@@ -128,7 +130,11 @@ func handle_event(ev: Array) -> void:
 		"card":
 			_overlay("card", CARD_TIME, {"enc": str(ev[1]) if ev.size() > 1 else ""})
 		"wende":
-			_overlay("wende", 2.6, {"dur": float(ev[1]) if ev.size() > 1 else 4.0})
+			_overlay("wende", 2.6, {"dur": float(ev[1]) if ev.size() > 1 else 4.0, "axis": int(ev[2]) if ev.size() > 2 else 0})
+		"boss_phase":
+			# Pressekonferenz at a boss phase change (GDD §14, D-106)
+			if ev.size() >= 3:
+				_overlay("presse", 2.6, {"enc": str(ev[1]), "phase": int(ev[2])})
 		"streik":
 			_overlay("streik", 2.0, {})
 		"stage":
@@ -260,11 +266,16 @@ func _draw() -> void:
 	if not _hidden("team"):
 		_draw_team(vs, meta)
 	if not shop:
-		_draw_boss(vs, sz)
-		_draw_streik(meta, sz)
+		# bottom row: ult panel at the left, the boss bar beside it (never under it);
+		# the left column above the ult panel holds the Streik prompt and the ult effects
+		var ult_r := _ult_panel_rect(vs, meta, sz)
+		var boss_r := _draw_boss(vs, sz, ult_r)
 		_draw_down_hint(vs, sz)
-		var ult_h := _draw_ult_panel(vs, meta, sz)
-		_draw_ult_effects(meta, sz, ult_h)
+		var left_h := _draw_ult_panel(vs, meta, sz)
+		if boss_r.size.x > 0.0 and boss_r.position.x < ult_r.end.x + 8.0:
+			left_h = sz.y - 16.0 - (boss_r.position.y - 40.0)   # boss bar (and cast tag) stacked above the ult panel
+		left_h += _draw_streik(meta, sz, left_h)
+		_draw_ult_effects(meta, sz, left_h)
 	if _funk_t >= 0.0:
 		_draw_funkloch(sz)
 	if _reconnecting():
@@ -464,16 +475,35 @@ func _draw_team(vs: ViewState, meta: Dictionary) -> void:
 		y += 52.0
 
 
-func _draw_boss(vs: ViewState, sz: Vector2) -> void:
-	var b := vs.boss
-	if b.is_empty():
-		return
-	var ei := int(b.get("enc", -1))
-	if ei < 0 or ei >= Content.ENCOUNTER_ORDER.size():
-		return
-	var enc: String = Content.ENCOUNTER_ORDER[ei]
+## Where the boss bar goes: centred at the bottom unless the ult panel (bottom
+## left) is in the way; then right of it, or above it if the window is too narrow.
+static func boss_bar_rect(sz: Vector2, ult_r: Rect2) -> Rect2:
 	var w := minf(640.0, sz.x - 80.0)
 	var r := Rect2(sz.x * 0.5 - w * 0.5, sz.y - 74, w, 58)
+	if ult_r.size.x <= 0.0:
+		return r
+	var x0 := ult_r.position.x + ult_r.size.x * ULT_POP_MAX + 16.0   # room for the panel's "ready" pop
+	if r.position.x >= x0:
+		return r
+	r.position.x = x0
+	r.size.x = minf(w, sz.x - 24.0 - x0)
+	if r.size.x >= BOSS_BAR_MIN_W:
+		return r
+	r.size.x = w
+	r.position = Vector2(sz.x * 0.5 - w * 0.5, ult_r.end.y - ult_r.size.y * ULT_POP_MAX - 12.0 - 58.0)
+	return r
+
+
+func _draw_boss(vs: ViewState, sz: Vector2, ult_r := Rect2()) -> Rect2:
+	var b := vs.boss
+	if b.is_empty():
+		return Rect2()
+	var ei := int(b.get("enc", -1))
+	if ei < 0 or ei >= Content.ENCOUNTER_ORDER.size():
+		return Rect2()
+	var enc: String = Content.ENCOUNTER_ORDER[ei]
+	var r := boss_bar_rect(sz, ult_r)
+	var w := r.size.x
 	_panel(r, Color("f1e3d3"), 6, INK)
 	_txt(tr("ENC_%s_NAME" % enc.to_upper()), Vector2(r.position.x + 16, r.position.y + 24), 22, RED)
 	var ph := int(b.get("phase", 0))
@@ -484,6 +514,7 @@ func _draw_boss(vs: ViewState, sz: Vector2) -> void:
 		draw_arc(c, 5.5, 0, TAU, 10, INK, 1.5)
 	var bar := Rect2(r.position + Vector2(14, 32), Vector2(w - 28, 16))
 	_bar(bar, float(b.get("hp", 0.0)), Color(0.75, 0.12, 0.12), Color(1, 1, 1, 0.6), 7)
+	_draw_boss_cast(vs, r)
 	var sh: float = b.get("shield", 0.0)
 	if sh > 0.0:
 		var sb := Rect2(bar.position + Vector2(0, -6), Vector2(bar.size.x * sh, 7))
@@ -491,24 +522,87 @@ func _draw_boss(vs: ViewState, sz: Vector2) -> void:
 		draw_rect(sb, INK, false, 1.2)
 		for i in int(sb.size.x / 16.0):
 			draw_line(sb.position + Vector2(8 + i * 16, 0), sb.position + Vector2(8 + i * 16, 7), Color(0.6, 0.45, 0.05), 1.0)
+	return r
 
 
-func _draw_streik(meta: Dictionary, sz: Vector2) -> void:
+## The boss's running cast above the boss bar (research B3, D-108): name and a
+## progress bar, e.g. "Abstimmung läuft …" with how many Plenum circles are taken;
+## "Pressekonferenz" in gold while the boss is invulnerable.
+func _draw_boss_cast(vs: ViewState, panel: Rect2) -> void:
+	var presse := false
+	for i in mini(vs.e_flags2.size(), vs.e_flags.size()):
+		if (vs.e_flags[i] & ViewState.EF_ELITE) and (vs.e_flags2[i] & ViewState.EF2_PRESSE):
+			presse = true
+			break
+	var cast := vs.boss_cast()
+	if cast == "" and not presse:
+		return
+	var w := minf(340.0, panel.size.x)
+	var r := Rect2(panel.get_center().x - w * 0.5, panel.position.y - 36, w, 30)
+	if presse:
+		_panel(r, Color("fff4cf"), 4, GOLD.darkened(0.3))
+		_txt(tr("HUD_PRESSE"), Vector2(r.position.x, r.position.y + 22), 20, GOLD.darkened(0.45), null, HORIZONTAL_ALIGNMENT_CENTER, w)
+		return
+	_panel(r, Color("fde8e2"), 4, RED)
+	var k := clampf(float(vs.boss.get("cast_t", 0.0)), 0.0, 1.0)
+	draw_rect(Rect2(r.position + Vector2(4, r.size.y - 8), Vector2((w - 8) * k, 5)), RED)
+	var label := tr("CAST_" + cast.to_upper())
+	if cast == "abstimmung":
+		var circles := 0
+		var taken := 0
+		var t_pl := Content.HAZARD_ORDER.find("plenum")
+		for i in vs.h_type.size():
+			if vs.h_type[i] != t_pl:
+				continue
+			circles += 1
+			for p in vs.players:
+				if int(p.get("state", 0)) == 0 and (p.get("pos", Vector2.INF) as Vector2).distance_to(vs.h_pos[i]) <= vs.h_rad[i]:
+					taken += 1
+					break
+		if circles > 0:
+			label += "   " + tr("HUD_PLENUM") % [taken, circles if circles <= 2 else circles - 1]
+	_txt(label, Vector2(r.position.x, r.position.y + 20), 19, RED.darkened(0.2), null, HORIZONTAL_ALIGNMENT_CENTER, w)
+
+
+## "Pressekonferenz" banner at a phase change: a lectern sign with the phase name.
+func _draw_presse_banner(enc: String, ph: int, t: float, a: float, sz: Vector2) -> void:
+	var slide := minf(t * 4.0, 1.0)
+	var w := 560.0
+	var r := Rect2(sz.x * 0.5 - w * 0.5, 120 - (1.0 - slide) * 90, w, 92)
+	_panel(r, Color(1.0, 0.97, 0.86, a), 5, Color(GOLD.darkened(0.35), a))
+	draw_rect(Rect2(r.position + Vector2(10, 8), Vector2(w - 20, 6)), Color(GOLD, a))
+	_txt(tr("HUD_PRESSE").to_upper(), Vector2(r.position.x, r.position.y + 50), 38, Color(INK, a), _typeb, HORIZONTAL_ALIGNMENT_CENTER, w)
+	var name := tr("PHASE_%s_%d" % [enc.to_upper(), ph]) if enc != "" else ""
+	_txt(tr("HUD_PRESSE_SUB") % [ph + 1, name], Vector2(r.position.x, r.position.y + 80), 24, Color(RED.darkened(0.1), a), null, HORIZONTAL_ALIGNMENT_CENTER, w)
+	for s in [-1.0, 1.0]:
+		var m := Vector2(r.get_center().x + s * (w * 0.5 - 34), r.position.y + 50)
+		draw_line(m + Vector2(0, 22), m + Vector2(-s * 6, -6), Color(INK, a), 3.0)
+		draw_circle(m + Vector2(-s * 6, -10), 9.0, Color(INK, a))
+		draw_circle(m + Vector2(-s * 6, -10), 6.0, Color(0.6, 0.6, 0.65, a))
+
+
+## Streik prompt / countdown in the left column above the ult panel (`below` px
+## from the bottom are taken), so it never covers the arena centre or the bottom
+## wall. Returns the height it used.
+func _draw_streik(meta: Dictionary, sz: Vector2, below: float) -> float:
 	var s = meta.get("streik", {})
 	if not (s is Dictionary):
-		return
+		return 0.0
 	var active: float = s.get("active", 0.0)
-	var y := sz.y - 92.0 - (70.0 if not get_view().boss.is_empty() else 0.0)
+	var y := sz.y - 16.0 - below - 8.0 - 40.0
+	var txt := ""
 	if active > 0.0:
-		_txt(tr("HUD_STREIK_ACTIVE") % int(ceil(active)), Vector2(0, y + 26), 24, RED, null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 5)
+		txt = tr("HUD_STREIK_ACTIVE") % int(ceil(active))
 	elif bool(s.get("available", false)):
-		var key := InputGlyphs.key("streik")
-		var txt := tr("HUD_STREIK_PROMPT") % key
-		var w := _hand.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 40
-		var pulse := 1.0 + 0.04 * sin(_t * 6.0)
-		var r := Rect2(sz.x * 0.5 - w * 0.5 * pulse, y, w * pulse, 40)
-		_panel(r, Color("fbe3a0"), 8, RED)
-		_txt(txt, Vector2(r.position.x, r.position.y + 28), 24, RED, null, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
+		txt = tr("HUD_STREIK_PROMPT") % InputGlyphs.key("streik")
+	else:
+		return 0.0
+	var w := _hand.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 40
+	var pulse := 1.0 + (0.04 * sin(_t * 6.0) if active <= 0.0 else 0.0)
+	var r := Rect2(14, y, w * pulse, 40)
+	_panel(r, Color("fbe3a0") if active <= 0.0 else Color(1.0, 0.92, 0.88), 8, RED)
+	_txt(txt, Vector2(r.position.x, r.position.y + 28), 24, RED, null, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
+	return 48.0
 
 
 func _draw_down_hint(vs: ViewState, sz: Vector2) -> void:
@@ -584,28 +678,39 @@ static func _ult_key() -> String:
 
 
 ## Bottom-left panel: name, [key], ready / used. Returns the height it took (0 if hidden).
-func _draw_ult_panel(vs: ViewState, meta: Dictionary, sz: Vector2) -> float:
+## The ult panel's rect at the bottom left (Rect2() when there is none).
+func _ult_panel_rect(vs: ViewState, meta: Dictionary, sz: Vector2) -> Rect2:
 	if bool(meta.get("intro_wait", false)):
-		return 0.0
+		return Rect2()
 	var lm := _local_meta(meta)
-	if lm.is_empty():
-		return 0.0
-	var id := ult_id_for(lm)
-	if id == "":
-		return 0.0
+	if lm.is_empty() or ult_id_for(lm) == "":
+		return Rect2()
 	var me := vs.find_player(local_id())
 	if not me.is_empty() and int(me.get("state", 0)) == 2:
+		return Rect2()
+	var ready := bool(lm.get("ult_ready", false))
+	var name := tr("ULT_%s_NAME" % ult_id_for(lm).to_upper())
+	var state := tr("HUD_ULT_READY") if ready else tr("HUD_ULT_USED")
+	var kw := _type.get_string_size(InputGlyphs.label("ultimate"), HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 14.0
+	var nw := _hand.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
+	var stw := _hand.get_string_size(state, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+	var w := maxf(kw + nw + 72.0, stw + 30.0)   # room for the sparkle / cross on the right
+	return Rect2(14, sz.y - 16 - 72.0, w, 72.0)
+
+
+func _draw_ult_panel(vs: ViewState, meta: Dictionary, sz: Vector2) -> float:
+	var r := _ult_panel_rect(vs, meta, sz)
+	if r.size.x <= 0.0:
 		return 0.0
+	var lm := _local_meta(meta)
+	var id := ult_id_for(lm)
 	var ready := bool(lm.get("ult_ready", false))
 	var name := tr("ULT_%s_NAME" % id.to_upper())
 	var key := InputGlyphs.label("ultimate")
 	var state := tr("HUD_ULT_READY") if ready else tr("HUD_ULT_USED")
 	var kw := _type.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 14.0
-	var nw := _hand.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
-	var stw := _hand.get_string_size(state, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
-	var w := maxf(kw + nw + 72.0, stw + 30.0)   # room for the sparkle / cross on the right
-	var h := 72.0
-	var r := Rect2(14, sz.y - 16 - h, w, h)
+	var w := r.size.x
+	var h := r.size.y
 	var sc := Vector2.ONE
 	var rot := 0.0
 	if ready:
@@ -706,18 +811,31 @@ func _draw_overlay(o: Dictionary, sz: Vector2) -> void:
 		"card":
 			_draw_card(str(d["enc"]), t, a, sz)
 		"wende":
-			var rot := minf(t / 0.9, 1.0) * PI
-			draw_set_transform(c + Vector2(0, -60), rot, Vector2.ONE)
 			var arc_c := Color(0.7, 0.1, 0.45, a)
-			draw_arc(Vector2.ZERO, 70, 0.4, TAU - 0.5, 36, arc_c, 10.0)
-			var tip := Vector2(cos(-0.5), sin(-0.5)) * 70
-			draw_colored_polygon(PackedVector2Array([tip + Vector2(-18, -6), tip + Vector2(14, -14), tip + Vector2(6, 18)]), arc_c)
+			var axis := int(d.get("axis", 0))
+			if axis == 0:
+				var rot := minf(t / 0.9, 1.0) * PI
+				draw_set_transform(c + Vector2(0, -60), rot, Vector2.ONE)
+				draw_arc(Vector2.ZERO, 70, 0.4, TAU - 0.5, 36, arc_c, 10.0)
+				var tip := Vector2(cos(-0.5), sin(-0.5)) * 70
+				draw_colored_polygon(PackedVector2Array([tip + Vector2(-18, -6), tip + Vector2(14, -14), tip + Vector2(6, 18)]), arc_c)
+			else:
+				# Teilwende (D-112): a big double arrow shows the one flipped axis
+				var wob := sin(t * 6.0) * 10.0
+				draw_set_transform(c + Vector2(0, -60), PI * 0.5 if axis == 2 else 0.0, Vector2.ONE)
+				draw_line(Vector2(-110 - wob, 0), Vector2(110 + wob, 0), arc_c, 12.0)
+				for s in [-1.0, 1.0]:
+					var e := Vector2(s * (118 + wob), 0)
+					draw_colored_polygon(PackedVector2Array([e, e + Vector2(-s * 34, -26), e + Vector2(-s * 34, 26)]), arc_c)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
 			var sc := 1.0 + maxf(0.0, 0.3 - t) * 1.5
 			draw_set_transform(c + Vector2(0, 60), sin(t * 3.0) * 0.04, Vector2(sc, sc))
 			_txt(tr("HUD_WENDE"), Vector2(-sz.x * 0.5, 0), 64, Color(0.7, 0.1, 0.45, a), null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 10)
-			_txt(tr("HUD_WENDE_SUB"), Vector2(-sz.x * 0.5, 44), 26, Color(INK, a), null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
+			var sub := "HUD_WENDE_SUB" if axis == 0 else ("HUD_WENDE_SUB_X" if axis == 1 else "HUD_WENDE_SUB_Y")
+			_txt(tr(sub), Vector2(-sz.x * 0.5, 44), 26, Color(INK, a), null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
+		"presse":
+			_draw_presse_banner(str(d.get("enc", "")), int(d.get("phase", 0)), t, a, sz)
 		"streik":
 			var punch := 1.0 + maxf(0.0, 0.18 - t) * 5.0
 			draw_set_transform(c + Vector2(0, -40), -0.18, Vector2(punch, punch))

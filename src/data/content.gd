@@ -51,7 +51,8 @@ const CHARACTERS := {
 }
 
 # --- Weapons (GDD §11) -------------------------------------------------------
-# kind: shot | cone | orbit | puddle | turret
+# kind: shot | cone | orbit | puddle | turret | lob | wall | mark | chain | beam | fan | swarm | thrust | trail
+#       | tether | decoy | follower | patrol
 # dmg: per tier 1..4; scale: stat -> coefficient added to damage.
 
 const WEAPON_ORDER: Array[String] = [
@@ -60,6 +61,8 @@ const WEAPON_ORDER: Array[String] = [
 	"kartoffelbrei", "trillerpfeife", "brandmauer_ziegel", "normenkontrolle",
 	"unterschriftenliste", "scheinwerfer", "neun_euro_ticket", "weisser_overall",
 	"fahnenstange", "bierkiste", "strassenkreide",
+	"kleine_anfrage", "lobbyregister", "faktencheck", "soli_sticker",
+	"menschenkette", "pappkamerad", "demo_sanis", "lauti",
 ]
 
 const WEAPONS := {
@@ -85,8 +88,10 @@ const WEAPONS := {
 		"splash": 70.0, "slow": 0.4, "slow_time": 2.0, "scale": {"status": 0.8, "ranged": 0.4}, "price": 22},
 	"kleber": {"kind": "puddle", "dmg": [4, 7, 11, 18], "cd": 2.2, "range": 300.0, "radius": 60.0, "life": 3.0,
 		"slow": 0.7, "scale": {"status": 1.0}, "price": 24},
-	"infostand": {"kind": "turret", "dmg": [4, 6, 10, 15], "cd": 5.0, "range": 300.0, "fire_cd": 0.6, "life": 10.0,
-		"max": 2, "proj": "flugblatt", "speed": 520.0, "scale": {"summon": 0.8}, "price": 26},
+	"infostand": {"kind": "turret", "dmg": [5, 8, 12, 17], "cd": 5.0, "range": 300.0, "fire_cd": 0.6, "life": [10.0, 10.0, 15.0, 20.0],
+		"max": [2, 2, 3, 4], "proj": "flugblatt", "speed": 520.0, "scale": {"summon": 0.8}, "price": 26,
+		"bounce": [1, 1, 2, 2], "bounce_range": 140.0, "bounce_falloff": 0.2,   # leaflets jump on (D-115)
+		"refill_cd": 1.0},   # below its stand cap a copy places the next stand after this (D-117)
 	"kartoffelbrei": {"kind": "lob", "dmg": [18, 30, 48, 77], "cd": 3.0, "range": 340.0, "radius": 110.0,
 		"delay": 0.8, "proj": "kartoffelbrei", "scale": {"ranged": 1.0}, "price": 26},
 	"trillerpfeife": {"kind": "cone", "dmg": [5, 8, 13, 21], "cd": 2.0, "range": 150.0, "arc": 360.0, "knock": 0.0,
@@ -102,15 +107,54 @@ const WEAPONS := {
 	"neun_euro_ticket": {"kind": "fan", "dmg": [3, 5, 8, 13], "cd": 1.5, "range": 180.0, "count": 9, "count_late": 5,
 		"late_wave": 4, "arc": 60.0, "speed": 520.0, "proj": "ticket", "scale": {"ranged": 0.5}, "price": 18},
 	"weisser_overall": {"kind": "swarm", "dmg": [6, 10, 16, 26], "cd": 4.0, "range": 300.0, "count": 3,
-		"scale": {"summon": 1.0}, "price": 24},
+		"splash_r": 55.0, "splash": 0.5, "scale": {"summon": 1.0}, "price": 24},   # splash on arrival (D-115)
 	# More melee and zone weapons (GDD §11, D-080)
 	"fahnenstange": {"kind": "thrust", "dmg": [10, 17, 27, 43], "cd": 1.0, "range": 190.0, "width": 18.0, "arc": 6.0,
 		"knock": 50.0, "scale": {"melee": 0.9}, "price": 22, "melee": true},
 	"bierkiste": {"kind": "cone", "dmg": [22, 37, 59, 95], "cd": 2.4, "range": 120.0, "arc": 360.0, "knock": 220.0,
 		"stun": 0.3, "scale": {"melee": 1.2}, "price": 26, "melee": true},
 	"strassenkreide": {"kind": "trail", "dmg": [9, 15, 24, 39], "cd": 0.35, "range": 60.0, "radius": 26.0, "life": 4.0,
-		"spacing": 24.0, "scale": {"status": 0.8}, "price": 24},
+		"spacing": 24.0, "still_radius": 60.0, "still_grow": 12.0, "scale": {"status": 0.8}, "price": 24},
+	# Status and summon weapons (GDD §11 v0.3, D-091). Status effects: D-092.
+	# Kleine Anfrage: "In Bearbeitung" (silence) for `silence` s; aims at enemies with an ability first.
+	"kleine_anfrage": {"kind": "shot", "dmg": [12, 20, 32, 52], "cd": 1.2, "range": 360.0, "speed": 500.0, "pierce": 1,
+		"proj": "akte", "silence": 3.0, "prefer_ability": true, "scale": {"status": 1.3}, "price": 24},
+	# Lobbyregister: +1 "Aktenkundig" stack per hit (max `file`, +`file_vuln` damage each, `file_time` s);
+	# a hit at max stacks is "Offengelegt": `burst` (+ burst_scale), stacks back to 0.
+	"lobbyregister": {"kind": "shot", "dmg": [3, 5, 8, 13], "cd": 0.7, "range": 340.0, "speed": 700.0, "proj": "aktenblatt",
+		"file": 5, "file_time": 5.0, "file_vuln": 0.05, "burst": [16, 27, 43, 69], "burst_scale": {"status": 1.2},
+		"scale": {"status": 0.5}, "price": 26},
+	# Faktencheck: "Rolle rückwärts" for `reverse` s, wipes enemy projectiles in the cone.
+	"faktencheck": {"kind": "cone", "dmg": [10, 17, 27, 43], "cd": 1.6, "range": 170.0, "arc": 90.0, "knock": 0.0,
+		"reverse": [1.2, 1.3, 1.4, 1.6], "clear_shots": true, "max_hits": 4, "scale": {"status": 1.2}, "price": 22},
+	# Soli-Sticker: hit + sticker poison per s (flat + sticker_scale, × Wut); passes on once per
+	# `spread_cd` to one sticker-free enemy within `spread_range`; at most `sticker_max` per player.
+	"soli_sticker": {"kind": "shot", "dmg": [6, 10, 16, 26], "cd": 0.9, "range": 320.0, "speed": 520.0, "proj": "sticker",
+		"sticker": [3.5, 6.0, 9.0, 15.0], "sticker_time": 4.0, "sticker_scale": {"status": 0.35}, "spread_range": 50.0,
+		"spread_cd": 1.0, "sticker_max": 12, "scale": {"status": 0.6}, "price": 24},
+	# Menschenkette: a chain from you to the nearest living teammate within `length` (else a
+	# lamppost toward your target, at most `lamp_reach` away) for `life` s; damage every `tick` s.
+	"menschenkette": {"kind": "tether", "dmg": [5, 8, 13, 21], "cd": 5.0, "range": 320.0, "length": 320.0,
+		"lamp_reach": 220.0, "life": 6.0, "tick": 0.5, "width": 14.0, "knock": 120.0, "max": 1,
+		"scale": {"summon": 0.8}, "price": 26},
+	# Pappkamerad: decoy with HP (hp_base + hp_wave·wave + hp_summon·Ehrenamt), lures non-elites
+	# within `lure`; confetti burst (dmg, radius burst_r) when it falls or runs out.
+	"pappkamerad": {"kind": "decoy", "dmg": [14, 23, 37, 60], "cd": 7.0, "range": 220.0, "life": 8.0, "lure": 240.0,
+		"burst_r": 90.0, "hp_base": 25.0, "hp_wave": 15.0, "hp_summon": 5.0, "max": 1, "scale": {"summon": 1.0}, "price": 24},
+	# Demo-Sanis: a follower for the whole wave; every cd heals the most injured player within
+	# `range` (heal + heal_scale) and shoves enemies within `shove_r` (dmg, knock).
+	"demo_sanis": {"kind": "follower", "dmg": [3, 5, 8, 13], "cd": 3.0, "range": 160.0, "heal": [2, 3, 5, 8],
+		"heal_scale": {"summon": 0.3}, "shove_r": 70.0, "knock": 100.0, "revive": 1.5, "scale": {"summon": 1.0}, "price": 24},
+	# Lauti: a sound truck circling you (radius `range`) for `life` s; a pulse every `pulse_cd` s
+	# hits every enemy within `pulse_r`.
+	"lauti": {"kind": "patrol", "dmg": [12, 20, 32, 52], "cd": 6.0, "range": 90.0, "life": 10.0, "pulse_cd": 1.0,
+		"pulse_r": 120.0, "max_hits": 4, "knock": 80.0, "orbit_speed": 1.3, "max": 1, "scale": {"summon": 1.2}, "price": 24},
 }
+
+## Ground weapons that land where Sim.place_mode says (balancing.md §9).
+const PLACED_KINDS: Array[String] = ["puddle", "lob", "wall"]
+## Weapon kinds that fire without needing a target in range.
+const UNTARGETED_KINDS: Array[String] = ["trail", "tether", "follower", "patrol"]
 
 const TIER_PRICE_MULT := [1.0, 1.8, 3.2, 5.5]
 
@@ -232,7 +276,7 @@ const ITEMS := {
 ## Item rarities (GDD §12): 1 green, 2 blue, 3 purple, 4 red.
 const RARITY_COLORS := {1: Color("3f8f4f"), 2: Color("2e6db4"), 3: Color("8e44ad"), 4: Color("c0392b")}
 const RED_BUILD := {"melee": 2.0, "melee_other": 0.5, "ranged_pierce": 1, "ranged_speed": 1.5, "ranged_other": 0.5,
-	"coop_interest": 0.15, "coop_interest_max": 50, "coop_buys": 2, "summon": 2.0, "summon_other": 0.6,
+	"coop_interest": 0.15, "coop_interest_max": 50, "coop_buys": 2, "summon": 1.5, "summon_life": 2.0, "summon_other": 0.6,
 	"status": 2.0, "status_direct": 0.7, "status_spread": 100.0, "crit_extra": 1.5, "crit_other": 0.7,
 	"lifesteal_heal": 3.0, "dodge_cap": 80.0,
 	"treuhand_chance": 0.5, "treuhand_pfand": 30, "aufhoeren_after": 2.0, "aufhoeren_regen": 8.0, "aufhoeren_armor": 10.0,
@@ -310,13 +354,16 @@ const PROJ_ORDER: Array[String] = [
 	"stern", "flasche", "nadel", "tofu", "farbe", "flugblatt",
 	"kettenbrief", "golfball", "champagner", "buch", "bierdeckel", "zirkusball",
 	"fluegel", "goldbarren", "spiegel", "kartoffelbrei", "ticket",
+	"akte", "aktenblatt", "sticker",
 ]
 const PICKUP_ORDER: Array[String] = ["pfand", "passant", "geldschein", "stulle", "reichsausweis"]
 const HAZARD_ORDER: Array[String] = [
 	"kleber", "mietzone", "kerosin", "lob_marker", "sitzblockade", "explosion", "abschiebezone",
 	"push_ring", "farbklecks", "brei_marker", "ziegel", "paragraf", "kreide",
+	"kette", "abstimmung", "plenum", "kahlschlag", "kahlschlag_hit",
 ]
-const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse", "overall"]
+const SUMMON_ORDER: Array[String] = ["infostand", "oma", "turbine", "genosse", "overall",
+	"laterne", "pappkamerad", "sani", "lauti"]
 
 # --- Ultimates (GDD §9a): Space, once per wave ----------------------------------
 
@@ -333,7 +380,7 @@ const ULTS := {
 	"tarifrunde": {"time": 8.0, "damage": 0.5},
 	"schwarzer_block": {"count": 6, "time": 6.0, "dmg": 6.0, "radius": 60.0},
 	"kaffee_und_kuchen": {"regen_time": 10.0, "regen": 3.0, "revive_hp": 0.5},
-	"fragen_sie_uns": {"stun": 2.0, "vuln_time": 6.0, "vuln": 2.0},
+	"fragen_sie_uns": {"stun": 2.0, "vuln_time": 6.0, "vuln": 2.0, "vuln_boss": 1.5},   # x1.5 on encounter units (D-102)
 }
 
 # --- Waves (GDD §4) ----------------------------------------------------------
@@ -352,11 +399,46 @@ const ENCOUNTER_POOLS := {
 const ENCOUNTER_ORDER: Array[String] = ["sylt_clique", "geschichtslehrer", "sauerlaender", "eidgenossin"]
 const ENCOUNTERS := {
 	"sylt_clique": {"units": ["sylt_member", "sylt_member", "sylt_member", "sylt_member"], "quote": "", "exit": "yacht",
-		"achievement": "ach_doep"},
+		"achievement": "ach_doep", "hp_mult": 1.25},
 	"geschichtslehrer": {"units": ["geschichtslehrer"], "quote": "hoecke-02", "exit": "abseits",
-		"achievement": "ach_180"},
-	"sauerlaender": {"units": ["sauerlaender"], "quote": "merz-17", "exit": "jet", "achievement": "ach_aufsichtsrat"},
-	"eidgenossin": {"units": ["eidgenossin"], "quote": "weidel-05", "exit": "schweiz", "achievement": "ach_remigration"},
+		"achievement": "ach_180", "hp_mult": 2.2, "slow_cap": 0.4},
+	"sauerlaender": {"units": ["sauerlaender"], "quote": "merz-17", "exit": "jet", "achievement": "ach_aufsichtsrat",
+		"hp_mult": 2.0, "slow_cap": 0.4},
+	"eidgenossin": {"units": ["eidgenossin"], "quote": "weidel-05", "exit": "schweiz", "achievement": "ach_remigration",
+		"hp_mult": 1.0, "slow_cap": 0.4, "ult_per_phase": true},
+}
+# hp_mult: encounter HP factor; slow_cap: max slow from any source (bosses and minibosses, not the
+# Sylt-Clique); ult_per_phase: every player's ultimate recharges at each phase change (GDD §14, D-102)
+
+## Boss casts (GDD §14, D-107, D-108): interruptible by a stun, shown in the boss bar.
+## Append only: the snapshot sends 1 + index.
+const BOSS_CASTS: Array[String] = ["wende", "abstimmung", "kahlschlag", "ansturm", "remigration"]
+
+## Boss rules (GDD §14 "Boss rules", D-102 to D-112). Starting values for the balancing round.
+## [a, b] pairs run linearly from Umfrage 10 % (level 0) to 35 % (level 5).
+const BOSS := {
+	# phases: lock at these HP fractions, Pressekonferenz between them (D-102, D-106)
+	"phase_at": [0.66, 0.33], "phase_tempo": [1.0, 1.2, 1.4],
+	"presse_time": 2.5, "presse_time_l4": 1.5,
+	# random target every target_min..target_max s (D-103)
+	"target_min": 4.0, "target_max": 7.0,
+	# resistance (D-102, D-107)
+	"stun_mult": 0.5, "standfest": 10.0, "standfest_l4": 15.0,
+	# telegraphs (B8): × factor per Umfrage level, never below telegraph_floor of the base
+	"telegraph_mult": [1.0, 0.95, 0.95, 0.9, 0.85, 0.8], "telegraph_floor": 0.75,
+	# Geschichtslehrer: Wende um 180 Grad (D-104, D-112)
+	"wende_first": 4.0, "wende_every": 10.0, "wende_warn": 1.5, "wende_time": 4.0, "wende_time_l4": 5.0,
+	"wende_axis_from": 3, "wende_book_life": 4.0,
+	# Sauerländer: Abstimmung, egal mit wem (D-104, D-109)
+	"vote_every": 20.0, "vote_time": [3.0, 2.2], "vote_dmg": [0.06, 0.09], "vote_walk": 2.5, "vote_walk_max": 5.0,
+	"vote_fail_stun": 1.5, "vote_adds": 4, "vote_adds_per_player": 2, "vote_double_from": 5,
+	"plenum_radius": 70.0, "plenum_dist": 230.0, "plenum_spacing": 160.0,
+	# Sauerländer: Kahlschlag (D-104, D-110)
+	"kahl_from_phase": 1, "kahl_every": 14.0, "kahl_every_l3": 11.0, "kahl_warn": 1.2, "kahl_arc": 90.0,
+	"kahl_reach": 380.0, "kahl_dmg": 1.5, "kahl_double_from": 5, "kahl_second_delay": 0.8, "kahl_second_turn": 60.0,
+	# Remigrantin: Die Brandmauer hält (D-104, D-111)
+	"band": 110.0, "band_l3": 150.0, "band_per_player": 10.0, "ring_every": [3.5, 2.6], "remig_warn": 2.0,
+	"ansturm_warn": 0.8,   # her charge wind-up: a targeted impact needs 0.8 s (B8; was 0.7)
 }
 
 # --- Organisationen (GDD §10) ------------------------------------------------
@@ -375,11 +457,12 @@ const BALANCE := {
 	"spawn_base": 0.32, "spawn_lin": 0.15,   # spawns per second: base + lin·wave
 	"diff_hp": 0.15, "diff_dmg": 0.10, "diff_spawn": 0.08,   # Umfrage level L: × (1 + k·L)
 	# elites and bosses
-	"elite_base": 0.6, "elite_coop": 0.45,   # HP × (base + coop·(players − 1))
-	"final_boss_mult": 0.9,                  # Die Remigrantin's HP on top
+	"elite_base": 0.6, "elite_coop": 0.3,    # HP × (base + coop·(players − 1))
+	"final_boss_mult": 4.5,                  # Die Remigrantin's HP on top
+	"diff_boss_hp": 0.15,                    # encounter units only: × (1 + k·L) on top of diff_hp (D-102)
+	"melee_vs_boss": 2.0,                   # melee weapons against encounter units (D-121)
 	"elite_wave_exp": 0.6,                   # elite HP × (enemy HP curve(wave) / curve(5)) ^ this
 	"boss_wave_spawn": 0.25,                 # regular spawn rate while an elite/boss is alive
-	"enrage_at": 0.5, "enrage_tempo": 1.4,          # phase 2: AI runs 1.4× as fast below 50 % HP
 	# economy: prices × (1 + price_lin·w + price_quad·w² + price_cubic·w³), w = wave − 1
 	"price_lin": 0.08, "price_quad": 0.009, "price_cubic": 0.0004,
 	"pfand_mult": 1.2,                      # Pfand per kill × this
@@ -392,6 +475,9 @@ const BALANCE := {
 	"levelup_rarity_mult": [1.0, 2.0, 3.0, 5.0],
 	# Umverteilung: % chance per point and hit to heal 1 HP (Brotato)
 	"lifesteal_chance": 1.0,
+	# ground weapons (puddle, lob, wall): where they land (balancing.md §9) and the lead time
+	# for "lead" when the weapon has no delay of its own
+	"place": "cluster", "place_lead": 0.5,
 }
 
 static func difficulty_mult(level: int) -> Dictionary:

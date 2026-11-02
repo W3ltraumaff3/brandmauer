@@ -2,6 +2,15 @@
 
 Danke, dass du mittestest! Das Spiel ist eine **Beta**: Es gibt Bugs, und das Balancing ist noch nicht fertig.
 
+### Neu in 0.4.0
+- **Acht neue Status- und Beschwörungswaffen:** Kleine Anfrage, Faktencheck, Soli-Sticker, Lobbyregister, Menschenkette, Pappkamerad, Demo-Sanis und Lauti – dazu drei neue Statuseffekte: In Bearbeitung, Aktenkundig und Rolle rückwärts.
+- **Beschwörungen treffen mehrere:** Flugblätter vom Infostand springen zum nächsten Ziel weiter, Weiße Overalls reißen beim Aufprall die Umstehenden mit. Infostände sind kleiner, schneller aufgebaut, und höhere Stufen halten mehr Stände (2/2/3/4 pro Waffe).
+- **Bodenwaffen landen besser:** Kleber, Kartoffelbrei und Ziegel landen in der dichtesten Gruppe; wer mit Straßenkreide stehen bleibt, malt einen wachsenden Kreidekreis.
+- **Bosse sind härter und eigener:** mehr Lebenspunkte, Pressekonferenz beim Phasenwechsel, zufällige Ziele, „Standfest“ gegen Dauerbetäubung, Angriffe lassen sich mit Betäubung unterbrechen, neue Fähigkeiten wie Abstimmung (Plenum-Kreise besetzen!) und Kahlschlag.
+- **Option „Eigene Effekte“:** macht deine Waffen, Beschwörungen und Effekte durchsichtig, damit du gegnerische Geschosse besser siehst.
+- **Balancing:** Ehrenamtskarte wirkt auf alle Ehrenamt-Waffen, Krankenschein heilt etwas weniger, Nahkampf trifft Bosse härter. Mehrere Bugs behoben (u. a. Betäubung bei Reichsbürger:innen, Gift-Zuordnung, gestapelte Ziegel).
+- **Wichtig für Koop:** Alle brauchen diese Version, ältere können nicht mitspielen.
+
 ### Neu in 0.3.0
 - **Die Brandmauer steht jetzt auf allen vier Seiten.** Gegner:innen kommen von überall, die Arena ist größer – genug Platz für vier.
 - **Zurück ins Spiel:** Spiel abgestürzt oder Verbindung weg? Im Hauptmenü bringt dich „Zurück ins Spiel“ in die laufende Koop-Runde zurück. Dein Charakter wartet, bis die Runde vorbei ist.

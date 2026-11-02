@@ -12,6 +12,8 @@ var _music: HSlider
 var _sfx: HSlider
 var _bubbles: HSlider
 var _bubbles_label: Label
+var _own_fx: HSlider
+var _own_fx_label: Label
 var _sfx_timer := 0.0
 
 
@@ -79,6 +81,25 @@ func build() -> void:
 	brow.add_child(_bubbles_label)
 	_update_bubbles_label(_bubbles.value)
 	grid.add_child(brow)
+
+	var ol := UIKit.label(tr("OPTIONS_OWN_FX"), 24)
+	ol.mouse_filter = MOUSE_FILTER_PASS
+	ol.tooltip_text = tr("OPTIONS_OWN_FX_TIP")
+	grid.add_child(ol)
+	var orow := UIKit.hbox(12)
+	_own_fx = _slider(UIKit.option_float("own_fx_opacity", 1.0, WorldView.OWN_FX_MIN, 1.0))
+	_own_fx.min_value = WorldView.OWN_FX_MIN
+	_own_fx.name = "own_fx_opacity"
+	_own_fx.custom_minimum_size.x = 300
+	_own_fx.tooltip_text = tr("OPTIONS_OWN_FX_TIP")
+	_own_fx.value_changed.connect(_on_own_fx)
+	orow.add_child(_own_fx)
+	_own_fx_label = UIKit.label("", 22, UITheme.INK_SOFT)
+	_own_fx_label.custom_minimum_size.x = 68
+	_own_fx_label.size_flags_vertical = SIZE_SHRINK_CENTER
+	orow.add_child(_own_fx_label)
+	_update_own_fx_label(_own_fx.value)
+	grid.add_child(orow)
 
 	grid.add_child(UIKit.label(tr("OPTIONS_TARGET"), 24))
 	var tm := OptionButton.new()
@@ -163,6 +184,17 @@ func _on_bubbles(v: float) -> void:
 func _update_bubbles_label(v: float) -> void:
 	if _bubbles_label:
 		_bubbles_label.text = tr("OPTIONS_BUBBLES_OFF") if v <= 0.001 else "%d %%" % int(round(v * 100.0))
+
+
+## WorldView and Fx read the option every frame, so this applies live during a wave.
+func _on_own_fx(v: float) -> void:
+	UIApi.set_option("own_fx_opacity", v)
+	_update_own_fx_label(v)
+
+
+func _update_own_fx_label(v: float) -> void:
+	if _own_fx_label:
+		_own_fx_label.text = "%d %%" % int(round(v * 100.0))
 
 
 func _on_window_mode(i: int) -> void:

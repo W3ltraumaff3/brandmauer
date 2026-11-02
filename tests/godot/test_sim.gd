@@ -665,13 +665,16 @@ func test_every_weapon_fires_and_hits() -> void:
 		s.enemies.clear()
 		var targets := []
 		# A trail weapon needs no target: its enemies stand right where the player is.
-		var near: bool = Content.WEAPONS[wid]["kind"] == "trail"
+		# So does a Demo-Sani's shove, which only reaches enemies next to her.
+		var near: bool = Content.WEAPONS[wid]["kind"] in ["trail", "follower"]
 		for k in 4:
 			var e := s.spawn_enemy("reichsbuerger", p.pos + (Vector2(k * 6, 0) if near else Vector2(110 + k * 40, k * 10)))
 			e.behind = false
 			e.speed = 0.0
 			targets.append(e)
-		for i in 240:
+		# the Pappkamerad's damage is its confetti burst when its 8 s are up
+		var frames := 600 if Content.WEAPONS[wid]["kind"] == "decoy" else 240
+		for i in frames:
 			p.iframes = 10.0
 			s.step(1.0 / 60.0)
 		var hurt := targets.filter(func(e): return not e.alive or e.hp < e.max_hp)

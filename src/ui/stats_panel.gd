@@ -218,6 +218,8 @@ func _survival_card(rs: Dictionary) -> Control:
 	var grid := _value_grid()
 	_value_row(grid, tr("STATS_HEALED_BY") % UIKit.stat_name("lifesteal"), rs.get("lifesteal", 0), UITheme.GREEN, "lifesteal")
 	_value_row(grid, tr("STATS_HEALED_BY") % UIKit.stat_name("hp_regen"), rs.get("regen", 0), UITheme.GREEN, "hp_regen")
+	if int(rs.get("sani", 0)) > 0:   # Demo-Sanis (GDD §6c, §11)
+		_value_row(grid, tr("STATS_HEALED_BY") % tr("WEAPON_DEMO_SANIS_NAME"), rs.get("sani", 0), UITheme.GREEN)
 	_value_row(grid, tr("STATS_DMG_TAKEN"), rs.get("dmg_taken", 0), UITheme.RED)
 	_value_row(grid, tr("STATS_BLOCKED_BY") % UIKit.stat_name("armor"), rs.get("dmg_blocked", 0), UITheme.BLUE, "armor")
 	_value_row(grid, tr("STATS_DODGES") % UIKit.stat_name("dodge"), rs.get("dodges", 0), UITheme.BLUE, "dodge")

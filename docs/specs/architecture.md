@@ -47,19 +47,20 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `wave_time_left` | float | seconds left; `-1` in the boss wave |
 | `stage` | int | Zusammenhalt stage 0..4 |
 | `wall` | int | bitmask of intact wall segments (bit i = segment i intact, `Arena.WALL_SEGMENTS` = 38 segments, clockwise from the top-left: 0–11 top, 12–18 right, 19–30 bottom, 31–37 left; GDD §5a). Geometry and wall tunables live in `Arena` (`src/sim/arena.gd`), shared by sim and view |
-| `players` | Array[Dictionary] | `{id:int, char:int, pos:Vector2, hp:float, max_hp:float, state:int (0 alive, 1 downed, 2 gone, 3 away: connection lost, frozen, invulnerable, untargeted; networking.md §7.4), aim:float, flags:int, followers:int, weapons:PackedByteArray, seq:int (last input seq the host applied for this player, for client reconciliation)}`. Player flags: 1 reversed controls, 2 stunned, 4 standing still (Klimakleber), 8 invulnerable, 16 reviving someone |
+| `players` | Array[Dictionary] | `{id:int, char:int, pos:Vector2, hp:float, max_hp:float, state:int (0 alive, 1 downed, 2 gone, 3 away: connection lost, frozen, invulnerable, untargeted; networking.md §7.4), aim:float, flags:int, followers:int, weapons:PackedByteArray, seq:int (last input seq the host applied for this player, for client reconciliation)}`. Player flags: 1 reversed controls, 2 stunned, 4 standing still (Klimakleber), 8 invulnerable, 16 reviving someone, 32 ultimate running, 64 only left/right reversed, 128 only up/down reversed (Teilwende, D-108; with 1 set) |
 | `e_id` | PackedInt32Array | enemy ids |
 | `e_type` | PackedByteArray | index into `Content.ENEMY_ORDER` |
 | `e_pos` | PackedVector2Array | |
 | `e_hp` | PackedFloat32Array | 0..1 |
-| `e_flags` | PackedByteArray | 1 elite/boss, 2 poisoned, 4 slowed/rooted, 8 winding up/charging, 16 parked/voting, 32 shielded/armored, 64 buffed, 128 hit flash |
+| `e_flags` | PackedByteArray | 1 elite/boss, 2 poisoned (also Soli-Sticker), 4 slowed/rooted, 8 winding up/charging, 16 parked/voting, 32 shielded/armored, 64 buffed, 128 hit flash |
+| `e_flags2` | PackedByteArray | status effects of GDD §11 (D-092, D-093): 1 In Bearbeitung, 2 Rolle rückwärts, bits 4–16 (`(f >> 2) & 7`) Aktenkundig stacks 0–5, 32 Soli-Sticker, 64 Standfest, 128 Pressekonferenz (boss rules, D-108). The status bits are never set on status-immune enemies |
 | `p_type` | PackedByteArray | index into `Content.PROJ_ORDER` |
 | `p_pos` | PackedVector2Array | |
 | `p_ang` | PackedFloat32Array | radians |
 | `k_type`, `k_pos` | PackedByteArray, PackedVector2Array | pickups, index into `Content.PICKUP_ORDER` |
-| `h_type`, `h_pos`, `h_rad`, `h_life` | PackedByteArray, PackedVector2Array, PackedFloat32Array, PackedFloat32Array | hazards and zones, index into `Content.HAZARD_ORDER`; life is 0..1 remaining |
-| `s_type`, `s_pos` | PackedByteArray, PackedVector2Array | summons, index into `Content.SUMMON_ORDER` |
-| `boss` | Dictionary | `{}` or `{enc:int (index into Content.ENCOUNTER_ORDER), hp:float 0..1, phase:int, shield:float 0..1}` |
+| `h_type`, `h_pos`, `h_rad`, `h_life`, `h_ang` | PackedByteArray, PackedVector2Array, PackedFloat32Array, PackedFloat32Array, PackedFloat32Array | hazards and zones, index into `Content.HAZARD_ORDER`; life is 0..1 remaining; `h_ang` is the direction of a cone (Kahlschlag), 0 for round hazards (D-108). A Menschenkette is 5 consecutive `kette` hazards along the chain, from its owner to its other end; the host moves them every tick and leaves them out while the chain is torn |
+| `s_type`, `s_pos`, `s_hp` | PackedByteArray, PackedVector2Array, PackedFloat32Array | summons, index into `Content.SUMMON_ORDER`; `s_hp` 0..1 is the HP of summons that can be hurt (Pappkamerad), 1 for all others. A Menschenkette's lamppost (`laterne`) is only sent while the chain hangs on it |
+| `boss` | Dictionary | `{}` or `{enc:int (index into Content.ENCOUNTER_ORDER), hp:float 0..1, phase:int, shield:float 0..1, cast:int (0 none, else 1 + index into Content.BOSS_CASTS), cast_t:float 0..1 progress}` (D-108) |
 
 ## 4. Meta state (slow state, Dictionary)
 `Sim.build_meta()` returns the per-run slow state. The host sends it reliably whenever it changes (at most 10 Hz), and **all UI reads `Game.meta`**, both on the host and on clients.
@@ -123,11 +124,14 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `away` | `[peer]` (a co-op player lost its connection; the HUD shows a toast, the team panel "weg") |
 | `back` | `[peer]` (an away player reconnected) |
 | `exit` | `[encounter_id, pos]` (boss exit animation) |
-| `wende` | `[duration]` |
+| `wende` | `[duration, axis]` (axis 0 both, 1 left/right, 2 up/down; D-112) |
+| `boss_phase` | `[encounter_id, phase]` (phase change: Pressekonferenz banner, D-106) |
+| `interrupt` | `[pos, cast_id]` (a stun broke a boss cast: "UNTERBROCHEN", D-107) |
 | `streik` | `[duration]` |
 | `ach` | `[peer, achievement_id]` |
 | `over` | `[won:bool]` |
 | `swing` | `[pos, angle, range, arc_deg, weapon_id:String]` (melee/cone attack arc, for drawing) |
+| `pulse` | `[pos, radius, kind:String]` (one-shot burst of a v0.3 weapon, drawn on Fx's own-effects layer: `lauti` ska pulse, `sani` heal and shove, `konfetti` Pappkamerad falling over, `offengelegt` Lobbyregister burst) |
 | `deny` | `[peer, reason_key:String]` (a request was refused, e.g. `DENY_NO_PFAND`) |
 
 ## 6. Result (`meta.result`)
@@ -152,7 +156,7 @@ Each machine updates **its own** save from the `result` entry for its own peer i
 Peer ids in signals, `lobby`, meta and the `Sim` are **player ids**: the ENet peer id of a player's first join. After a reconnect only `Net` maps it to the new ENet peer (networking.md §7.4).
 ```
 const PORT := 24713                 # game port (UDP); LAN discovery uses PORT + 1
-const PROTOCOL_VERSION := 2
+const PROTOCOL_VERSION := 5         # networking.md §7.1 (5: snapshot v4, D-108)
 const GRACE_S := 60.0               # host: away players are kept this long
 const RECONNECT_S := 60.0 / RETRY_INTERVAL_S := 2.0   # client reconnect budget / interval
 signal lobby_changed                # lobby dict, org or difficulty changed
@@ -273,9 +277,10 @@ static func source_label(q) -> String          # "Friedrich Merz, 01.07.2025"
 
 | Field | Type | Meaning |
 |---|---|---|
-| `damage` | Array | `{key, kind, id, tier, sold, total, wave}`, sorted by `total`. `kind` is `"weapon"` (`id` = weapon id, `tier`, `sold` if sold since), `"ram"` (Lastenrad contact), `"ult"` (ultimate) or `"other"`. `total` counts the whole run, `wave` the current or last wave. Damage counts what actually landed (no overkill) |
+| `damage` | Array | `{key, kind, id, tier, sold, total, wave}`, sorted by `total`. `kind` is `"weapon"` (`id` = weapon id, `tier`, `sold` if sold since), `"ram"` (Lastenrad contact), `"ult"` (ultimate) or `"other"`. `total` counts the whole run, `wave` the current or last wave. Damage counts what actually landed (no overkill). Damage over time goes to whoever caused it (D-088): poison ticks to the player and weapon that applied the poison, zone damage (Kleber, Straßenkreide, Brandmauer-Ziegel, Straßenblockade) to the zone's owner and weapon; a zone never takes over a running poison |
 | `lifesteal` | int | HP healed through Umverteilung (lifesteal); no overheal |
 | `regen` | int | HP healed through Krankenschein (regen); no overheal |
+| `sani` | int | HP this player's Demo-Sanis healed (on anyone, GDD §11); no overheal |
 | `dmg_taken` | int | damage taken |
 | `dmg_blocked` | int | damage absorbed by Kündigungsschutz (armor) |
 | `dodges`, `crits`, `kills` | int | counts |
@@ -298,4 +303,5 @@ static func source_label(q) -> String          # "Friedrich Merz, 01.07.2025"
 - **Offers** carry `rarity` (items: 1 green, 2 blue, 3 purple, 4 red; colors in `Content.RARITY_COLORS`, names `RARITY_1..4`).
 - **`run_stats.damage` rows** carry `merged` (the weapon was combined into a higher tier).
 - **Speech bubbles during waves** only carry invented lines and status text, never real quotes. Their opacity is the Save option `bubble_opacity` (0..1, 0 = hidden).
+- **Eigene Effekte** (GDD §19a) is the Save option `own_fx_opacity` (0.2..1, default 1). `WorldView` and `Fx` re-read it every frame and multiply it into the alpha of everything the players' side draws except the character bodies. View-only: no snapshot or protocol change. Projectiles count as the players' unless their type is in `WorldView.ENEMY_PROJ`; hazards are the players' if they are in `WorldView.OWN_HAZARDS`. Explosions stay opaque because the snapshot carries no hazard owner.
 - **Window mode** is the Save option `window_mode`: `"fullscreen"`, `"maximized"` or `"windowed"`.

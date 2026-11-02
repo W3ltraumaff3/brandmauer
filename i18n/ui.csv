@@ -291,6 +291,8 @@ OPTIONS_WINDOW_MAXIMIZED,Maximiertes Fenster
 OPTIONS_WINDOW_WINDOWED,Fenster
 OPTIONS_BUBBLES,Sprechblasen
 OPTIONS_BUBBLES_OFF,aus
+OPTIONS_OWN_FX,Eigene Effekte
+OPTIONS_OWN_FX_TIP,"Wie deutlich Waffen, Geschosse, Zonen und Helfer:innen aller Spieler:innen gezeichnet werden. Weniger heißt: gegnerische Geschosse fallen mehr auf. Die Figuren selbst bleiben immer voll sichtbar."
 OPTIONS_BUBBLES_TIP,"Wie deutlich die Gegner:innen in der Welle quasseln. Statusblasen wie „Verspätung“ bleiben lesbar, solange es nicht „aus“ ist."
 # Controller support (GDD §19b): input names and prompts
 INPUT_KEY_SPACE,Leertaste

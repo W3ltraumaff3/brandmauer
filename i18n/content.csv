@@ -74,9 +74,9 @@ WEAPON_TOFU_DESC,"Fernkampf · skaliert mit Ziviler Ungehorsam. Vergiftet 3 s la
 WEAPON_FARBBEUTEL_NAME,Farbbeutel
 WEAPON_FARBBEUTEL_DESC,"Fernkampf · skaliert mit Ziviler Ungehorsam (0,8) und Durchschlagskraft (0,4). Bremst um 40 %. Kunst am Bau."
 WEAPON_KLEBER_NAME,Kleber
-WEAPON_KLEBER_DESC,"Zone · skaliert mit Ziviler Ungehorsam. Pfützen: 3 s lang Schaden pro Sekunde und 70 % langsamer. Hält länger als jede Koalition."
+WEAPON_KLEBER_DESC,"Zone · skaliert mit Ziviler Ungehorsam. Pfützen landen in der dichtesten Gruppe: 3 s lang Schaden pro Sekunde und 70 % langsamer. Hält länger als jede Koalition."
 WEAPON_INFOSTAND_NAME,Infostand
-WEAPON_INFOSTAND_DESC,"Gerät · skaliert mit Ehrenamt (0,8). Bis zu 2 Stände feuern 10 s lang Flugblätter. Haben Sie kurz Zeit für Demokratie?"
+WEAPON_INFOSTAND_DESC,"Gerät · skaliert mit Ehrenamt (0,8). Bis zu 2 Stände feuern 10 s lang Flugblätter, die zur nächsten Gegner:in weitergereicht werden. Fehlt ein Stand, steht der nächste nach 1 s. Haben Sie kurz Zeit für Demokratie?"
 ITEM_SCHULDENBREMSE_NAME,Schuldenbremse
 ITEM_SCHULDENBREMSE_DESC,+15 Wut. Fluch: Pro Späti-Besuch darfst du nur begrenzt Geld ausgeben. Verfassungsrang für Geiz.
 ITEM_SONDERVERMOEGEN_NAME,Sondervermögen
@@ -356,7 +356,7 @@ ITEM_WURFMASCHINE_DESC,"Fernkampf-Build: Geschosse durchschlagen +1 Ziel und fli
 ITEM_GENOSSENSCHAFTSANTEIL_NAME,Genossenschaftsanteil
 ITEM_GENOSSENSCHAFTSANTEIL_DESC,"Spar-Build: Jede Woche +15 % deines Pfands (max. 50), aber nur 2 Käufe pro Späti-Besuch."
 ITEM_EHRENAMTSKARTE_NAME,Ehrenamtskarte
-ITEM_EHRENAMTSKARTE_DESC,"Helfer:innen-Build: Infostände und Genoss:innen ×2 Schaden und Dauer, eigene Waffen nur ×0,6."
+ITEM_EHRENAMTSKARTE_DESC,"Helfer:innen-Build: alle Ehrenamt-Waffen und Genoss:innen ×1,5 Schaden und Heilung, doppelte Dauer; andere Waffen nur ×0,6."
 ITEM_KOMPOST_NAME,Kompost
 ITEM_KOMPOST_DESC,"Status-Build: Gift und Kleber ×2, Gift springt beim Tod auf Nachbar:innen über, direkter Schaden ×0,7."
 ITEM_KRITISCHE_MASSE_NAME,Kritische Masse
@@ -370,11 +370,11 @@ RARITY_2,Blau
 RARITY_3,Lila
 RARITY_4,Rot
 WEAPON_KARTOFFELBREI_NAME,Kartoffelbrei
-WEAPON_KARTOFFELBREI_DESC,"Fernkampf · skaliert mit Durchschlagskraft. Großer Platscher nach 0,8 s. Bitte Abstand zu Gemälden halten."
+WEAPON_KARTOFFELBREI_DESC,"Fernkampf · skaliert mit Durchschlagskraft. Großer Platscher nach 0,8 s, mitten in die dichteste Gruppe. Bitte Abstand zu Gemälden halten."
 WEAPON_TRILLERPFEIFE_NAME,Trillerpfeife
 WEAPON_TRILLERPFEIFE_DESC,"Nahkampf · skaliert mit Handarbeit (0,6). Betäubt alles im Kreis 0,6 s. Ein Pfiff, und die Vorstände hören zu."
 WEAPON_BRANDMAUER_ZIEGEL_NAME,Brandmauer-Ziegel
-WEAPON_BRANDMAUER_ZIEGEL_DESC,"Gerät · skaliert mit Ehrenamt. Mauer quer zum Gegnerstrom, bremst 40 %, 6 s. Wenn die Politik sie einreißt, mauern wir nach."
+WEAPON_BRANDMAUER_ZIEGEL_DESC,"Gerät · skaliert mit Ehrenamt. Mauer quer zum Gegnerstrom, in der dichtesten Gruppe, bremst 40 %, 6 s. Wenn die Politik sie einreißt, mauern wir nach."
 WEAPON_NORMENKONTROLLE_NAME,Normenkontrolle
 WEAPON_NORMENKONTROLLE_DESC,"Status · skaliert mit Zivilem Ungehorsam. Markiert die stärkste Gegner:in, nach 3 s: nichtig erklärt."
 WEAPON_UNTERSCHRIFTENLISTE_NAME,Unterschriftenliste
@@ -384,13 +384,13 @@ WEAPON_SCHEINWERFER_DESC,Fernkampf · skaliert mit Durchschlagskraft. Strahl dur
 WEAPON_NEUN_EURO_TICKET_NAME,9-Euro-Ticket
 WEAPON_NEUN_EURO_TICKET_DESC,"Fernkampf · skaliert mit Durchschlagskraft (0,5). Fächer aus 9 Tickets, ab Woche 4 nur noch 5. Läuft halt aus."
 WEAPON_WEISSER_OVERALL_NAME,Weißer Overall
-WEAPON_WEISSER_OVERALL_DESC,Gerät · skaliert mit Ehrenamt. 3 Aktivist:innen stürmen je auf eine Gegner:in. Der Bagger steht still.
+WEAPON_WEISSER_OVERALL_DESC,Gerät · skaliert mit Ehrenamt. 3 Aktivist:innen stürmen je auf eine Gegner:in und reißen Umstehende mit. Der Bagger steht still.
 WEAPON_FAHNENSTANGE_NAME,Demo-Fahnenstange
 WEAPON_FAHNENSTANGE_DESC,"Nahkampf · skaliert mit Handarbeit (0,9). Sticht weit geradeaus und trifft alles in der Linie. Wer vorne läuft, hat die längste Stange."
 WEAPON_BIERKISTE_NAME,Bierkiste vom Späti
 WEAPON_BIERKISTE_DESC,"Nahkampf · skaliert mit Handarbeit (1,2). Langsamer, schwerer Rundumschlag mit viel Rückstoß, betäubt kurz. Pfand gibt's nur für leere."
 WEAPON_STRASSENKREIDE_NAME,Straßenkreide
-WEAPON_STRASSENKREIDE_DESC,"Zone · skaliert mit Ziviler Ungehorsam (0,8). Malt beim Laufen eine Spur, die 4 s lang Schaden macht. Lass sie hinter dir herlaufen. Sachbeschädigung? Regen ist für Montag angesagt."
+WEAPON_STRASSENKREIDE_DESC,"Zone · skaliert mit Ziviler Ungehorsam (0,8). Malt beim Laufen eine Spur, die 4 s lang Schaden macht, im Stehen einen Kreidekreis um dich. Lass sie hinter dir herlaufen. Sachbeschädigung? Regen ist für Montag angesagt."
 SUMMON_OVERALL_NAME,Aktivist:in im Overall
 ITEM_ERINNERUNGSLUECKE_NAME,Erinnerungslücke
 ITEM_ERINNERUNGSLUECKE_DESC,"+15 Schwarzfahren, −10 Vernetzung. Treffer? Daran kann ich mich gerade nicht erinnern."
@@ -416,3 +416,31 @@ ITEM_BRANDMAUER_FERTIGPUTZ_NAME,Brandmauer-Fertigputz
 ITEM_BRANDMAUER_FERTIGPUTZ_DESC,"Panzer-Build: +50 Kündigungsschutz, wer dich berührt, fliegt zurück. −30 Deutschlandticket. Hält allem stand, außer einer Abstimmung."
 ITEM_ENTLASSUNGSURKUNDE_NAME,Entlassungsurkunde
 ITEM_ENTLASSUNGSURKUNDE_DESC,"Krit-Build: +20 Direkte Aktion, Krit auf Gegner:innen unter 30 % setzt sie sofort ab. −15 Durchschlagskraft."
+WEAPON_KLEINE_ANFRAGE_NAME,Kleine Anfrage
+WEAPON_KLEINE_ANFRAGE_DESC,"Status · skaliert mit Zivilem Ungehorsam (1,3). Aktendeckel, durchschlägt 1 Gegner:in. Treffer: 3 s „In Bearbeitung“, also keine Spezialfähigkeit. Zielt zuerst auf Gegner:innen mit Fähigkeit, abstimmende JU-Schnösel vorneweg. 551 Fragen an die Zivilgesellschaft? Hier kommt Frage 552."
+WEAPON_LOBBYREGISTER_NAME,Lobbyregister
+WEAPON_LOBBYREGISTER_DESC,"Status · skaliert mit Zivilem Ungehorsam. Schnelle Aktenblätter: Jeder Treffer macht „Aktenkundig“ (+5 % Schaden von allen, bis 5 Stapel, 5 s). Ein Treffer bei vollen 5 Stapeln: „Offengelegt!“, großer Schaden. Eintragungspflichtig. Jeder Treffer kommt in die Akte."
+WEAPON_FAKTENCHECK_NAME,Faktencheck
+WEAPON_FAKTENCHECK_DESC,"Status · skaliert mit Zivilem Ungehorsam (1,2). Kegel nach vorn: Getroffene machen 1,2 s „Rolle rückwärts“ und laufen von dir weg. Löscht gegnerische Geschosse im Kegel. Wirkt nur kurz. Aber es wirkt."
+WEAPON_SOLI_STICKER_NAME,Soli-Sticker
+WEAPON_SOLI_STICKER_DESC,"Status · skaliert mit Zivilem Ungehorsam. Klebt einen Sticker drauf: 4 s Schaden pro Sekunde. Jede Sekunde wandert eine Kopie zu einer Nachbar:in ohne Sticker (höchstens 12 gleichzeitig). Laternenmast, Stromkasten, Porsche-Heckscheibe. Hält überall."
+WEAPON_MENSCHENKETTE_NAME,Menschenkette
+WEAPON_MENSCHENKETTE_DESC,"Gerät · skaliert mit Ehrenamt (0,8). 6 s lang eine Kette von dir zur nächsten Mitspieler:in, sonst zu einem Laternenmast. Gegner:innen an der Kette nehmen Schaden und werden zurückgestoßen. Hand in Hand. Und wer durch will, fliegt zurück."
+WEAPON_PAPPKAMERAD_NAME,Pappkamerad
+WEAPON_PAPPKAMERAD_DESC,"Gerät · skaliert mit Ehrenamt. Stellt 8 s einen Pappaufsteller mit Schnitzelverbot-Schild auf. Gegner:innen in der Nähe gehen auf ihn statt auf dich. Fällt er um, gibt’s Konfetti. Sie kämpfen gegen einen Pappkameraden. Wie immer."
+WEAPON_DEMO_SANIS_NAME,Demo-Sanis
+WEAPON_DEMO_SANIS_DESC,"Gerät · skaliert mit Ehrenamt. Ein:e Demosanitäter:in folgt dir die ganze Welle, heilt alle 3 s die am meisten verletzte Person in der Nähe und schafft Platz. Wiederbeleben neben ihr geht 50 % schneller. Pflaster, Wasser, Rettungsdecke. Und niemand bleibt liegen."
+WEAPON_LAUTI_NAME,Lauti
+WEAPON_LAUTI_DESC,"Gerät · skaliert mit Ehrenamt (1,2). Ein kleiner Lautsprecherwagen fährt 10 s im Kreis um dich, jede Sekunde ein Ska-Stoß: Schaden und Rückstoß rundherum. Vorne Ska, hinten die Ordner:innen."
+PHASE_SYLT_CLIQUE_0,Vorglühen
+PHASE_SYLT_CLIQUE_1,Sekt für alle
+PHASE_SYLT_CLIQUE_2,Letzte Runde
+PHASE_GESCHICHTSLEHRER_0,Unterricht
+PHASE_GESCHICHTSLEHRER_1,Wende
+PHASE_GESCHICHTSLEHRER_2,Neuauflage
+PHASE_SAUERLAENDER_0,Bierdeckel
+PHASE_SAUERLAENDER_1,Sondervermögen
+PHASE_SAUERLAENDER_2,Zirkuszelt
+PHASE_EIDGENOSSIN_0,Windmühlen der Schande
+PHASE_EIDGENOSSIN_1,Remigration
+PHASE_EIDGENOSSIN_2,Steuerparadies

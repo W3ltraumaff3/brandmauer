@@ -468,7 +468,7 @@ func _client_tick(dt: float) -> void:
 		return
 	var flags := int(me.get("flags", 0))
 	if flags & ViewState.PF_REVERSED:
-		dir = -dir
+		dir = Sim.reverse_dir(dir, Sim.reverse_axis_of(flags))   # Teilwende: one axis only (D-108)
 	if flags & ViewState.PF_STUNNED:
 		dir = Vector2.ZERO
 	_inputs.append({"seq": _seq, "dir": dir})

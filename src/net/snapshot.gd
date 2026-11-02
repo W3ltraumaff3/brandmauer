@@ -6,11 +6,14 @@ class_name Snapshot
 ## Quantization (max error after a round trip):
 ##   positions  int16, rounded           -> 0.5 px
 ##   fractions  u8 0..255 (hp, life, ..) -> 1/510
-##   angles     s8, TAU/256 per step     -> TAU/512
+##   angles     s8, TAU/256 per step     -> TAU/512 (projectiles, aim, hazards)
 ##   radii      u16, rounded             -> 0.5 px
 ##   ids        int32 (exact); player seq u32; player hp / max_hp, time, wave_time_left float32
 
-const VERSION := 2                     # 2: wall mask u64 (38 segments, four walls, D-082)
+## 2: wall mask u64 (38 segments, four walls, D-082)
+## 3: second enemy flag byte e_flags2 and summon hp s_hp (v0.3 status effects, D-093)
+## 4: hazard angle h_ang, boss cast + cast_t, e_flags2 Standfest/Pressekonferenz (boss rules, D-108)
+const VERSION := 4
 
 const MAX_PLAYERS := 8
 const MAX_WEAPONS := 16
@@ -67,6 +70,7 @@ static func encode(vs: ViewState) -> PackedByteArray:
 	_put_positions(b, vs.e_pos, ne)
 	_put_fracs(b, vs.e_hp, ne)
 	_put_bytes(b, vs.e_flags, ne)
+	_put_bytes(b, _padded(vs.e_flags2, ne), ne)
 
 	# Projectiles
 	var nproj := mini(MAX_PROJECTILES, mini(vs.p_type.size(), mini(vs.p_pos.size(), vs.p_ang.size())))
@@ -93,12 +97,22 @@ static func encode(vs: ViewState) -> PackedByteArray:
 	for i in nh:
 		b.put_u16(clampi(roundi(vs.h_rad[i]), 0, 0xFFFF))
 	_put_fracs(b, vs.h_life, nh)
+	var hang := PackedByteArray()
+	hang.resize(nh)
+	for i in nh:
+		hang[i] = _angle(vs.h_ang[i]) if i < vs.h_ang.size() else 0
+	b.put_data(hang)
 
 	# Summons
 	var ns := mini(MAX_SUMMONS, mini(vs.s_type.size(), vs.s_pos.size()))
 	b.put_u16(ns)
 	_put_bytes(b, vs.s_type, ns)
 	_put_positions(b, vs.s_pos, ns)
+	var shp := PackedFloat32Array()
+	shp.resize(ns)
+	for i in ns:
+		shp[i] = vs.s_hp[i] if i < vs.s_hp.size() else 1.0
+	_put_fracs(b, shp, ns)
 
 	# Boss
 	if vs.boss.is_empty():
@@ -109,6 +123,8 @@ static func encode(vs: ViewState) -> PackedByteArray:
 		b.put_u8(_frac(float(vs.boss.get("hp", 0.0))))
 		b.put_u8(clampi(int(vs.boss.get("phase", 0)), 0, 255))
 		b.put_u8(_frac(float(vs.boss.get("shield", 0.0))))
+		b.put_u8(clampi(int(vs.boss.get("cast", 0)), 0, 255))
+		b.put_u8(_frac(float(vs.boss.get("cast_t", 0.0))))
 	return b.data_array
 
 
@@ -151,7 +167,7 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 	if not _need(b, 2):
 		return null
 	var ne := b.get_u16()
-	if not _need(b, ne * 11):
+	if not _need(b, ne * 12):
 		return null
 	vs.e_id.resize(ne)
 	for i in ne:
@@ -160,6 +176,7 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 	vs.e_pos = _get_positions(b, ne)
 	vs.e_hp = _get_fracs(b, ne)
 	vs.e_flags = _get_bytes(b, ne)
+	vs.e_flags2 = _get_bytes(b, ne)
 
 	if not _need(b, 2):
 		return null
@@ -184,7 +201,7 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 	if not _need(b, 2):
 		return null
 	var nh := b.get_u16()
-	if not _need(b, nh * 8):
+	if not _need(b, nh * 9):
 		return null
 	vs.h_type = _get_bytes(b, nh)
 	vs.h_pos = _get_positions(b, nh)
@@ -192,23 +209,30 @@ static func decode(bytes: PackedByteArray) -> ViewState:
 	for i in nh:
 		vs.h_rad[i] = float(b.get_u16())
 	vs.h_life = _get_fracs(b, nh)
+	var hang := _get_bytes(b, nh)
+	vs.h_ang.resize(nh)
+	for i in nh:
+		vs.h_ang[i] = _unangle(hang[i])
 
 	if not _need(b, 2):
 		return null
 	var ns := b.get_u16()
-	if not _need(b, ns * 5 + 1):
+	if not _need(b, ns * 6 + 1):
 		return null
 	vs.s_type = _get_bytes(b, ns)
 	vs.s_pos = _get_positions(b, ns)
+	vs.s_hp = _get_fracs(b, ns)
 
 	if b.get_u8() == 1:
-		if not _need(b, 4):
+		if not _need(b, 6):
 			return null
 		vs.boss = {
 			"enc": b.get_u8(),
 			"hp": b.get_u8() * FRAC_STEP,
 			"phase": b.get_u8(),
 			"shield": b.get_u8() * FRAC_STEP,
+			"cast": b.get_u8(),
+			"cast_t": b.get_u8() * FRAC_STEP,
 		}
 	return vs
 
@@ -265,6 +289,15 @@ static func _get_positions(b: StreamPeerBuffer, n: int) -> PackedVector2Array:
 	for i in n:
 		var x := b.get_16()
 		out[i] = Vector2(x, b.get_16())
+	return out
+
+
+## `arr` cut or zero-padded to n entries (optional per-entity arrays).
+static func _padded(arr: PackedByteArray, n: int) -> PackedByteArray:
+	if arr.size() == n:
+		return arr
+	var out := arr.slice(0, mini(arr.size(), n))
+	out.resize(n)
 	return out
 
 

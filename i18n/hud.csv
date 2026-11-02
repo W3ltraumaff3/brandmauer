@@ -66,3 +66,19 @@ HUD_RECONNECT_LEFT,"noch %d s, dann zurück ins Menü"
 HUD_PLAYER_AWAY,%s: Verbindung weg – wartet …
 HUD_PLAYER_BACK,%s ist wieder da!
 HUD_RECONNECTED,Wieder verbunden!
+FX_WAITING_NO,Nr. %d
+HUD_PRESSE,Pressekonferenz
+HUD_PRESSE_SUB,Phase %d: %s
+HUD_PLENUM,Plenum besetzt: %d/%d
+HUD_WENDE_SUB_X,Nur links und rechts vertauscht!
+HUD_WENDE_SUB_Y,Nur oben und unten vertauscht!
+CAST_WENDE,Wende kommt …
+CAST_ABSTIMMUNG,Abstimmung läuft …
+CAST_KAHLSCHLAG,Kahlschlag holt aus …
+CAST_ANSTURM,Ansturm!
+CAST_REMIGRATION,Brandmauer unter Druck …
+FX_UNTERBROCHEN,UNTERBROCHEN!
+FX_STANDFEST,Standfest
+FX_GESTRICHEN,GESTRICHEN
+FX_PLENUM,Plenum
+FX_ABSTIMMUNG,Abstimmung

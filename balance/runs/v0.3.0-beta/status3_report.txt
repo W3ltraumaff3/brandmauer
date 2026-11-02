@@ -1,0 +1,94 @@
+
+Build bots: wins/runs, median wave (21 = won)
+build     U0           U2         
+ranged    12/12 w21      3/12 w11.5  
+status    1/12 w11.5    0/12 w6     
+summon    10/12 w21      6/12 w15.5  
+
+Characters: mean wave reached (21 = won) with it vs. overall 13.70  (n = player-runs)
+   +3.72  win  77%  n=60   gewerkschaft
+   +2.15  win  60%  n=60   oma
+   -5.87  win   2%  n=60   klimakleber
+
+Items (owned at the end): mean wave reached (21 = won) with it vs. overall 18.54  (n = player-runs)
+   +2.46  win 100%  n=17   tarifvertrag
+   +2.46  win 100%  n=9    soli_konzert
+   +2.46  win 100%  n=26   megafon_akku
+   +1.93  win  94%  n=54   demosani_weste
+   +1.74  win  92%  n=50   reichsausweis
+   +1.65  win  94%  n=33   vereinsheim
+   +1.52  win  92%  n=50   erste_hilfe_kurs
+   +1.46  win  91%  n=33   betriebsrat
+   +1.31  win  88%  n=32   bolzenschneider
+   +1.25  win  87%  n=67   gewerkschaftsweste
+   +1.21  win  88%  n=8    generalschluessel
+   +1.13  win  85%  n=27   arbeitshandschuhe
+   ...
+   +0.09  win  78%  n=40   frisbee
+   +0.08  win  78%  n=36   mietendeckel
+   -0.00  win  78%  n=58   mate_kiste
+   -0.02  win  78%  n=41   taschenlampe
+   -0.34  win  76%  n=51   thermoskanne
+   -0.54  win  71%  n=34   lautsprecherwagen
+   -0.70  win  74%  n=54   isomatte
+   -1.43  win  69%  n=87   club_mate
+   -2.22  win  63%  n=116  fahrradhelm
+   -2.93  win  52%  n=58   fernglas
+   -3.07  win  55%  n=62   kirschkernkissen
+   -8.90  win   9%  n=11   sekundenkleber
+
+Weapons (owned at the end): mean wave reached (21 = won) with it vs. overall 15.15  (n = player-runs)
+   +4.62  win  91%  n=47   brandmauer_ziegel
+   +3.63  win  78%  n=32   gendersternchen
+   +3.38  win  84%  n=55   weisser_overall
+   +3.07  win  75%  n=28   neun_euro_ticket
+   +2.73  win  73%  n=33   megafon
+   +2.68  win  72%  n=29   pfandflasche
+   +2.27  win  77%  n=60   infostand
+   +2.25  win  70%  n=20   scheinwerfer
+   +2.07  win  66%  n=32   unterschriftenliste
+   +1.75  win  70%  n=20   kartoffelbrei
+   +0.70  win  60%  n=60   stricknadeln
+   -4.60  win  12%  n=33   farbbeutel
+   -5.89  win   4%  n=27   normenkontrolle
+   -6.00  win   4%  n=28   strassenkreide
+   -6.43  win   0%  n=28   tofu
+   -7.31  win   2%  n=60   kleber
+
+Level-up stats (picked at least once): mean wave reached (21 = won) with it vs. overall 16.46  (n = player-runs)
+   +3.37  win  92%  n=37   melee
+   +2.70  win  84%  n=37   xp
+   +2.47  win  81%  n=48   income
+   +2.37  win  80%  n=35   luck
+   +2.04  win  78%  n=65   speed
+   +2.04  win  77%  n=64   dodge
+   +1.38  win  70%  n=33   lifesteal
+   +1.25  win  72%  n=80   crit
+   +1.04  win  76%  n=75   summon
+   +0.69  win  68%  n=79   ranged
+   +0.22  win  63%  n=41   pickup
+   +0.03  win  64%  n=81   armor
+   -0.35  win  62%  n=85   hp_regen
+   -0.56  win  60%  n=138  max_hp
+   -0.88  win  57%  n=146  attack_speed
+   -1.67  win  52%  n=159  damage
+   -1.89  win  48%  n=112  range
+   -3.20  win  40%  n=83   status
+
+Weapon damage per Pfand spent (bought weapons, all runs):
+     452.6  (3378883 dmg / 7466 Pfand)  megafon
+     380.8  (3589491 dmg / 9426 Pfand)  stricknadeln
+     320.1  (9673278 dmg / 30222 Pfand)  infostand
+     300.4  (1886898 dmg / 6281 Pfand)  unterschriftenliste
+     283.6  (2139376 dmg / 7544 Pfand)  gendersternchen
+     217.0  (1086750 dmg / 5007 Pfand)  scheinwerfer
+     165.0  (5067019 dmg / 30711 Pfand)  brandmauer_ziegel
+     132.1  (483280 dmg / 3658 Pfand)  kleber
+     126.4  (740287 dmg / 5855 Pfand)  pfandflasche
+     112.7  (3506960 dmg / 31104 Pfand)  weisser_overall
+      87.5  (566509 dmg / 6475 Pfand)  neun_euro_ticket
+      71.3  (209280 dmg / 2937 Pfand)  farbbeutel
+      66.4  (295899 dmg / 4457 Pfand)  kartoffelbrei
+      51.2  (206072 dmg / 4023 Pfand)  strassenkreide
+      45.9  (93673 dmg / 2040 Pfand)  tofu
+      38.5  (97916 dmg / 2542 Pfand)  normenkontrolle

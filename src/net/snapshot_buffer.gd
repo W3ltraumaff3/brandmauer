@@ -107,6 +107,7 @@ static func _blend(a: ViewState, b: ViewState, alpha: float) -> ViewState:
 	out.e_pos = pos
 	out.e_hp = b.e_hp
 	out.e_flags = b.e_flags
+	out.e_flags2 = b.e_flags2
 
 	# No ids: newest wins
 	out.p_type = b.p_type
@@ -118,7 +119,9 @@ static func _blend(a: ViewState, b: ViewState, alpha: float) -> ViewState:
 	out.h_pos = b.h_pos
 	out.h_rad = b.h_rad
 	out.h_life = b.h_life
+	out.h_ang = b.h_ang
 	out.s_type = b.s_type
 	out.s_pos = b.s_pos
+	out.s_hp = b.s_hp
 	out.boss = b.boss
 	return out

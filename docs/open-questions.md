@@ -9,6 +9,22 @@ When a question is answered, move it into [decisions.md](decisions.md) and remov
 - [ ] **Encounter pools beyond the MVP** (GDD §14: Generalsekretär, Weißwurst-Kaiser, Präsidentin, Krawatten-Opa) and later arenas.
 - [ ] **Single-source quotes still to verify** (see `research/verifikation.md` and `research/auswahl.md`). Weak slots: Bierdeckel and Steuerparadies phases have no fitting quote, and the unlock quotes for Oma and Antifa are makeshift.
 - [ ] **Umfrage difficulty levels:** levels exist (10 to 35 %); which extra modifier each step adds is TBD.
+- [ ] **Quote cards for weapons:** Kleine Anfrage (cdu-fraktion-01) and Pappkamerad (soeder-04, both `verifiziert`) have a fitting real quote, but weapons have no place to show one yet (Album entry? Späti card?). Until then the flavor carries only facts and invented lines (D-095).
+
+## Balancing (boss rules, D-102 to D-112)
+
+- [ ] **Tune the rest of the boss rules** (research/boss_ideen.md §9): the HP lever is tuned (D-118); still at their starting values: phase tempo ×1.0/1.2/1.4, Standfest 10/15 s, vote time and damage threshold, Kahlschlag interval, band width.
+- [ ] **Kahlschlag's aim:** now at his random target (D-110). The research aimed it at the densest group of summons and zones; decide after playtests whether summon builds still stand still.
+- [ ] **The rest of the boss shortlist** (research/boss_ideen.md §8): Briefkastenfirmen, Sondervermögen rework, Geschichte umschreiben, Ansturm-Kette + Wahlabend, Tafelbild, Sylt-Clique Absperrband and knockback.
+- [ ] **Melee against the final boss** (v0.4 round): even with ×2 melee damage on bosses (D-121) the melee bot needs 5–6 minutes for Die Remigrantin (ranged about 1) and dies there more often than in v0.3; its mean wave is ~2.7 below the v0.3 baseline. Charges, push rings and the band keep it from standing next to her. A boss-side answer (a window where she stands still, push rings that spare players in contact) or a playtest check of human melee first?
+- [ ] **Wave-5 Sylt-Clique in co-op:** with 4 players it fled at the 40 s timer in 8 of 9 bot runs (no counting bug, D-118). With `elite_coop` 0.3 it is killed in most runs (30–38 s); if playtests still see it flee, lengthen wave 5 or let the timer wait for the clique.
+
+## Balancing (status and summon, v0.4)
+
+- [ ] **Klimakleber:in with the status build** dies at the wave-5 Sylt-Clique (8 of 12 bot deaths, champagne lobs while standing still); the Oma with Kleber does far better. Bot artefact (standing bonus vs. dodging telegraphs) or character? Check in a playtest before touching her numbers.
+- [ ] **Straßenkreide** stays the weakest weapon per Pfand even with the chalk circle (D-120): enemies rarely walk the trail. Bigger marks, a longer life or a different niche?
+- [ ] **Summon with the Gewerkschaft** is now the strongest bot build at Umfrage 35 % (3 of 4 wins, ranged 1 of 4) after D-114/D-115/D-117/D-122; at equal footing (Oma) it is level with ranged. If playtests agree, cap the passive's own summons (e.g. at most 2) rather than the Infostand.
+- [ ] **Placement and area damage in human play:** cluster placement (D-113), leaflet bounce and Overall splash (D-115) were measured with bots only; check in a playtest that Kleber/Kartoffelbrei landing on the crowd reads clearly.
 
 ## Audio
 

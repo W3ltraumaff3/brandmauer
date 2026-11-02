@@ -32,6 +32,7 @@ static func make_view(rng: RandomNumberGenerator, enemies: int, projectiles: int
 		vs.e_pos.append(_rand_pos(rng))
 		vs.e_hp.append(rng.randf())
 		vs.e_flags.append(rng.randi_range(0, 255))
+		vs.e_flags2.append(rng.randi_range(0, 255))
 	for i in projectiles:
 		vs.p_type.append(rng.randi_range(0, Content.PROJ_ORDER.size() - 1))
 		vs.p_pos.append(_rand_pos(rng))
@@ -44,9 +45,11 @@ static func make_view(rng: RandomNumberGenerator, enemies: int, projectiles: int
 		vs.h_pos.append(_rand_pos(rng))
 		vs.h_rad.append(rng.randf_range(10.0, 300.0))
 		vs.h_life.append(rng.randf())
+		vs.h_ang.append(rng.randf_range(-PI, PI))
 	for i in summons:
 		vs.s_type.append(rng.randi_range(0, Content.SUMMON_ORDER.size() - 1))
 		vs.s_pos.append(_rand_pos(rng))
+		vs.s_hp.append(rng.randf())
 	return vs
 
 
@@ -87,6 +90,8 @@ func _compare(src: ViewState, dec: ViewState) -> void:
 	assert_eq(dec.e_id, src.e_id, "e_id")
 	assert_eq(dec.e_type, src.e_type, "e_type")
 	assert_eq(dec.e_flags, src.e_flags, "e_flags")
+	if src.e_flags2.size() == ne:
+		assert_eq(dec.e_flags2, src.e_flags2, "e_flags2 (D-093)")
 	for i in ne:
 		_assert_pos(dec.e_pos[i], src.e_pos[i], "e_pos")
 		assert_near(dec.e_hp[i], src.e_hp[i], FRAC_EPS, "e_hp")
@@ -102,22 +107,28 @@ func _compare(src: ViewState, dec: ViewState) -> void:
 		_assert_pos(dec.h_pos[i], src.h_pos[i], "h_pos")
 		assert_near(dec.h_rad[i], src.h_rad[i], POS_EPS, "h_rad")
 		assert_near(dec.h_life[i], src.h_life[i], FRAC_EPS, "h_life")
+		var want_ang: float = src.h_ang[i] if i < src.h_ang.size() else 0.0
+		assert_near(absf(angle_difference(dec.h_ang[i], want_ang)), 0.0, ANGLE_EPS, "h_ang (D-108)")
 	assert_eq(dec.s_type, src.s_type, "s_type")
 	for i in src.s_type.size():
 		_assert_pos(dec.s_pos[i], src.s_pos[i], "s_pos")
+		var want: float = src.s_hp[i] if i < src.s_hp.size() else 1.0
+		assert_near(dec.s_hp[i], want, FRAC_EPS, "s_hp (D-093)")
 	assert_eq(dec.boss.is_empty(), src.boss.is_empty(), "boss presence")
 	if not src.boss.is_empty() and not dec.boss.is_empty():
 		assert_eq(dec.boss["enc"], src.boss["enc"], "boss enc")
 		assert_eq(dec.boss["phase"], src.boss["phase"], "boss phase")
 		assert_near(dec.boss["hp"], src.boss["hp"], FRAC_EPS, "boss hp")
 		assert_near(dec.boss["shield"], src.boss["shield"], FRAC_EPS, "boss shield")
+		assert_eq(dec.boss["cast"], int(src.boss.get("cast", 0)), "boss cast (D-108)")
+		assert_near(dec.boss["cast_t"], float(src.boss.get("cast_t", 0.0)), FRAC_EPS, "boss cast_t (D-108)")
 
 
 func test_realistic_round_trip_and_size() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1234
 	var vs := make_view(rng, 200, 300, 100, 20, 6, 4)
-	vs.boss = {"enc": 2, "hp": 0.73, "phase": 1, "shield": 0.2}
+	vs.boss = {"enc": 2, "hp": 0.73, "phase": 1, "shield": 0.2, "cast": 2, "cast_t": 0.4}
 	var bytes := Snapshot.encode(vs)
 	var deflated := bytes.compress(FileAccess.COMPRESSION_DEFLATE).size()
 	print("    snapshot 200e/300p/100k/20h/6s/4pl: %d bytes raw (%d deflate, for reference)" % [bytes.size(), deflated])
@@ -133,7 +144,7 @@ func test_many_random_round_trips() -> void:
 				rng.randi_range(0, 5), rng.randi_range(0, 3), rng.randi_range(0, 4))
 		if rng.randf() < 0.5:
 			vs.boss = {"enc": rng.randi_range(0, 3), "hp": rng.randf(), "phase": rng.randi_range(0, 3),
-					"shield": rng.randf()}
+					"shield": rng.randf(), "cast": rng.randi_range(0, Content.BOSS_CASTS.size()), "cast_t": rng.randf()}
 		_compare(vs, Snapshot.decode(Snapshot.encode(vs)))
 
 
@@ -188,6 +199,53 @@ func test_clamps_out_of_range_values() -> void:
 	assert_near(dec.e_hp[0], 1.0, 0.0001, "fraction clamped")
 	assert_eq(dec.p_pos[0], Vector2(10, 11), "rounded")
 	assert_near(absf(angle_difference(dec.p_ang[0], 0.5)), 0.0, ANGLE_EPS, "angle wrapped")
+
+
+## D-093: version 3 carries a second enemy flag byte and summon hp; a view
+## without them (old tools, previews) still encodes, as zeros and full hp.
+func test_v3_status_flags_and_summon_hp() -> void:
+	assert_true(Snapshot.VERSION >= 3, "still carried since version 3")
+	var vs := ViewState.new()
+	for i in 3:
+		vs.e_id.append(i + 1); vs.e_type.append(0); vs.e_pos.append(Vector2(10, 10)); vs.e_hp.append(1.0); vs.e_flags.append(0)
+	vs.e_flags2.append(ViewState.EF2_SILENCED | ViewState.EF2_REVERSED | (5 << ViewState.EF2_FILE_SHIFT) | ViewState.EF2_STICKER)
+	vs.s_type.append(Content.SUMMON_ORDER.find("pappkamerad")); vs.s_pos.append(Vector2(50, 50))
+	var dec := Snapshot.decode(Snapshot.encode(vs))
+	assert_eq(dec.e_flags2.size(), 3, "padded to one byte per enemy")
+	assert_eq(dec.e_flags2[0], 55, "all four effects, 5 stacks")
+	assert_eq(ViewState.file_stacks(dec.e_flags2[0]), 5)
+	assert_eq(dec.e_flags2[1], 0, "missing entries are zero")
+	assert_near(dec.s_hp[0], 1.0, FRAC_EPS, "missing summon hp = full")
+	# an old (v2) snapshot is rejected, not misread
+	var bytes := Snapshot.encode(vs)
+	bytes[0] = 2
+	assert_true(Snapshot.decode(bytes) == null, "version 2 is rejected")
+
+
+## D-108: version 4 carries the hazard angle (cones), the boss cast and its
+## progress and the Standfest / Pressekonferenz bits; version 3 is rejected.
+func test_v4_boss_cast_hazard_angle_and_flags() -> void:
+	assert_eq(Snapshot.VERSION, 4)
+	var vs := ViewState.new()
+	vs.e_id.append(1); vs.e_type.append(Content.ENEMY_ORDER.find("sauerlaender")); vs.e_pos.append(Vector2(500, 400))
+	vs.e_hp.append(0.66); vs.e_flags.append(ViewState.EF_ELITE)
+	vs.e_flags2.append(ViewState.EF2_STANDFEST | ViewState.EF2_PRESSE)
+	vs.h_type.append(Content.HAZARD_ORDER.find("kahlschlag")); vs.h_pos.append(Vector2(500, 400))
+	vs.h_rad.append(380.0); vs.h_life.append(0.5); vs.h_ang.append(2.5)
+	vs.h_type.append(Content.HAZARD_ORDER.find("plenum")); vs.h_pos.append(Vector2(300, 300))
+	vs.h_rad.append(70.0); vs.h_life.append(1.0)   # no angle given: 0
+	vs.boss = {"enc": 2, "hp": 0.66, "phase": 1, "shield": 0.0, "cast": 1 + Content.BOSS_CASTS.find("abstimmung"), "cast_t": 0.5}
+	var dec := Snapshot.decode(Snapshot.encode(vs))
+	assert_eq(dec.e_flags2[0], ViewState.EF2_STANDFEST | ViewState.EF2_PRESSE, "Standfest + Pressekonferenz bits")
+	assert_near(absf(angle_difference(dec.h_ang[0], 2.5)), 0.0, ANGLE_EPS, "cone direction")
+	assert_near(dec.h_ang[1], 0.0, 0.0001, "missing angle = 0")
+	assert_eq(dec.boss_cast(), "abstimmung", "cast id")
+	assert_near(dec.boss["cast_t"], 0.5, FRAC_EPS, "cast progress")
+	vs.boss["cast"] = 0
+	assert_eq(Snapshot.decode(Snapshot.encode(vs)).boss_cast(), "", "no cast")
+	var bytes := Snapshot.encode(vs)
+	bytes[0] = 3
+	assert_true(Snapshot.decode(bytes) == null, "version 3 is rejected")
 
 
 func test_malformed_input_returns_null() -> void:
