@@ -89,6 +89,11 @@ SPAETI_WEAPON_TIER,Waffe %s
 SPAETI_ITEM,Item
 SPAETI_SOLD,Weg
 SPAETI_BUY,Kaufen
+SPAETI_LOCK,Reservieren
+SPAETI_LOCKED,Reserviert
+SPAETI_LOCK_TIP,"Reserviert bleibt das Angebot im nächsten Späti im Regal, zum heutigen Preis. Neu würfeln lässt es liegen. Noch mal klicken: Reservierung aufheben."
+SPAETI_LOCK_KEY_TIP,%s: reservieren (bleibt im nächsten Späti zum heutigen Preis)
+SPAETI_UNLOCK_KEY_TIP,%s: Reservierung aufheben
 SPAETI_WEAPONS,Waffen %d/%d
 SPAETI_SELL,Verkaufen +%d
 SPAETI_NO_WEAPONS,Keine Waffen. Nur Haltung.
@@ -110,6 +115,8 @@ SPAETI_VERTRAG,Koalitionsvertrag
 SPAETI_VERTRAG_HINT,Alle einig: gilt. Uneinig: die schlechteste Option gewinnt. Alle enthalten: kein Vertrag.
 SPAETI_VERTRAG_ACTIVE,Gilt: %s (noch %d Wochen)
 SPAETI_VERTRAG_ACTIVE_ONE,Gilt: %s (noch 1 Woche)
+SPAETI_KLIMAGELD_PAID,Klimageld ausgezahlt: +%d Pfand für alle. Tatsächlich.
+SPAETI_KLIMAGELD_DELAYED,"Klimageld verschoben. Mal wieder."
 SPAETI_VOTE,Dafür
 SPAETI_VOTED,Gewählt
 SPAETI_VOTES_BY,Stimmen: %s
@@ -123,7 +130,6 @@ STATS_TITLE,Statistik
 STATS_SUBTITLE,"Bilanz nach Woche %d. Ohne Gewähr, aber mit Haltung."
 STATS_CLOSE,Zurück zum Späti
 STATS_DAMAGE,Schaden nach Quelle
-STATS_DAMAGE_CAPTION,Wer hier eigentlich die Arbeit macht. Überstunden inklusive.
 STATS_COL_SOURCE,Quelle
 STATS_COL_WAVE,Letzte Woche
 STATS_COL_TOTAL,Gesamt
@@ -132,20 +138,23 @@ STATS_SOLD,(verkauft)
 STATS_SRC_RAM,Rammen (Lastenrad)
 STATS_SRC_OTHER,Sonstiges
 STATS_NO_DAMAGE,Noch kein Schaden. Pazifismus ist auch eine Haltung.
-STATS_SURVIVAL,Überleben
-STATS_SURVIVAL_CAPTION,Der Sozialstaat in Zahlen.
 STATS_HEALED_BY,Geheilt durch %s
 STATS_DMG_TAKEN,Schaden eingesteckt
 STATS_BLOCKED_BY,Abgefedert durch %s
 STATS_DODGES,Entwischt dank %s
-STATS_MISC,Sonstiges
-STATS_MISC_CAPTION,Kleinkram fürs Protokoll.
 STATS_KILLS,Besiegt
 STATS_CRITS,Kritische Treffer
 STATS_ULTS,Ultis gezündet
 STATS_PFAND_COLLECTED,%s eingesammelt
 STATS_PFAND_INCOME,%s aus Nebenjob & Co.
 STATS_PFAND_SPENT,%s im Späti gelassen
+STATS_WAVE_TITLE,Letzte Woche
+STATS_RUN_TITLE,Ganze Runde
+STATS_COL_DAMAGE,Schaden
+STATS_COL_TAKEN,Eingesteckt
+STATS_COL_HEALED,Geheilt
+STATS_COL_BEST,Stärkste Quelle
+STATS_YOU,(du)
 # Request denied (host -> deny event)
 DENY_NO_PFAND,Zu wenig Pfand.
 DENY_NO_PFAND_SHORT,zu wenig Pfand
@@ -169,6 +178,8 @@ PAUSE_CONFIRM,Wirklich? Nochmal drücken.
 OPTIONS_TITLE,Optionen
 OPTIONS_MUSIC,Musik
 OPTIONS_SFX,Geräusche
+OPTIONS_TEAMMATE_SFX,Geräusche der Mitspieler:innen
+OPTIONS_TEAMMATE_SFX_TIP,"Wie laut Schüsse, Treffer und Pfand deiner Mitspieler:innen sind. Wellen, Level-ups und Notrufe hörst du immer."
 OPTIONS_TARGET,Zielauswahl
 OPTIONS_TARGET_CLOSEST,Nächste:r Gegner:in
 OPTIONS_TARGET_MOST_HP,Meiste Lebenspunkte

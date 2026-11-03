@@ -395,8 +395,18 @@ reached (21 = won), B−A ± SE over the pairs.
   `balance_report.py`.
 - **There is always a weapon for your build:** every Späti (and every reroll) offers at least
   one weapon that fits the scaling of the weapons you hold (match ≥ 0.5, see GDD §6), or a
-  twin of one of your weapons to combine. If the roll has none, one item offer is replaced by
-  such a weapon.
+  twin of one of your weapons to combine. Unless a locked offer already is one, it is placed
+  first, into a random free slot (D-149; before, it replaced an item after the roll).
+- **Offer mix (D-149):** every other free slot is a weapon with `shop_weapon_chance`
+  [0.35, 0.35, 0.25, 0.0] by the weapons already on the shelf (0 / 1 / 2 / 3+, locked offers
+  included), else an item: 35 % for a second weapon, 25 % for a third, never a fourth, so one
+  item is guaranteed too. With 4 offers: 1 / 2 / 3 weapons in 27.5 / 51.5 / 21 % of the
+  visits, about 1.9 on average. Before, every slot was a weapon with 35 %, 4 weapons came in
+  about 1 of 70 visits and 3+ in about 1 of 8. Index 0 only applies without any weapon held.
+- **Locked offers (D-148)** keep their price from the Späti they were locked in; they are not
+  repriced for the new wave. That is the reward for planning: a locked red item saves the
+  price growth of one wave (about +10–14 % per wave), and it lets you save
+  up for it over two visits.
 
 ## 5a. Reichensteuer (co-op only)
 

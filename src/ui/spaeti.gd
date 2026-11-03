@@ -88,6 +88,8 @@ func _on_focus_changed(c: Control) -> void:
 		_focus_name = c.name
 		var sec := _section_of(c)
 		_focus_section = String(sec.name) if sec else ""
+	if _root_box:
+		_refresh_lock_texts()
 
 
 ## Topmost open overlay (Optionen above Statistik), or null.
@@ -110,6 +112,12 @@ func _input(event: InputEvent) -> void:
 		_jump_section(1)
 		return
 	if _keep_in_section(event):
+		return
+	if InputMap.has_action("lock_offer") and event.is_action_pressed("lock_offer") and _top_overlay() == null:
+		var i := _focused_offer()
+		if i >= 0:
+			get_viewport().set_input_as_handled()
+			_toggle_lock(i)
 		return
 	if not event.is_action_pressed("ui_cancel"):
 		return
@@ -707,6 +715,18 @@ func _offer_card(i: int, o: Dictionary, meta: Dictionary, me: Dictionary) -> Con
 		top.add_child(UIKit.label(tr("SPAETI_WEAPON_TIER") % UIKit.roman(int(o.get("tier", 1))), 16, rcol))
 	else:
 		top.add_child(UIKit.label(tr("SPAETI_ITEM"), 16, rcol))
+	# Reservieren (GDD §6, D-148, D-153): clicked with the mouse; pad and keyboard use
+	# lock_offer on the focused Kaufen, and the focused card shows that key here.
+	var locked := bool(o.get("locked", false))
+	if not sold:
+		var lk := UIKit.compact(_btn("", "lock_%d" % i, _toggle_lock.bind(i), 14), 0, 6)
+		lk.toggle_mode = true
+		lk.set_pressed_no_signal(locked)
+		lk.set_meta("locked", locked)
+		lk.focus_mode = FOCUS_NONE
+		lk.tooltip_text = tr("SPAETI_LOCK_TIP")
+		InputGlyphs.bind(lk, "text", _lock_text.bind(i, locked))
+		top.add_child(lk)
 	v.add_child(top)
 	var d := UIKit.para(UIKit.content_text(kind, id, "DESC"), 14, UITheme.INK_SOFT)
 	d.size_flags_vertical = SIZE_EXPAND_FILL
@@ -734,13 +754,21 @@ func _offer_card(i: int, o: Dictionary, meta: Dictionary, me: Dictionary) -> Con
 		bottom.add_child(hint)
 	bottom.add_child(UIKit.spacer())
 	var b := UIKit.compact(_btn(tr("SPAETI_SOLD") if sold else tr("SPAETI_BUY"), "buy_%d" % i, _on_buy.bind(i), 18), 0, 10)
-	b.disabled = sold or block != ""
-	# Name and description, also for gamepad players (shown on focus).
-	b.tooltip_text = "%s\n%s" % [UIKit.content_text(kind, id), UIKit.content_text(kind, id, "DESC")]
+	# Blocked but unsold: still focusable, so pad and keyboard can reserve it (D-153).
+	b.disabled = sold
+	if not sold and block != "":
+		_look_disabled(b)
+	# Name and description, also for gamepad players (shown on focus), plus the lock key.
+	var tip := "%s\n%s" % [UIKit.content_text(kind, id), UIKit.content_text(kind, id, "DESC")]
 	if block != "":
-		b.tooltip_text += "\n" + tr(block)
+		tip += "\n" + tr(block)
 	elif not sold and offer_combines(o, me):
-		b.tooltip_text += "\n" + tr("SPAETI_OFFER_COMBINES_TIP")
+		tip += "\n" + tr("SPAETI_OFFER_COMBINES_TIP")
+	if sold:
+		b.tooltip_text = tip
+	else:
+		InputGlyphs.bind(b, "tooltip_text", func() -> String:
+			return tip + "\n" + InputGlyphs.fmt("SPAETI_UNLOCK_KEY_TIP" if locked else "SPAETI_LOCK_KEY_TIP", ["lock_offer"]))
 	bottom.add_child(b)
 	v.add_child(bottom)
 	if sold:
@@ -924,16 +952,29 @@ func _side_column(meta: Dictionary, me: Dictionary) -> Control:
 	var opts: Array = vertrag.get("options", [])
 	if not opts.is_empty():
 		col.add_child(_vertrag_card(meta, me, vertrag, opts))
-	elif str(vertrag.get("active", "")) != "":
+	elif str(vertrag.get("active", "")) != "" or int(vertrag.get("klimageld", -1)) >= 0:
 		var a := _card(tr("SPAETI_VERTRAG"), 0.5)
 		a[0].name = "sec_vertrag"
-		var vname := UIKit.content_text("VERTRAG", str(vertrag["active"]))
-		var left := int(vertrag.get("waves_left", 0))
-		var active_text := tr("SPAETI_VERTRAG_ACTIVE_ONE") % vname if left == 1 else tr("SPAETI_VERTRAG_ACTIVE") % [vname, left]
-		a[1].add_child(UIKit.para(active_text, 17))
-		a[1].add_child(UIKit.para(UIKit.content_text("VERTRAG", str(vertrag["active"]), "DESC"), 15, UITheme.INK_SOFT))
+		_add_klimageld(a[1], vertrag)
+		if str(vertrag.get("active", "")) != "":
+			var vname := UIKit.content_text("VERTRAG", str(vertrag["active"]))
+			var left := int(vertrag.get("waves_left", 0))
+			var active_text := tr("SPAETI_VERTRAG_ACTIVE_ONE") % vname if left == 1 else tr("SPAETI_VERTRAG_ACTIVE") % [vname, left]
+			a[1].add_child(UIKit.para(active_text, 17))
+			a[1].add_child(UIKit.para(UIKit.content_text("VERTRAG", str(vertrag["active"]), "DESC"), 15, UITheme.INK_SOFT))
 		col.add_child(a[0])
 	return scroll
+
+
+## Klimageld result of the contract that just ended (D-155), if any.
+func _add_klimageld(box: Node, vertrag: Dictionary) -> void:
+	var kg := int(vertrag.get("klimageld", -1))
+	if kg < 0:
+		return
+	var l := UIKit.para(tr("SPAETI_KLIMAGELD_PAID") % kg if kg > 0 else tr("SPAETI_KLIMAGELD_DELAYED"), 17,
+		UITheme.GREEN if kg > 0 else UITheme.RED)
+	l.name = "klimageld"
+	box.add_child(l)
 
 
 ## The local player's vote: -1 = abstained, -2 = not voted yet.
@@ -964,6 +1005,7 @@ func _vertrag_card(meta: Dictionary, _me: Dictionary, vertrag: Dictionary, opts:
 		var p := UIKit.label(tr("SPAETI_VERTRAG_PENDING"), 19, UITheme.RED)
 		UIKit.tilt(p, -1.5)
 		v[1].add_child(p)
+	_add_klimageld(v[1], vertrag)
 	v[1].add_child(UIKit.para(tr("SPAETI_VERTRAG_HINT"), 16, UITheme.RED))
 	var votes: Dictionary = vertrag.get("votes", {})
 	var players: Dictionary = meta.get("players", {})
@@ -1092,8 +1134,58 @@ func _on_buy(i: int) -> void:
 		_deny()
 		ToastLayer.show_text(tr(block))
 		return
-	UIApi.sfx("buy")
+	UIApi.sfx(buy_sfx(offers[i]))
 	UIApi.request("buy", i)
+
+
+## Ka-ching by tier (audio.md §4.4): the weapon tier or the item rarity, 1–4.
+static func buy_sfx(o: Dictionary) -> String:
+	if str(o.get("kind", "item")) == "weapon":
+		return "buy_%d" % clampi(int(o.get("tier", 1)), 1, 4)
+	return "buy_%d" % clampi(UIKit.item_rarity(str(o.get("id", "")), o), 1, 4)
+
+
+## A Kaufen button you can't use right now that still takes focus (D-153): it
+## looks disabled, and pressing it says why (_on_buy).
+static func _look_disabled(b: Button) -> void:
+	var sb := b.get_theme_stylebox("disabled")
+	for state in ["normal", "hover", "pressed"]:
+		b.add_theme_stylebox_override(state, sb)
+	var col := UITheme.get_theme().get_color("font_disabled_color", "Button")
+	for k in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		b.add_theme_color_override(k, col)
+
+
+## "Reservieren" / "Reserviert"; on the focused card with the lock_offer key in
+## front, unless the mouse is in use (D-153).
+func _lock_text(i: int, locked: bool) -> String:
+	var t := tr("SPAETI_LOCKED") if locked else tr("SPAETI_LOCK")
+	if not InputGlyphs.using_mouse() and is_inside_tree() and i == _focused_offer():
+		t = "%s %s" % [InputGlyphs.label("lock_offer"), t]
+	return t
+
+
+func _refresh_lock_texts() -> void:
+	for lk in _root_box.find_children("lock_*", "Button", true, false):
+		lk.text = _lock_text(int(str(lk.name).trim_prefix("lock_")), bool(lk.get_meta("locked", false)))
+
+
+## Reservieren / Reservierung aufheben for an unsold offer (D-148).
+func _toggle_lock(i: int) -> void:
+	var offers: Array = _me().get("offers", [])
+	if i >= offers.size() or offers[i].get("sold", false):
+		_deny()
+		return
+	UIApi.sfx("ui_click")
+	UIApi.request("lock", i)
+
+
+## The offer whose Kaufen button has focus, or -1 (target of lock_offer).
+func _focused_offer() -> int:
+	var f := get_viewport().gui_get_focus_owner()
+	if f == null or not _root_box.is_ancestor_of(f) or not str(f.name).begins_with("buy_"):
+		return -1
+	return int(str(f.name).trim_prefix("buy_"))
 
 
 func _on_reroll() -> void:
@@ -1172,7 +1264,7 @@ func _on_sell(i: int, id: String, tier: int) -> void:
 	if i >= weapons.size() or str(weapons[i].get("id", "")) != id or int(weapons[i].get("tier", 1)) != tier:
 		_deny()
 		return
-	UIApi.sfx("buy")
+	UIApi.sfx("sell")
 	UIApi.request("sell", i)
 
 
@@ -1237,7 +1329,7 @@ func _on_kasse_in() -> void:
 	if int(_me().get("pfand", 0)) <= 0:
 		_deny()
 		return
-	UIApi.sfx("buy")
+	UIApi.sfx("buy_1")
 	UIApi.request("kasse_in")
 
 
@@ -1245,7 +1337,7 @@ func _on_kasse_out() -> void:
 	if int(_meta().get("kasse", 0)) < int(_meta().get("kasse_out", 20)):
 		_deny()
 		return
-	UIApi.sfx("buy")
+	UIApi.sfx("buy_1")
 	UIApi.request("kasse_out")
 
 
@@ -1253,7 +1345,7 @@ func _on_repair() -> void:
 	if int(_meta().get("repair_price", 0)) > int(_me().get("pfand", 0)):
 		_deny()
 		return
-	UIApi.sfx("buy")
+	UIApi.sfx("buy_1")
 	UIApi.request("repair_wall")
 
 
@@ -1261,7 +1353,7 @@ func _on_repair_kasse() -> void:
 	if int(_meta().get("repair_price_kasse", 0)) > int(_meta().get("kasse", 0)):
 		_deny()
 		return
-	UIApi.sfx("buy")
+	UIApi.sfx("buy_1")
 	UIApi.request("repair_wall_kasse")
 
 

@@ -550,6 +550,107 @@ func test_ready_needs_vote_when_contract_is_open() -> void:
 	assert_eq(s.vertrag["active"], "", "nobody voted -> no contract")
 
 
+## Bug (D-160): two copies of a weapon fired in the same frame at the same enemy,
+## so the second shot was wasted and the stats credited the first slot. Copy k of
+## n is now offset by k/n × min(cooldown, 0.5 s): earlier at wave start, later
+## after a pause without a target.
+func test_weapon_copies_fire_staggered() -> void:
+	var s := _sim(["oma"])
+	var p: Sim.SimPlayer = s.players[1]
+	p.weapons = [{"id": "stricknadeln", "tier": 3, "cd": 0.0, "angle": 0.0},
+		{"id": "gendersternchen", "tier": 1, "cd": 0.0, "angle": 0.0},
+		{"id": "stricknadeln", "tier": 4, "cd": 0.0, "angle": 0.0},
+		{"id": "infostand", "tier": 1, "cd": 0.0, "angle": 0.0},
+		{"id": "infostand", "tier": 1, "cd": 0.0, "angle": 0.0}]
+	var cd := float(Content.WEAPONS["stricknadeln"]["cd"])
+	s._begin_wave(2)
+	assert_near(float(p.weapons[0]["cd"]), 0.5, 0.001, "first copy as before")
+	assert_near(float(p.weapons[1]["cd"]), 0.5, 0.001, "a single weapon as before")
+	assert_near(float(p.weapons[2]["cd"]), 0.5 - cd / 2.0, 0.001, "second copy half a cooldown earlier")
+	assert_near(float(p.weapons[4]["cd"]), 0.25, 0.001, "slow weapon: offset capped at 0.5 s / 2, never later")
+	# no target: the copies wait staggered again instead of re-syncing, capped
+	s.enemies.clear()
+	for w in p.weapons:
+		w["cd"] = 0.0
+	s.step(1.0 / 60.0)
+	assert_near(float(p.weapons[2]["cd"]) - float(p.weapons[0]["cd"]), cd / 2.0, 0.02, "still apart without a target")
+
+
+## D-155: every contract is in the draw pool and has its texts.
+func test_every_vertrag_can_be_drawn() -> void:
+	assert_eq(Content.VERTRAG_ORDER.size(), Content.VERTRAG.size(), "order and table match")
+	for id in Content.VERTRAG:
+		assert_true(id in Content.VERTRAG_ORDER, "%s in the draw pool" % id)
+		for part in ["NAME", "DESC"]:
+			var key := "VERTRAG_%s_%s" % [id.to_upper(), part]
+			assert_true(tr(key) != key, "%s translated" % key)
+	for id in ["klimageld", "cannabis", "neun_euro_ticket", "wehrdienst", "maskendeals", "rente_mit_70"]:
+		assert_true(Content.VERTRAG.has(id), "%s exists" % id)
+
+
+func _stats_with(s: Sim, p: Sim.SimPlayer, id: String) -> Dictionary:
+	s.vertrag["active"] = id
+	s._recompute(p)
+	return p.stats.duplicate()
+
+
+func test_vertrag_stats_apply_to_everyone() -> void:
+	var s := _sim(["oma", "antifa"])
+	for p in s.players.values():
+		var base := _stats_with(s, p, "")
+		var c := _stats_with(s, p, "cannabis")
+		assert_near(c["hp_regen"] - base["hp_regen"], 5.0, 0.01, "Cannabis: +5 Krankenschein")
+		assert_near(c["attack_speed"] - base["attack_speed"], -10.0, 0.01, "Cannabis: −10 Akkord")
+		var r := _stats_with(s, p, "rente_mit_70")
+		assert_near(r["max_hp"] - base["max_hp"], -10.0, 0.01, "Rente mit 70: −10 Solidarität")
+		var m := _stats_with(s, p, "maskendeals")
+		assert_near(m["armor"] - base["armor"], 5.0, 0.01, "Maskendeals: +5 Kündigungsschutz")
+
+
+func test_wehrdienst_drafts_one_present_player_per_wave() -> void:
+	var s := _sim(["oma", "antifa", "stadtbild"])
+	s.players[3].state = 3   # away: never drawn
+	s.vertrag["active"] = "wehrdienst"
+	s.vertrag["waves_left"] = 4
+	var seen := {}
+	for n in range(2, 14):
+		s._begin_wave(n)
+		var d := int(s.vertrag["drafted"])
+		assert_true(d == 1 or d == 2, "drafted a present player: %d" % d)
+		seen[d] = true
+		for p in s.players.values():
+			var base: float = _stats_with(s, p, "")["damage"]
+			s.vertrag["active"] = "wehrdienst"
+			s._recompute(p)
+			assert_near(p.stats["damage"] - base, 20.0 if p.id == d else 0.0, 0.01, "only the drafted one: +20 Wut")
+	assert_eq(seen.size(), 2, "the draw changes between waves")
+	var solo := _sim(["oma"])
+	solo.vertrag["active"] = "wehrdienst"
+	solo._begin_wave(2)
+	assert_eq(int(solo.vertrag["drafted"]), 1, "solo: always you")
+
+
+func test_klimageld_pays_everyone_or_nobody() -> void:
+	var s := _sim(["oma", "antifa"])
+	s.wave = 7
+	var gain := int(round(30 * Content.price_mult(8)))
+	var outcomes := {}
+	for k in 30:
+		s.vertrag["active"] = "klimageld"
+		var before := [s.players[1].pfand, s.players[2].pfand]
+		s._vertrag_payout()
+		var kg := int(s.vertrag["klimageld"])
+		assert_true(kg == 0 or kg == gain, "klimageld %d" % kg)
+		assert_eq(s.players[1].pfand - before[0], kg, "P1 gets the payout")
+		assert_eq(s.players[2].pfand - before[1], kg, "P2 gets the same")
+		outcomes[kg] = true
+	assert_eq(outcomes.size(), 2, "both paid and verschoben happen")
+	s.vertrag["active"] = "digitalpakt"
+	s.vertrag["klimageld"] = -1
+	s._vertrag_payout()
+	assert_eq(int(s.vertrag["klimageld"]), -1, "other contracts pay nothing")
+
+
 func test_discard_items() -> void:
 	var s := _sim(["oma"])
 	_to_shop(s)
@@ -691,7 +792,8 @@ func test_politics_items() -> void:
 	p.pfand = 0
 	p.offers[0] = {"kind": "item", "id": "maut_vertrag", "tier": 1, "price": 0, "sold": false}
 	assert_true(s.request(1, "buy", 0))
-	assert_eq(p.pfand, Content.RED_BUILD["maut_now"], "Maut pays on purchase")
+	assert_eq(p.pfand, int(round(Content.RED_BUILD["maut_now"] * Content.price_mult(s.wave + 1))),
+		"Maut pays on purchase, × the price factor (D-150)")
 	p.items.append("zweiter_wahlgang")
 	s._recompute(p)
 	s.request(1, "ready", true)
@@ -710,4 +812,13 @@ func test_politics_items() -> void:
 	assert_eq(t.dyn_damage(q), -10.0, "BER early")
 	t.wave = 10
 	assert_eq(t.dyn_damage(q), 40.0, "BER late")
+	# Wahlversprechen (D-154): first promised (−10 Wut), then broken (+30 Wut from 30 s)
+	var u := _sim(["oma"])
+	var w: Sim.SimPlayer = u.players[1]
+	w.items.append("wahlversprechen")
+	u._recompute(w)
+	u.wave_time = 29.9
+	assert_eq(u.dyn_damage(w), -10.0, "Wahlversprechen: promised")
+	u.wave_time = 30.0
+	assert_eq(u.dyn_damage(w), 30.0, "Wahlversprechen: broken")
 

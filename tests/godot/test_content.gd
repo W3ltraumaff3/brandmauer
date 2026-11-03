@@ -77,8 +77,9 @@ func test_references_valid() -> void:
 func test_curated_quotes_are_verified_and_cover_encounters() -> void:
 	var ids := Quotes.album_ids()
 	assert_true(ids.size() >= 30, "curated quotes: %d" % ids.size())
+	# verified status: test_quotes_game.gd (the game file carries no status, D-159)
 	for id in ids:
-		assert_eq(Quotes.get_quote(id).get("status", ""), "verifiziert", id)
+		assert_false(Quotes.get_quote(id).is_empty(), id)
 	for enc in ["geschichtslehrer", "sauerlaender", "eidgenossin"]:
 		assert_false(Quotes.ids_for("boss_karte:" + enc).is_empty(), "boss card for " + enc)
 	assert_false(Quotes.ids_for("ladebildschirm").is_empty(), "loading screen quotes")

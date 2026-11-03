@@ -34,6 +34,9 @@ class AffectedTests(unittest.TestCase):
     def test_longest_match_wins(self):
         self.assertEqual(self.sel("src/sim/view_state.gd")["areas"], {"sim", "net", "view"})
         self.assertEqual(self.sel("research/zitate_de.json")["areas"], {"quotes", "content"})
+        # D-159: the game file and the export filters are checked by the quote tests.
+        self.assertEqual(self.sel("research/zitate_spiel.json")["areas"], {"quotes", "content"})
+        self.assertEqual(self.sel("export_presets.cfg")["areas"], {"quotes"})
 
     def test_unknown_path_runs_everything(self):
         s = self.sel("src/newfolder/thing.gd")

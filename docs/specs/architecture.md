@@ -15,7 +15,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | `src/autoload/audio.gd` (`Audio`) | music playlists and SFX playback |
 | `src/autoload/net.gd` (`Net`) | ENet transport, handshake, lobby, UPnP, LAN discovery, RPCs |
 | `src/data/content.gd` (`Content`) | all game content as data: stats, characters, weapons, items, enemies, encounters, organisations, difficulty, Koalitionsvertrag |
-| `src/data/quotes.gd` (`Quotes`) | loads `research/zitate_de.json` plus `research/auswahl.json` (the curated selection) |
+| `src/data/quotes.gd` (`Quotes`) | loads only `research/zitate_spiel.json`, the slim game file that `research/scripts/build_all.py` generates from the source data and the curated selection `research/auswahl.json` (D-159). The full research file `research/zitate_de.json` is not read by the game and not exported |
 | `src/sim/sim.gd` (`Sim`) | the simulation |
 | `src/sim/arena.gd` (`Arena`) | arena geometry (sheet, four Brandmauer walls, inner arena), wall maths (segments, line of sight, staging walk) and the `Arena.WALL` tunables (GDD §5a); pure static, shared by sim, view, HUD and tools |
 | `src/sim/view_state.gd` (`ViewState`) | render and snapshot contract (§3) |
@@ -70,7 +70,8 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
   "wave": int, "phase": int, "org": String, "difficulty": int, "blackrock": bool,
   "kasse": int, "wall_holes": int, "repair_price": int,
   "streik": {"available": bool, "active": float},
-  "vertrag": {"options": [String], "votes": {peer_id: int}, "active": String, "waves_left": int},
+  "vertrag": {"options": [String], "votes": {peer_id: int}, "active": String, "waves_left": int,
+              "drafted": int},               # Wehrdienst per Los: player drawn this wave, 0 = none (D-155)
   "encounter": String,                       # "" or encounter id of this wave
   "team": {"level": int, "xp": float, "need": float, "stage": int},
   "num_players": int,
@@ -80,7 +81,7 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
       "stats": {stat_id: float},             # final computed stats
       "weapons": [{"id": String, "tier": int}], "max_weapons": int,
       "items": [String],
-      "offers": [{"kind": "weapon"|"item", "id": String, "tier": int, "price": int, "sold": bool}],
+      "offers": [{"kind": "weapon"|"item", "id": String, "tier": int, "price": int, "sold": bool, "locked": bool}],
       "reroll_price": int, "free_rerolls": int, "spend_left": int (-1 = unlimited),
       "levelups": int, "levelup_options": [{"stat": String, "amount": float}], "levelup_reroll_price": int,
       "ready": bool, "paid_in": int, "taken_out": int, "kills": int, "damage": int
@@ -95,7 +96,8 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 | Action | Argument |
 |---|---|
 | `buy` | offer index |
-| `reroll` | — |
+| `reroll` | — (replaces unlocked offers only) |
+| `lock` | offer index (toggles the lock of an unsold offer, D-148) |
 | `sell` | weapon index |
 | `levelup` | option index |
 | `levelup_reroll` | — (new level-up options; free reroll first, else `levelup_reroll_price`) |
@@ -110,9 +112,9 @@ Godot 4.7.2, GDScript only. All gameplay is computed in a **pure-logic simulatio
 
 | Event | Payload |
 |---|---|
-| `sfx` | `[id:String, pos:Vector2]` |
-| `dmg` | `[pos, amount:int, crit:bool, to_player:bool]` |
-| `kill` | `[pos, enemy_type:int]` |
+| `sfx` | `[id:String, pos:Vector2, peer:int]` (peer = the player who caused it, 0 = world or enemy; only for sounds without an event of their own, audio.md §6) |
+| `dmg` | `[pos, amount:int, crit:bool, to_player:bool, peer:int]` (peer = the attacker, or the hit player for `to_player`) |
+| `kill` | `[pos, enemy_type:int, killer:int, elite:bool, quiet:bool]` (quiet: bombs and no-reward kills make no sound) |
 | `say` | `[pos, text_key:String, quote_id:String]` (exactly one of key/quote is non-empty) |
 | `card` | `[encounter_id:String]` |
 | `wave_start` | `[wave]` |
@@ -245,19 +247,24 @@ func option(key, default); func set_option(key, value); func save()
 ### `Audio` (src/autoload/audio.gd)
 ```
 func play_music(category: String)   # "menu" | "gameplay" | "spaeti" | "boss"; cycles through the playlist
-func play_sfx(id: String, pos := Vector2.INF)   # positional only if pos != INF
+func play_sfx(id: String, pos := Vector2.INF, peer := 0)   # local UI sound, or one caused by peer (0 = world)
 func set_volumes(music: float, sfx: float)       # 0..1, read from Save options on startup
+func set_teammate_volume(v: float)               # 0..1, Save option "teammate_sfx" (default 0.5)
+static func plan_events(events, local_id, state, now_ms) -> Array   # events -> [{id, file, gain_db, pitch}]
+static func pick_voice(voices, id, now_ms) -> int                    # voice slot, -1 = drop
+static func pfand_step(state, now_ms) -> int                         # Pfand streak note, -1 = merged
 ```
-SFX ids: `hit`, `crit`, `kill`, `shoot`, `melee`, `pickup`, `levelup`, `buy`, `hurt`, `down`, `revive`, `wave_start`, `wave_end`, `boss_intro`, `wende`, `streik`, `vote`, `explosion`, `ui_click`, `error`.
+The sound table `Audio.SFX` (bus, prio, cap, gap, jitter, mates/team, variants) and the event mapping are specified in [audio.md](audio.md) §2–§4. Files: `assets/sfx/<id>.wav`, variants `<id>_<n>.wav`, Pfand notes `pfand_0` … `pfand_10`, all rendered by `tools/gen_sfx.py`. Buses: Master → Music, SFX (limiter) → SFX_Combat, SFX_Reward, SFX_Event, SFX_UI.
 
 ### Quotes (src/data/quotes.gd, static)
 ```
-static func get_quote(id) -> Dictionary        # an entry from zitate_de.json
+static func get_quote(id) -> Dictionary        # an entry from zitate_spiel.json ({} for an id that isn't curated)
 static func ids_for(use: String) -> Array      # e.g. "boss_karte:sauerlaender", "ladebildschirm", "sprechblase:lobbyist"
-static func album_ids() -> Array               # all curated ids (research/auswahl.json)
+static func album_ids() -> Array               # all curated ids, in auswahl.json order
 static func random_for(use: String, rng = null) -> String
 static func source_label(q) -> String          # "Friedrich Merz, 01.07.2025"
 ```
+**Game file `research/zitate_spiel.json` (D-159).** Generated by `research/scripts/build_all.py`, never edited by hand. A JSON array in `auswahl.json` order holding exactly the quotes that are curated in `auswahl.json` **and** `verifiziert`. Each entry has only the fields the game reads: `id`, `sprecher`, `partei`, `rolle_damals`, `zitat`, `datum`, `kontext` (Album), `kontext_kurz` (cards, bubbles), `quellen` (Album links) and `verwendung` (the uses from `auswahl.json`). No status, notes, categories or unused quotes. It's the only file from `research/` that ships: the export presets list it in `include_filter` and exclude every other `research/*.json` (`tests/test_quotes.py` checks both).
 
 ## 9. Ultimates (contract)
 
@@ -288,6 +295,9 @@ static func source_label(q) -> String          # "Friedrich Merz, 01.07.2025"
 | `pfand_income` | int | Pfand earned at wave end (Nebenjob etc.) |
 | `pfand_spent` | int | Pfand spent in the Späti |
 | `ults` | int | ultimates used |
+| `last_wave` | Dictionary | the current or last wave only (D-152): `damage` (sum of the `wave` column), `kills`, `pfand` (Pfand picked up), `dmg_taken`, `healed` (lifesteal + regen + sani), all int. Taken as the difference to a snapshot made when the wave starts, so no counting site changes |
+
+Every player's `run_stats` is in meta, so the Statistik panel compares the whole team from the meta alone (GDD §6c).
 
 ## 11. Shop additions (contract)
 

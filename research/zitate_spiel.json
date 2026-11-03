@@ -1,0 +1,1706 @@
+[
+ {
+  "id": "merz-01",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "[…] aber wir haben natürlich immer im Stadtbild noch dieses Problem",
+  "datum": "2025-10-14",
+  "kontext": "Pressekonferenz beim Antrittsbesuch in Brandenburg (Potsdam), auf die Frage eines Journalisten nach den hohen AfD-Umfragewerten und Merz' früherem Ziel, die AfD zu halbieren.",
+  "kontext_kurz": "über das Stadtbild und Migration, Pressekonferenz in Potsdam 2025",
+  "quellen": [
+   "https://www.stuttgarter-zeitung.de/politik/friedrich-merz-stadtbild-aussage-wortlaut-mhsd-79036257.html",
+   "https://www.berliner-zeitung.de/news/ich-habe-gar-nichts-zurueckzunehmen-bundeskanzler-merz-verteidigt-stadtbild-aussage-li.10001647",
+   "https://www.zdfheute.de/politik/deutschland/merz-stadtbild-selbstkritik-100.html"
+  ],
+  "verwendung": [
+   "freischalt_karte:stadtbild",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "merz-02",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Fragen Sie mal Ihre Töchter",
+  "datum": "2025-10-20",
+  "kontext": "Pressekonferenz in Berlin nach der CDU-Präsidiumsklausur, auf die Nachfrage, was er mit dem 'Problem im Stadtbild' gemeint habe.",
+  "kontext_kurz": "zur Stadtbild-Aussage, Pressekonferenz nach der CDU-Klausur 2025",
+  "quellen": [
+   "https://taz.de/Stadtbild-Debatte/!6119202/",
+   "https://www.stuttgarter-zeitung.de/politik/friedrich-merz-aussage-toechter-mhsd-79225479.html",
+   "https://www.nordkurier.de/politik/merz-zu-stadtbild-aeusserung-ich-habe-gar-nichts-zurueckzunehmen-4025387"
+  ],
+  "verwendung": [
+   "freischalt_karte:toechter"
+  ]
+ },
+ {
+  "id": "merz-05",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender und Vorsitzender der CDU/CSU-Bundestagsfraktion (Oppositionsführer)",
+  "zitat": "Und dann wollen sie diese Kinder zur Ordnung rufen und die Folge ist, dass die Väter in den Schulen erscheinen und sich das verbitten. Insbesondere, wenn es sich um Lehrerinnen handelt, dass sie ihre Söhne, die kleinen Paschas, da mal etwas zurechtweisen.",
+  "datum": "2023-01-10",
+  "kontext": "ZDF-Talkshow 'Markus Lanz' nach den Berliner Silvesterkrawallen 2022/23, über Probleme an Schulen mit Kindern aus Migrantenfamilien.",
+  "kontext_kurz": "über Kinder aus Migrantenfamilien, Talkshow 'Markus Lanz' Januar 2023",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/merz-verteidigt-umstrittene-kleine-paschas-aeusserung-306694",
+   "https://www.news4teachers.de/2023/01/merz-nennt-migrantenkinder-paschas-und-loest-damit-eine-hitzige-debatte-aus/"
+  ],
+  "verwendung": [
+   "boss_ruf:sauerlaender",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "merz-06",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender und Vorsitzender der CDU/CSU-Bundestagsfraktion (Oppositionsführer)",
+  "zitat": "Wir erleben mittlerweile einen Sozialtourismus dieser Flüchtlinge: nach Deutschland, zurück in die Ukraine, nach Deutschland, zurück in die Ukraine.",
+  "datum": "2022-09-26",
+  "kontext": "Interview bei Bild TV über Geflüchtete aus der Ukraine, die zwischen Deutschland und der Ukraine pendelten.",
+  "kontext_kurz": "über Ukraine-Geflüchtete, Bild-TV-Interview 2022 (später bedauert)",
+  "quellen": [
+   "https://www.schwaebische.de/politik/merz-bedauert-sozialtourismus-vorwurf-gegen-ukrainer-13293",
+   "https://web.de/magazine/politik/angeblicher-sozialtourismus-ukraine-fluechtlingen-merz-bedauert-wortwahl-37330500",
+   "https://www.t-online.de/nachrichten/ukraine/id_100058708/-sozialtourismus-russisches-medium-greift-merz-aussagen-auf.html"
+  ],
+  "verwendung": [
+   "freischalt_karte:sozialtourist"
+  ]
+ },
+ {
+  "id": "merz-08",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender und Vorsitzender der CDU/CSU-Bundestagsfraktion (Oppositionsführer)",
+  "zitat": "Die werden doch wahnsinnig, die Leute, wenn die sehen, dass 300.000 Asylbewerber abgelehnt sind, nicht ausreisen, die vollen Leistungen bekommen, die volle Heilfürsorge bekommen. Die sitzen beim Arzt und lassen sich die Zähne neu machen, und die deutschen Bürger nebendran kriegen keine Termine.",
+  "datum": "2023-09-27",
+  "kontext": "Talkshow des Senders Welt (Mittwochabend) zur Migrationspolitik.",
+  "kontext_kurz": "über abgelehnte Asylbewerber, Talkshow bei Welt 2023",
+  "quellen": [
+   "https://www.zm-online.de/artikel/2023/zm-2023-20/pauschalaussagen-bei-komplexen-lagen-sind-problematisch",
+   "https://taz.de/Asyl-Aussage-von-CDU-Chef/!5963129/",
+   "https://correctiv.org/faktencheck/2023/10/05/nein-zahnarztbesuche-von-gefluechteten-kosteten-2022-keine-690-millionen-euro/"
+  ],
+  "verwendung": [
+   "freischalt_karte:zahnarzt"
+  ]
+ },
+ {
+  "id": "merz-09",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Mit Vier-Tage-Woche und Work-Life-Balance werden wir den Wohlstand dieses Landes nicht erhalten können",
+  "datum": "2025-05-13",
+  "kontext": "Rede beim Wirtschaftstag des CDU-Wirtschaftsrats in Berlin, eine Woche nach seiner Wahl zum Kanzler; Forderung, 'wieder mehr und vor allem effizienter' zu arbeiten.",
+  "kontext_kurz": "zu Vier-Tage-Woche und Work-Life-Balance, Wirtschaftstag des CDU-Wirtschaftsrats 2025",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/2324747",
+   "https://www.heidelberg24.de/politik-und-wirtschaft/merz-sagt-der-work-life-balance-den-kampf-an-spd-stellt-sich-dagegen-zr-94151697.html",
+   "https://eufactcheck.eu/factcheck/mostly-false-we-need-to-work-more-and-more-efficiently-again/"
+  ],
+  "verwendung": [
+   "freischalt_karte:genz"
+  ]
+ },
+ {
+  "id": "merz-10",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Der Sozialstaat, wie wir ihn heute haben, ist mit dem, was wir volkswirtschaftlich leisten, nicht mehr finanzierbar.",
+  "datum": "2025-08-23",
+  "kontext": "Rede auf dem Landesparteitag der CDU Niedersachsen in Osnabrück; Auftakt zum angekündigten 'Herbst der Reformen' (Bürgergeld-Umbau).",
+  "kontext_kurz": "über den Sozialstaat, CDU-Landesparteitag in Osnabrück 2025",
+  "quellen": [
+   "https://www.zdfheute.de/politik/deutschland/merz-cdu-spd-debatte-sozialstaat-100.html",
+   "https://www.schwaebische.de/politik/sozialstaat-nicht-mehr-finanzierbar-koalition-ringt-um-reformen-3865567",
+   "https://www.zdfheute.de/politik/sozialstaat-debatte-unbezahlbar-merz-kritik-100.html"
+  ],
+  "verwendung": [
+   "freischalt_karte:buergergeld"
+  ]
+ },
+ {
+  "id": "merz-12",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender, Unionsfraktionschef und Kanzlerkandidat der Union (Oppositionsführer)",
+  "zitat": "Eine richtige Entscheidung wird nicht dadurch falsch, dass die Falschen zustimmen. Sie bleibt richtig.",
+  "datum": "2025-01-29",
+  "kontext": "Bundestagsrede in der Debatte zur Regierungserklärung von Kanzler Scholz nach dem Messerangriff von Aschaffenburg, vor der Abstimmung über den Unions-Entschließungsantrag zur Migration, der dann mit Stimmen der AfD angenommen wurde (348:344).",
+  "kontext_kurz": "vor der Bundestagsabstimmung, die nur mit AfD-Stimmen eine Mehrheit bekam",
+  "quellen": [
+   "https://dserver.bundestag.de/btp/20/20209.pdf",
+   "https://www.perlentaucher.de/9punkt/2025-01-31.html"
+  ],
+  "verwendung": [
+   "boss_karte:sauerlaender",
+   "sprechblase:hinterbaenkler"
+  ]
+ },
+ {
+  "id": "merz-14",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender, Unionsfraktionschef und Kanzlerkandidat der Union (Oppositionsführer)",
+  "zitat": "Ich will es einfach an die Adresse dieser Fraktion hier rechts sagen und an Ihre, Herr Gauland: Das war Ihr Fliegenschiss, von dem Sie vor Jahr und Tag gesprochen haben.",
+  "datum": "2025-01-29",
+  "kontext": "Einstieg seiner Bundestagsrede, mit Bezug auf die Holocaust-Gedenkstunde am selben Tag (Rede des Überlebenden Roman Schwarzman).",
+  "kontext_kurz": "an die AfD (Gauland), Bundestagsdebatte 29.01.2025",
+  "quellen": [
+   "https://dserver.bundestag.de/btp/20/20209.pdf"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "merz-16",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Das ist die Drecksarbeit, die Israel macht für uns alle.",
+  "datum": "2025-06-17",
+  "kontext": "ZDF-Interview am Rande des G7-Gipfels in Kananaskis (Kanada) über die israelischen Angriffe auf iranische Atomanlagen.",
+  "kontext_kurz": "über Israels Angriffe auf Iran, ZDF-Interview beim G7-Gipfel 2025",
+  "quellen": [
+   "https://www.zdfheute.de/politik/g7-gipfel-merz-100.html",
+   "https://www.juedische-allgemeine.de/politik/israel-macht-die-drecksarbeit-fuer-uns/",
+   "https://www.zdfheute.de/politik/merz-israel-iran-drecksarbeit-reaktionen-100.html"
+  ],
+  "verwendung": [
+   "boss_ruf:sauerlaender",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "merz-17",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Der Bundestag ist ja nun kein Zirkuszelt.",
+  "datum": "2025-07-01",
+  "kontext": "ARD-Talkshow 'Maischberger'; Merz verteidigte die Entscheidung von Bundestagspräsidentin Klöckner, zum Berliner CSD keine Regenbogenfahne auf dem Reichstag zu hissen.",
+  "kontext_kurz": "zur Regenbogenflagge am Reichstag, ARD-'Maischberger' 2025",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/bundestag-ist-kein-zirkuszelt-merz-aeussert-sich-zu-pride-flagge-am-csd-2338234",
+   "https://www.zdfheute.de/politik/merz-regenbogenfahne-bundestag-zirkuszelt-100.html",
+   "https://dserver.bundestag.de/btp/21/21017.pdf"
+  ],
+  "verwendung": [
+   "sprechblase:ju_schnoesel"
+  ]
+ },
+ {
+  "id": "merz-18",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Selbst wenn wir alle zusammen morgen in Deutschland klimaneutral wären, würde keine einzige Naturkatastrophe auf dieser Welt weniger geschehen, würde kein einziger Waldbrand weniger geschehen, würde keine einzige Überschwemmung in Texas weniger geschehen.",
+  "datum": "2025-07-09",
+  "kontext": "Regierungsbefragung im Bundestag; Merz bekannte sich zum Klimaziel 2045, relativierte aber den deutschen Beitrag ('ungefähr 2 Prozent des Problems').",
+  "kontext_kurz": "zum Klimaschutz, Regierungsbefragung im Bundestag 2025",
+  "quellen": [
+   "https://dserver.bundestag.de/btp/21/21017.pdf",
+   "https://www.bundestag.de/dokumente/textarchiv/2025/kw28-de-regierungsbefragung-1094170",
+   "https://www.heidelberg24.de/politik-und-wirtschaft/dagegen-immer-mehr-hitzetote-durch-klimawandel-was-tut-die-merz-regierung-zr-93825822.html"
+  ],
+  "verwendung": [
+   "freischalt_karte:klimakleber"
+  ]
+ },
+ {
+  "id": "merz-19",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Wer von euch würde denn gerne hierbleiben? Da hat keiner die Hand gehoben",
+  "datum": "2025-11-13",
+  "kontext": "Rede beim Handelskongress in Berlin nach seiner Rückkehr von der Weltklimakonferenz COP30 in Belém (Brasilien); er berichtete, er habe mitgereiste Journalisten so gefragt, und betonte, Deutschland sei 'eines der schönsten Länder der Welt'.",
+  "kontext_kurz": "über Journalisten nach der Brasilien-Reise, Handelskongress November 2025",
+  "quellen": [
+   "https://www.zdfheute.de/politik/deutschland/merz-brasilien-belem-lula-klimakonferenz-100.html",
+   "https://web.de/magazine/politik/merz-loest-empoerung-brasilien-41602516",
+   "https://www.zdfheute.de/politik/merz-lula-brasilien-cop30-klimakonferenz-100.html",
+   "https://www.bundesregierung.de/breg-de/aktuelles/rede-kanzler-handelskongress-2393818"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "merz-20",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Aufsichtsratsvorsitzender von BlackRock Deutschland; Kandidat für den CDU-Vorsitz (ohne Mandat)",
+  "zitat": "Ich liege jedenfalls nicht darunter.",
+  "datum": "2018-11-14",
+  "kontext": "Bild-Interview während seiner ersten Kandidatur um den CDU-Vorsitz, Antwort auf die Frage, ob er Millionär sei.",
+  "kontext_kurz": "auf die Frage, ob er Millionär sei, Bild-Interview 2018",
+  "quellen": [
+   "https://www.horizont.net/marketing/nachrichten/friedrich-merz-so-disst-sixt-den-selbst-ernannten-mittelschichtler-171317",
+   "https://www.thestar.com.my/news/world/2018/11/18/i-earn-around-a-million-euros-german-conservative-merz-tells-bild"
+  ],
+  "verwendung": [
+   "sprechblase:immobilienerbe"
+  ]
+ },
+ {
+  "id": "merz-21",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Aufsichtsratsvorsitzender von BlackRock Deutschland; Kandidat für den CDU-Vorsitz (ohne Mandat)",
+  "zitat": "Also, ich würde mich zu der gehobenen Mittelschicht zählen.",
+  "datum": "2018-11-14",
+  "kontext": "Selbes Bild-Interview, auf die Frage, ob er sich zur Oberschicht zähle.",
+  "kontext_kurz": "über sich selbst (Mittelschicht), Bild-Interview 2018",
+  "quellen": [
+   "https://www.horizont.net/marketing/nachrichten/friedrich-merz-so-disst-sixt-den-selbst-ernannten-mittelschichtler-171317",
+   "https://uk.news.yahoo.com/despite-admitting-earns-1m-merkel-171214123.html"
+  ],
+  "verwendung": [
+   "sprechblase:immobilienerbe"
+  ]
+ },
+ {
+  "id": "merz-23",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Kandidat für den CDU-Vorsitz (ohne Mandat)",
+  "zitat": "Die sexuelle Orientierung geht die Öffentlichkeit nichts an, solange sich das im Rahmen der Gesetze bewegt und solange es nicht Kinder betrifft. An der Stelle ist für mich allerdings eine absolute Grenze erreicht.",
+  "datum": "2020-09-20",
+  "kontext": "Bild-Videointerview auf die Frage, ob er Vorbehalte gegen einen homosexuellen Bundeskanzler hätte; er antwortete zunächst 'Nein'.",
+  "kontext_kurz": "auf die Frage nach einem homosexuellen Bundeskanzler, Bild 2020",
+  "quellen": [
+   "https://www.t-online.de/nachrichten/id_88611374/frage-nach-schwulem-bundeskanzler-cdu-politiker-merz-reagiert-auf-shitstorm.html",
+   "https://web.de/magazine/politik/friedrich-merz-schwule-naehe-paedophilen-35118882",
+   "https://orf.at/stories/3182824/"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "merz-25",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender und Vorsitzender der CDU/CSU-Bundestagsfraktion (Oppositionsführer)",
+  "zitat": "Das haben wir doch zu akzeptieren. […] Und natürlich muss in den Kommunalparlamenten dann auch nach Wegen gesucht werden, wie man gemeinsam die Stadt, das Land, den Landkreis gestaltet.",
+  "datum": "2023-07-23",
+  "kontext": "ZDF-Sommerinterview, nach der Wahl eines AfD-Landrats in Sonneberg und eines AfD-Bürgermeisters in Raguhn-Jeßnitz.",
+  "kontext_kurz": "über Zusammenarbeit mit AfD-Kommunalpolitikern, ZDF-Sommerinterview 2023",
+  "quellen": [
+   "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_100212494/afd-mit-diesem-interview-bringt-friedrich-merz-die-cdu-gegen-sich-auf.html",
+   "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_100212602/zusammenarbeit-mit-der-afd-merz-relativiert-umstrittene-aeusserung.html",
+   "https://www.srf.ch/news/international/brandmauer-zur-afd-cdu-chef-sorgt-mit-aussage-zur-afd-fuer-viel-kritik"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "merz-28",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender, Unionsfraktionschef und Kanzlerkandidat der Union (Oppositionsführer)",
+  "zitat": "Links ist vorbei. Es gibt keine linke Mehrheit und keine linke Politik mehr in Deutschland",
+  "datum": "2025-02-22",
+  "kontext": "Wahlkampfabschluss der Union in München am Vorabend der Bundestagswahl.",
+  "kontext_kurz": "über die politische Linke, Wahlkampfabschluss der Union in München 2025",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/friedrich-merz-rede-zu-linke-und-gruene-spinner-kritik-an-cdu-kanzlerkandidat-2301250",
+   "https://www.leinetal24.de/welt/gruene-und-linke-spinner-merz-rede-vor-bundestagswahl-verstoerend-zr-93587623.html"
+  ],
+  "verwendung": [
+   "sprechblase:ju_schnoesel"
+  ]
+ },
+ {
+  "id": "merz-29",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Bundesvorsitzender, Unionsfraktionschef und Kanzlerkandidat der Union (Oppositionsführer)",
+  "zitat": "nicht für irgendwelche grünen und linken Spinner auf dieser Welt",
+  "datum": "2025-02-22",
+  "kontext": "Selbe Rede in München; Merz grenzte seine Politik von 'grünen und linken Spinnern' ab.",
+  "kontext_kurz": "über Grüne und Linke, Wahlkampfabschluss in München 2025",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/friedrich-merz-rede-zu-linke-und-gruene-spinner-kritik-an-cdu-kanzlerkandidat-2301250",
+   "https://www.leinetal24.de/welt/gruene-und-linke-spinner-merz-rede-vor-bundestagswahl-verstoerend-zr-93587623.html"
+  ],
+  "verwendung": [
+   "freischalt_karte:lastenrad"
+  ]
+ },
+ {
+  "id": "merz-30",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Das sind fast drei Wochen, in denen die Menschen in Deutschland aus Krankheitsgründen nicht arbeiten. […] Ist das wirklich richtig? Ist das wirklich notwendig?",
+  "datum": "2026-01-17",
+  "kontext": "Wahlkampfveranstaltung zur Landtagswahl Baden-Württemberg in Bad Rappenau; Kritik am Krankenstand und an der telefonischen Krankschreibung ('Heute immer noch?').",
+  "kontext_kurz": "über Krankmeldungen, Wahlkampfauftritt in Bad Rappenau 2026",
+  "quellen": [
+   "https://www.lto.de/recht/nachrichten/n/zu-viele-krankheitstage-telefonische-au-arbeitszeitgesetz-merz-kritik",
+   "https://www.zdfheute.de/politik/deutschland/krankmeldung-krankenstand-merz-kritik-100.html",
+   "https://www.pharmazeutische-zeitung.de/merz-kritisiert-fehltage-wegen-krankheit-161982/"
+  ],
+  "verwendung": [
+   "freischalt_karte:gewerkschaft"
+  ]
+ },
+ {
+  "id": "merz-31",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler (seit 6. Mai 2025) und CDU-Bundesvorsitzender",
+  "zitat": "Die gesetzliche Rentenversicherung allein wird allenfalls noch die Basisabsicherung sein für das Alter.",
+  "datum": "2026-04-20",
+  "kontext": "Rede beim Empfang zum 75-jährigen Bestehen des Bundesverbands deutscher Banken in Berlin.",
+  "kontext_kurz": "über die gesetzliche Rente, Rede beim Bankenverband 2026",
+  "quellen": [
+   "https://www.zdfheute.de/politik/deutschland/merz-basisrente-cdu-sozialfluegel-ig-metall-bas-100.html",
+   "https://www.t-online.de/nachrichten/deutschland/id_101221404/merz-gesetzliche-rente-wird-nur-noch-basisabsicherung-sein.html",
+   "https://www.stuttgarter-zeitung.de/wirtschaft/merz-rente-basisabsicherung-mhsd-78829447.html"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "soeder-01",
+  "sprecher": "Markus Söder",
+  "partei": "CSU",
+  "rolle_damals": "Bayerischer Ministerpräsident",
+  "zitat": "Der Asyltourismus muss beendet werden",
+  "datum": "2018-06",
+  "kontext": "Tweet Mitte Juni 2018 (laut KNA am Donnerstag vor dem 20.06.2018) im Asylstreit der Union um Zurückweisungen an der Grenze. In einem Interview sprach er zudem davon, ein \"europäisches Signal setzen, um den Asyltourismus zu beenden\".",
+  "kontext_kurz": "zum Asylstreit der Union, Tweet im Juni 2018",
+  "quellen": [
+   "https://cibedo.de/?p=9478",
+   "https://www.evangelisch.de/inhalte/150618/18-06-2018/asylstreit-csu-warum-soeder-mit-asyltourismus-fluechtlinge-entmenschlicht",
+   "https://www.unwortdesjahres.net/wp-content/uploads/2021/06/pressemitteilung_unwort2018.pdf"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler",
+   "sprechblase:besorgter_buerger"
+  ]
+ },
+ {
+  "id": "soeder-04",
+  "sprecher": "Markus Söder",
+  "partei": "CSU",
+  "rolle_damals": "Bayerischer Ministerpräsident und CSU-Vorsitzender",
+  "zitat": "Die Grünen haben die Philosophie, zu verbieten und umzuerziehen.",
+  "datum": "2023-06-10",
+  "kontext": "Rede auf der Kundgebung gegen das Heizungsgesetz der Ampel in Erding (u. a. mit Hubert Aiwanger); Söder wandte sich dort auch gegen 'zwanghafte Veganisierung' und 'zwanghaftes Gendern'.",
+  "kontext_kurz": "über die Grünen, Kundgebung gegen das Heizungsgesetz in Erding 2023",
+  "quellen": [
+   "https://www.schwaebische.de/regional/bayern/soeder-und-aiwanger-heizen-anti-ampel-demo-an-viel-kritik-1678466",
+   "https://www.infranken.de/bayern/soeder-attackiert-auf-kundgebung-bundesregierung-und-wird-ausgebuht-art-5702694"
+  ],
+  "verwendung": [
+   "sprechblase:ju_schnoesel"
+  ]
+ },
+ {
+  "id": "soeder-06",
+  "sprecher": "Markus Söder",
+  "partei": "CSU",
+  "rolle_damals": "Bayerischer Ministerpräsident und CSU-Vorsitzender",
+  "zitat": "Besonders die Rote Heidi, die sozialistische Tiktok-Tante, die Rosa Luxemburg für Arme, liebe Freundinnen und Freunde.",
+  "datum": "2026-02-18",
+  "kontext": "Politischer Aschermittwoch der CSU in Passau; Spott über Linken-Fraktionschefin Heidi Reichinnek.",
+  "kontext_kurz": "über Heidi Reichinnek (Linke), Politischer Aschermittwoch in Passau 2026",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/10019869",
+   "https://www.nordkurier.de/politik/sozialistische-tiktok-tante-soeder-zieht-ueber-linken-chefin-reichinnek-her-4371240",
+   "https://www.derstandard.at/story/3000000309099/pfui-pfui-pfui-soeder-warnt-am-aschermittwoch-vor-der-afd"
+  ],
+  "verwendung": [
+   "sprechblase:ju_schnoesel"
+  ]
+ },
+ {
+  "id": "linnemann-01",
+  "sprecher": "Carsten Linnemann",
+  "partei": "CDU",
+  "rolle_damals": "Stellvertretender Vorsitzender der CDU/CSU-Bundestagsfraktion",
+  "zitat": "Um es auf den Punkt zu bringen: Ein Kind, das kaum Deutsch spricht und versteht, hat auf einer Grundschule noch nichts zu suchen.",
+  "datum": "2019-08-05",
+  "kontext": "Interview mit der Rheinischen Post; Linnemann forderte eine verpflichtende Vorschule für Kinder ohne ausreichende Deutschkenntnisse und notfalls eine Zurückstellung der Einschulung, unter Verweis auf 'neue Parallelgesellschaften'.",
+  "kontext_kurz": "über Kinder ohne Deutschkenntnisse in der Grundschule, Rheinische Post 2019",
+  "quellen": [
+   "https://www.evangelisch.de/inhalte/159036/05-08-2019/cdu-politiker-erstklaessler-muessen-gute-deutschkenntnisse-haben",
+   "https://www.abendzeitung-muenchen.de/politik/debatte-ohne-deutschkenntnisse-kein-grundschulbesuch-art-582068",
+   "https://taz.de/Grundschul-Forderung-aus-der-CDU/!5611031/"
+  ],
+  "verwendung": [
+   "boss_ruf:sauerlaender",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "linnemann-03",
+  "sprecher": "Carsten Linnemann",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Generalsekretär",
+  "zitat": "Die Statistik legt nahe, dass eine sechsstellige Zahl von Personen grundsätzlich nicht bereit ist, eine Arbeit anzunehmen",
+  "datum": "2024-07-28",
+  "kontext": "Gegenüber den Funke-Zeitungen begründete Linnemann seine Forderung, sogenannten Totalverweigerern die Grundsicherung komplett zu streichen.",
+  "kontext_kurz": "über Bürgergeld-Bezieher ohne Arbeitsbereitschaft, Juli 2024",
+  "quellen": [
+   "https://www.evangelisch.de/inhalte/232292/29-07-2024/diakonie-chef-linnemanns-zahlen-sind-falsch",
+   "https://www.stuttgarter-zeitung.de/politik/berlin-linnemann-will-mehr-als-100000-menschen-buergergeld-streichen-78907034.html"
+  ],
+  "verwendung": [
+   "freischalt_karte:totalverweigerer"
+  ]
+ },
+ {
+  "id": "linnemann-05",
+  "sprecher": "Carsten Linnemann",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Generalsekretär",
+  "zitat": "Ich finde, zehn Krankenkassen in Deutschland reichen",
+  "datum": "2026-04-14",
+  "kontext": "Laut Apotheken Umschau in einem n-tv-Interview; Linnemann verwies auf 'über 90 Krankenkassen, die in der Regel die gleichen Leistungen anbieten'. Wenige Monate später wurde er selbst Gesundheitsminister.",
+  "kontext_kurz": "über die Zahl der Krankenkassen, ntv-'Frühstart' April 2026",
+  "quellen": [
+   "https://www.apotheken-umschau.de/gesundheitspolitik/carsten-linnemann-bisherige-positionen-des-neue-gesundheitsministers-1562025.html",
+   "https://www.zdfheute.de/politik/deutschland/linnemann-forderung-krankenkasse-reform-verwaltung-100.html",
+   "https://www.aerzteblatt.de/news/rubriken/politik/cdu-generalsekretar-linnemann-zehn-krankenkassen-reichen-1ab52b8a-c004-4117-812b-aa0f46fcf940"
+  ],
+  "verwendung": [
+   "sprechblase:lobbyist"
+  ]
+ },
+ {
+  "id": "spahn-01",
+  "sprecher": "Jens Spahn",
+  "partei": "CDU",
+  "rolle_damals": "Designierter Bundesgesundheitsminister (noch Parl. Staatssekretär im Bundesfinanzministerium)",
+  "zitat": "Niemand müsste in Deutschland hungern, wenn es die Tafeln nicht gäbe.",
+  "datum": "2018-03",
+  "kontext": "Äußerung in der Debatte um den Aufnahmestopp für Ausländer bei der Essener Tafel (März 2018); er sagte auch: 'Damit hat jeder das, was er zum Leben braucht.'",
+  "kontext_kurz": "über die Tafeln und Armut, in der Essener-Tafel-Debatte, März 2018",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/olaf-scholz-weist-spahns-hartz-iv-ausserungen-zuruck-5517976.html",
+   "https://www.aerzteblatt.de/news/debatte-um-armutsbekaempfung-entbrannt-0e8fb5a0-8932-460c-9203-fe2fb214cca3",
+   "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_83385430/jens-spahn-rudert-in-hartz-iv-debatte-zurueck-natuerlich-ist-es-schwierig-.html"
+  ],
+  "verwendung": [
+   "sprechblase:ju_schnoesel"
+  ]
+ },
+ {
+  "id": "spahn-03",
+  "sprecher": "Jens Spahn",
+  "partei": "CDU",
+  "rolle_damals": "Stellvertretender Vorsitzender der CDU/CSU-Bundestagsfraktion",
+  "zitat": "[…] mit der AfD als Oppositionspartei so umzugehen in den Verfahren und Abläufen wie mit jeder anderen Oppositionspartei auch",
+  "datum": "2025-04-12",
+  "kontext": "Interview mit der Bild-Zeitung nach der Bundestagswahl, u. a. zur Frage von Ausschussvorsitzen für die AfD.",
+  "kontext_kurz": "über den Umgang mit der AfD im Bundestag, Bild-Interview April 2025",
+  "quellen": [
+   "https://www.zdfheute.de/politik/deutschland/spahn-cdu-afd-umgang-kritik-100.html"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "spahn-04",
+  "sprecher": "Jens Spahn",
+  "partei": "CDU",
+  "rolle_damals": "Vorsitzender der CDU/CSU-Bundestagsfraktion",
+  "zitat": "In der Not ist Haben wichtiger als Brauchen. Das war eine Jahrhundertkrise und eine Ausnahmesituation.",
+  "datum": "2025-06",
+  "kontext": "Im Podcast Table.Today zur Kritik an seiner Maskenbeschaffung 2020 (Bericht der Sonderermittlerin Margaretha Sudhof).",
+  "kontext_kurz": "über seine Maskenbeschaffung 2020, Podcast Table.Today 2025",
+  "quellen": [
+   "https://www.aerzteblatt.de/news/debatte-um-untersuchungsbericht-zu-maskenbeschaffung-4c3a1c63-8238-4e73-8351-2c03b16a11eb",
+   "https://www.zdfheute.de/politik/deutschland/spahn-corona-masken-bericht-100.html",
+   "https://www.pharmazeutische-zeitung.de/spahn-verteidigt-masken-deals-und-gesteht-fehler-ein-156628/",
+   "https://www.doccheck.com/de/detail/articles/51153-news-bites-deals-hinter-vorgehaltener-maske"
+  ],
+  "verwendung": [
+   "sprechblase:lobbyist",
+   "sprechblase:immobilienerbe"
+  ]
+ },
+ {
+  "id": "dobrindt-01",
+  "sprecher": "Alexander Dobrindt",
+  "partei": "CSU",
+  "rolle_damals": "Vorsitzender der CSU-Landesgruppe im Bundestag",
+  "zitat": "Es ist nicht akzeptabel, dass durch eine aggressive Anti-Abschiebe-Industrie bewusst die Bemühungen des Rechtsstaates sabotiert und eine weitere Gefährdung der Öffentlichkeit provoziert wird.",
+  "datum": "2018-05-06",
+  "kontext": "Interview mit der Bild am Sonntag; gemeint waren Anwälte und Initiativen, die mit Klagen Abschiebungen verhindern.",
+  "kontext_kurz": "über Anwälte und Initiativen gegen Abschiebungen, Bild am Sonntag 2018",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/csu-landesgruppenchef-dobrindt-beklagt-eine-anti-abschiebe-industrie/21248990.html",
+   "https://www.t-online.de/nachrichten/deutschland/id_83725718/alexander-dobrindt-beklagt-anti-abschiebe-industrie-.html",
+   "https://www.unwortdesjahres.net/wp-content/uploads/2021/06/pressemitteilung_unwort2018.pdf"
+  ],
+  "verwendung": [
+   "freischalt_karte:ngo"
+  ]
+ },
+ {
+  "id": "dobrindt-02",
+  "sprecher": "Alexander Dobrindt",
+  "partei": "CSU",
+  "rolle_damals": "Vorsitzender der CSU-Landesgruppe im Bundestag",
+  "zitat": "Auf die linke Revolution der Eliten folgt eine konservative Revolution der Bürger.",
+  "datum": "2018-01-04",
+  "kontext": "Gastbeitrag in der 'Welt' ('Für eine bürgerliche Wende') vor der CSU-Klausur in Seeon; Fortsetzung laut Tagesspiegel: 'Wir unterstützen diese Revolution und sind ihre Stimme in der Politik.'",
+  "kontext_kurz": "über Proteste gegen Eliten, Welt-Gastbeitrag vor der CSU-Klausur 2018",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/csu-landesgruppenchef-dobrindt-will-konservative-revolution-unterstuetzen/20812904.html",
+   "https://www.t-online.de/nachrichten/deutschland/parteien/id_82993442/vor-csu-klausurtagung-dobrindt-fordert-konservative-revolution-.html"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler"
+  ]
+ },
+ {
+  "id": "kloeckner-01",
+  "sprecher": "Julia Klöckner",
+  "partei": "CDU",
+  "rolle_damals": "Bundesministerin für Ernährung und Landwirtschaft",
+  "zitat": "An die Hatespeaker, weil ich mit Nestlé gesprochen habe: Mal eigene Forderungen #Zuckerreduktion nachlesen!",
+  "datum": "2019-06-04",
+  "kontext": "Tweet nach Kritik an einem vom Ministerium verbreiteten Video, in dem Klöckner gemeinsam mit dem Nestlé-Deutschlandchef die Reduktion von Zucker, Fett und Salz lobte.",
+  "kontext_kurz": "an Kritiker ihres Nestlé-Videos, Tweet Juni 2019",
+  "quellen": [
+   "https://www.horizont.net/marketing/nachrichten/wegen-werbevideo-fuer-nestl-empoerungswelle-im-internet-gegen-ministerin-kloeckner-175319",
+   "https://www.t-online.de/nachrichten/deutschland/gesellschaft/id_85876504/julia-kloeckner-loest-mit-nestle-video-shitstorm-aus-schleichwerbung-.html",
+   "https://www.aerzteblatt.de/themen/ernaehrung/empoerungswelle-gegen-bundeslandwirtschaftsministerin-2c02cb72-0143-4862-9072-c198618fbfc1"
+  ],
+  "verwendung": [
+   "sprechblase:lobbyist"
+  ]
+ },
+ {
+  "id": "amthor-01",
+  "sprecher": "Philipp Amthor",
+  "partei": "CDU",
+  "rolle_damals": "Bundestagsabgeordneter (Mecklenburg-Vorpommern)",
+  "zitat": "Ich bin nicht käuflich",
+  "datum": "2020-06",
+  "kontext": "dpa-Interview nach Spiegel-Enthüllungen über seinen Lobbyeinsatz beim Bundeswirtschaftsministerium für das US-Start-up Augustus Intelligence, von dem er einen Direktorenposten und Aktienoptionen erhalten hatte.",
+  "kontext_kurz": "zu Vorwürfen wegen seiner Nebentätigkeit für Augustus Intelligence, 2020",
+  "quellen": [
+   "https://web.de/magazine/politik/philipp-amthor-kritischem-bericht-konsequenzen-34786954"
+  ],
+  "verwendung": [
+   "sprechblase:lobbyist"
+  ]
+ },
+ {
+  "id": "amthor-04",
+  "sprecher": "Philipp Amthor",
+  "partei": "CDU",
+  "rolle_damals": "Bundestagsabgeordneter, Unterhändler in den Koalitionsgesprächen 2025",
+  "zitat": "Ich bringe das mal ein bisschen überspitzt auf die Formel 'Lieber 10 Prozent von X, als 20 Prozent von nix'.",
+  "datum": "2025-04-01",
+  "kontext": "Bei 'Markus Lanz' als Argument gegen Steuererhöhungen ('für das Steueraufkommen in Deutschland wäre es absolutes Gift, jetzt die Steuern zu erhöhen').",
+  "kontext_kurz": "gegen Steuererhöhungen, Talkshow 'Markus Lanz' April 2025",
+  "quellen": [
+   "https://www.zdfheute.de/politik/deutschland/markus-lanz-philipp-amthor-informationsfreiheitsgesetz-100.html"
+  ],
+  "verwendung": [
+   "sprechblase:lobbyist",
+   "sprechblase:ju_schnoesel"
+  ]
+ },
+ {
+  "id": "scheuer-01",
+  "sprecher": "Andreas Scheuer",
+  "partei": "CSU",
+  "rolle_damals": "CSU-Generalsekretär",
+  "zitat": "Das Schlimmste ist ein fußballspielender, ministrierender Senegalese. Der ist drei Jahre hier - als Wirtschaftsflüchtling -, den kriegen wir nie wieder los.",
+  "datum": "2016-09-15",
+  "kontext": "Beim Regensburger Presseclub zu Schwierigkeiten bei Abschiebungen abgelehnter Asylbewerber.",
+  "kontext_kurz": "über Flüchtlinge aus dem Senegal, Presseclub Regensburg 2016",
+  "quellen": [
+   "https://www.evangelisch.de/inhalte/138468/19-09-2016/csu-generalsekretaer-scheuer-stoesst-mit-aussage-zu-fluechtlingen-bei-kirchen-auf-ablehnung",
+   "https://www.evangelisch.de/inhalte/138465/19-09-2016/bedford-strohm-entsetzt-ueber-csu-aussage"
+  ],
+  "verwendung": [
+   "boss_ruf:sauerlaender",
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "reiche-01",
+  "sprecher": "Katherina Reiche",
+  "partei": "CDU",
+  "rolle_damals": "Bundesministerin für Wirtschaft und Energie",
+  "zitat": "Der demografische Wandel und die weiter steigende Lebenserwartung machen es unumgänglich: Die Lebensarbeitszeit muss steigen.",
+  "datum": "2025-07-26",
+  "kontext": "Interview mit der Frankfurter Allgemeinen Zeitung; sie verwies darauf, die Deutschen arbeiteten im internationalen Vergleich wenig.",
+  "kontext_kurz": "zur Lebensarbeitszeit, FAZ-Interview 2025",
+  "quellen": [
+   "https://www.evangelisch.de/inhalte/245910/25-07-2025/ministerin-reiche-wir-muessen-mehr-und-laenger-arbeiten",
+   "https://www.nordkurier.de/politik/kann-auf-dauer-nicht-gut-gehen-wirtschaftsministerin-reiche-mit-radikaler-forderung-an-rentner-3788833"
+  ],
+  "verwendung": [
+   "sprechblase:immobilienerbe"
+  ]
+ },
+ {
+  "id": "reiche-02",
+  "sprecher": "Katherina Reiche",
+  "partei": "CDU",
+  "rolle_damals": "Bundesministerin für Wirtschaft und Energie",
+  "zitat": "Wir müssen mehr und länger arbeiten",
+  "datum": "2025-07-26",
+  "kontext": "FAZ-Interview zur Lebensarbeitszeit; dazu der Satz, es könne auf Dauer nicht gut gehen, 'dass wir nur zwei Drittel unseres Erwachsenenlebens arbeiten und ein Drittel in Rente verbringen'.",
+  "kontext_kurz": "zur Arbeitszeit der Deutschen, FAZ-Interview 2025",
+  "quellen": [
+   "https://www.nordkurier.de/politik/kann-auf-dauer-nicht-gut-gehen-wirtschaftsministerin-reiche-mit-radikaler-forderung-an-rentner-3788833",
+   "https://www.evangelisch.de/inhalte/245910/25-07-2025/ministerin-reiche-wir-muessen-mehr-und-laenger-arbeiten",
+   "https://www.zdfheute.de/politik/deutschland/arbeiten-rente-katharina-reiche-100.html"
+  ],
+  "verwendung": [
+   "sprechblase:lobbyist"
+  ]
+ },
+ {
+  "id": "weidel-01",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Co-Vorsitzende der AfD-Bundestagsfraktion",
+  "zitat": "Burkas, Kopftuchmädchen, alimentierte Messermänner und sonstige Taugenichtse werden unseren Wohlstand, das Wirtschaftswachstum und vor allem den Sozialstaat nicht sichern.",
+  "datum": "2018-05-16",
+  "kontext": "Rede in der Generalaussprache zum Bundeshaushalt 2018 (Einzelplan Bundeskanzleramt), Deutscher Bundestag, 32. Sitzung der 19. Wahlperiode.",
+  "kontext_kurz": "über Migranten und Sozialstaat, Haushaltsdebatte im Bundestag 2018",
+  "quellen": [
+   "https://dserver.bundestag.de/btp/19/19032.pdf",
+   "https://www.bundestag.de/dokumente/textarchiv/2018/kw20-de-einspruch-ordnungsruf-555494",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf"
+  ],
+  "verwendung": [
+   "freischalt_karte:taugenichts",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "weidel-02",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Co-Vorsitzende der AfD-Bundestagsfraktion",
+  "zitat": "Ihre eingewanderten Goldstücke etwa? Das glauben Sie doch wohl nicht im Ernst.",
+  "datum": "2018-05-16",
+  "kontext": "Dieselbe Haushaltsrede; unmittelbar zuvor fragte Weidel, wer künftig für Renten und Pensionen aufkommen solle.",
+  "kontext_kurz": "über Migranten als Rentenzahler, Haushaltsdebatte im Bundestag 2018",
+  "quellen": [
+   "https://dserver.bundestag.de/btp/19/19032.pdf"
+  ],
+  "verwendung": [
+   "boss_ruf:eidgenossin",
+   "sprechblase:telegram_onkel",
+   "sprechblase:besorgter_buerger"
+  ]
+ },
+ {
+  "id": "weidel-03",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Co-Bundessprecherin der AfD und Co-Fraktionsvorsitzende; designierte Kanzlerkandidatin",
+  "zitat": "Er war dieser kommunistische, sozialistische Typ. Punkt.",
+  "datum": "2025-01-09",
+  "kontext": "Live-Gespräch (X Space) mit Elon Musk auf dessen Plattform X, auf Englisch geführt; Weidel sprach über Adolf Hitler.",
+  "kontext_kurz": "über Adolf Hitler, im Gespräch mit Elon Musk auf X (übersetzt)",
+  "quellen": [
+   "https://www.juedische-allgemeine.de/politik/weidel-im-talk-mit-musk-hitler-war-ein-kommunist",
+   "https://www.stuttgarter-zeitung.de/panorama/alice-weidel-ueber-hitler-er-war-ein-sozialistischer-kommunistischer-typ-79153160.html",
+   "https://correctiv.org/faktencheck/2025/01/16/anders-als-von-alice-weidel-behauptet-war-hitler-kein-kommunist/",
+   "https://newrepublic.com/post/190065/elon-musk-german-far-right-afd-hitler-lies"
+  ],
+  "verwendung": [
+   "boss_ruf:eidgenossin",
+   "sprechblase:telegram_onkel",
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "weidel-04",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Co-Bundessprecherin der AfD; am selben Tag zur Kanzlerkandidatin gewählt",
+  "zitat": "Und ich muss Ihnen ganz ehrlich sagen, wenn es dann Remigration heißen soll, dann heißt es eben Remigration.",
+  "datum": "2025-01-11",
+  "kontext": "Rede auf dem AfD-Bundesparteitag in Riesa nach ihrer Wahl zur Kanzlerkandidatin; zuvor forderte sie 'Rückführungen im großen Stil'. Der Parteitag nahm den Begriff anschließend ins Wahlprogramm auf.",
+  "kontext_kurz": "über den Begriff Remigration, AfD-Parteitag in Riesa 2025",
+  "quellen": [
+   "https://www.stuttgarter-zeitung.de/politik/alice-weidel-auf-afd-parteitag-in-riesa-wenn-das-radikale-schleichend-normal-wird-79030329.html",
+   "https://taz.de/Remigration-ist-jetzt-Parteiraeson/!6058444/",
+   "https://taz.de/Weidel-zur-AfD-Kanzlerkandidatin-gewaehlt/!6061592",
+   "https://gotranscript.com/public/afd-parteitag-in-riesa-weidel-als-kanzlerkandidatin"
+  ],
+  "verwendung": [
+   "boss_karte:eidgenossin",
+   "sprechblase:identitaerer_hipster"
+  ]
+ },
+ {
+  "id": "weidel-05",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Co-Bundessprecherin der AfD; Kanzlerkandidatin",
+  "zitat": "Nieder mit diesen Windmühlen der Schande!",
+  "datum": "2025-01-11",
+  "kontext": "Parteitagsrede in Riesa; unmittelbar davor: 'Und ich kann Ihnen sagen, wenn wir am Ruder sind, wir reißen alle Windkraftwerke nieder.'",
+  "kontext_kurz": "über Windkraftanlagen, AfD-Parteitag in Riesa 2025",
+  "quellen": [
+   "https://www.zdfheute.de/politik/deutschland/weidel-afd-windraeder-reinhardswald-windkraft-kritik-100.html",
+   "https://taz.de/Weidel-zur-AfD-Kanzlerkandidatin-gewaehlt/!6061592",
+   "https://taz.de/Remigration-ist-jetzt-Parteiraeson/!6058444/",
+   "https://gotranscript.com/public/afd-parteitag-in-riesa-weidel-als-kanzlerkandidatin"
+  ],
+  "verwendung": [
+   "sprechblase:telegram_onkel"
+  ]
+ },
+ {
+  "id": "weidel-06",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Co-Bundessprecherin der AfD; Kanzlerkandidatin",
+  "zitat": "rot lackierte Nazis",
+  "datum": "2025-01-11",
+  "kontext": "In der Riesaer Parteitagsrede über die Gegendemonstranten vor der Halle.",
+  "kontext_kurz": "über Gegendemonstranten vor der Halle, AfD-Parteitag in Riesa 2025",
+  "quellen": [
+   "https://taz.de/Remigration-ist-jetzt-Parteiraeson/!6058444/",
+   "https://www.stuttgarter-zeitung.de/politik/alice-weidel-auf-afd-parteitag-in-riesa-wenn-das-radikale-schleichend-normal-wird-79030329.html",
+   "https://taz.de/Weidel-zur-AfD-Kanzlerkandidatin-gewaehlt/!6061592"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "weidel-07",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Co-Vorsitzende der AfD-Bundestagsfraktion",
+  "zitat": "Das Jahr beginnt mit dem Zensurgesetz und der Unterwerfung unserer Behörden vor den importierten, marodierenden, grapschenden, prügelnden, Messer stechenden Migrantenmobs, an die wir uns gefälligst gewöhnen sollen.",
+  "datum": "2018-01-01",
+  "kontext": "Social-Media-Beitrag zu Neujahr 2018, nachdem Twitter Beatrix von Storch wegen ihres Tweets über die Kölner Polizei gesperrt hatte (siehe storch-01).",
+  "kontext_kurz": "über Migranten und das NetzDG, Social-Media-Beitrag an Neujahr 2018",
+  "quellen": [
+   "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_82980164/twitter-sperrt-beatrix-von-storchs-profil-wegen-hass-nachricht.html",
+   "https://de.euronews.com/2018/01/01/rassismus-und-hetze-auf-twitter-afd-vize-von-storch-angezeigt"
+  ],
+  "verwendung": [
+   "boss_ruf:eidgenossin",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "weidel-08",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "Mitglied des AfD-Bundesvorstands; auf dem Parteitag zur Spitzenkandidatin für die Bundestagswahl 2017 gewählt",
+  "zitat": "Denn die politische Korrektheit gehört auf den Müllhaufen der Geschichte.",
+  "datum": "2017-04-23",
+  "kontext": "Rede auf dem AfD-Bundesparteitag in Köln; davor: 'Und wir werden uns als Demokraten und Patrioten trotz dessen nicht den Mund verbieten lassen.'",
+  "kontext_kurz": "über politische Korrektheit, AfD-Bundesparteitag in Köln 2017",
+  "quellen": [
+   "https://www.lto.de/recht/nachrichten/n/lg-hamburg-324o217-17-alice-weidel-afd-ndr-nazi-schlampe-satire",
+   "https://www.vice.com/de/article/ein-anwalt-erklart-wie-du-afd-politiker-korrekt-beleidigst/"
+  ],
+  "verwendung": [
+   "sprechblase:besorgter_buerger"
+  ]
+ },
+ {
+  "id": "hoecke-01",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "Wir Deutschen – und ich rede jetzt nicht von euch Patrioten, die sich hier heute versammelt haben – wir Deutschen, also unser Volk, sind das einzige Volk der Welt, das sich ein Denkmal der Schande in das Herz seiner Hauptstadt gepflanzt hat.",
+  "datum": "2017-01-17",
+  "kontext": "Rede bei den 'Dresdner Gesprächen' der Jungen Alternative im Ballhaus Watzke in Dresden; gemeint war nach allgemeiner Lesart das Holocaust-Mahnmal in Berlin.",
+  "kontext_kurz": "über das Holocaust-Mahnmal, Rede bei der Jungen Alternative, Dresden 2017",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/19273518.html",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf"
+  ],
+  "verwendung": [
+   "boss_karte:geschichtslehrer",
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "hoecke-02",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "Wir brauchen nichts anderes als erinnerungspolitische Wende um 180 Grad!",
+  "datum": "2017-01-17",
+  "kontext": "Dieselbe Dresdner Rede; Kernforderung nach einer Umkehr der deutschen Erinnerungskultur.",
+  "kontext_kurz": "über die NS-Aufarbeitung, Rede bei der Jungen Alternative, Dresden 2017",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/19273518.html",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf",
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html"
+  ],
+  "verwendung": [
+   "boss_ruf:geschichtslehrer"
+  ]
+ },
+ {
+  "id": "hoecke-03",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "Und diese dämliche Bewältigungspolitik, die lähmt uns heute noch viel mehr als zu Franz Josef Strauß’ Zeiten.",
+  "datum": "2017-01-17",
+  "kontext": "Dieselbe Dresdner Rede, mit Bezug auf die Aufarbeitung der NS-Zeit.",
+  "kontext_kurz": "über die NS-Aufarbeitung, Rede bei der Jungen Alternative, Dresden 2017",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/19273518.html",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "hoecke-04",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "Ja, neben dem Schutz unserer nationalen und europäischen Außengrenzen wird ein großangelegtes Remigrationsprojekt notwendig sein. Und bei dem wird man, so fürchte ich, nicht um eine Politik der 'wohltemperierten Grausamkeit', wie es Peter Sloterdijk nannte, herumkommen. Das heißt, daß sich menschliche Härten und unschöne Szenen nicht immer vermeiden lassen werden.",
+  "datum": "2018-07",
+  "kontext": "Aus dem Gesprächsband 'Nie zweimal in denselben Fluß' (Interview mit Sebastian Hennig, Manuscriptum 2018), S. 254.",
+  "kontext_kurz": "über ein 'Remigrationsprojekt', Interviewband 'Nie zweimal in denselben Fluß' 2018",
+  "quellen": [
+   "https://www.spiegel.de/politik/deutschland/rechtsextreme-in-der-afd-so-sprechen-fluegel-anfuehrer-hoecke-und-seine-leute-a-98188c22-71b5-4b56-8d0c-a21f4bcef2e1",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf",
+   "https://taz.de/Studie-zur-AfD/!5939276/",
+   "https://www.juedische-allgemeine.de/politik/bjoern-hoecke-ist-die-praegendste-figur-fuer-die-afd-ideologie/"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "hoecke-05",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "Auch wenn wir leider ein paar Volksteile verlieren werden, die zu schwach oder nicht willens sind, sich der fortschreitenden Afrikanisierung, Orientalisierung und Islamisierung zu widersetzen.",
+  "datum": "2018-07",
+  "kontext": "Gesprächsband 'Nie zweimal in denselben Fluß' (2018), laut DIMR S. 255–258; im Kontext eines erhofften 'neuen Kapitels unserer Geschichte'.",
+  "kontext_kurz": "über die Zukunft der Deutschen, Gesprächsband 'Nie zweimal in denselben Fluß' 2018",
+  "quellen": [
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf",
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html",
+   "https://www.juedische-allgemeine.de/politik/bjoern-hoecke-ist-die-praegendste-figur-fuer-die-afd-ideologie/"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "hoecke-06",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "lebensbejahende afrikanische Ausbreitungstyp … selbstverneinenden europäischen Platzhaltertyp",
+  "datum": "2015-11",
+  "kontext": "Vortrag beim rechten 'Institut für Staatspolitik' in Schnellroda (Ende November 2015) über Asyl und Bevölkerungsentwicklung.",
+  "kontext_kurz": "über Afrikaner und Europäer, Vortrag in Schnellroda 2015 (Fragment)",
+  "quellen": [
+   "https://www.lto.de/recht/nachrichten/n/bjoern-hoecke-afd-umstrittene-aeusserungen",
+   "https://web.de/magazine/politik/afd-landeschef-bjoern-hoecke-krassesten-fehltritte-31207182",
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html"
+  ],
+  "verwendung": [
+   "sprechblase:identitaerer_hipster",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "hoecke-07",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "Wenn alle Stricke reißen, ziehen wir uns wie einst die tapfer-fröhlichen Gallier in unsere ländlichen Refugien zurück und die neuen Römer, die in den verwahrlosten Städten residieren, können sich an den teutonischen Asterixen und Obelixen die Zähne ausbeißen!",
+  "datum": "2018-07",
+  "kontext": "Gesprächsband 'Nie zweimal in denselben Fluß' (2018); Höcke beschreibt die 'strategische Option der gallischen Dörfer' als Rückzug, aus dem später eine 'Rückeroberung' werden könne.",
+  "kontext_kurz": "über 'gallische Dörfer' als Rückzug, Interviewband 'Nie zweimal in denselben Fluß' 2018",
+  "quellen": [
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "hoecke-08",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "Unsere Jugend haben die böswilligen Gutmenschen in den Kindergärten, Schulen und Universitäten zu Schafen gemacht, während sie jetzt dabei sind, die Wölfe ins Land zu lassen.",
+  "datum": "2018-06-17",
+  "kontext": "Äußerung vom 17.06.2018, vom VG Köln als Beleg dafür angeführt, dass Höcke Geflüchtete pauschal als 'Wölfe' bezeichnet; der Anlass wird im Urteil nicht genannt.",
+  "kontext_kurz": "über Jugend und Geflüchtete, Äußerung 2018, zitiert im Urteil des VG Köln",
+  "quellen": [
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "hoecke-09",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "Vorsitzender der AfD-Fraktion im Thüringer Landtag",
+  "zitat": "Alles für Deutschland",
+  "datum": "2021-05-29",
+  "kontext": "KONTEXT-EINTRAG (Strafurteil): Höcke verwendete die verbotene SA-Losung bei einer Wahlkampfrede in Merseburg (Sachsen-Anhalt). Am 12.12.2023 rief er bei einem AfD-'Stammtisch' in Gera 'Alles für' und forderte das Publikum mit Gesten zur Vervollständigung auf.",
+  "kontext_kurz": "SA-Losung, Wahlkampfrede in Merseburg 2021; dafür rechtskräftig verurteilt",
+  "quellen": [
+   "https://www.beck-aktuell.de/heute-im-recht/rechtsprechung/bgh-3str48424-3str51924-hoecke-revisionen-sa-parole-2025-09-11",
+   "https://www.zdfheute.de/politik/deutschland/bjoern-hoecke-afd-urteil-ns-parole-bgh-100.html",
+   "https://www.evangelisch.de/inhalte/231410/01-07-2024/hoecke-wegen-sa-parole-erneut-verurteilt"
+  ],
+  "verwendung": [
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "hoecke-10",
+  "sprecher": "Verwaltungsgericht Meiningen (zu Björn Höcke)",
+  "partei": "—",
+  "rolle_damals": "Höcke: Landes- und Fraktionsvorsitzender der AfD Thüringen",
+  "zitat": "ihr Werturteil nicht aus der Luft gegriffen ist, sondern auf einer überprüfbaren Tatsachengrundlage beruht",
+  "datum": "2019-09-26",
+  "kontext": "KONTEXT-EINTRAG (Gerichtsbeschluss): Im Eilverfahren hob das VG Meiningen eine Auflage der Stadt Eisenach auf, die verbieten sollte, Höcke auf einer Gegendemonstration ('Protest gegen die rassistische AfD, insbesondere gegen den Faschisten Höcke') 'Faschist' zu nennen.",
+  "kontext_kurz": "Gericht: Demonstranten durften Höcke 'Faschist' nennen (VG Meiningen 2019)",
+  "quellen": [
+   "https://www.lto.de/recht/nachrichten/n/vg-meiningen-2-e-jj94-19-me-bjoern-hoecke-faschist-afd-gegendemonstration",
+   "https://www.lto.de/recht/nachrichten/n/lg-hamburg-324o103-20-einstweilige-verfuegung-aeusserung-hoecke-gerichtlich-zum-faschisten-erklaert",
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "gauland-01",
+  "sprecher": "Alexander Gauland",
+  "partei": "AfD",
+  "rolle_damals": "Bundessprecher (Co-Vorsitzender) der AfD und Co-Vorsitzender der AfD-Bundestagsfraktion",
+  "zitat": "Hitler und die Nazis sind nur ein Vogelschiss in über 1000 Jahren erfolgreicher deutscher Geschichte.",
+  "datum": "2018-06-02",
+  "kontext": "Rede beim Bundeskongress der Jungen Alternative im thüringischen Seebach; der Satz folgte auf ein Bekenntnis zur Verantwortung für die NS-Zeit.",
+  "kontext_kurz": "über die NS-Zeit, Rede beim Bundeskongress der Jungen Alternative 2018",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/vogelschiss-staatsanwaltschaft-stellt-ermittlungen-wegen-gegen-alexander-gauland-ein-24472",
+   "https://www.berliner-zeitung.de/article/vogelschiss-aeusserung-gauland-denkt-nicht-an-entschuldigung-29043",
+   "https://taz.de/Gaulands-Relativierung-der-NS-Zeit/!5510144/",
+   "https://www.tagesspiegel.de/politik/alexander-gauland-und-der-vogelschiss-3958210.html",
+   "https://www.tagesspiegel.de/politik/vogelschiss-ausserung-war-politisch-unklug-5524372.html",
+   "https://dserver.bundestag.de/btp/20/20209.pdf"
+  ],
+  "verwendung": [
+   "boss_ruf:geschichtslehrer",
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "gauland-02",
+  "sprecher": "Alexander Gauland",
+  "partei": "AfD",
+  "rolle_damals": "Bundessprecher (Co-Vorsitzender) der AfD und Co-Vorsitzender der AfD-Bundestagsfraktion",
+  "zitat": "Wir haben eine ruhmreiche Geschichte – und die, liebe Freunde, dauerte länger als die verdammten zwölf Jahre.",
+  "datum": "2018-06-02",
+  "kontext": "Dieselbe Rede in Seebach; vorher: 'Ja, wir bekennen uns zur Verantwortung für die zwölf Jahre' (taz).",
+  "kontext_kurz": "über die NS-Zeit, Rede in Seebach 2018",
+  "quellen": [
+   "https://taz.de/Gaulands-Relativierung-der-NS-Zeit/!5510144/",
+   "https://www.tagesspiegel.de/politik/alexander-gauland-und-der-vogelschiss-3958210.html"
+  ],
+  "verwendung": [
+   "sprechblase:reichsbuerger",
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "gauland-04",
+  "sprecher": "Alexander Gauland",
+  "partei": "AfD",
+  "rolle_damals": "Spitzenkandidat der AfD zur Bundestagswahl 2017; stellvertretender Bundessprecher",
+  "zitat": "Wir werden sie jagen! […] und wir werden uns unser Land und unser Volk zurückholen!",
+  "datum": "2017-09-24",
+  "kontext": "Auftritt am Abend der Bundestagswahl 2017 vor Anhängern in Berlin, adressiert an die künftige Bundesregierung.",
+  "kontext_kurz": "an die künftige Regierung, AfD-Wahlabend zur Bundestagswahl 2017",
+  "quellen": [
+   "https://www.spiegel.de/politik/deutschland/afd-alexander-gauland-wir-werden-frau-merkel-jagen-a-1169598.html",
+   "https://www.heidelberg24.de/politik-und-wirtschaft/bundestagswahl-2017-gauland-kuendigt-an-afd-will-frau-merkel-jagen-zr-8713172.html",
+   "https://www.revierpassagen.de/46024/jagdszenen-in-deutschland-zum-abend-der-bundestagswahl/20170924_2050",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf"
+  ],
+  "verwendung": [
+   "sprechblase:identitaerer_hipster",
+   "sprechblase:besorgter_buerger",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "gauland-05",
+  "sprecher": "Alexander Gauland",
+  "partei": "AfD",
+  "rolle_damals": "Spitzenkandidat der AfD zur Bundestagswahl 2017; stellvertretender Bundessprecher",
+  "zitat": "Das sagt eine Deutsch-Türkin. Ladet sie mal ins Eichsfeld ein und sagt ihr dann, was spezifisch deutsche Kultur ist. Danach kommt sie hier nie wieder her, und wir werden sie dann auch, Gott sei Dank, in Anatolien entsorgen können.",
+  "datum": "2017-08",
+  "kontext": "Wahlkampfrede im thüringischen Eichsfeld (Wochenende vor dem 28.08.2017) über die damalige Integrationsbeauftragte Aydan Özoğuz (SPD), die gesagt hatte, eine spezifisch deutsche Kultur sei jenseits der Sprache nicht identifizierbar.",
+  "kontext_kurz": "über Aydan Özoğuz (SPD), AfD-Wahlkampfauftritt im Eichsfeld 2017",
+  "quellen": [
+   "https://www.leinetal24.de/welt/afd-mann-gauland-will-spd-politikerin-oezoguz-in-tuerkei-entsorgen-zr-8632666.html",
+   "https://www.tagesspiegel.de/politik/gauland-will-integrationsbeauftragte-ozoguz-in-anatolien-entsorgen-4535902.html",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf"
+  ],
+  "verwendung": [
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "gauland-07",
+  "sprecher": "Alexander Gauland",
+  "partei": "AfD",
+  "rolle_damals": "Spitzenkandidat der AfD zur Bundestagswahl 2017; stellvertretender Bundessprecher",
+  "zitat": "Man muss uns diese zwölf Jahre jetzt nicht mehr vorhalten. Sie betreffen unsere Identität heute nicht mehr. Und das sprechen wir auch aus.",
+  "datum": "2017-09-02",
+  "kontext": "Dieselbe Kyffhäuser-Rede, mit Bezug auf die NS-Herrschaft 1933–1945.",
+  "kontext_kurz": "über die NS-Zeit, Kyffhäusertreffen 2017",
+  "quellen": [
+   "https://www.leinetal24.de/welt/afd-mann-gauland-man-muss-uns-ns-zeit-nicht-mehr-vorhalten-zr-8686062.html",
+   "https://www.news4teachers.de/2017/09/afd-chef-gauland-fordert-ein-neues-geschichtsbild-fuer-deutschland-wir-haben-das-recht-stolz-zu-sein-auf-die-leistungen-deutscher-soldaten-in-zwei-weltkriegen/"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "chrupalla-01",
+  "sprecher": "Tino Chrupalla",
+  "partei": "AfD",
+  "rolle_damals": "Co-Bundessprecher der AfD und Co-Vorsitzender der AfD-Bundestagsfraktion",
+  "zitat": "Mir hat er nichts getan. Ich sehe keine Gefahr für Deutschland aktuell durch Russland.",
+  "datum": "2025-11-11",
+  "kontext": "ZDF-Talkshow 'Markus Lanz', auf die Frage, was er an Wladimir Putin kritisiere.",
+  "kontext_kurz": "über Putin und Russland, ZDF-Talkshow 'Markus Lanz' 2025",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/afd-chef-chrupalla-verteidigt-wladimir-putin-keine-gefahr-fuer-deutschland-aktuell-durch-russland-10005205",
+   "https://www.berliner-kurier.de/article/chrupalla-bei-lanz-10005221",
+   "https://www.zdfheute.de/politik/deutschland/chrupalla-russland-aussagen-putin-entspannungspolitik-100.html"
+  ],
+  "verwendung": [
+   "sprechblase:reichsbuerger"
+  ]
+ },
+ {
+  "id": "chrupalla-02",
+  "sprecher": "Tino Chrupalla",
+  "partei": "AfD",
+  "rolle_damals": "Co-Bundessprecher der AfD und Co-Vorsitzender der AfD-Bundestagsfraktion",
+  "zitat": "Jeder hat sein Kiesewetter und das ist der Herr Kiesewetter Russlands.",
+  "datum": "2025-11-11",
+  "kontext": "Bei 'Markus Lanz' über Dmitri Medwedew, den Vizechef des russischen Sicherheitsrats, im Vergleich mit dem CDU-Außenpolitiker Roderich Kiesewetter.",
+  "kontext_kurz": "über Medwedew und Kiesewetter, Talkshow 'Markus Lanz' 2025",
+  "quellen": [
+   "https://www.berliner-zeitung.de/article/afd-chef-chrupalla-verteidigt-wladimir-putin-keine-gefahr-fuer-deutschland-aktuell-durch-russland-10005205",
+   "https://www.berliner-kurier.de/article/chrupalla-bei-lanz-10005221"
+  ],
+  "verwendung": [
+   "sprechblase:reichsbuerger"
+  ]
+ },
+ {
+  "id": "storch-01",
+  "sprecher": "Beatrix von Storch",
+  "partei": "AfD",
+  "rolle_damals": "MdB, stellvertretende Vorsitzende der AfD-Bundestagsfraktion",
+  "zitat": "Was zur Hölle ist in diesem Land los? Wieso twittert eine offizielle Polizeiseite aus NRW auf Arabisch. Meinen Sie, die barbarischen, muslimischen, gruppenvergewaltigenden Männerhorden so zu besänftigen?",
+  "datum": "2017-12-31",
+  "kontext": "Tweet am Silvesterabend als Reaktion auf Neujahrsgrüße der Kölner Polizei in mehreren Sprachen, darunter Arabisch.",
+  "kontext_kurz": "über die Polizei NRW auf Arabisch, Tweet an Silvester 2017",
+  "quellen": [
+   "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_82980164/twitter-sperrt-beatrix-von-storchs-profil-wegen-hass-nachricht.html",
+   "https://www.horizont.net/medien/nachrichten/AfD-Politikerin-Twitter-sperrt-Beatrix-von-Storch-nach-Hass-Tweet-fuer-zwoelf-Stunden-163695",
+   "https://de.euronews.com/2018/01/01/rassismus-und-hetze-auf-twitter-afd-vize-von-storch-angezeigt"
+  ],
+  "verwendung": [
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "storch-02",
+  "sprecher": "Beatrix von Storch",
+  "partei": "AfD",
+  "rolle_damals": "Stellvertretende Bundessprecherin der AfD, MdEP, Landesvorsitzende AfD Berlin",
+  "zitat": "Ja.",
+  "datum": "2016-01-30",
+  "kontext": "Antwort auf Facebook auf die Nutzerfrage 'Wollt Ihr etwa Frauen mit Kindern an der grünen Wiese den Zutritt mit Waffengewalt verhindern?' – im Zuge von Frauke Petrys Interview zum Schusswaffengebrauch an der Grenze.",
+  "kontext_kurz": "zu Waffeneinsatz gegen Frauen mit Kindern an der Grenze, Facebook 2016",
+  "quellen": [
+   "https://www.leinetal24.de/welt/afd-chefin-wuerde-auch-kinder-schiessen-lassen-zr-6082516.html",
+   "https://www.salzburg24.at/news/welt/afd-fordert-schiessbefehl-an-grenze-art-114035",
+   "https://www.evangelisch.de/inhalte/131288/01-02-2016/petry-relativiert-forderung-nach-schusswaffen-einsatz-grenze",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf"
+  ],
+  "verwendung": [
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "storch-03",
+  "sprecher": "Beatrix von Storch",
+  "partei": "AfD",
+  "rolle_damals": "Stellvertretende Bundessprecherin der AfD, MdEP, Landesvorsitzende AfD Berlin",
+  "zitat": "Ich bin grundsätzlich gegen Gewalt gegen Kinder, das umfasst auch den Einsatz von Schusswaffen gegen minderjährige Migranten durch die Polizei.",
+  "datum": "2016-01-31",
+  "kontext": "Nachträgliche Klarstellung nach der Kritik an ihrem 'Ja' zum Waffeneinsatz an der Grenze (storch-02).",
+  "kontext_kurz": "Klarstellung einen Tag nach ihrem 'Ja' zum Waffeneinsatz an der Grenze",
+  "quellen": [
+   "https://www.salzburg24.at/news/welt/afd-fordert-schiessbefehl-an-grenze-art-114035",
+   "https://www.leinetal24.de/welt/afd-chefin-wuerde-auch-kinder-schiessen-lassen-zr-6082516.html"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "storch-04",
+  "sprecher": "Beatrix von Storch",
+  "partei": "AfD",
+  "rolle_damals": "MdB, stellvertretende Vorsitzende der AfD-Bundestagsfraktion",
+  "zitat": "Rabenmutter!",
+  "datum": "2025-06-27",
+  "kontext": "Zwischenruf in der Bundestagsdebatte über die Aussetzung des Familiennachzugs, als die Linken-Abgeordnete Clara Bünger sagte: 'Sagen Sie das mal einer Mutter, die seit vier Jahren auf die Zusammenführung mit ihren Kindern wartet!'",
+  "kontext_kurz": "Zwischenruf zu Clara Bünger, Bundestagsdebatte zum Familiennachzug 2025",
+  "quellen": [
+   "https://dserver.bundestag.de/btp/21/21015.pdf"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "krah-01",
+  "sprecher": "Maximilian Krah",
+  "partei": "AfD",
+  "rolle_damals": "MdEP, AfD-Spitzenkandidat zur Europawahl 2024, Mitglied des AfD-Bundesvorstands",
+  "zitat": "Ich werde nie sagen, dass jeder, der eine SS-Uniform trug, automatisch ein Verbrecher war.",
+  "datum": "2024-05-18",
+  "kontext": "Interview mit der italienischen Zeitung 'La Repubblica' im Europawahlkampf.",
+  "kontext_kurz": "über SS-Mitglieder, Interview in La Repubblica (übersetzt), Mai 2024",
+  "quellen": [
+   "https://www.juedische-allgemeine.de/politik/eklat-um-ss-aeusserungen-von-maximilian-krah-le-pen-bricht-mit-der-afd/",
+   "https://www.srf.ch/news/international/aussagen-ueber-ns-zeit-afd-europakandidat-krah-tritt-im-wahlkampf-nicht-mehr-auf"
+  ],
+  "verwendung": [
+   "boss_ruf:geschichtslehrer",
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "krah-02",
+  "sprecher": "Maximilian Krah",
+  "partei": "AfD",
+  "rolle_damals": "MdEP, AfD-Spitzenkandidat zur Europawahl 2024, Mitglied des AfD-Bundesvorstands",
+  "zitat": "Es gab sicherlich einen hohen Prozentsatz an Kriminellen, aber nicht alle waren kriminell.",
+  "datum": "2024-05-18",
+  "kontext": "Selbes 'La Repubblica'-Interview, Antwort auf die Frage, ob die SS Kriegsverbrecher gewesen seien.",
+  "kontext_kurz": "auf die Frage, ob die SS verbrecherisch war, Interview in La Repubblica 2024",
+  "quellen": [
+   "https://www.juedische-allgemeine.de/politik/eklat-um-ss-aeusserungen-von-maximilian-krah-le-pen-bricht-mit-der-afd/",
+   "https://www.srf.ch/news/international/aussagen-ueber-ns-zeit-afd-europakandidat-krah-tritt-im-wahlkampf-nicht-mehr-auf"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "krah-03",
+  "sprecher": "Maximilian Krah",
+  "partei": "AfD",
+  "rolle_damals": "MdEP; designierter AfD-Spitzenkandidat zur Europawahl 2024",
+  "zitat": "Lass dir nicht einreden, dass du lieb, soft, schwach und links zu sein hast. Echte Männer sind rechts. Echte Männer haben Ideale. Echte Männer sind Patrioten.",
+  "datum": "2023-07",
+  "kontext": "TikTok-Video an junge Männer, eingeleitet mit der Behauptung, jeder dritte junge Mann habe noch nie eine Freundin gehabt.",
+  "kontext_kurz": "an junge Männer, TikTok-Video 2023",
+  "quellen": [
+   "https://www.t-online.de/nachrichten/deutschland/parteien/id_100367884/afd-tiktok-schraenkt-reichweite-von-maximilian-krah-ein.html",
+   "https://www.nordkurier.de/politik/dating-tipps-vom-afd-spitzenkandidaten-sorgen-fuer-belustigung-im-netz-1797112"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "krah-04",
+  "sprecher": "Maximilian Krah",
+  "partei": "AfD",
+  "rolle_damals": "MdEP (AfD)",
+  "zitat": "Deutsche Sprache nicht mehr erforderlich, um deutsche Staatsbürger zu werden. Aber wehe, man unterscheidet das deutsche Volk von der Gemeinschaft der Staatsbürger!",
+  "datum": "2021-11-26",
+  "kontext": "Social-Media-Beitrag; vom VG Köln als Beleg für eine Unterscheidung zwischen deutschem Volk und Staatsbürgern angeführt.",
+  "kontext_kurz": "zur Staatsbürgerschaft, Social-Media-Beitrag 2021, zitiert im Urteil des VG Köln",
+  "quellen": [
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "brandner-01",
+  "sprecher": "Stephan Brandner",
+  "partei": "AfD",
+  "rolle_damals": "MdB, stellvertretender Bundessprecher der AfD",
+  "zitat": "Er hat nicht „Fliegenschiss“ gesagt! Herr Gauland hat nie „Fliegenschiss“ gesagt! Ihre Rede ist ein Fliegenschiss!",
+  "datum": "2025-01-29",
+  "kontext": "Zwischenruf im Bundestag, als Friedrich Merz (CDU) Alexander Gauland fälschlich einen 'Fliegenschiss' vorhielt (statt 'Vogelschiss').",
+  "kontext_kurz": "Zwischenruf zu Merz' Rede, Bundestag 29.01.2025",
+  "quellen": [
+   "https://dserver.bundestag.de/btp/20/20209.pdf"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ },
+ {
+  "id": "brandner-02",
+  "sprecher": "Stephan Brandner",
+  "partei": "AfD",
+  "rolle_damals": "MdB, Vorsitzender des Rechtsausschusses des Bundestages",
+  "zitat": "Klar, warum der gegen uns sabbert/sabbern muss #Judaslohn",
+  "datum": "2019-10-31",
+  "kontext": "Tweet zum Bundesverdienstkreuz für den AfD-kritischen Musiker Udo Lindenberg; Brandner stellte ein Zitat aus einem Zeitungsartikel über die Auszeichnung dazu.",
+  "kontext_kurz": "zum Bundesverdienstkreuz für Udo Lindenberg, Tweet 2019",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/parteien-fordern-rucktritt-von-afd-politiker-brandner-6867439.html",
+   "https://www.juedische-allgemeine.de/politik/brandner-war-nicht-laenger-tragbar/",
+   "https://www.bundestag.de/webarchiv/presse/hib/2019_11/668082-668082",
+   "https://taz.de/Abwahl-von-AfD-Politiker-im-Ausschuss-/!5641977/"
+  ],
+  "verwendung": [
+   "sprechblase:telegram_onkel",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "petry-01",
+  "sprecher": "Frauke Petry",
+  "partei": "AfD",
+  "rolle_damals": "Bundessprecherin (Co-Vorsitzende) der AfD, Fraktionsvorsitzende im Sächsischen Landtag",
+  "zitat": "[…] notfalls auch von der Schusswaffe Gebrauch machen. So steht es im Gesetz.",
+  "datum": "2016-01-30",
+  "kontext": "Interview mit dem 'Mannheimer Morgen' (Samstagsausgabe, 30.01.2016) zum Umgang der Grenzpolizei mit illegalen Grenzübertritten.",
+  "kontext_kurz": "über Schusswaffeneinsatz an der Grenze, Interview im Mannheimer Morgen 2016",
+  "quellen": [
+   "https://www.evangelisch.de/inhalte/131288/01-02-2016/petry-relativiert-forderung-nach-schusswaffen-einsatz-grenze",
+   "https://www.salzburg24.at/news/welt/afd-fordert-schiessbefehl-an-grenze-art-114035"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "maier-01",
+  "sprecher": "Jens Maier",
+  "partei": "AfD",
+  "rolle_damals": "Richter am Landgericht Dresden, AfD-Bundestagskandidat (Sachsen)",
+  "zitat": "Diese ganze Entwicklung, die jetzt gerade stattfindet, die Herstellung von Mischvölkern, um die nationalen Identitäten auszulöschen und damit die Abgabe der Souveränität an die EU - das ist einfach nicht zu ertragen.",
+  "datum": "2017-01-17",
+  "kontext": "Rede als Vorredner Björn Höckes bei der JA-Veranstaltung im Dresdner Ballhaus Watzke (siehe hoecke-01).",
+  "kontext_kurz": "AfD-Abgeordneter und Richter, Rede vor Höckes 'Denkmal der Schande'-Rede",
+  "quellen": [
+   "https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html",
+   "https://www.l-iz.de/melder/wortmelder/2017/01/klaus-bartl-linke-afd-mann-maier-nach-assistenz-fuer-hoecke-als-richter-noch-tragbar-164880",
+   "https://www.lto.de/recht/hintergruende/h/richter-jens-maier-sachsen-afd-justiz-rueckkehr-aussagen-2017-dresden-slomka-zdf-bundestag-mandat"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "curio-01",
+  "sprecher": "Gottfried Curio",
+  "partei": "AfD",
+  "rolle_damals": "MdB, innenpolitischer Sprecher der AfD-Bundestagsfraktion",
+  "zitat": "Mut und Glück auf, Deutschland. Mut und Glück auf, du Land der Bayern. Setze ein Zeichen für die Beendigung der Herrschaft des Unrechts, setze ein Zeichen an den Iden des März, setzt das Erwachen in Gange, befreit das Land!",
+  "datum": "2020-02",
+  "kontext": "Rede beim Politischen Aschermittwoch der AfD Bayern im Februar 2020, vor den bayerischen Kommunalwahlen am 15. März 2020.",
+  "kontext_kurz": "Politischer Aschermittwoch der AfD Bayern 2020",
+  "quellen": [
+   "https://www.spiegel.de/politik/deutschland/rechtsextreme-in-der-afd-so-sprechen-fluegel-anfuehrer-hoecke-und-seine-leute-a-98188c22-71b5-4b56-8d0c-a21f4bcef2e1",
+   "https://www.institut-fuer-menschenrechte.de/fileadmin/Redaktion/Publikationen/Analyse_Studie/Analyse_Warum_die_AfD_verboten_werden_koennte.pdf"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "cdu-thomas-01",
+  "sprecher": "Ulrich Thomas (gemeinsam mit Lars-Jörn Zimmer)",
+  "partei": "CDU",
+  "rolle_damals": "stellv. CDU-Fraktionsvorsitzender im Landtag von Sachsen-Anhalt (Mitverfasser der 'Denkschrift' mit Lars-Jörn Zimmer)",
+  "zitat": "Es muss gelingen, das Soziale wieder mit dem Nationalen zu versöhnen.",
+  "datum": "2019-06",
+  "kontext": "Aus der achtseitigen 'Denkschrift' der beiden CDU-Fraktionsvizes Thomas und Zimmer, die u. a. forderte, Koalitionen mit der AfD künftig nicht auszuschließen und sich von 'multikulturellen Strömungen linker Parteien und Gruppen' abzugrenzen. CDU-Landeschef Holger Stahlknecht lehnte den Vorstoß ab ('Ich warne davor, die CDU nach rechts zu verrücken').",
+  "kontext_kurz": "Denkschrift CDU-Fraktionsvizes Sachsen-Anhalt zur AfD, 2019",
+  "quellen": [
+   "https://www.t-online.de/nachrichten/deutschland/id_85958160/cdu-politiker-ueber-koalition-mit-afd-soziales-mit-nationalem-versoehnen-.html",
+   "https://www.volksstimme.de/sachsen-anhalt/trotz-denkschrift-stahlknecht-sieht-cdu-gut-aufgestellt-986975"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler"
+  ]
+ },
+ {
+  "id": "cdu-maassen-01",
+  "sprecher": "Hans-Georg Maaßen",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Mitglied (Thüringen, 2021 Bundestagskandidat), ehem. Präsident des Bundesamts für Verfassungsschutz; Werteunion-Umfeld",
+  "zitat": "eliminatorischer Rassismus gegen Weiße",
+  "datum": "2023-01",
+  "kontext": "Twitter-Beitrag Maaßens in der Woche bis 22.01.2023: Die Stoßrichtung der 'treibenden Kräfte im politischen-medialen Raum' sei 'eliminatorischer Rassismus gegen Weiße'. Daraufhin forderte das CDU-Präsidium ihn einstimmig zum Parteiaustritt auf (30.01.2023).",
+  "kontext_kurz": "Maaßens Tweet über 'Rassismus gegen Weiße', Jan 2023 (damals CDU)",
+  "quellen": [
+   "https://taz.de/Antrag-auf-Parteiausschlussverfahren/!5911309/",
+   "https://www.juedische-allgemeine.de/allgemein/gebrauch-von-sprache-aus-dem-milieu-der-antisemiten-und-verschwoerungsideologen-zutiefst-verstoerend-und-unertraeglich",
+   "https://www.lto.de/recht/nachrichten/n/cdu-hans-georg-maassen-parteiaustritt-forderung-partei-praesidium-parteiausschlussverfahren/print.html"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "cdu-ludwig-01",
+  "sprecher": "Saskia Ludwig",
+  "partei": "CDU",
+  "rolle_damals": "CDU-Politikerin aus Brandenburg (inzwischen Bundestagsabgeordnete), prominente Gegnerin der 'Brandmauer'",
+  "zitat": "Wenn über 50 Prozent Mitte-Rechts wählen, dann muss es auch eine Mitte-Rechts-Regierung geben für die Bürger.",
+  "datum": "2025",
+  "kontext": "Interview mit dem Berliner Lokalsender TV.Berlin vor der Bundestagswahl 2025, in dem sie für eine Regierung rechts der Mitte warb. Im August 2025 sorgte sie zudem mit einem Treffen mit Alice Weidel beim MCC-Festival in Ungarn für Streit in der Union.",
+  "kontext_kurz": "über Mitte-rechts-Mehrheit, TV.Berlin-Interview vor BTW 2025",
+  "quellen": [
+   "https://www.zdfheute.de/politik/saskia-ludwig-cdu-afd-weidel-100.html"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler"
+  ]
+ },
+ {
+  "id": "cdu-raeuscher-01",
+  "sprecher": "Alexander Räuscher",
+  "partei": "früher CDU",
+  "rolle_damals": "früherer CDU-Landtagsabgeordneter in Sachsen-Anhalt (nicht mehr im 2026 gewählten Landtag); laut Berichten langjähriger Brandmauer-Gegner",
+  "zitat": "Das Wahlergebnis verlangt, dass Herr Siegmund Ministerpräsident wird. Die CDU sollte seine Wahl ermöglichen",
+  "datum": "2026-10-08",
+  "kontext": "Äußerung gegenüber dem Tagesspiegel nach der Landtagswahl in Sachsen-Anhalt (06.09.2026) zur Frage, ob die CDU den AfD-Spitzenkandidaten Ulrich Siegmund im Dezember zum Ministerpräsidenten wählen soll. CDU-Landesvize Marco Tullner lehnte das klar ab.",
+  "kontext_kurz": "über Siegmund-Wahl zum MP, Tagesspiegel, Okt 2026",
+  "quellen": [
+   "https://www.volksstimme.de/deutschland-und-welt/deutschland/cdu-landesvize-tullner-wir-sind-keine-afd-hilfstruppe-4335338"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "cdu-raeuscher-02",
+  "sprecher": "Alexander Räuscher",
+  "partei": "früher CDU",
+  "rolle_damals": "früherer CDU-Landtagsabgeordneter in Sachsen-Anhalt",
+  "zitat": "Ich hätte Bauchschmerzen, Siegmund im Landtag zu wählen, aber ich würde es tun. Da müssen wir jetzt durch",
+  "datum": "2026-10-08",
+  "kontext": "Tagesspiegel-Interview nach der Landtagswahl Sachsen-Anhalt 2026, zur möglichen CDU-Wahl des AfD-Spitzenkandidaten Siegmund zum Ministerpräsidenten.",
+  "kontext_kurz": "über Wahl des AfD-Manns Siegmund zum MP, Okt 2026",
+  "quellen": [
+   "https://www.volksstimme.de/deutschland-und-welt/deutschland/cdu-landesvize-tullner-wir-sind-keine-afd-hilfstruppe-4335338"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "cdu-nathusius-01",
+  "sprecher": "Clara von Nathusius",
+  "partei": "CDU",
+  "rolle_damals": "Mitglied im Bundesvorstand der Jungen Union (Schatzmeisterin), ehem. Pressesprecherin bei Kulturstaatsminister Weimer",
+  "zitat": "Ich glaube, dass die Brandmauer ein gescheitertes Projekt ist.",
+  "datum": "2026-09-13",
+  "kontext": "ARD 'Bericht aus Berlin' (Sonntag 13.09.2026) nach der Landtagswahl in Sachsen-Anhalt; sie forderte, die Unvereinbarkeitsbeschlüsse 'in der jetzigen bestehenden Form' abzuschaffen, und schloss Sondierungsgespräche mit der AfD nicht aus.",
+  "kontext_kurz": "über die Brandmauer, ARD Bericht aus Berlin, Sept 2026",
+  "quellen": [
+   "https://www.hessenschau.de/politik/cdu-haelt-an-afd-abgrenzung-fest---doch-das-wort-soll-weg-v1,brandmauerdebatte-cdu-100.html",
+   "https://www.leinetal24.de/welt/clara-von-nathusius-cdu-fordert-ende-der-brandmauer-und-attackiert-merz-zr-94491000.html"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler"
+  ]
+ },
+ {
+  "id": "csu-seehofer-01",
+  "sprecher": "Horst Seehofer",
+  "partei": "CSU",
+  "rolle_damals": "Bundesinnenminister und CSU-Vorsitzender",
+  "zitat": "Die Migrationsfrage ist die Mutter aller politischen Probleme in diesem Land.",
+  "datum": "2018-09-05",
+  "kontext": "Rheinische-Post-Interview, veröffentlicht rund um die Klausur der CSU-Landesgruppe in Neuhardenberg (05./06.09.2018), nach den Ausschreitungen in Chemnitz. Die Kurzform 'Mutter aller Probleme' kam laut Berichten aus dem Teilnehmerkreis der Klausur.",
+  "kontext_kurz": "Rheinische-Post-Interview als Innenminister, Sept 2018",
+  "quellen": [
+   "https://www.derstandard.at/story/2000086798388/seehofer-nennt-migration-mutter-aller-probleme",
+   "https://www.evangelisch.de/inhalte/152105/06-09-2018/seehofer-migration-ist-die-mutter-aller-probleme"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "csu-seehofer-02",
+  "sprecher": "Horst Seehofer",
+  "partei": "CSU",
+  "rolle_damals": "bayerischer Ministerpräsident und CSU-Vorsitzender",
+  "zitat": "Herrschaft des Unrechts",
+  "datum": "2016-02-09",
+  "kontext": "Seehofer warf der Bundesregierung (Merkel) in der Flüchtlingspolitik eine 'Herrschaft des Unrechts' vor (Interview, Meldungen vom 09./10.02.2016). Es folgte breite Kritik, auch aus der SPD.",
+  "kontext_kurz": "CSU-Chef über Merkels Flüchtlingspolitik, Feb 2016",
+  "quellen": [
+   "https://www.leinetal24.de/welt/seehofer-aeusserungen-herrschaft-unrechts-vergleich-unrechtsstaaten-zr-6112226.html",
+   "https://web.de/magazine/politik/horst-seehofer-angela-merkels-fluechtlingspolitik-schaden-31345766"
+  ],
+  "verwendung": [
+   "sprechblase:hinterbaenkler",
+   "sprechblase:reichsbuerger"
+  ]
+ },
+ {
+  "id": "afd-hoecke-11",
+  "sprecher": "Björn Höcke",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Landes- und Fraktionsvorsitzender in Thüringen",
+  "zitat": "Bis jetzt ist unsere Geistesverfassung, unser Gemütszustand immer noch der eines total besiegten Volkes.",
+  "datum": "2017-01-17",
+  "kontext": "Rede bei den 'Dresdner Gesprächen' der Jungen Alternative im Ballhaus Watzke, Dresden - dieselbe Rede, in der er das Holocaust-Mahnmal 'Denkmal der Schande' nannte und eine 'erinnerungspolitische Wende um 180 Grad' forderte.",
+  "kontext_kurz": "über deutsche Geschichte, Dresdner Rede der Jungen Alternative 2017",
+  "quellen": [
+   "https://www.tagesspiegel.de/politik/19273518.html",
+   "https://www.tagesspiegel.de/politik/der-totale-hocke-4912966.html"
+  ],
+  "verwendung": [
+   "sprechblase:reichsbuerger",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "afd-siegmund-01",
+  "sprecher": "Ulrich Siegmund",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Spitzenkandidat und Fraktionsvorsitzender im Landtag von Sachsen-Anhalt",
+  "zitat": "Das maße ich mir nicht an zu bewerten, weil ich die gesamte Menschheit nicht aufarbeiten kann [...]",
+  "datum": "2025-11-21",
+  "kontext": "Auf die Frage von Gordon Repinski 'Würden Sie auch sagen, das war das schlimmste Menschheitsverbrechen?' (zur NS-Zeit/Holocaust) in einem 45-minütigen Interview-Podcast. Der Zentralrat der Juden warf ihm Relativierung vor ('völlige Schamlosigkeit', Schuster).",
+  "kontext_kurz": "auf die Frage nach dem 'schlimmsten Menschheitsverbrechen', Podcast Nov 2025",
+  "quellen": [
+   "https://correctiv.org/faktencheck/2025/11/27/zitat-zum-teil-erfunden-was-ulrich-siegmund-zum-holocaust-sagte-und-was-nicht/",
+   "https://www.juedische-allgemeine.de/politik/voellige-schamlosigkeit-zentralrat-der-juden-kritisiert-afd-spitzenkandidat-fuer-ns-relativierung/"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "afd-siegmund-02",
+  "sprecher": "Ulrich Siegmund",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Spitzenkandidat und Fraktionsvorsitzender im Landtag von Sachsen-Anhalt",
+  "zitat": "[...] weil wir bei späteren Remigrations- und Abschiebeoffensiven natürlich [...] entsprechende Hilfsmittel brauchen.",
+  "datum": "2026-09-09",
+  "kontext": "Pressekonferenz der AfD Sachsen-Anhalt auf die Frage, ob er sich Produktion von Raketen/Drohnen des israelischen Rüstungskonzerns Elbit in Sangerhausen vorstellen könne. Davor: 'Wir verteufeln nicht pauschal die Produktion von Rüstungsgütern'.",
+  "kontext_kurz": "über Rüstung und 'Remigrationsoffensiven', Pressekonferenz Sept 2026",
+  "quellen": [
+   "https://correctiv.org/aktuelles/afd/2026/09/11/siegmund-afd-ruestung-remigration-ueberblick/",
+   "https://www.nordkurier.de/politik/siegmund-verknuepft-das-thema-remigration-und-aufruestung-brauchen-entsprechende-hilfsmittel-4857470"
+  ],
+  "verwendung": [
+   "sprechblase:identitaerer_hipster",
+   "sprechblase:besorgter_buerger",
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "afd-maier-02",
+  "sprecher": "Jens Maier",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Bundestagsabgeordneter, Richter am Landgericht Dresden (beurlaubt)",
+  "zitat": "Dem kleinen Halb***** [N-Wort zensiert] scheint einfach zu wenig Beachtung geschenkt worden zu sein [...]",
+  "datum": "2018-01-02",
+  "kontext": "Tweet vom Account Maiers über Noah Becker (Sohn von Boris Becker), nachdem dieser sich beklagt hatte, ständig nur als Sohn gesehen zu werden. Tweet gelöscht; Maier sagte, ein Mitarbeiter habe ihn verfasst.",
+  "kontext_kurz": "Tweet von Maiers Account über Noah Becker, 2018; er schob ihn auf einen Mitarbeiter",
+  "quellen": [
+   "https://www.lto.de/recht/nachrichten/n/jens-maier-afd-richter-bundestagsabgeordneter-rassistischer-kommentar-noah-becker",
+   "https://www.vice.com/de/article/jens-maier-urteil-afd-politiker-muss-wegen-rassistischem-tweet-15000-euro-schmerzensgeld-an-noah-becker-zahlen/"
+  ],
+  "verwendung": [
+   "ladebildschirm",
+   "startbildschirm"
+  ]
+ },
+ {
+  "id": "afd-vallendar-01",
+  "sprecher": "Marc Vallendar",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Abgeordneter im Berliner Abgeordnetenhaus",
+  "zitat": "Mag ja sein, dass es Kriegsverbrechen gegeben hat",
+  "datum": "2025-01-27",
+  "kontext": "Innenausschuss des Berliner Abgeordnetenhauses am Internationalen Holocaust-Gedenktag, in einem längeren Redebeitrag; Ausschussvorsitzender Dörstelmann (SPD) fragte, ob er sich des Datums bewusst sei. Vallendar korrigierte sich ('Es gab Kriegsverbrechen').",
+  "kontext_kurz": "im Innenausschuss Berlin am Holocaust-Gedenktag 2025",
+  "quellen": [
+   "https://de.nachrichten.yahoo.com/unversch%C3%A4mtheit-holocaust-gedenktag-sorgt-afd-163834618.html"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "afd-petry-02",
+  "sprecher": "Frauke Petry",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Bundesvorsitzende",
+  "zitat": "Wenn er damit zu tun hat, dass es um das Volk geht, was ist daran per se negativ?",
+  "datum": "2016-09-11",
+  "kontext": "Interview mit der Welt am Sonntag über den Begriff 'völkisch'; sie sagte auch, der Begriff solle 'wieder positiv besetzt' werden.",
+  "kontext_kurz": "über das Wort 'völkisch', Welt am Sonntag, Sept 2016",
+  "quellen": [
+   "https://www.vol.at/afd-chefin-will-begriff-voelkisch-positiv-besetzen/4900717",
+   "https://correctiv.org/ruhr/faktencheck-ruhr/2017/04/21/frauke-petry-und-das-voelkische-was-stimmt"
+  ],
+  "verwendung": [
+   "ladebildschirm"
+  ]
+ },
+ {
+  "id": "cdu-fraktion-01",
+  "sprecher": "CDU/CSU-Bundestagsfraktion (unterzeichnet von Friedrich Merz und Alexander Dobrindt)",
+  "partei": "CDU/CSU",
+  "rolle_damals": "Fraktion der CDU/CSU im Bundestag (Kleine Anfrage, Drucksache 20/15035, unterzeichnet von Fraktionsvorsitzendem Friedrich Merz und Alexander Dobrindt)",
+  "zitat": "Ein besonders umstrittenes Beispiel ist der Verein „Omas gegen Rechts“, der über das Programm „Demokratie leben!“ Fördermittel erhalten hat.",
+  "datum": "2025-02-24",
+  "kontext": "Einleitungstext der Kleinen Anfrage 'Politische Neutralität staatlich geförderter Organisationen' (551 Fragen zu NGOs, Drucksache 20/15035, datiert 24.02.2025, unterzeichnet 21.02.2025), kurz nach den Protesten gegen die CDU vor der Bundestagswahl. Allein 25 Fragen (Nr. 45 bis 69) gelten den Omas gegen Rechts, u. a. Nr. 54: 'Werden staatliche Fördergelder, die der Verein Omas gegen Rechts Deutschland e. V. vereinnahmt hat, nach Einschätzung der Bundesregierung für parteipolitische Zwecke zweckentfremdet?'",
+  "kontext_kurz": "Kleine Anfrage der CDU/CSU-Fraktion zu NGOs, Bundestag, Feb 2025",
+  "quellen": [
+   "https://dserver.bundestag.de/btd/20/150/2015035.pdf",
+   "https://www.vorwaerts.de/inland/anfrage-zu-omas-gegen-rechts-die-cdu-hat-uns-damit-viele-probleme-bereitet"
+  ],
+  "verwendung": [
+   "freischalt_karte:oma"
+  ]
+ },
+ {
+  "id": "merz-40",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Bundeskanzler und CDU-Bundesvorsitzender",
+  "zitat": "Lifestyle und Vier-Tage-Woche. Alles schön, kann man alles machen",
+  "datum": "2026-02-18",
+  "kontext": "Rede beim Politischen Aschermittwoch der CDU in Trier, kurz vor dem CDU-Parteitag, mitten im Streit um den Antrag des CDU-Wirtschaftsflügels 'Kein Rechtsanspruch auf Lifestyle-Teilzeit'. Merz forderte einen Mentalitätswechsel und mehr Leistungsbereitschaft; weiter im Text: 'Aber wenn wir unseren Wohlstand erhalten wollen, dann müssen wir jetzt alle mal zusammen ins Rad packen.'",
+  "kontext_kurz": "über Lifestyle und Vier-Tage-Woche, Aschermittwoch in Trier 2026",
+  "quellen": [
+   "https://www.zdfheute.de/politik/merz-mentalitaetswechsel-politischer-aschermittwoch-100.html",
+   "https://www.handelsblatt.com/politik/deutschland/vor-cdu-parteitag-zusammen-ins-rad-packen-merz-fordert-mentalitaetswechsel/100201501.html",
+   "https://www.tagesspiegel.de/politik/mussen-zusammen-ins-rad-packen-merz-fordert-mentalitatswechsel-zu-mehr-leistungsbereitschaft-15267745.html",
+   "https://www.lessentiel.lu/de/story/deutschland-merz-teilt-gegen-lifestyle-teilzeit-aus-103509284"
+  ],
+  "verwendung": [
+   "freischalt_karte:teilzeit"
+  ]
+ },
+ {
+  "id": "merz-41",
+  "sprecher": "Friedrich Merz",
+  "partei": "CDU",
+  "rolle_damals": "Kanzlerkandidat der Union und CDU-Bundesvorsitzender",
+  "zitat": "Ich frage mal die Ganzen, die da draußen rumlaufen, Antifa und gegen Rechts: Wo waren die denn, als Walter Lübcke in Kassel ermordet worden ist von einem Rechtsradikalen?",
+  "datum": "2025-02-22",
+  "kontext": "Rede beim gemeinsamen Wahlkampfabschluss von CDU und CSU im Münchner Löwenbräukeller, gerichtet an die Demonstranten vor dem Gebäude. Die Familie von Walter Lübcke zeigte sich 'sehr befremdet'; Lübckes Witwe widersprach der Unterstellung, nach dem Mord seien Tausende auf die Straße gegangen.",
+  "kontext_kurz": "über Antifa-Demonstranten, Wahlkampfabschluss der Union in München 2025",
+  "quellen": [
+   "https://www.nd-aktuell.de/artikel/1189274.wahlkampf-merz-gegen-antifa.html",
+   "https://www.hessenschau.de/politik/witwe-von-walter-luebcke-kritisiert-friedrich-merz-sehr-befremdet-v4,merz-aeusserung-walter-luebcke-100.html",
+   "https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_100613614/merz-ueber-luebcke-mord-witwe-kritisiert-seine-aussage-scharf.html"
+  ],
+  "verwendung": [
+   "freischalt_karte:antifa"
+  ]
+ },
+ {
+  "id": "weidel-09",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Bundesvorstandsmitglied",
+  "zitat": "Eine Steuer, die gegen Null geht, stärkt die Familien, fördert den unternehmerischen Geist, stärkt den Mittelstand und macht nicht zuletzt den Wirtschaftsstandort Deutschland attraktiver.",
+  "datum": "2016-02-15",
+  "kontext": "AfD-Pressemitteilung 'Weidel: Reform der Erbschaftsteuer - Eine historische Chance für eine Abschaffung' (Berlin, 15.02.2016) zur Debatte um die Reform der Erbschaftsteuer. Weidel forderte darin, die Erbschaftsteuer ganz abzuschaffen, weil der Staat 'am erarbeiteten Privateinkommen und -vermögen doppelt verdient'.",
+  "kontext_kurz": "über die Abschaffung der Erbschaftsteuer, AfD-Pressemitteilung 2016",
+  "quellen": [
+   "https://www.afd.de/weidel-reform-der-erbschaftssteuer-eine-historische-chance-fuer-eine-abschaffung/",
+   "https://www.aktiencheck.de/exklusiv/Artikel-Weidel_AfD_Reform_Erbschaftssteuer_Eine_historische_Chance_fuer_eine_Abschaffung-7021961"
+  ],
+  "verwendung": [
+   "boss_ruf:eidgenossin"
+  ]
+ },
+ {
+  "id": "weidel-10",
+  "sprecher": "Alice Weidel",
+  "partei": "AfD",
+  "rolle_damals": "AfD-Bundessprecherin und Kanzlerkandidatin",
+  "zitat": "Ich zahle hier meine Steuern",
+  "datum": "2025-02-16",
+  "kontext": "RTL-'Quadrell' (Kampf ums Kanzleramt, u. a. mit Günther Jauch) auf die Frage nach ihrem Wohnsitz in der Schweiz (Einsiedeln, wo ihre Partnerin und die Kinder leben) und ihrer Steuerpflicht. Weidel verwies auf das Doppelbesteuerungsabkommen und gab Überlingen als deutschen Wohnsitz an.",
+  "kontext_kurz": "über ihre Steuern und ihren Schweizer Wohnsitz, RTL-Quadrell 2025",
+  "quellen": [
+   "https://www.20min.ch/story/kanzlerduell-keine-steuern-alice-weidel-erklaert-ihre-schweizer-wohnsituation-103283171",
+   "https://politik.watson.de/politik/deutschland/570975740-alice-weidel-bezahlt-sie-in-der-schweiz-doch-steuern",
+   "https://www.blick.ch/ausland/versteuern-sie-alles-in-deutschland-alice-weidel-in-tv-debatte-wegen-schweiz-wohnsitz-unter-druck-id20598804.html"
+  ],
+  "verwendung": [
+   "album"
+  ]
+ }
+]

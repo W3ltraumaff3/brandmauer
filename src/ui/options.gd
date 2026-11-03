@@ -54,6 +54,17 @@ func build() -> void:
 	_sfx.value_changed.connect(_on_sfx)
 	grid.add_child(_sfx)
 
+	# Geräusche der Mitspieler:innen (audio.md §5): a local setting, no effect in solo.
+	var tl := UIKit.label(tr("OPTIONS_TEAMMATE_SFX"), 24)
+	tl.mouse_filter = MOUSE_FILTER_PASS
+	tl.tooltip_text = tr("OPTIONS_TEAMMATE_SFX_TIP")
+	grid.add_child(tl)
+	var mates := _slider(UIKit.option_float("teammate_sfx", 0.5))
+	mates.name = "teammate_sfx"
+	mates.tooltip_text = tr("OPTIONS_TEAMMATE_SFX_TIP")
+	mates.value_changed.connect(_on_teammate_sfx)
+	grid.add_child(mates)
+
 	grid.add_child(UIKit.label(tr("OPTIONS_WINDOW_MODE"), 24))
 	var wm := OptionButton.new()
 	wm.name = "window_mode"
@@ -172,7 +183,12 @@ func _on_sfx(v: float) -> void:
 	var now := Time.get_ticks_msec() / 1000.0
 	if now - _sfx_timer > 0.25:
 		_sfx_timer = now
-		UIApi.sfx("pickup")
+		UIApi.sfx("pfand")
+
+
+func _on_teammate_sfx(v: float) -> void:
+	UIApi.set_option("teammate_sfx", v)
+	UIApi.call_opt(UIApi.audio(), "set_teammate_volume", [v])
 
 
 ## Fx reads the option every frame, so this applies live during a wave.

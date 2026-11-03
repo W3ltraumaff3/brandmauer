@@ -95,6 +95,7 @@ class SimPlayer:
 	var dmg_total := {}                # source key -> damage dealt this run
 	var dmg_wave := {}                 # source key -> damage dealt this wave
 	var sources := {}                  # source key -> {"kind", "id", "tier", "sold"}
+	var wave_base := {}                # counters at wave start, for run_stats.last_wave (D-152)
 	var log := {
 		"lifesteal": 0.0, "regen": 0.0, "sani": 0.0, "dmg_taken": 0.0, "dmg_blocked": 0.0, "dodges": 0,
 		"crits": 0, "tax_paid": 0, "tax_received": 0, "pfand_collected": 0, "pfand_income": 0, "pfand_spent": 0, "ults": 0,
@@ -254,7 +255,7 @@ var kasse := 0
 var team_level := 0
 var team_xp := 0.0
 var stage := 0
-var vertrag := {"options": [], "votes": {}, "active": "", "waves_left": 0}
+var vertrag := {"options": [], "votes": {}, "active": "", "waves_left": 0, "drafted": 0, "klimageld": -1}
 var streik_available := false
 var streik_active := 0.0
 var streik_discount := false
@@ -430,6 +431,11 @@ func _recompute(p: SimPlayer) -> void:
 	s["speed"] += v.get("player_speed", 0.0)
 	s["damage"] += v.get("damage", 0.0)
 	s["xp"] += v.get("xp", 0.0)
+	for k in v.get("stats", {}):
+		s[k] += v["stats"][k]
+	if p.id == int(vertrag.get("drafted", 0)):
+		for k in v.get("draft", {}):
+			s[k] += v["draft"][k]
 	if org == "omas":
 		s["hp_regen"] += 1.0
 	if p.flags.has("dodge_build"):
@@ -537,6 +543,8 @@ func _query(pos: Vector2, radius: float) -> Array:
 
 func _begin_wave(n: int, force_encounter := "") -> void:
 	_resolve_vertrag()
+	vertrag["klimageld"] = -1
+	_draft()
 	wave = n
 	wave_time = 0.0
 	wave_len = Content.wave_length(n)
@@ -565,15 +573,19 @@ func _begin_wave(n: int, force_encounter := "") -> void:
 		p.pending_shots.clear()
 		p.dmg_wave.clear()
 		p.collected_wave = 0
+		p.wave_base = _wave_counters(p)
 		p.ult_ready = true
 		p.ult_t = 0.0
 		p.dash_t = 0.0
 		p.boost_t = 0.0
 		p.regen_boost_t = 0.0
 		p.ready = false
-		for w in p.weapons:
-			w["cd"] = 0.5
+		for wi in p.weapons.size():
+			p.weapons[wi]["cd"] = 0.5 - _stagger(p, wi)
 		i += 1
+	var drafted = players.get(int(vertrag["drafted"]))
+	if drafted:
+		_event(["say", drafted.pos, "SAY_EINGEZOGEN", ""])
 	streik_available = org == "gewerkschaft" and n % 5 == 0
 	effects.clear()
 	encounter = ""
@@ -596,7 +608,6 @@ func _begin_wave(n: int, force_encounter := "") -> void:
 		s.pos = Arena.CENTER + Vector2(-40, 40)
 		summons.append(s)
 	_event(["wave_start", n])
-	_event(["sfx", "wave_start", Vector2.INF])
 	meta_dirty = true
 
 
@@ -630,11 +641,13 @@ func _end_wave() -> void:
 		if income > 0:
 			_give_pfand(p, income)
 			p.log["pfand_income"] += income
+		# flat Pfand amounts follow the price factor of the next Späti (D-150)
 		if p.flags.has("treuhand") and rng.randf() < Content.RED_BUILD["treuhand_chance"] + p.stats["luck"] / 200.0:
-			_give_pfand(p, Content.RED_BUILD["treuhand_pfand"])
-			p.log["pfand_income"] += Content.RED_BUILD["treuhand_pfand"]
+			var gain := int(round(Content.RED_BUILD["treuhand_pfand"] * Content.price_mult(wave + 1)))
+			_give_pfand(p, gain)
+			p.log["pfand_income"] += gain
 		if p.flags.has("maut"):
-			p.pfand = maxi(0, p.pfand - Content.RED_BUILD["maut_wave"])
+			p.pfand = maxi(0, p.pfand - int(round(Content.RED_BUILD["maut_wave"] * Content.price_mult(wave + 1))))
 		if p.flags.has("cumex"):
 			# the cap grows with the prices, so it keeps its value late in the run (D-130)
 			var refund := mini(int(round(Content.RED_BUILD["cumex_max"] * Content.price_mult(wave + 1))), p.pfand)
@@ -668,25 +681,26 @@ func _end_wave() -> void:
 		p.free_rerolls = int(Content.CHARACTERS[p.char_id].get("free_rerolls", 0))
 		p.ready = false
 		p.levelups += Content.levelups_after_wave(wave)
-		_make_offers(p)
+		_make_offers(p, true)
 		_make_levelup_options(p)
 	if org == "antifa":
 		_hole_repair_counter += 1
 		if _hole_repair_counter % 2 == 0:
 			_repair_one_hole()
+	vertrag["drafted"] = 0
 	if vertrag["active"] != "":
 		vertrag["waves_left"] -= 1
 		if vertrag["waves_left"] <= 0:
+			_vertrag_payout()
 			vertrag["active"] = ""
-			for p in players.values():
-				_recompute(p)
+		for p in players.values():
+			_recompute(p)
 	if (wave + 1) in Content.VERTRAG_WAVES:
 		var opts: Array = Content.VERTRAG_ORDER.duplicate()
 		_shuffle(opts)
 		vertrag["options"] = opts.slice(0, 3)
 		vertrag["votes"] = {}
 	_event(["wave_end", wave])
-	_event(["sfx", "wave_end", Vector2.INF])
 	phase = Phase.SHOP
 	streik_active = 0.0
 	meta_dirty = true
@@ -698,11 +712,41 @@ func _resolve_vertrag() -> void:
 		return
 	var ids := players.values().filter(func(p): return p.state != 2).map(func(p): return p.id)
 	var chosen := resolve_votes(opts, vertrag["votes"], ids)
-	vertrag = {"options": [], "votes": {}, "active": chosen, "waves_left": 4 if chosen != "" else 0}
+	vertrag = {"options": [], "votes": {}, "active": chosen, "waves_left": 4 if chosen != "" else 0,
+		"drafted": 0, "klimageld": -1}
 	for p in players.values():
 		_recompute(p)
 	if chosen != "":
 		_event(["say", Arena.CENTER - Vector2(0, 100), "VERTRAG_%s_NAME" % chosen.to_upper(), ""])
+
+
+## Wehrdienst per Los (D-155): one present player per wave, solo always you.
+## Before the players are placed; _begin_wave recomputes their stats.
+func _draft() -> void:
+	vertrag["drafted"] = 0
+	if not _vertrag_def().has("draft"):
+		return
+	var pool := players.values().filter(func(p): return p.state != 2 and p.state != 3)
+	if pool.is_empty():
+		return
+	vertrag["drafted"] = pool[rng.randi_range(0, pool.size() - 1)].id
+
+
+## Klimageld (D-155): when the contract ends, one roll for the whole team; the
+## Späti shows the result (vertrag.klimageld: -1 none, 0 verschoben, else Pfand).
+func _vertrag_payout() -> void:
+	var v := _vertrag_def()
+	if not v.has("payout"):
+		return
+	vertrag["klimageld"] = 0
+	if rng.randf() >= float(v["payout_chance"]):
+		return
+	var gain := int(round(v["payout"] * Content.price_mult(wave + 1)))
+	vertrag["klimageld"] = gain
+	for p in players.values():
+		if p.state != 2:
+			_give_pfand(p, gain)
+			p.log["pfand_income"] += gain
 
 
 ## Unanimous vote picks that option, otherwise the worst one (exposed for tests).
@@ -1059,7 +1103,7 @@ func _antifa_repair(p: SimPlayer, dt: float) -> void:
 		p.repair_time = 0.0
 		wall[seg] = true
 		_event(["say", p.pos, "SAY_ANTIFA_REPAIR", ""])
-		_event(["sfx", "vote", p.pos])
+		_event(["sfx", "vote", p.pos, p.id])
 		meta_dirty = true
 
 
@@ -1087,7 +1131,6 @@ func _step_revives(dt: float) -> void:
 			var cost = helper.stats["max_hp"] * (0.05 if helper.flags.has("erste_hilfe") else 0.1)
 			helper.hp = maxf(1.0, helper.hp - cost)
 			_event(["revive", d.id])
-			_event(["sfx", "revive", d.pos])
 			meta_dirty = true
 
 
@@ -1108,8 +1151,8 @@ func damage_player(p: SimPlayer, amount: float, source_pos := Vector2.INF) -> vo
 	p.log["dmg_blocked"] += maxf(0.0, amount - dmg)
 	p.hp -= dmg
 	p.iframes = IFRAMES
-	_event(["dmg", p.pos, int(round(dmg)), false, true])
-	_event(["sfx", "hurt", p.pos])
+	_event(["dmg", p.pos, int(round(dmg)), false, true, p.id])
+	_event(["sfx", "hurt", p.pos, p.id])
 	if p.hp <= 0.0 and p.flags.has("zweiter_wahlgang") and not p.second_round_used:
 		p.second_round_used = true
 		p.hp = p.stats["max_hp"] * Content.RED_BUILD["second_round_hp"]
@@ -1123,7 +1166,6 @@ func damage_player(p: SimPlayer, amount: float, source_pos := Vector2.INF) -> vo
 			p.state = 1
 			p.revive_progress = 0.0
 			_event(["down", p.id])
-			_event(["sfx", "down", p.pos])
 		else:
 			p.state = 1
 		meta_dirty = true
@@ -1201,7 +1243,7 @@ func _step_weapons(dt: float) -> void:
 				if busy:
 					target = busy
 			if target == null:
-				w["cd"] = 0.05
+				w["cd"] = 0.05 + _stagger(p, wi)
 				continue
 			w["cd"] = def["cd"]
 			var aim_at: Vector2 = target.pos
@@ -1275,6 +1317,21 @@ func _weapon_range(p: SimPlayer, def: Dictionary) -> float:
 	return maxf(40.0, def["range"] + bonus)
 
 
+## Copies of the same weapon fire staggered (GDD §11, D-160): copy k of n is offset
+## by k/n × min(cooldown, 0.5 s), so they don't all hit the same enemy in one frame.
+## Wave start pulls it forward, a pause without a target delays it.
+func _stagger(p: SimPlayer, wi: int) -> float:
+	var id: String = p.weapons[wi]["id"]
+	var k := 0
+	var n := 0
+	for j in p.weapons.size():
+		if p.weapons[j]["id"] == id:
+			if j < wi:
+				k += 1
+			n += 1
+	return minf(float(Content.WEAPONS[id]["cd"]), 0.5) * k / n
+
+
 func weapon_damage(p: SimPlayer, w: Dictionary) -> float:
 	var def: Dictionary = Content.WEAPONS[w["id"]]
 	var d := Content.weapon_damage(w["id"], w["tier"])
@@ -1335,7 +1392,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			pr.bounce = def.get("bounce", 0) + (w["tier"] - 1 if w["id"] == "gendersternchen" else 0)
 			pr.boomerang = def.get("boomerang", false)
 			projectiles.append(pr)
-			_event(["sfx", "shoot", p.pos])
+			_event(["sfx", "shoot", p.pos, p.id])
 		"cone":
 			var r := _weapon_range(p, def)
 			var half := deg_to_rad(def["arc"]) / 2.0
@@ -1365,7 +1422,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 							and absf(angle_difference(dir.angle(), (pr.pos - p.pos).angle())) <= half + 0.15:
 						pr.alive = false
 			_event(["swing", p.pos, dir.angle(), r, def["arc"], w["id"]])
-			_event(["sfx", "melee", p.pos])
+			_event(["sfx", "melee", p.pos, p.id])
 		"puddle":
 			var h := SimHazard.new()
 			h.type = Content.idx(Content.HAZARD_ORDER, "kleber")
@@ -1378,7 +1435,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			h.owner = p.id
 			h.data = {"src": _wkey(w)}
 			hazards.append(h)
-			_event(["sfx", "shoot", p.pos])
+			_event(["sfx", "shoot", p.pos, p.id])
 		"lob":
 			var at: Vector2 = target_pos if target_pos != Vector2.INF else p.pos + dir * def["range"]
 			var h := SimHazard.new()
@@ -1398,7 +1455,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 			pr.harmless = true
 			pr.owner = p.id
 			projectiles.append(pr)
-			_event(["sfx", "shoot", p.pos])
+			_event(["sfx", "shoot", p.pos, p.id])
 		"wall":
 			var at: Vector2 = target_pos if target_pos != Vector2.INF else p.pos + dir * def["range"]
 			var wid := _wkey(w)
@@ -1425,7 +1482,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				h.owner = p.id
 				h.data = {"src": wid, "wall": wall_id}
 				hazards.append(h)
-			_event(["sfx", "melee", p.pos])
+			_event(["sfx", "melee", p.pos, p.id])
 		"mark":
 			var strongest := _pick_target(p.pos, _weapon_range(p, def), Target.MOST_HP)
 			if strongest:
@@ -1438,7 +1495,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				h.owner = p.id
 				h.data = {"dmg": dmg, "crit": crit, "src": _wkey(w), "enemy": strongest.id}
 				hazards.append(h)
-				_event(["sfx", "vote", strongest.pos])
+				_event(["sfx", "vote", strongest.pos, p.id])
 		"chain":
 			var hit := {}
 			var cur := _nearest_enemy(p.pos, _weapon_range(p, def))
@@ -1453,7 +1510,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				d *= 1.0 - def["falloff"]
 				cur = _nearest_enemy(cur.pos, def["jump_range"], hit)
 			_event(["chain", pts])
-			_event(["sfx", "shoot", p.pos])
+			_event(["sfx", "shoot", p.pos, p.id])
 		"thrust":
 			# Demo-Fahnenstange: a straight jab, hits everything in a narrow line.
 			var reach := _weapon_range(p, def)
@@ -1465,7 +1522,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				if closest.distance_to(e.pos) <= def["width"] + e.radius:
 					_damage_enemy(e, dmg, p, crit, dir, def.get("knock", 0.0), _wkey(w))
 			_event(["swing", p.pos, dir.angle(), reach, def["arc"], w["id"]])
-			_event(["sfx", "melee", p.pos])
+			_event(["sfx", "melee", p.pos, p.id])
 		"beam":
 			var to: Vector2 = p.pos + dir * _weapon_range(p, def)
 			for e in _query((p.pos + to) * 0.5, _weapon_range(p, def) * 0.5 + def["width"]):
@@ -1476,7 +1533,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 					_damage_enemy(e, dmg, p, crit, dir, 10.0, _wkey(w))
 					e.expose_t = def["expose"]
 			_event(["beam", p.pos, to])
-			_event(["sfx", "shoot", p.pos])
+			_event(["sfx", "shoot", p.pos, p.id])
 		"fan":
 			var count: int = def["count_late"] if wave >= int(def["late_wave"]) else def["count"]
 			var half := deg_to_rad(def["arc"]) / 2.0
@@ -1496,7 +1553,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 					pr.pierce += Content.RED_BUILD["ranged_pierce"]
 					pr.vel *= Content.RED_BUILD["ranged_speed"]
 				projectiles.append(pr)
-			_event(["sfx", "shoot", p.pos])
+			_event(["sfx", "shoot", p.pos, p.id])
 		"swarm":
 			var picked := {}
 			for k in int(def["count"]):
@@ -1513,7 +1570,7 @@ func _fire(p: SimPlayer, w, dir: Vector2, target_pos := Vector2.INF) -> void:
 				s.cd = float(t.id)          # target enemy id
 				s.source = _wkey(w)
 				summons.append(s)
-			_event(["sfx", "melee", p.pos])
+			_event(["sfx", "melee", p.pos, p.id])
 		"turret":
 			# stands per copy by tier (D-100); each copy keeps its own, no cap per player
 			var mine := summons.filter(func(s): return s.alive and s.owner == p.id and s.weapon_index == p.weapons.find(w))
@@ -1716,7 +1773,7 @@ func _damage_enemy(e: SimEnemy, amount: float, src: SimPlayer, crit := false, kd
 			src.lifesteal_cd = 0.1
 	if _dmg_events < DMG_EVENTS_PER_FRAME and amount > 0.0:
 		_dmg_events += 1
-		_event(["dmg", e.pos, int(round(amount)), crit, false])
+		_event(["dmg", e.pos, int(round(amount)), crit, false, src.id if src else 0])
 	if e.hp <= 0.0:
 		_last_source = source
 		_kill_enemy(e, src)
@@ -1745,14 +1802,14 @@ func _kill_enemy(e: SimEnemy, killer: SimPlayer) -> void:
 			h.owner = killer.id
 			h.data = {"wumms": true}
 			hazards.append(h)
+	var kid := killer.id if killer else 0
 	if e.def["ai"] == "bomb" or e.no_reward:
-		_event(["kill", e.pos, e.type])
+		_event(["kill", e.pos, e.type, kid, false, true])
 		return
 	if e.encounter != "":
 		_on_encounter_unit_down(e)
 	else:
-		_event(["kill", e.pos, e.type])
-		_event(["sfx", "kill", e.pos])
+		_event(["kill", e.pos, e.type, kid, e.elite, false])
 	# loot
 	var value := int(round(float(e.def["pfand"]) * float(Content.BALANCE["pfand_mult"])))
 	var v := _vertrag_def()
@@ -1790,7 +1847,6 @@ func _add_xp(xp: float) -> void:
 		team_xp -= Content.xp_for_level(team_level)
 		team_level += 1   # stages only; level-up picks come per Späti (balancing.md §4)
 		_event(["levelup", team_level])
-		_event(["sfx", "levelup", Vector2.INF])
 		var st := Content.stage_for_level(team_level)
 		if st != stage:
 			stage = st
@@ -1862,7 +1918,26 @@ func run_stats(p: SimPlayer) -> Dictionary:
 		out[k] = int(round(out[k]))
 	out["damage"] = rows
 	out["kills"] = p.kills
+	var wave_dmg := 0.0
+	for v in p.dmg_wave.values():
+		wave_dmg += v
+	var now := _wave_counters(p)
+	out["last_wave"] = {
+		"damage": int(round(wave_dmg)),
+		"kills": int(now["kills"] - p.wave_base.get("kills", 0)),
+		"pfand": p.collected_wave,
+		"dmg_taken": int(round(now["dmg_taken"] - p.wave_base.get("dmg_taken", 0.0))),
+		"healed": int(round(now["healed"] - p.wave_base.get("healed", 0.0))),
+	}
 	return out
+
+
+## Run counters that run_stats.last_wave reports as "this wave only" (D-152).
+func _wave_counters(p: SimPlayer) -> Dictionary:
+	return {
+		"kills": p.kills, "dmg_taken": p.log["dmg_taken"],
+		"healed": p.log["lifesteal"] + p.log["regen"] + p.log["sani"],
+	}
 
 
 func _wumms(p: SimPlayer, pos: Vector2) -> void:
@@ -2506,7 +2581,7 @@ func _activate_ult(p: SimPlayer) -> void:
 					e.vuln_t = u["vuln_time"]   # double damage is no status effect (D-087)
 	p.log["ults"] += 1
 	_event(["ult", p.id, ult, p.pos])
-	_event(["sfx", "streik", p.pos])
+	_event(["sfx", "streik", p.pos, p.id])
 	meta_dirty = true
 
 
@@ -3343,7 +3418,6 @@ func _wende(e: SimEnemy) -> void:
 				pr.vel = -pr.vel
 				pr.life = maxf(pr.life, float(b["wende_book_life"]))
 	_event(["wende", dur, axis])
-	_event(["sfx", "wende", Vector2.INF])
 
 
 ## Der Sauerländer: Bierdeckel / Sondervermögen / Zirkuszelt, plus "Abstimmung,
@@ -4498,7 +4572,7 @@ func _step_pickups(dt: float) -> void:
 				_give_pfand(best, k.value)
 				best.log["pfand_collected"] += k.value
 				best.collected_wave += k.value
-				_event(["sfx", "pickup", k.pos])
+				_event(["sfx", "pickup", k.pos, best.id])
 			elif k.type == t_passant:
 				best.followers = mini(12, best.followers + 1)
 				_event(["say", best.pos, "SAY_PASSANT_JOINS", ""])
@@ -4570,39 +4644,65 @@ func _shuffle(arr: Array) -> void:
 		arr[j] = t
 
 
-func _make_offers(p: SimPlayer) -> void:
-	p.offers.clear()
+## Späti offers (GDD §6). Unsold locked offers keep their slot and price (D-148);
+## `new_visit` (a new Späti, not a reroll) uses their lock up. Then the weapon for
+## the build (balancing.md §5), then every free slot is a weapon with
+## shop_weapon_chance[weapons on the shelf], else an item (D-149).
+func _make_offers(p: SimPlayer, new_visit := false) -> void:
 	var count := 4 + int(_vertrag_def().get("offers", 0))
-	for i in count:
-		p.offers.append(_roll_offer(p))
-	_ensure_build_weapon(p)
-
-
-## balancing.md §5: every Späti offers at least one weapon for the player's build
-## (scaling match >= 0.5, or the same weapon as one they hold, to combine).
-func _ensure_build_weapon(p: SimPlayer) -> void:
-	if p.weapons.is_empty():
-		return
-	var style := weapon_style(p)
-	var owned := {}
-	for w in p.weapons:
-		owned[w["id"]] = true
-	var fits := func(id: String) -> bool: return owned.has(id) or style_match(style, id) >= 0.5
-	for o in p.offers:
-		if o["kind"] == "weapon" and fits.call(str(o["id"])):
-			return
-	var candidates := []
-	for id in Content.WEAPON_ORDER:
-		if fits.call(id):
-			candidates.append(id)
-	if candidates.is_empty():
-		return
-	var slot := p.offers.size() - 1
+	var slots := []
+	slots.resize(count)
+	var extra := []
 	for i in p.offers.size():
-		if p.offers[i]["kind"] == "item":
-			slot = i
-			break
-	p.offers[slot] = _weapon_offer(p, candidates[rng.randi_range(0, candidates.size() - 1)])
+		var o: Dictionary = p.offers[i]
+		if not o.get("locked", false) or o["sold"]:
+			continue
+		if new_visit:
+			o["locked"] = false
+		if i < count:
+			slots[i] = o
+		else:
+			extra.append(o)
+	for o in extra:   # a Koalitionsvertrag with fewer offers ended: never drop a locked one
+		var free := slots.find(null)
+		if free < 0:
+			slots.append(o)
+		else:
+			slots[free] = o
+	var free_slots := []
+	var has_fit := false
+	var shelf := 0
+	for i in slots.size():
+		if slots[i] == null:
+			free_slots.append(i)
+		elif slots[i]["kind"] == "weapon":
+			shelf += 1
+			has_fit = has_fit or _fits_build(p, str(slots[i]["id"]))
+	if not has_fit and not free_slots.is_empty():
+		var candidates := []
+		for id in Content.WEAPON_ORDER:
+			if _fits_build(p, id):
+				candidates.append(id)
+		if not candidates.is_empty():
+			var at: int = free_slots.pop_at(rng.randi_range(0, free_slots.size() - 1))
+			slots[at] = _weapon_offer(p, candidates[rng.randi_range(0, candidates.size() - 1)])
+			shelf += 1
+	for i in free_slots:
+		slots[i] = _roll_offer(p, shelf)
+		if slots[i]["kind"] == "weapon":
+			shelf += 1
+	p.offers = slots
+
+
+## balancing.md §5: a weapon for the player's build has a scaling match >= 0.5
+## with the weapons they hold, or is one of them (to combine).
+func _fits_build(p: SimPlayer, id: String) -> bool:
+	if p.weapons.is_empty():
+		return false
+	for w in p.weapons:
+		if w["id"] == id:
+			return true
+	return style_match(weapon_style(p), id) >= 0.5
 
 
 ## A shop offer for weapon `id`; the tier is rolled by wave and Glück.
@@ -4624,13 +4724,16 @@ func _weapon_offer(p: SimPlayer, id: String) -> Dictionary:
 		if r <= 0.0:
 			tier = t + 1
 			break
-	return {"kind": "weapon", "id": id, "tier": tier, "price": _price(Content.weapon_price(id, tier, next_wave)), "sold": false}
+	return {"kind": "weapon", "id": id, "tier": tier, "price": _price(Content.weapon_price(id, tier, next_wave)),
+		"sold": false, "locked": false}
 
 
-func _roll_offer(p: SimPlayer) -> Dictionary:
+## One random offer; `shelf` = weapons already on the shelf (D-149).
+func _roll_offer(p: SimPlayer, shelf := 1) -> Dictionary:
 	var luck: float = p.stats["luck"]
 	var next_wave := wave + 1
-	if rng.randf() < 0.35:
+	var chances: Array = Content.BALANCE["shop_weapon_chance"]
+	if rng.randf() < float(chances[clampi(shelf, 0, chances.size() - 1)]):
 		return _weapon_offer(p, _pick_weapon(p))
 	var pool := []
 	var total_w := 0.0
@@ -4651,7 +4754,7 @@ func _roll_offer(p: SimPlayer) -> Dictionary:
 			pick = entry[0]
 			break
 	return {"kind": "item", "id": pick, "tier": 1, "rarity": int(Content.ITEMS[pick]["rarity"]),
-		"price": _price(Content.item_price(pick, next_wave)), "sold": false}
+		"price": _price(Content.item_price(pick, next_wave)), "sold": false, "locked": false}
 
 
 ## Shop weapon pick favouring the player's style (GDD §6): weight 1 + 2 × how
@@ -4904,7 +5007,6 @@ func request(peer: int, action: String, arg = null) -> bool:
 			streik_active = STREIK_TIME
 			streik_discount = true
 			_event(["streik", STREIK_TIME])
-			_event(["sfx", "streik", Vector2.INF])
 			meta_dirty = true
 			return true
 		return false
@@ -4933,7 +5035,7 @@ func request(peer: int, action: String, arg = null) -> bool:
 			else:
 				p.items.append(o["id"])
 				if o["id"] == "maut_vertrag":
-					_give_pfand(p, Content.RED_BUILD["maut_now"])
+					_give_pfand(p, int(round(Content.RED_BUILD["maut_now"] * Content.price_mult(wave + 1))))
 				if o["id"] == "vogelschiss":
 					_grant(p, "ach_vogelschiss")
 				_recompute(p)
@@ -4942,7 +5044,6 @@ func request(peer: int, action: String, arg = null) -> bool:
 			p.buys += 1
 			p.log["pfand_spent"] += o["price"]
 			o["sold"] = true
-			_event(["sfx", "buy", Vector2.INF])
 			return true
 		"reroll":
 			var price := 0 if p.free_rerolls > 0 else Content.reroll_price(wave, p.rerolls_done)
@@ -4954,6 +5055,13 @@ func request(peer: int, action: String, arg = null) -> bool:
 				p.pfand -= price
 				p.rerolls_done += 1
 			_make_offers(p)
+			return true
+		"lock":
+			# toggles; a locked offer stays, price included, into the next Späti (D-148)
+			var i := int(arg)
+			if i < 0 or i >= p.offers.size() or p.offers[i]["sold"]:
+				return false
+			p.offers[i]["locked"] = not p.offers[i].get("locked", false)
 			return true
 		"sell":
 			var i := int(arg)
@@ -4990,7 +5098,7 @@ func request(peer: int, action: String, arg = null) -> bool:
 			if removed == 0:
 				return false
 			_recompute(p)
-			_event(["sfx", "ui_click", Vector2.INF])
+			_event(["sfx", "ui_click", Vector2.INF, p.id])
 			return true
 		"levelup":
 			var i := int(arg)
@@ -5052,7 +5160,7 @@ func request(peer: int, action: String, arg = null) -> bool:
 			if vertrag["options"].is_empty() or i < -1 or i >= vertrag["options"].size():
 				return false
 			vertrag["votes"][p.id] = i
-			_event(["sfx", "vote", Vector2.INF])
+			_event(["sfx", "vote", Vector2.INF, p.id])
 			return true
 		"repair_wall":
 			if wall.count(false) == 0:
@@ -5105,7 +5213,6 @@ func _combine(p: SimPlayer, a: int, b: int) -> void:
 		p.weapons.remove_at(i)
 	_add_weapon(p, w["id"], int(w["tier"]) + 1)
 	_event(["combine", p.id, w["id"], int(w["tier"]) + 1])
-	_event(["sfx", "levelup", Vector2.INF])
 
 
 func _repair_one_hole() -> void:

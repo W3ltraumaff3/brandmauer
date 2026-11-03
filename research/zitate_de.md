@@ -5,7 +5,7 @@ Recherche für Ladebildschirme, Boss-Intros, Sprechblasen und das Zitat-Album. S
 ## Überblick
 
 - **140 Einträge** in der JSON: 129 `verifiziert`, 4 `umstritten`, 2 `sinngemäß`, 5 `unverifiziert` (nicht verwenden). **135 sind verwendbar**, davon 80 mit `kurz: ja` (Sprechblasen-tauglich).
-- **26** häufig falsch zitierte Sätze mit korrekter Fassung und **38** nicht verwendbare (unverifizierte) Zitate am Ende des Dokuments.
+- **26** häufig falsch zitierte Sätze mit korrekter Fassung und **52** nicht verwendbare (unverifizierte) Zitate am Ende des Dokuments.
 - Primärquellen wurden wo immer möglich genutzt: Bundestags-Plenarprotokolle 19/32, 19/155, 20/209, 21/3, 21/15, 21/17 (Text per `pdftotext` aus den amtlichen PDFs), Gerichtsentscheidungen (VG Köln 13 K 326/21, BGH 3 StR 484/24 und 519/24, LG Hamburg 324 O 103/20).
 
 ### Statusdefinitionen
@@ -1382,14 +1382,14 @@ Zusätzlich neu aufgenommen: `merz-39` („Denn wir sind die Kraft, die Deutschl
 - **Quellen:** <https://nrwe.justiz.nrw.de/ovgs/vg_koeln/j2022/13_K_326_21_Urteil_20220308.html> · <https://www.l-iz.de/melder/wortmelder/2017/01/klaus-bartl-linke-afd-mann-maier-nach-assistenz-fuer-hoecke-als-richter-noch-tragbar-164880> · <https://www.lto.de/recht/hintergruende/h/richter-jens-maier-sachsen-afd-justiz-rueckkehr-aussagen-2017-dresden-slomka-zdf-bundestag-mandat>
 - **Notizen:** Vollzitat im VG-Köln-Urteil (aus BfV-Gutachten); 'Herstellung von Mischvölkern' und 'einfach nicht zu ertragen' bei L-IZ/LTO bestätigt. In derselben Rede erklärte er den 'Schuldkult' für 'endgültig beendet' (nur fragmentarisch belegt). Das LG Dresden erteilte 2017 einen Verweis. Maier war 2017–2021 MdB; 2022 Rückkehr in die Justiz untersagt, BGH bestätigte im Oktober 2023 die Versetzung in den vorzeitigen Ruhestand; die Disziplinarklage auf Aberkennung des Ruhegehalts wies das Dienstgericht Leipzig im November 2024 ab (weiterer Verlauf nicht geprüft).
 
-#### `afd-maier-02` – „Dem kleinen Halbneger scheint einfach zu wenig Beachtung geschenkt worden zu sein [...]“
+#### `afd-maier-02` – „Dem kleinen Halb***** [N-Wort zensiert] scheint einfach zu wenig Beachtung geschenkt worden zu sein [...]“
 
 - **Sprecher:** Jens Maier (AfD), damals: AfD-Bundestagsabgeordneter, Richter am Landgericht Dresden (beurlaubt)
 - **Datum:** 2018-01-02
 - **Kontext:** Tweet vom Account Maiers über Noah Becker (Sohn von Boris Becker), nachdem dieser sich beklagt hatte, ständig nur als Sohn gesehen zu werden. Tweet gelöscht; Maier sagte, ein Mitarbeiter habe ihn verfasst.
 - **Status:** `verifiziert` · **Kategorien:** Migration · **kurz:** ja
-- **Quellen:** <https://www.lto.de/recht/nachrichten/n/jens-maier-afd-richter-bundestagsabgeordneter-rassistischer-kommentar-noah-becker> · <https://www.t-online.de/nachrichten/deutschland/parteien/id_82996470/afd-der-halbneger-tweet-geht-meuthen-zu-weit.html> · <https://www.vice.com/de/article/jens-maier-urteil-afd-politiker-muss-wegen-rassistischem-tweet-15000-euro-schmerzensgeld-an-noah-becker-zahlen/>
-- **Notizen:** Wortlaut nach LTO (abgerufen; dort geht das Zitat noch weiter, der Rest wurde nicht ausgegeben) - deshalb [...] am Ende, Satzende nicht selbst ergänzen. Die anderen Quellen nur über Suchzusammenfassungen gesehen; 'kleiner Halbneger' ist dort einheitlich. Maier sagte, ein Mitarbeiter habe geschrieben -> 'Tweet vom Account des AfD-Abgeordneten' formulieren. Gerichtsfolgen widersprüchlich berichtet: Vice 15.000 EUR Urteil, t-online 7.500 EUR - im Spiel nicht nennen, solange ungeklärt. LTO nennt es 'rassistischen Kommentar'; Gauland und Meuthen kritisierten ihn.
+- **Quellen:** <https://www.lto.de/recht/nachrichten/n/jens-maier-afd-richter-bundestagsabgeordneter-rassistischer-kommentar-noah-becker> · <https://www.vice.com/de/article/jens-maier-urteil-afd-politiker-muss-wegen-rassistischem-tweet-15000-euro-schmerzensgeld-an-noah-becker-zahlen/>
+- **Notizen:** Wortlaut nach LTO (abgerufen; dort geht das Zitat noch weiter, der Rest wurde nicht ausgegeben) - deshalb [...] am Ende, Satzende nicht selbst ergänzen. Die anderen Quellen nur über Suchzusammenfassungen gesehen; der Wortlaut ('kleiner Halb…') ist dort einheitlich. Maier sagte, ein Mitarbeiter habe geschrieben -> 'Tweet vom Account des AfD-Abgeordneten' formulieren. Gerichtsfolgen widersprüchlich berichtet: Vice 15.000 EUR Urteil, t-online 7.500 EUR - im Spiel nicht nennen, solange ungeklärt. LTO nennt es 'rassistischen Kommentar'; Gauland und Meuthen kritisierten ihn. ZENSUR (D-156, content-guidelines §4): Im Original steht das N-Wort als Teil des Kompositums 'Halb…'. Es ist durch Sternchen ersetzt und im Zitat mit '[N-Wort zensiert]' markiert; sonst ist der Wortlaut unverändert. Die t-online-Quelle (Artikel id_82996470, 'Tweet geht Meuthen zu weit') ist nicht verlinkt, weil ihre URL das Wort ausschreibt.
 
 ## Gottfried Curio (AfD)
 
@@ -1639,3 +1639,17 @@ Diese Sätze kursieren, ließen sich aber nicht wörtlich und zuverlässig beleg
 - **Andreas Kalbitz (2020 Mitgliedschaft annulliert)**: „Die AfD ist die letzte evolutionäre Chance für dieses Land. Danach kommt nur noch ‚Helm auf‘.“. *Grund:* Nur via news4teachers, das sich auf 'Welt' beruft (Kyffhäuser 2017); Welt-Artikel nicht abgerufen.
 - **Maximilian Krah**: „Schau keine Pornos, wähl' nicht die Grünen, geh' raus an die frische Luft …“. *Grund:* TikTok 2023; nur bei Nordkurier wörtlich gefunden.
 - **Björn Höcke**: „Mit der Bombardierung Dresdens und der anderen deutschen Städte wollte man nichts anderes als uns unsere kollektive Identität rauben.“. *Grund:* Nur im Spiegel (12.03.2020, nach Verfassungsschutz) gefunden, ohne genaues Datum/Ort ('2017 in Sachsen').
+- **Ulrich Thomas (CDU)**: „Wir sollten eine Koalition jedenfalls nicht ausschließen. / Stand jetzt ist sie nicht möglich, wir wissen aber nicht, wie die Lage in zwei oder fünf Jahren ist.“. *Grund:* MZ via t-online 2019; Einzelquelle
+- **Lars-Jörn Zimmer (CDU)**: „CDU-Minderheitsregierung mit AfD-Duldung 'absolut denkbar' (ZDF Berlin direkt, 09.02.2020)“. *Grund:* nur Volksstimme-Bericht, übrige Aussagen indirekte Rede; Wortlaut ('absolut denkbar') nur Fragment
+- **Alexander Räuscher (CDU)**: „Sozial wäre wenn alle 'Faulen' knallhart aussortiert werden, um nur echt Bedürftigen zu helfen (Tweet Juli 2023)“. *Grund:* nur Volksstimme
+- **Sven Rosomkiewicz (CDU, MdL Sachsen-Anhalt)**: „Dort wurden die linksgrünen 'Ökofaschisten' bei der Landtagswahl 2022 mit 32,5% (!) stärkste Kraft. (Tweet 05.07.2023)“. *Grund:* Volksstimme (zwei Artikel, z. T. dpa) + Junge Freiheit; für Sprechblase nach zweiter unabhängiger Quelle suchen; Entschuldigung: 'über das Ziel hinausgeschossen'
+- **Andreas Bühl (CDU Thüringen)**: „Ich finde, das ist ein Kampfbegriff. (zu 'Brandmauer', 15.09.2026)“. *Grund:* nur hessenschau
+- **Saskia Ludwig (CDU)**: „Die Brandmauer halte ich für einen politischen Irrweg (17.03.2026)“. *Grund:* nur heidelberg24
+- **Sven Schulze (CDU, MP Sachsen-Anhalt)**: „'von Landtagssitzung zu Landtagssitzung' (MDR-Interview Anfang Okt 2026, zur Kooperation mit der AfD)“. *Grund:* nur Correctiv-Fragment
+- **Alexander Räuscher / Mario Voigt**: „Voigt (Thüringen) soll im Spiegel die Brandmauer für 'beendet' erklärt haben“. *Grund:* nur exxpress/Apollo News, Wortlaut nicht prüfbar
+- **Ulrich Siegmund (AfD)**: „Remigration ist viel mehr als nur eine Abschiebung. / Remigration trifft alle Menschen, die keinen Beitrag leisten wollen. (Phoenix-Interview 2026)“. *Grund:* nur Correctiv, Datum unbekannt
+- **Christian Lüth (AfD, Fraktionssprecher)**: „'Wir können die nachher immer noch alle erschießen [...]' (Aufnahme Feb 2020, ProSieben)“. *Grund:* NICHT verwenden: ProSieben nennt es aus Gedächtnisprotokoll rekonstruiert (dpa/Jüdische Allgemeine) - kein wörtlicher Mitschnitt, Wortlaut variiert
+- **Jörg Prophet (AfD Thüringen)**: „Gleichsetzung Auschwitz/Dresden laut Buchenwald-Komitee (Jan 2025)“. *Grund:* nur Vorwurf Dritter, Prophets eigener Wortlaut nicht gefunden
+- **Wolfgang Gedeon (AfD, 2016)**: „'Zivilreligion des Westens', Neonazis 'Dissidenten' (Buch 'Der grüne Kommunismus')“. *Grund:* Buch nicht eingesehen, nur Sekundärzitate
+- **Martin Hohmann (CDU, 2003)**: „Rede 'Gerechtigkeit für Deutschland' (Neuhof, 03.10.2003)“. *Grund:* Volltext nicht gefunden; Aussage notorisch umstritten ('Tätervolk') - nicht empfohlen
+- **Maaßen (CDU)**: „'Rassenlehre' (Wallasch-Interview Jan 2023)“. *Grund:* Wortlaut je nach Medium 'grün-rot'/'rot-grün' - umstritten, nicht nutzen

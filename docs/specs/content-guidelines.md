@@ -1,6 +1,6 @@
 # Spec: Content Guidelines (Satire Rules)
 
-**Status:** Approved · **Last updated:** 2026-11-01
+**Status:** Approved · **Last updated:** 2026-11-03
 
 Every character, item, enemy, asset and line of text is checked against these rules **before** it goes into the game.
 
@@ -43,8 +43,9 @@ Taboo, in visuals, names and text:
 - **Single-source quotes** need a highly reputable source (dpa, Tagesschau, ZDF…), or they get double-checked. If in doubt, leave them out.
 - **Every quote shown anywhere in the game carries speaker, party, date and a short context line** (`kontext_kurz`, e.g. "über Adolf Hitler, im Gespräch mit Elon Musk"). The Album additionally shows the full context and sources.
 - **The most drastic quotes are wanted**, especially NS and Holocaust relativization and racism. A racist quote about a group (even about children) is fine: shown with name and party, it always exposes the speaker. The punch-up rule (§1) is about *our* jokes and drawings, not about quoting what politicians actually said.
+- **Slurs are never shown, above all the N-word** (D-156). This covers established racist and antisemitic slurs (N-word in every spelling, Z-word, "Kanake", "Kameltreiber", "Kümmelhändler", "Judensau" and the like), not a speaker's own pejorative coinages such as "Kopftuchmädchen". A quote with a slur is either dropped (status other than `verifiziert`, with the reason in `notizen`) or **censored**: the whole slur, or the slur part of a compound, becomes asterisks so that no letter of it stays readable, followed by the editorial mark **`[N-Wort zensiert]`** (or `[… zensiert]` for another slur) inside the quote text itself, so every screen that shows the quote also shows the mark. This is the only allowed change to a quote's wording besides `[…]`. The slur also must not appear in context lines, notes, source URLs (drop a source whose URL spells it out) or research files. `tests/test_quotes.py` enforces this.
 - **The start screen always shows one of the strongest quotes** (use `startbildschirm`).
-- **No inventing, shortening or "smoothing"** a quote's wording. Satire is protected (Art. 5 GG), but a misquote is defamation risk (§§185–188 StGB, Persönlichkeitsrecht).
+- **No inventing, shortening or "smoothing"** a quote's wording (marked omissions `[…]` and marked censoring of slurs, see above, are the only exceptions). Satire is protected (Art. 5 GG), but a misquote is defamation risk (§§185–188 StGB, Persönlichkeitsrecht).
 - **Our own opinions are allowed** (e.g. calling Höcke a fascist). We just never present an opinion as a court's finding or as a fact that a court ruled on.
 - **Invented satire lines** must look clearly different from real quotes (no source, a different font).
 - **Quotes on foreign policy or the Middle East** (e.g. Merz's "Drecksarbeit") are allowed. The target is always the speaker's worldview, never Jews or Israelis as a group (see §2).

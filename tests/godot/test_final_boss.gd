@@ -52,7 +52,7 @@ func _run(s: Sim, seconds: float, safe := true) -> void:
 func _to_phase(s: Sim, b: Sim.SimEnemy, ph: int) -> void:
 	for i in ph:
 		s._damage_enemy(b, b.max_hp, null)
-		_run(s, 2.6)
+		_run(s, Content.BOSS["presse_time"] + 0.1)   # Pressekonferenz
 	s.take_events()
 
 

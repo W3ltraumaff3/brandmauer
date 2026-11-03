@@ -2,6 +2,20 @@
 
 Danke, dass du mittestest! Das Spiel ist eine **Beta**: Es gibt Bugs, und das Balancing ist noch nicht fertig.
 
+### Neu in 0.5.0
+- **Reservieren im Späti:** Jedes Angebot lässt sich kostenlos reservieren und liegt im nächsten Späti zum alten Preis wieder im Regal – auch eins, das du dir gerade nicht leisten kannst. Mit Controller **Y** auf dem Angebot, mit Tastatur **L**.
+- **Besserer Angebotsmix:** immer eine Waffe für deinen Build und mindestens ein Item, nie mehr als drei Waffen. Die acht Politik-Items (Wahlversprechen, Maut-Vertrag, BER-Eröffnungstermin, Puma …) tauchen jetzt auch wirklich im Späti auf.
+- **Neuer Sound:** komplett neu abgemischt. Pfand klettert eine Tonleiter hoch, der Kauf-Sound wird mit der Stufe prächtiger, Elite-Kills regnen Münzen, Treffer und kritische Treffer sind hörbar, nichts klingt mehr doppelt. Neue Option **„Geräusche der Mitspieler:innen“** (Standard 50 %).
+- **Aufgeräumte Statistik:** oben nur die wichtigsten Werte der letzten Woche, im Koop mit allen Mitspieler:innen zum Vergleich; darunter die ganze Runde.
+- **Sechs neue Koalitionsverträge:** Klimageld, Cannabis-Legalisierung, 9-Euro-Ticket, Wehrdienst per Los, Maskendeals und Rente mit 70.
+- **Balancing und Bugs:**
+  - Gleiche Waffen schießen jetzt versetzt statt im selben Moment aufs selbe Ziel; die zweite Kopie verpuffte vorher oft.
+  - Die Pfandflasche macht deutlich mehr Schaden.
+  - Das Wahlversprechen ist umgedreht: erst −10 Wut, nach 30 s +30.
+- **Bosskampf:** Das Banner der Pressekonferenz sitzt jetzt unten über der Bossleiste statt über dem Boss, und die Pressekonferenz dauert eine Sekunde länger.
+- **Kleinigkeiten:** eigener Hinweis, wenn du solo oder im Koop als Letzte:r umfällst; ein Zitat mit dem N-Wort ist jetzt zensiert.
+- **Wichtig für Koop:** Alle brauchen diese Version, ältere können nicht mitspielen.
+
 ### Neu in 0.4.1
 - **Die Remigrantin ist jetzt die Abschlussprüfung:** mehr Lebenspunkte und drei neue Angriffe. Die **Ansturm-Kette** reißt Windräder um. Bei **Reichweite** bist du nur vor intakter Brandmauer sicher (Löcher reparieren lohnt sich!). In Phase 3 laden **Briefkastenfirmen** ihren Schild auf, bis alle zerstört sind. Ab 150 s Kampfdauer legt die **Hochrechnung** zu.
 - **Rote Items gewinnen jetzt Runs:** acht überarbeitet, u. a. Genossenschaftsanteil (Dividende statt Zinsdeckel, kein Kauflimit mehr), Kritische Masse, Entlassungsurkunde, Wurfmaschine, Doppelwumms, Tarnkappe und Robin-Hood-Kostüm. Cum-Ex-Erstattung, Doppelwumms, Brandmauer-Fertigputz und Entlassungsurkunde tauchen jetzt auch wirklich im Späti auf.
