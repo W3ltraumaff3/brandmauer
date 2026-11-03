@@ -23,7 +23,7 @@ Runs on every PR and every push to `main`. The plan grows with the project.
 
 | Stage | Content | Job (check name) | Required |
 |---|---|---|---|
-| Quote data | `tests/test_quotes.py` validates `zitate_de.json` against the content guidelines. A rebuild must produce no diff | `Quote data` | yes |
+| Quote data | `tests/test_quotes.py` validates `zitate_de.json` against the content guidelines, and the game file `zitate_spiel.json` against `auswahl.json` and the export filters (D-159). A rebuild must produce no diff | `Quote data` | yes |
 | Godot unit tests | headless Godot 4.7.2 (official Linux build, SHA-512 checked, cached), `--import`, then the custom runner `tests/godot/run_tests.gd` over `tests/godot/test_*.gd`; on PRs only the touched areas (§2a) | `Godot tests` | yes |
 | Network tests | `tools/net_smoke.sh`: headless host plus clients in one CI job: handshake, sync, disconnect, reconnect | `Net smoke` (skips with a notice while the script doesn't exist) | yes |
 | GDScript compile | `tools/check_script.gd` compiles every tracked `.gd` file on its own (after `--import`, so `class_name`s resolve). A script that stops compiling is named directly, with an error annotation, instead of surfacing as many unrelated test failures | `GDScript compile` | no (candidate) |
@@ -75,6 +75,7 @@ Locally and on PRs, only the tests of the areas a change touches run. `main` and
 
 - **Release builds come from tags** (`v*`). Godot exports Windows, Linux and macOS builds, plus the headless dedicated-server build, and they're uploaded as a GitHub Release. **Status: active** (`.github/workflows/release.yml`):
   - Presets live in `export_presets.cfg`: "Windows Desktop", "Linux", "macOS" (ad-hoc signed, not notarized) and "Linux Server" (feature tags `dedicated_server`, `server`).
+  - Every preset ships the same extra (non-resource) files: `include_filter` = `research/zitate_spiel.json`, `CREDITS.md`, `i18n/*.csv`, `assets/music/playlist.json`. `exclude_filter` drops `tests/`, `tools/`, `docs/`, `research/scripts/` and every other `research/*.json` (`zitate_de.json`, `auswahl.json`), because `all_resources` picks up JSON files on its own. The exclusions are listed one by one: the exclude filter wins over the include filter, so `research/*` would drop the game file too. A new `research/*.json` must go into `exclude_filter`, or `tests/test_quotes.py` fails. Research data stays in the repo only (D-159).
   - The workflow downloads the official 4.7.2 export templates (SHA-512 checked; only the four needed templates are cached), exports every preset with `--export-release` and uploads the zips as one artifact.
   - On a `v*` tag it also runs `gh release create` with the zips; a tag containing `-` (e.g. `v0.2.0-beta`) becomes a pre-release.
   - A manual run (`workflow_dispatch`) only builds artifacts.

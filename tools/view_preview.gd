@@ -442,6 +442,18 @@ func _shot_hud() -> void:
 	await _capture("hud_reconnecting")
 	hud.preview_reconnect_left = -1.0
 	hud._toasts.clear()
+	# Downed hint (GDD §16, D-157): solo the run is over ("Vertagt."), co-op the others revive.
+	var vs4 := _vs(2)
+	_player(vs4, 1, "oma", Vector2(800, 500), ["stricknadeln"], {"state": 1, "hp": 0.0})
+	_show(vs4, Vector2(800, 450), 1.0, _meta(1))
+	hud.handle_event(["over", false])
+	hud.preview_overlay_t = 0.9
+	await _capture("hud_down_solo")
+	hud._overlays.clear()
+	hud.preview_overlay_t = -1.0
+	_player(vs4, 2, "antifa", Vector2(900, 520), [])
+	_show(vs4, Vector2(800, 450), 1.0, _meta(2))
+	await _capture("hud_down_coop")
 	hud.visible = false
 
 

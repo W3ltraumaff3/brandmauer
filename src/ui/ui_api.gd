@@ -181,7 +181,13 @@ static func port() -> int:
 
 # --- Audio ------------------------------------------------------------------
 
+## Ids played through sfx(), for tests (null = not recording).
+static var sfx_log = null
+
+
 static func sfx(id: String) -> void:
+	if sfx_log is Array:
+		sfx_log.append(id)
 	call_opt(audio(), "play_sfx", [id])
 
 

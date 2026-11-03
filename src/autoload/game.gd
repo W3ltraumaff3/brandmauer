@@ -64,8 +64,9 @@ func _register_input() -> void:
 		"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 		"move_up": [KEY_W, KEY_UP], "move_down": [KEY_S, KEY_DOWN],
 		"streik": [KEY_Q], "pause": [KEY_ESCAPE], "ultimate": [KEY_SPACE],
+		"lock_offer": [KEY_L],   # Späti: Reservieren the focused offer (D-148, D-153); Y is Streik only in waves
 	}
-	var pad := {"streik": JOY_BUTTON_Y, "pause": JOY_BUTTON_START, "ultimate": JOY_BUTTON_X}
+	var pad := {"streik": JOY_BUTTON_Y, "pause": JOY_BUTTON_START, "ultimate": JOY_BUTTON_X, "lock_offer": JOY_BUTTON_Y}
 	var axes := {
 		"move_left": [JOY_AXIS_LEFT_X, -1.0], "move_right": [JOY_AXIS_LEFT_X, 1.0],
 		"move_up": [JOY_AXIS_LEFT_Y, -1.0], "move_down": [JOY_AXIS_LEFT_Y, 1.0],

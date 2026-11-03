@@ -29,6 +29,9 @@ afd = load("afd/afd_quotes.json")
 ux = load("union/union_extra.json")
 ax = load("afd/afd_extra.json")
 neu = load("neu/kandidaten.json")   # 2026-11 research: Union/AfD cooperation, NS relativization
+neu_unver = load("neu/unverifiziert.json")   # finds of that batch that failed the check
+with open(os.path.join(OUT, "auswahl.json"), encoding="utf-8") as f:
+    AUSWAHL = json.load(f)   # hand-kept selection: id, verwendung, begruendung
 
 
 def norm(q):
@@ -51,11 +54,20 @@ ALL = [norm(q) for q in ALL]
 ids = [q["id"] for q in ALL]
 assert len(ids) == len(set(ids)), [i for i, c in Counter(ids).items() if c > 1]
 
+# Content guidelines §4 (D-156): the N-word never reaches the output, in no field and
+# no URL. A quote with it is censored in the source data (asterisks + "[N-Wort zensiert]").
+import re
+N_WORD = re.compile("[-._]?".join(["n", "[e3]", "g", "[e3]", "r"]) + "|n[i1]gg|n[e3]gr[o0]", re.IGNORECASE)
+for q in ALL:
+    assert not N_WORD.search(json.dumps(q, ensure_ascii=False)), ("N-Wort im Zitat-Eintrag, zensieren (D-156)", q["id"])
+    if re.search(r"\*{3,}", q["zitat"]):
+        assert "zensiert]" in q["zitat"], ("Zensur ohne Vermerk im Zitat (D-156)", q["id"])
+
 with open(os.path.join(OUT, "zitate_de.json"), "w", encoding="utf-8") as f:
     json.dump(ALL, f, ensure_ascii=False, indent=2)
 
 FALSCH = MERZ_FALSCH + ux["falschzitate"] + ax["falschzitate"]
-UNVER = MERZ_UNVERIFIZIERT + ux["unverifiziert"] + ax["unverifiziert"]
+UNVER = MERZ_UNVERIFIZIERT + ux["unverifiziert"] + ax["unverifiziert"] + neu_unver
 
 # ---------------- Markdown ----------------
 PERSON_ORDER = [
@@ -231,8 +243,133 @@ for x in UNVER:
     A(f"- **{x['sprecher']}**: „{x['zitat']}“. *Grund:* {x['grund']}")
 A("")
 
+assert not N_WORD.search("\n".join(L)), "N-Wort in zitate_de.md (D-156)"
 with open(os.path.join(OUT, "zitate_de.md"), "w", encoding="utf-8") as f:
     f.write("\n".join(L))
 
+# ---------------- Selection (D-159) ----------------
+import auswahl_notizen as AN
+
+sel_ids = [a["id"] for a in AUSWAHL]
+assert len(sel_ids) == len(set(sel_ids)), [i for i, c in Counter(sel_ids).items() if c > 1]
+for a in AUSWAHL:
+    assert a["id"] in byid and byid[a["id"]]["status"] == "verifiziert", ("auswahl.json: nicht verifiziert", a["id"])
+    assert a["verwendung"], ("auswahl.json: keine Verwendung", a["id"])
+VERIFIED = [q for q in ALL if q["status"] == "verifiziert"]
+REJECTED = [q for q in VERIFIED if q["id"] not in set(sel_ids)]
+assert set(AN.VERWORFEN) == {q["id"] for q in REJECTED}, (
+    "auswahl_notizen.VERWORFEN muss genau die verifizierten, nicht ausgewählten Zitate begründen",
+    sorted({q["id"] for q in REJECTED} ^ set(AN.VERWORFEN)))
+
+# The game file: curated and verified quotes, only the fields the game reads (src/data/quotes.gd,
+# Album, cards, bubbles), plus the uses. In auswahl.json order, so Album and use lists keep their order.
+GAME_FIELDS = ["id", "sprecher", "partei", "rolle_damals", "zitat", "datum", "kontext", "kontext_kurz", "quellen"]
+SPIEL = []
+for a in AUSWAHL:
+    q = byid[a["id"]]
+    e = OrderedDict((k, q[k]) for k in GAME_FIELDS)
+    e["verwendung"] = list(a["verwendung"])
+    SPIEL.append(e)
+spiel_text = json.dumps(SPIEL, ensure_ascii=False, indent=1) + "\n"
+assert not N_WORD.search(spiel_text), "N-Wort in zitate_spiel.json (D-156)"
+with open(os.path.join(OUT, "zitate_spiel.json"), "w", encoding="utf-8", newline="\n") as f:
+    f.write(spiel_text)
+
+# The selection view research/auswahl.md: quotes from the source data, selection from auswahl.json,
+# prose and rejection reasons from auswahl_notizen.py.
+GROUPS = [("startbildschirm", "Startbildschirm"), ("boss_karte", "Boss-Karten"), ("boss_ruf", "Boss-Rufe"),
+          ("sprechblase", "Sprechblasen"), ("freischalt_karte", "Freischalt-Karten"),
+          ("ladebildschirm", "Ladebildschirm"), ("album", "Nur Album")]
+GROUP_RANK = {g: i for i, (g, _) in enumerate(GROUPS)}
+uses = OrderedDict()
+for a in AUSWAHL:
+    for u in a["verwendung"]:
+        assert u.split(":")[0] in GROUP_RANK, ("auswahl.json: unbekannte Verwendung", a["id"], u)
+        uses.setdefault(u, []).append(a["id"])
+use_order = sorted(uses, key=lambda u: (GROUP_RANK[u.split(":")[0]], u))
+
+
+def sel_line(q):
+    return f"- `{q['id']}` **{q['sprecher']}** ({q['partei']}), {q['datum']}: „{q['zitat']}“ _({q['kontext_kurz']})_"
+
+
+S = []
+W = S.append
+W(f"# {AN.TITEL}")
+W("")
+W("_Generiert von `research/scripts/build_all.py` aus `auswahl.json`, den Quelldaten und `scripts/auswahl_notizen.py`. "
+  "Nicht von Hand bearbeiten (D-159). Die Datei, die das Spiel liest, ist `zitate_spiel.json`._")
+W("")
+W("## (a) Überblick")
+W("")
+W(f"- Verifizierte Zitate gesamt: {len(VERIFIED)}")
+W(f"- Behalten: {len(AUSWAHL)}")
+W(f"- Verworfen: {len(REJECTED)}")
+W("")
+W(AN.UEBERBLICK)
+W("")
+for g, title in GROUPS:
+    gu = [u for u in use_order if u.split(":")[0] == g]
+    if not gu:
+        continue
+    note = f" ({AN.VORGABEN[g]})" if g in AN.VORGABEN else ""
+    if g == "album":
+        W(f"**{title}**: {len(uses['album'])} ({', '.join(f'`{i}`' for i in uses['album'])})")
+    elif gu == [g]:
+        W(f"**{title}**: {len(uses[g])}{note}")
+    else:
+        W(f"**{title}**{note}")
+        W("")
+        for u in gu:
+            W(f"- `{u}`: {len(uses[u])}")
+    W("")
+W("**Hinweise und dünne Stellen**")
+W("")
+for h in AN.HINWEISE:
+    W(f"- {h}")
+W("")
+W("**Vor Release gegenprüfen**")
+W("")
+for h in AN.VOR_RELEASE:
+    W(f"- {h}")
+W("")
+W("## (b) Behaltene Zitate nach Verwendung")
+W("")
+for u in use_order:
+    W(f"### `{u}` ({len(uses[u])})")
+    W("")
+    for i in uses[u]:
+        W(sel_line(byid[i]))
+    W("")
+W("### Begründung je Zitat")
+W("")
+for a in AUSWAHL:
+    W(f"- `{a['id']}` ({', '.join(a['verwendung'])}): {a['begruendung']}")
+W("")
+W(f"## (c) Verworfene verifizierte Zitate ({len(REJECTED)})")
+W("")
+for q in REJECTED:
+    z = q["zitat"] if len(q["zitat"]) <= 90 else q["zitat"][:90] + "…"
+    W(f"- `{q['id']}` ({q['sprecher']}, {q['partei']}, {q['datum']}) „{z}“: {AN.VERWORFEN[q['id']]}")
+W("")
+W("## (d) Recherche-Lücken")
+W("")
+for h in AN.RECHERCHE_LUECKEN:
+    W(f"- {h}")
+W("")
+W("## (e) Änderungen an der Auswahl")
+for title, items in AN.AENDERUNGEN:
+    W("")
+    W(f"### {title}")
+    W("")
+    for h in items:
+        W(f"- {h}")
+W("")
+auswahl_text = "\n".join(S)
+assert not N_WORD.search(auswahl_text), "N-Wort in auswahl.md (D-156)"
+with open(os.path.join(OUT, "auswahl.md"), "w", encoding="utf-8", newline="\n") as f:
+    f.write(auswahl_text)
+
 print("entries", len(ALL), dict(st), "falsch", len(FALSCH), "unver", len(UNVER))
+print("auswahl", len(AUSWAHL), "verworfen", len(REJECTED), "zitate_spiel.json", len(spiel_text.encode("utf-8")), "bytes")
 print(Counter(q["sprecher"] for q in ALL).most_common())

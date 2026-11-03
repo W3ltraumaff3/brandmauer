@@ -162,7 +162,7 @@
 6. **Stable RPC ids:** the handshake RPCs are named `_rpc_00_hello`, `_rpc_01_reject` and `_rpc_02_welcome`.
    - Godot numbers RPCs by sorted method name, so these keep the same ids across game versions, and an old client still gets a clean version error.
    - Never rename them or change their arguments. New RPCs (`_rpc_session`, `_rpc_resume`, `_rpc_bye`, `_rpc_host_closed`, …) sort after them.
-7. **Protocol version:** `PROTOCOL_VERSION` is **6** since snapshot version 5 (§6.1, D-144); 5 came with snapshot version 4 (D-108); 4 came with snapshot version 3 (D-093). Version 3 added `_rpc_want_run` for rejoining after a crash (§7.5), version 2 the reconnect RPCs. New RPCs shift the ids of every later RPC; a new snapshot version also bumps the protocol, so the handshake rejects a mismatched build.
+7. **Protocol version:** `PROTOCOL_VERSION` is **8** since the sound events carry the peer who caused them (`sfx`, `dmg`, `kill`; D-151), so a host without it rejects newer clients; 7 came with the Späti request `lock` (D-148); 6 came with snapshot version 5 (§6.1, D-144); 5 came with snapshot version 4 (D-108); 4 came with snapshot version 3 (D-093). Version 3 added `_rpc_want_run` for rejoining after a crash (§7.5), version 2 the reconnect RPCs. New RPCs shift the ids of every later RPC; a new snapshot version also bumps the protocol, so the handshake rejects a mismatched build.
 
 ### 7.2 Lobby
 - **Ownership:** the host owns `Net.lobby` (`{player_id: {name, char, ready}}`), `Net.org` and `Net.difficulty`, and pushes all three to every client on every change. Each push emits `lobby_changed`.

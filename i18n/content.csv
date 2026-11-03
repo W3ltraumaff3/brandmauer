@@ -225,6 +225,18 @@ VERTRAG_SCHULDENBREMSE_NAME,Schuldenbremse
 VERTRAG_SCHULDENBREMSE_DESC,"Späti-Preise −15 %, aber keine Regeneration. Sparen, bis es wehtut."
 VERTRAG_SANKTIONEN_NAME,Sanktionen
 VERTRAG_SANKTIONEN_DESC,"Einkommen halbiert, 30 % weniger Pfand-Drops. Willkommen im Jobcenter."
+VERTRAG_KLIMAGELD_NAME,Klimageld
+VERTRAG_KLIMAGELD_DESC,"Am Ende des Vertrags vielleicht +30 Pfand für alle. Wird ausgezahlt. Später. Vielleicht."
+VERTRAG_CANNABIS_NAME,Cannabis-Legalisierung
+VERTRAG_CANNABIS_DESC,"+5 Krankenschein, −10 Akkord. Drei Pflanzen, 25 Gramm, 100 Meter Abstand zur Schule."
+VERTRAG_NEUN_EURO_TICKET_NAME,9-Euro-Ticket
+VERTRAG_NEUN_EURO_TICKET_DESC,"+20 Deutschlandticket, Gegner:innen 10 % schneller. Alle fahren mit. Auch die da."
+VERTRAG_WEHRDIENST_NAME,Wehrdienst per Los
+VERTRAG_WEHRDIENST_DESC,"Jede Woche wird eine:r von euch ausgelost: +20 Wut, −20 Deutschlandticket. Freiwillig, solange es reicht."
+VERTRAG_MASKENDEALS_NAME,Maskendeals
+VERTRAG_MASKENDEALS_DESC,"+5 Kündigungsschutz, Späti-Preise +20 %. Die Differenz ist eine ganz normale Provision."
+VERTRAG_RENTE_MIT_70_NAME,Rente mit 70
+VERTRAG_RENTE_MIT_70_DESC,"+10 Akkord, −10 Solidarität. Länger arbeiten, früher kaputt."
 ACH_ACH_DOEP_NAME,Döp dödö döp
 ACH_ACH_DOEP_DESC,Besiege die Sylt-Clique.
 ACH_DOEP_NAME,Döp dödö döp
@@ -400,7 +412,7 @@ ITEM_TREUHANDKONTO_DESC,Am Wochenende 50 % Chance auf +30 Pfand (Eltern erhöht 
 ITEM_AUFHOEREN_ZU_PRODUZIEREN_NAME,Aufhören zu produzieren
 ITEM_AUFHOEREN_ZU_PRODUZIEREN_DESC,"2 s stillstehen: +8 Krankenschein, +10 Kündigungsschutz. Nicht pleite, nur gerade nicht am Verkaufen."
 ITEM_WAHLVERSPRECHEN_NAME,Wahlversprechen
-ITEM_WAHLVERSPRECHEN_DESC,"Die ersten 10 s jeder Woche +40 Wut, danach −10. Hält exakt bis zum Wahlabend."
+ITEM_WAHLVERSPRECHEN_DESC,"Die ersten 30 s jeder Woche −10 Wut, danach +30 Wut. Erst versprochen, dann gebrochen. Mal wieder."
 ITEM_MAUT_VERTRAG_NAME,Maut-Vertrag
 ITEM_MAUT_VERTRAG_DESC,"Sofort +60 Pfand, danach jede Woche −8 Pfand Schadenersatz. Unterschrieben vor dem Urteil."
 ITEM_BER_EROEFFNUNGSTERMIN_NAME,BER-Eröffnungstermin
@@ -414,7 +426,7 @@ ITEM_CUMEX_ERSTATTUNG_DESC,"Spar-Build: Ungenutztes Pfand wird am Wochenende noc
 ITEM_DOPPELWUMMS_NAME,Doppelwumms
 ITEM_DOPPELWUMMS_DESC,"Fernkampf-Build: Jeder Kill explodiert zweimal (150 px, stark mit Durchschlagskraft). −10 Kündigungsschutz. Die Rechnung kommt später."
 ITEM_BRANDMAUER_FERTIGPUTZ_NAME,Brandmauer-Fertigputz
-ITEM_BRANDMAUER_FERTIGPUTZ_DESC,"Panzer-Build: +50 Kündigungsschutz, wer dich berührt, fliegt zurück. −30 Deutschlandticket. Hält allem stand, außer einer Abstimmung."
+ITEM_BRANDMAUER_FERTIGPUTZ_DESC,"Tank-Build: +50 Kündigungsschutz, wer dich berührt, fliegt zurück. −30 Deutschlandticket. Hält allem stand, außer einer Abstimmung."
 ITEM_ENTLASSUNGSURKUNDE_NAME,Entlassungsurkunde
 ITEM_ENTLASSUNGSURKUNDE_DESC,"Krit-Build: +30 Direkte Aktion, Krit auf Gegner:innen unter 40 % setzt sie sofort ab, Krits gegen Elites und Bosse ×1,5. −10 Vernetzung. Die Koalition ist Geschichte."
 WEAPON_KLEINE_ANFRAGE_NAME,Kleine Anfrage

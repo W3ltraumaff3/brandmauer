@@ -97,6 +97,22 @@ func _run() -> void:
 		many.append({"key": "w:" + id + "4", "kind": "weapon", "id": id, "tier": 4, "sold": true, "total": 17, "wave": 0})
 	sp5.preview_meta = m5
 	await _shot("09c_spaeti_stats_scroll", sp5, func() -> void: sp5.open_stats())
+	# GDD §6c / D-152: solo strip without names; four players with an away one.
+	var sps := SpaetiPanel.new()
+	var ms := _fake_meta(false)
+	ms["players"] = {1: ms["players"][1]}
+	ms["num_players"] = 1
+	sps.preview_meta = ms
+	await _shot("09e_spaeti_stats_solo", sps, func() -> void: sps.open_stats())
+	var sp4p := SpaetiPanel.new()
+	var m4p := _fake_meta(false)
+	m4p["players"][4] = _player("Murat vom Späti", "gewerkschaft", true, 3)
+	m4p["players"][4]["away"] = true
+	m4p["players"][3]["run_stats"]["damage"][0]["wave"] = 1400   # Lea's best: Stricknadeln II
+	m4p["players"][3]["run_stats"]["last_wave"]["kills"] = 131    # and the most kills
+	m4p["num_players"] = 4
+	sp4p.preview_meta = m4p
+	await _shot("09f_spaeti_stats_coop4", sp4p, func() -> void: sp4p.open_stats())
 	var sp6 := SpaetiPanel.new()
 	sp6.preview_meta = _fake_meta(false)
 	await _shot("09d_spaeti_options", sp6, func() -> void: sp6.open_options())
@@ -323,6 +339,8 @@ static func _fake_run_stats(salt: int) -> Dictionary:
 		"damage": rows, "lifesteal": int(214 * f), "regen": int(96 * f), "dmg_taken": int(731 * f),
 		"dmg_blocked": int(388 * f), "dodges": int(41 * f), "crits": int(1337 * f), "kills": int(412 * f),
 		"pfand_collected": int(268 * f), "pfand_income": 54, "pfand_spent": int(301 * f), "ults": 6,
+		"last_wave": {"damage": int(2259 * f), "kills": int(58 * f), "pfand": int(31 * f), "dmg_taken": int(84 * f),
+			"healed": int(47 * f)},
 	}
 
 

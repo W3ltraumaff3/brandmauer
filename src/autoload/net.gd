@@ -12,7 +12,7 @@ extends Node
 
 const PORT := 24713                 # game port (UDP); LAN discovery uses PORT + 1
 const LAN_PORT := PORT + 1
-const PROTOCOL_VERSION := 6                  # 6: snapshot v5 (D-144); 5: snapshot v4 (D-108); 4: snapshot v3 (D-093)
+const PROTOCOL_VERSION := 8                  # 8: sound events carry the peer (D-151); 7: Späti lock request (D-148); 6: snapshot v5 (D-144); 5: snapshot v4 (D-108); 4: snapshot v3 (D-093)
 const MAX_PLAYERS := 4
 const DEFAULT_CHAR := "stadtbild"
 const HANDSHAKE_TIMEOUT_S := 8.0

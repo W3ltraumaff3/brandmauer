@@ -1664,6 +1664,7 @@ func _draw_players(vs: ViewState, st: int) -> void:
 	var meta := get_meta_dict()
 	var mplayers: Dictionary = meta.get("players", {}) if meta.get("players") is Dictionary else {}
 	var coop := vs.players.size() > 1 or int(meta.get("num_players", 1)) > 1
+	var revivable := Hud.can_be_revived(meta) if meta.has("num_players") else vs.players.size() > 1
 	var me := local_id()
 	var t := anim_time
 	var slot := 0
@@ -1719,15 +1720,18 @@ func _draw_players(vs: ViewState, st: int) -> void:
 			draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(0.0, Vector2(face, 1), 0.0, pos), Color(0.55, 0.55, 0.55, 0.5))
 			Doodle.text(self, tr("HUD_AWAY_TAG"), pos + Vector2(0, -50), 18, Color(0.45, 0.45, 0.45, 0.5 + 0.4 * absf(sin(t * 3.0))), _hand, 4)
 		elif state == 1:
-			_dashed_circle(pos, REVIVE_RANGE, Color(col, 0.6), 2.5, 20, t * 0.8)
-			var prog: float = p.get("revive", -1.0)
-			if prog > 0.0:
-				draw_arc(pos, REVIVE_RANGE - 6.0, -PI / 2, -PI / 2 + TAU * prog, 32, Color(0.25, 0.7, 0.3), 6.0)
+			# revive ring, cross and "Hilf mir hoch!" only if someone can come (D-157)
+			if revivable:
+				_dashed_circle(pos, REVIVE_RANGE, Color(col, 0.6), 2.5, 20, t * 0.8)
+				var prog: float = p.get("revive", -1.0)
+				if prog > 0.0:
+					draw_arc(pos, REVIVE_RANGE - 6.0, -PI / 2, -PI / 2 + TAU * prog, 32, Color(0.25, 0.7, 0.3), 6.0)
 			draw_mesh(_mesh(K_PLAYER, ci, st, v), null, Transform2D(PI / 2 * face, pos + Vector2(0, 6)), Color(0.85, 0.85, 0.85))
-			var hp := pos + Vector2(0, -34 - absf(sin(t * 3.0)) * 6.0)
-			draw_rect(Rect2(hp - Vector2(3, 10), Vector2(6, 20)), Color(0.25, 0.7, 0.3))
-			draw_rect(Rect2(hp - Vector2(10, 3), Vector2(20, 6)), Color(0.25, 0.7, 0.3))
-			Doodle.text(self, tr("HUD_REVIVE_HINT"), pos + Vector2(0, 50), 16, INK, _hand, 4)
+			if revivable:
+				var hp := pos + Vector2(0, -34 - absf(sin(t * 3.0)) * 6.0)
+				draw_rect(Rect2(hp - Vector2(3, 10), Vector2(6, 20)), Color(0.25, 0.7, 0.3))
+				draw_rect(Rect2(hp - Vector2(10, 3), Vector2(20, 6)), Color(0.25, 0.7, 0.3))
+				Doodle.text(self, tr("HUD_REVIVE_HINT"), pos + Vector2(0, 50), 16, INK, _hand, 4)
 		else:
 			if ci == t_klima and flags & ViewState.PF_STILL:
 				draw_colored_polygon(Doodle.blob_pts(pos + Vector2(0, 20), 24, v, 3, 0.15), Color(0.95, 0.92, 0.65, 0.8))

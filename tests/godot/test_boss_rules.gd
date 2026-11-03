@@ -63,7 +63,7 @@ func test_phase_lock_and_pressekonferenz() -> void:
 	s.take_events()
 	_run(s, DT)
 	assert_eq(boss.phase, 1, "phase 2 at the boundary")
-	assert_near(boss.presse_t, 2.5 - DT, 0.02, "Pressekonferenz 2.5 s")
+	assert_near(boss.presse_t, 3.5 - DT, 0.02, "Pressekonferenz 3.5 s (D-158)")
 	assert_eq(boss.stun_t, 0.0, "stun ends")
 	assert_eq(boss.slow, 0.0, "slow ends")
 	var hp0 := boss.hp
@@ -78,14 +78,14 @@ func test_phase_lock_and_pressekonferenz() -> void:
 	_run(s, 1.0)
 	assert_near(boss.vuln_t, 3.0, 0.001, "vulnerability paused, not used up")
 	assert_true(boss.pos.distance_to(Arena.CENTER) < d0, "walks to the middle")
-	_run(s, 1.6)
-	assert_eq(boss.presse_t, 0.0, "over after 2.5 s")
+	_run(s, Content.BOSS["presse_time"] - 0.9)
+	assert_eq(boss.presse_t, 0.0, "over after 3.5 s")
 	assert_true(boss.vuln_t < 3.0, "vulnerability runs again")
 	s._damage_enemy(boss, mx * 10.0, null)
 	assert_near(boss.hp, mx * 0.33, 0.5, "second boundary at 33 %")
 	_run(s, DT)
 	assert_eq(boss.phase, 2, "phase 3")
-	_run(s, 2.6)
+	_run(s, Content.BOSS["presse_time"] + 0.1)
 	s._damage_enemy(boss, mx * 10.0, null)
 	assert_false(boss.alive, "no lock in the last phase")
 
@@ -100,7 +100,7 @@ func test_phase_change_event_and_shorter_pressekonferenz_from_30() -> void:
 	assert_eq(evs.size(), 1, "one boss_phase event")
 	assert_eq(evs[0][1], "sauerlaender")
 	assert_eq(evs[0][2], 1)
-	assert_near(boss.presse_t, 1.5 - DT, 0.02, "1.5 s from Umfrage 30 %")
+	assert_near(boss.presse_t, 2.5 - DT, 0.02, "2.5 s from Umfrage 30 % (D-158)")
 	var vs := ViewState.new()
 	s.build_view(vs)
 	assert_true(vs.e_flags2[0] & ViewState.EF2_PRESSE, "golden outline flag")
@@ -659,7 +659,7 @@ func test_brandmauer_haelt_warns_then_burns_and_rings_push_to_the_hole() -> void
 	boss.max_hp = 1.0e6
 	boss.hp = boss.max_hp
 	s._damage_enemy(boss, boss.max_hp, null)
-	_run(s, 2.6)   # Pressekonferenz
+	_run(s, Content.BOSS["presse_time"] + 0.1)   # Pressekonferenz
 	var p: Sim.SimPlayer = s.players[1]
 	p.stats["armor"] = 0.0
 	var hp0 := p.hp

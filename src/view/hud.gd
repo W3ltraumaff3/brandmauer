@@ -38,6 +38,7 @@ var _type: Font
 var _typeb: Font
 var _t := 0.0
 var _overlays: Array = []    # {kind, t, life, data}
+var _presse := {}            # last boss_phase: {enc, phase, t0} (D-158)
 var _toasts: Array = []      # {text, sub, t, life, kind}
 var _koal_time := 0.0
 var _funk_next := 0.0
@@ -132,9 +133,10 @@ func handle_event(ev: Array) -> void:
 		"wende":
 			_overlay("wende", 2.6, {"dur": float(ev[1]) if ev.size() > 1 else 4.0, "axis": int(ev[2]) if ev.size() > 2 else 0})
 		"boss_phase":
-			# Pressekonferenz at a boss phase change (GDD §14, D-106)
+			# Pressekonferenz at a boss phase change (GDD §14, D-106): the banner above
+			# the boss bar shows this phase name while the flag lasts (D-158)
 			if ev.size() >= 3:
-				_overlay("presse", 2.6, {"enc": str(ev[1]), "phase": int(ev[2])})
+				_presse = {"enc": str(ev[1]), "phase": int(ev[2]), "t0": _t}
 		"streik":
 			_overlay("streik", 2.0, {})
 		"stage":
@@ -533,7 +535,7 @@ func _draw_boss(vs: ViewState, sz: Vector2, ult_r := Rect2()) -> Rect2:
 
 ## The boss's running cast above the boss bar (research B3, D-108): name and a
 ## progress bar, e.g. "Abstimmung läuft …" with how many Plenum circles are taken;
-## "Pressekonferenz" in gold while the boss is invulnerable.
+## While the boss is invulnerable, the Pressekonferenz banner instead (D-158).
 func _draw_boss_cast(vs: ViewState, panel: Rect2) -> void:
 	var presse := false
 	for i in mini(vs.e_flags2.size(), vs.e_flags.size()):
@@ -543,12 +545,11 @@ func _draw_boss_cast(vs: ViewState, panel: Rect2) -> void:
 	var cast := vs.boss_cast()
 	if cast == "" and not presse:
 		return
+	if presse:
+		_draw_presse_banner(panel)
+		return
 	var w := minf(340.0, panel.size.x)
 	var r := Rect2(panel.get_center().x - w * 0.5, panel.position.y - 36, w, 30)
-	if presse:
-		_panel(r, Color("fff4cf"), 4, GOLD.darkened(0.3))
-		_txt(tr("HUD_PRESSE"), Vector2(r.position.x, r.position.y + 22), 20, GOLD.darkened(0.45), null, HORIZONTAL_ALIGNMENT_CENTER, w)
-		return
 	_panel(r, Color("fde8e2"), 4, RED)
 	var k := clampf(float(vs.boss.get("cast_t", 0.0)), 0.0, 1.0)
 	draw_rect(Rect2(r.position + Vector2(4, r.size.y - 8), Vector2((w - 8) * k, 5)), RED)
@@ -570,21 +571,27 @@ func _draw_boss_cast(vs: ViewState, panel: Rect2) -> void:
 	_txt(label, Vector2(r.position.x, r.position.y + 20), 19, RED.darkened(0.2), null, HORIZONTAL_ALIGNMENT_CENTER, w)
 
 
-## "Pressekonferenz" banner at a phase change: a lectern sign with the phase name.
-func _draw_presse_banner(enc: String, ph: int, t: float, a: float, sz: Vector2) -> void:
-	var slide := minf(t * 4.0, 1.0)
-	var w := 560.0
-	var r := Rect2(sz.x * 0.5 - w * 0.5, 120 - (1.0 - slide) * 90, w, 92)
-	_panel(r, Color(1.0, 0.97, 0.86, a), 5, Color(GOLD.darkened(0.35), a))
-	draw_rect(Rect2(r.position + Vector2(10, 8), Vector2(w - 20, 6)), Color(GOLD, a))
-	_txt(tr("HUD_PRESSE").to_upper(), Vector2(r.position.x, r.position.y + 50), 38, Color(INK, a), _typeb, HORIZONTAL_ALIGNMENT_CENTER, w)
-	var name := tr("PHASE_%s_%d" % [enc.to_upper(), ph]) if enc != "" else ""
-	_txt(tr("HUD_PRESSE_SUB") % [ph + 1, name], Vector2(r.position.x, r.position.y + 80), 24, Color(RED.darkened(0.1), a), null, HORIZONTAL_ALIGNMENT_CENTER, w)
+## "Pressekonferenz" banner above the boss bar (D-158): a lectern sign with the
+## phase name, for as long as the boss is invulnerable. Slides up out of the bar.
+func _draw_presse_banner(panel: Rect2) -> void:
+	var age := preview_overlay_t if preview_overlay_t >= 0.0 else _t - float(_presse.get("t0", _t - 1.0))
+	var slide := minf(age * 4.0, 1.0)
+	var a := slide
+	var w := minf(440.0, panel.size.x)
+	var r := Rect2(panel.get_center().x - w * 0.5, panel.position.y - 70 + (1.0 - slide) * 24, w, 64)
+	_panel(r, Color(1.0, 0.97, 0.86, a), 4, Color(GOLD.darkened(0.35), a))
+	draw_rect(Rect2(r.position + Vector2(10, 6), Vector2(w - 20, 4)), Color(GOLD, a))
+	_txt(tr("HUD_PRESSE").to_upper(), Vector2(r.position.x, r.position.y + 34), 26, Color(INK, a), _typeb, HORIZONTAL_ALIGNMENT_CENTER, w)
+	var enc := str(_presse.get("enc", ""))
+	if enc != "":
+		var ph := int(_presse.get("phase", 0))
+		_txt(tr("HUD_PRESSE_SUB") % [ph + 1, tr("PHASE_%s_%d" % [enc.to_upper(), ph])], Vector2(r.position.x, r.position.y + 56),
+			18, Color(RED.darkened(0.1), a), null, HORIZONTAL_ALIGNMENT_CENTER, w)
 	for s in [-1.0, 1.0]:
-		var m := Vector2(r.get_center().x + s * (w * 0.5 - 34), r.position.y + 50)
-		draw_line(m + Vector2(0, 22), m + Vector2(-s * 6, -6), Color(INK, a), 3.0)
-		draw_circle(m + Vector2(-s * 6, -10), 9.0, Color(INK, a))
-		draw_circle(m + Vector2(-s * 6, -10), 6.0, Color(0.6, 0.6, 0.65, a))
+		var m := Vector2(r.get_center().x + s * (w * 0.5 - 26), r.position.y + 34)
+		draw_line(m + Vector2(0, 16), m + Vector2(-s * 5, -4), Color(INK, a), 2.5)
+		draw_circle(m + Vector2(-s * 5, -8), 7.0, Color(INK, a))
+		draw_circle(m + Vector2(-s * 5, -8), 4.5, Color(0.6, 0.6, 0.65, a))
 
 
 ## Streik prompt / countdown in the left column above the ult panel (`below` px
@@ -616,7 +623,21 @@ func _draw_down_hint(vs: ViewState, sz: Vector2) -> void:
 	if me.is_empty() or int(me.get("state", 0)) != 1:
 		return
 	draw_rect(Rect2(Vector2.ZERO, sz), Color(0.2, 0.15, 0.1, 0.18))
-	_txt(tr("HUD_YOU_DOWN"), Vector2(0, sz.y * 0.32), 30, INK, null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
+	_txt(tr(down_hint_key(get_meta_dict())), Vector2(0, sz.y * 0.32), 30, INK, null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
+
+
+## Downed hint (GDD §16, D-157): with one player left nobody can revive you, going
+## down ends the run (Sim.damage_player uses the same count), so solo gets its own
+## line and no revive marker (WorldView).
+## In co-op the run ends when the last player goes down: then nobody can help either.
+static func can_be_revived(meta: Dictionary) -> bool:
+	return int(meta.get("num_players", 1)) > 1 and int(meta.get("phase", 0)) != Sim.Phase.OVER
+
+
+static func down_hint_key(meta: Dictionary) -> String:
+	if int(meta.get("num_players", 1)) <= 1:
+		return "HUD_YOU_DOWN_SOLO"
+	return "HUD_YOU_DOWN" if can_be_revived(meta) else "HUD_YOU_DOWN_ALL"
 
 
 ## Real connection loss (client, mid-run): an unplugged plug with a solid orange
@@ -840,8 +861,6 @@ func _draw_overlay(o: Dictionary, sz: Vector2) -> void:
 			var sub := "HUD_WENDE_SUB" if axis == 0 else ("HUD_WENDE_SUB_X" if axis == 1 else "HUD_WENDE_SUB_Y")
 			_txt(tr(sub), Vector2(-sz.x * 0.5, 44), 26, Color(INK, a), null, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 6)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
-		"presse":
-			_draw_presse_banner(str(d.get("enc", "")), int(d.get("phase", 0)), t, a, sz)
 		"streik":
 			var punch := 1.0 + maxf(0.0, 0.18 - t) * 5.0
 			draw_set_transform(c + Vector2(0, -40), -0.18, Vector2(punch, punch))

@@ -33,6 +33,7 @@ SAY_BOSS_RETRY,Nochmal! Diesmal mit Plan.
 SAY_ENRAGE,Jetzt reicht’s aber!
 SAY_REICHENSTEUER,Reichensteuer! Wer viel hat, gibt ab.
 SAY_OFFENGELEGT,Offengelegt!
+SAY_EINGEZOGEN,Eingezogen!
 SAY_NOCH_IN_BEARBEITUNG,Gründung noch in Bearbeitung.
 SAY_VOTE_START,Antrag liegt vor. Wir stimmen ab!
 SAY_VOTE_FAIL,Keine Mehrheit? Dann halt nächste Woche.

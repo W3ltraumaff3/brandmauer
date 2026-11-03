@@ -12,8 +12,8 @@ German political-satire arena roguelite, built in Godot 4. Single player plus 1โ
 ## Conventions
 
 - **Player-facing text is German and goes through Godot's translation system.** Never hard-code it, because the English edition is planned.
-- **Quote data lives in `research/zitate_de.json`.** Only use entries with status `verifiziert` in the game. It's generated: change `research/scripts/` and rebuild, never edit the JSON by hand.
-- **Our own texts are gendered with a colon** (Spieler:innen, Sozialtourist:in). Real quotes are never changed.
+- **Quote data is generated** from `research/scripts/` (source data) and `research/auswahl.json` (selection) by `python -I research/scripts/build_all.py`. The game reads and ships only `research/zitate_spiel.json` (curated and `verifiziert`); `research/zitate_de.json` is the full research. Change the source and rebuild; never edit generated files (`zitate_de.*`, `auswahl.md`, `zitate_spiel.json`) by hand (D-159).
+- **Our own texts are gendered with a colon** (Spieler:innen, Sozialtourist:in). Real quotes are never changed, with one exception: slurs, above all the N-word, are never shown. Censor them with asterisks plus `[N-Wort zensiert]` in the quote text, or drop the quote (D-156, [content guidelines](docs/specs/content-guidelines.md) ยง4); this also applies to notes, URLs and research files.
 - **New `i18n/*.csv` files need a `.import` file with `importer="keep"`.** Otherwise exports lose the translations.
 
 ## GDScript pitfalls (Godot 4.7)

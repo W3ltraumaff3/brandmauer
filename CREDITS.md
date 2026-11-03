@@ -27,5 +27,6 @@ Required by [docs/specs/asset-licensing.md](docs/specs/asset-licensing.md). Add 
 - "Montego" Kevin MacLeod (incompetech.com) – Licensed under Creative Commons: By Attribution 4.0 License – http://creativecommons.org/licenses/by/4.0/
 - "Easy Jam" Kevin MacLeod (incompetech.com) – Licensed under Creative Commons: By Attribution 4.0 License – http://creativecommons.org/licenses/by/4.0/
 - "Ready Aim Fire" Kevin MacLeod (incompetech.com) – Licensed under Creative Commons: By Attribution 4.0 License – http://creativecommons.org/licenses/by/4.0/
+- "Whats It To Ya Punk" by Jason Shaw (audionautix.com), Creative Commons Attribution 4.0 International License – https://creativecommons.org/licenses/by/4.0/
 - "Summon the Rawk" Kevin MacLeod (incompetech.com) – Licensed under Creative Commons: By Attribution 4.0 License – http://creativecommons.org/licenses/by/4.0/
 - "Blue Ska" Kevin MacLeod (incompetech.com) – Licensed under Creative Commons: By Attribution 4.0 License – http://creativecommons.org/licenses/by/4.0/

@@ -68,8 +68,8 @@ const WEAPON_ORDER: Array[String] = [
 const WEAPONS := {
 	"gendersternchen": {"kind": "shot", "dmg": [6, 10, 16, 26], "cd": 1.0, "range": 380.0, "speed": 620.0,
 		"bounce": 1, "proj": "stern", "scale": {"ranged": 1.0}, "price": 20, "crit_mult": 2.0},
-	"pfandflasche": {"kind": "shot", "dmg": [8, 13, 20, 32], "cd": 1.3, "range": 320.0, "speed": 520.0,
-		"boomerang": true, "pierce": 99, "pfand_chance": 0.1, "proj": "flasche", "scale": {"ranged": 0.8}, "price": 18},
+	"pfandflasche": {"kind": "shot", "dmg": [12, 20, 32, 52], "cd": 1.3, "range": 320.0, "speed": 520.0,
+		"boomerang": true, "pierce": 99, "pfand_chance": 0.1, "proj": "flasche", "scale": {"ranged": 1.6}, "price": 18},  # D-161
 	"megafon": {"kind": "cone", "dmg": [5, 8, 13, 21], "cd": 1.1, "range": 200.0, "arc": 60.0, "knock": 40.0,
 		"scale": {"ranged": 0.7}, "price": 22},
 	"stricknadeln": {"kind": "shot", "dmg": [3, 5, 8, 13], "cd": 0.35, "range": 340.0, "speed": 760.0,
@@ -194,11 +194,19 @@ const ITEM_ORDER: Array[String] = [
 	"kritische_masse",
 	"robin_hood",
 	"tarnkappe",
-	# red politics items (GDD §12 "Politics items"; in the shop pool since D-127)
+	# politics items (GDD §12 "Politics items"; red ones since D-127, the others since D-150)
 	"cumex_erstattung",
 	"doppelwumms",
 	"brandmauer_fertigputz",
 	"entlassungsurkunde",
+	"erinnerungsluecke",
+	"treuhandkonto",
+	"aufhoeren_zu_produzieren",
+	"wahlversprechen",
+	"maut_vertrag",
+	"ber_eroeffnungstermin",
+	"puma",
+	"zweiter_wahlgang",
 ]
 
 const ITEMS := {
@@ -285,7 +293,7 @@ const RED_BUILD := {"melee": 2.0, "melee_other": 0.5, "ranged": 1.4, "ranged_pie
 	"status": 2.0, "status_direct": 0.7, "status_spread": 100.0, "crit_extra": 2.0, "crit_other": 0.75,
 	"lifesteal_heal": 4.0, "dodge_cap": 80.0,
 	"treuhand_chance": 0.5, "treuhand_pfand": 30, "aufhoeren_after": 2.0, "aufhoeren_regen": 8.0, "aufhoeren_armor": 10.0,
-	"wahl_time": 10.0, "wahl_early": 40.0, "wahl_late": -10.0, "maut_now": 60, "maut_wave": 8,
+	"wahl_time": 30.0, "wahl_early": -10.0, "wahl_late": 30.0, "maut_now": 60, "maut_wave": 8,
 	"ber_wave": 10, "ber_early": -10.0, "ber_late_dmg": 40.0, "ber_late_as": 20.0,
 	"puma_period": 18.0, "puma_down": 3.0, "second_round_hp": 0.5, "cumex_max": 40, "cumex_audit_wave": 15,
 	"wumms_radius": 150.0, "wumms_delay": 0.35, "wumms_dmg": 20.0, "wumms_ranged": 3.0,
@@ -430,7 +438,7 @@ const BOSS_CASTS: Array[String] = ["wende", "abstimmung", "kahlschlag", "ansturm
 const BOSS := {
 	# phases: lock at these HP fractions, Pressekonferenz between them (D-102, D-106)
 	"phase_at": [0.66, 0.33], "phase_tempo": [1.0, 1.2, 1.4],
-	"presse_time": 2.5, "presse_time_l4": 1.5,
+	"presse_time": 3.5, "presse_time_l4": 2.5,  # D-158
 	# random target every target_min..target_max s (D-103)
 	"target_min": 4.0, "target_max": 7.0,
 	# resistance (D-102, D-107)
@@ -495,6 +503,9 @@ const BALANCE := {
 	# economy: prices × (1 + price_lin·w + price_quad·w² + price_cubic·w³), w = wave − 1
 	"price_lin": 0.08, "price_quad": 0.009, "price_cubic": 0.0004,
 	"pfand_mult": 1.2,                      # Pfand per kill × this
+	# a rolled offer is a weapon with this chance, by weapons already on the shelf (0 / 1 / 2 / 3+);
+	# the build weapon is placed first, so 35 % for a second, 25 % for a third, never a fourth (D-149)
+	"shop_weapon_chance": [0.35, 0.35, 0.25, 0.0],
 	# Reichensteuer (co-op, balancing.md §5a): part above threshold × others' average is taxed
 	# at a rate by player count and goes to the poorest first; givers keep reich_keep more
 	"reich_threshold": 1.5, "reich_min": 5, "reich_rate": {2: 0.5, 3: 0.6, 4: 0.7}, "reich_keep": 0.1,
@@ -534,13 +545,22 @@ static func levelups_after_wave(wave: int) -> int:
 const VERTRAG_WAVES := [4, 8, 12, 16]
 const VERTRAG_ORDER: Array[String] = [
 	"digitalpakt", "tempolimit", "mindestlohn", "buerokratieabbau", "aufruestung", "schuldenbremse", "sanktionen",
+	"klimageld", "cannabis", "neun_euro_ticket", "wehrdienst", "maskendeals", "rente_mit_70",
 ]
+# stats: any stat for every player; payout: Pfand × price factor for everyone when the
+# contract ends, one roll; draft: stats for one present player drawn per wave (D-155)
 const VERTRAG := {
 	"digitalpakt": {"badness": 0},
+	"klimageld": {"badness": 0, "payout": 30, "payout_chance": 0.5},
 	"tempolimit": {"badness": 1, "player_speed": -10.0, "enemy_speed": -0.15},
+	"cannabis": {"badness": 1, "stats": {"hp_regen": 5.0, "attack_speed": -10.0}},
+	"neun_euro_ticket": {"badness": 1, "player_speed": 20.0, "enemy_speed": 0.10},
 	"mindestlohn": {"badness": 2, "income": 3, "enemy_hp": 0.10},
 	"buerokratieabbau": {"badness": 2, "offers": -1, "xp": 25.0},
+	"wehrdienst": {"badness": 2, "draft": {"damage": 20.0, "speed": -20.0}},
 	"aufruestung": {"badness": 3, "damage": 20.0, "enemy_dmg": 0.20},
+	"maskendeals": {"badness": 3, "stats": {"armor": 5.0}, "price": 0.20},
+	"rente_mit_70": {"badness": 3, "stats": {"attack_speed": 10.0, "max_hp": -10.0}},
 	"schuldenbremse": {"badness": 4, "price": -0.15, "no_regen": true},
 	"sanktionen": {"badness": 5, "income_mult": 0.5, "pfand_drop": 0.3},
 }

@@ -20,7 +20,7 @@ func _defaults() -> Dictionary:
 		"album": [],
 		"max_umfrage": 0,
 		"stats": {"runs": 0, "wins": 0, "best_wave": 0},
-		"options": {"master": 0.7, "music": 0.5, "sfx": 0.8, "window_mode": "windowed", "bubble_opacity": 0.7, "own_fx_opacity": 1.0, "name": "Genoss:in"},
+		"options": {"master": 0.7, "music": 0.5, "sfx": 0.8, "teammate_sfx": 0.5, "window_mode": "windowed", "bubble_opacity": 0.7, "own_fx_opacity": 1.0, "name": "Genoss:in"},
 	}
 
 

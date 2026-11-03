@@ -100,6 +100,14 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
 - **The Späti** (shop between waves):
   - Weapons (**6 slots**; Lastenrad-Grüne has 7), items and stat upgrades (level-ups).
   - Reroll (some characters start with free rerolls), plus Brandmauer repairs.
+  - **Offer mix (D-149): one weapon for your build is guaranteed, and so is one item.** The build weapon is placed first (balancing.md §5). Every other offer is a weapon with a chance that drops with each weapon already on the shelf: **35 % for a second weapon, 25 % for a third, never a fourth**; otherwise an item. Locked offers count. With 4 offers that means 1 weapon in 27.5 % of the visits, 2 in 51.5 %, 3 in 21 %, never 4 (before: every offer 35 %, and 4 weapons in about 1 of 70 visits).
+  - **Reservieren (lock offers, D-148, D-153):** every unsold offer has a toggle, "Reservieren" / "Reserviert" (mouse: the button on the card; gamepad: **Y** on the focused offer; keyboard: **L**). It costs nothing and can be undone at any time in the Späti ("Reservierung aufheben").
+    - **Gamepad and keyboard reach every unsold offer**, also one you can't buy right now (too expensive, no free slot): its Kaufen button keeps focus but looks disabled, and pressing it shows the reason. Saving up for an offer you can't afford yet is the main reason to reserve it.
+    - The focused card shows the key on its button ("[Y] Reservieren", PS "[△]"), so the action can be found without the tooltip. With the mouse the key is hidden.
+    - A locked offer is **kept exactly as it is** (weapon or item, tier, rarity, **price**) and appears in the **same slot** of the next Späti, at the price of the Späti it was locked in, not the higher new price.
+    - Rerolling only replaces unlocked offers. Buying a locked offer uses it up as usual.
+    - The lock carries over only one visit. In the next Späti the offer is unlocked again, and you can lock it again (still at the old price).
+    - Each player locks their own offers. A Koalitionsvertrag that changes the number of offers never removes a locked offer.
   - **Weapon offers favour your style.** Each weapon scales with melee, ranged, status or summon. The shop looks at how the weapons you hold scale (the starting weapon counts) and favours weapons with the same scaling:
     - chance weight = 1 + 2 × (how well the weapon's scaling matches your weapons' scaling, 0–1)
     - Example: holding only melee weapons makes melee weapons 3× as likely as the others.
@@ -135,10 +143,14 @@ All numbers live in one place, `Arena` (`src/sim/arena.gd`): the geometry consta
 
 ### 6c. Statistics panel
 
-The Späti has a **Statistik** button (Esc closes it): a recap after the last wave, per player.
-- **Damage by source:** weapons by tier, ramming (Lastenrad), other. Shows last wave, total and share. Sold weapons are marked *(verkauft)*, combined ones *(kombiniert)*.
-- **Survival:** healed by Umverteilung, by Krankenschein and by Demo-Sanis, damage taken, damage blocked by Kündigungsschutz, dodges.
-- **Misc:** kills, crits, ultimates used, Pfand collected, income and spent.
+The Späti has a **Statistik** button (Esc closes it): a recap after the last wave. It is built top-down by importance (D-152):
+- **"Letzte Woche" on top, the only thing that catches the eye:** a few values of the wave just survived, one row per player so the team can compare.
+  - Columns: **Schaden** (all damage dealt), **Besiegt** (kills), **eingesammelt** (Pfand picked up), **Eingesteckt** (damage taken), **Geheilt** (Umverteilung + Krankenschein + Demo-Sanis) and **Stärkste Quelle** (the source with the most damage this wave, weapon in its tier color).
+  - **Co-op:** one row per player in player order, the local player's row highlighted (tinted, name in red with "(du)"). Away players are greyed. The highest value of each number column is underlined, so you see who carried what.
+  - **Solo:** the same strip with a single row and no name column, so there is no empty comparison.
+- **"Ganzer Lauf" below, smaller and secondary:** the local player's run totals.
+  - **Damage by source:** weapons by tier, ramming (Lastenrad), ultimate, other. Shows last wave, total and share. **Effective damage only:** a hit counts at most the HP the enemy had left (no overkill), so a killing blow on a nearly dead enemy counts little. Sold weapons are marked *(verkauft)*, combined ones *(kombiniert)*. Only this table scrolls when it doesn't fit.
+  - **One compact value list** next to it: healed by Umverteilung, by Krankenschein and by Demo-Sanis, damage taken, damage blocked by Kündigungsschutz, dodges, kills, crits, ultimates used, Pfand collected, income and spent. No captions.
 
 ## 7. In-run progression: Zusammenhalt
 
@@ -251,12 +263,12 @@ Chosen before the run, by the group in co-op:
 
 ## 11. Weapons (31)
 
-All weapons have tiers I–IV (combine two of the same tier, section 6a). Values from `Content.WEAPONS`:
+All weapons have tiers I–IV (combine two of the same tier, section 6a). **Copies of the same weapon fire staggered** (D-160): with n copies, copy k is offset by k/n × min(cooldown, 0.5 s). At wave start copy k fires that much **earlier** (0.5 s − offset instead of 0.5 s), so no weapon starts later than before; after a pause without a target it waits that much longer (at most 0.5 s, 0.25 s for two copies). So they don't all fire at the same enemy in the same frame (the later shots were wasted on an enemy the first one had already killed). Values from `Content.WEAPONS`:
 
 | Weapon | Kind | Damage I–IV | Cooldown | Scales with | Notes |
 |---|---|---|---|---|---|
 | **Gendersternchen** | shot | 6 / 10 / 16 / 26 | 1.0 s | Durchschlagskraft | shuriken, bounces once |
-| **Pfandflasche** | shot | 8 / 13 / 20 / 32 | 1.3 s | Durchschlagskraft | boomerang, pierces everything, 10 % chance of Pfand |
+| **Pfandflasche** | shot | 12 / 20 / 32 / 52 (D-161; was 8 / 13 / 20 / 32) | 1.3 s | Durchschlagskraft (1.6; was 0.8) | boomerang, pierces everything, 10 % chance of Pfand |
 | **Megafon** | cone (60°) | 5 / 8 / 13 / 21 | 1.1 s | Durchschlagskraft | knockback |
 | **Stricknadeln** | shot | 3 / 5 / 8 / 13 | 0.35 s | Durchschlagskraft | fast-firing |
 | **Döner-Spieß** | melee cone (25°) | 12 / 20 / 32 / 50 | 0.9 s | Handarbeit | |
@@ -337,7 +349,7 @@ Every status effect goes through the one immunity check (D-087): **the Reichsbü
 
 Soli-Sticker's poison is its own effect (it doesn't replace a Tofu poison and isn't replaced by one); it shows as the usual poison tint plus a small sticker on the enemy.
 
-## 12. Items (61 in the shop pool, incl. 2 hidden)
+## 12. Items (69 in the shop pool, incl. 2 hidden)
 
 Every item is a stat change and/or a rule flag. Throwing items away: section 6a.
 
@@ -436,10 +448,10 @@ Twelve items built on real German political events of 2016–2026. The sources a
 | Item | Rarity | Effect | Event |
 |---|---|---|---|
 | Erinnerungslücke | purple | +15 Schwarzfahren, −10 Vernetzung | Cum-Ex inquiry, memory gaps |
-| Treuhandkonto (Philippinen) | blue | at wave end: 50 % chance (+Eltern/2 %) of +30 Pfand | Wirecard, 2020 |
+| Treuhandkonto (Philippinen) | blue | at wave end: 50 % chance (+Eltern/2 %) of +30 Pfand × the price factor of the next Späti (D-150) | Wirecard, 2020 |
 | Aufhören zu produzieren | blue | standing still for ≥ 2 s: +8 Krankenschein and +10 Kündigungsschutz while you stand | "nicht insolvent, nur aufhören zu produzieren" |
-| Wahlversprechen | blue | first 10 s of each wave +40 Wut, afterwards −10 Wut | broken election promises |
-| Maut-Vertrag | purple | +60 Pfand immediately on purchase; −8 Pfand at every wave end | PKW-Maut damages |
+| Wahlversprechen | blue | first 30 s of each wave −10 Wut (the promise), afterwards +30 Wut (broken again, D-154). Waves 1–2 last 30 s, so there it is only the malus | broken election promises |
+| Maut-Vertrag | purple | +60 Pfand × price factor immediately on purchase; −8 Pfand × price factor at every wave end (D-150) | PKW-Maut damages |
 | BER-Eröffnungstermin | purple | waves 1–9: −10 Wut; from wave 10: +40 Wut, +20 Akkord | BER airport |
 | Puma-Schützenpanzer | purple | +25 Durchschlagskraft, +10 Kündigungsschutz; every 18 s all weapons fail for 3 s | all 18 Pumas failed, 2022 |
 | Zweiter Wahlgang | purple | once per run: when you'd go down, you're back at 50 % Solidarität instead; −10 Wut | chancellor election in the second round, 2025 |
@@ -448,7 +460,7 @@ Twelve items built on real German political events of 2016–2026. The sources a
 | Brandmauer-Fertigputz | red (armor build) | +50 Kündigungsschutz, enemies touching you are knocked back, −30 Deutschlandticket | the Brandmauer |
 | Entlassungsurkunde | red (crit build) | +30 Direkte Aktion; a crit on a normal enemy under 40 % HP takes it out at once, a crit on an elite, miniboss or boss deals ×1.5 instead; −10 Vernetzung (D-132, was +20, under 30 %, −15 Durchschlagskraft, which took the crit build's damage away) | Ampel-Aus, 2024 |
 
-All twelve politics items are in the item definitions; the four red ones are in the shop pool since D-127 (before, none of the twelve could be offered; the eight others are an open question).
+All twelve politics items are in the shop pool: the four red ones since D-127, the other eight since D-150. Before, none of them could be offered: they were added to the item definitions in v0.2 but not to the shop list `Content.ITEM_ORDER`. A content test now requires every item definition to be in that list. With D-150 the flat Pfand amounts follow the price factor of the next Späti like Cum-Ex (D-130): Treuhandkonto +30 × factor, Maut-Vertrag +60 × factor on purchase and −8 × factor at each wave end.
 
 ## 13. Enemies
 
@@ -561,7 +573,7 @@ Playtest (solo, v0.4.0): the Sauerländer was harder to beat than she was. She h
 Goal: bosses take long enough for their mechanics to matter (elites 25–45 s, final boss 60–90 s for a strong build), and ultimates help without ending the fight. Normal waves stay as they are; only encounter units (elites, minibosses, boss) change. All numbers are starting values for the next balancing round.
 
 **Rules for every encounter:**
-- **Phase lock:** damage can't skip a phase boundary (66 % / 33 %); damage beyond the boundary is lost. At each phase change the boss holds a **"Pressekonferenz"** for 2.5 s (1.5 s from Umfrage 30 %): it's invulnerable (golden outline), walks to the middle, a banner shows the phase name, stun and slow on it end, and any running vulnerability is paused, not used up. This replaces the separate "faster below 50 %" rule.
+- **Phase lock:** damage can't skip a phase boundary (66 % / 33 %); damage beyond the boundary is lost. At each phase change the boss holds a **"Pressekonferenz"** for 3.5 s (2.5 s from Umfrage 30 %, D-158): it's invulnerable (golden outline), walks to the middle, a banner above the boss bar shows the phase name, stun and slow on it end, and any running vulnerability is paused, not used up. This replaces the separate "faster below 50 %" rule.
 - **Random targets:** encounter attacks don't always aim at the nearest player. Every 4–7 s (random) the boss picks a random player who is alive and not away; it may pick the same one again. Abilities that work "per player" create one instance per player.
 - **Resistance:** a stun on an encounter unit lasts half as long, then the unit is **"Standfest"** for 10 s (15 s from Umfrage 30 %): immune to further stuns, shown by a press-spokesperson shield icon. Every stun **interrupts the ability the boss is casting** ("UNTERBROCHEN"). Slow from any source (Kleber, Straßenblockade, Antrag gestellt, …) is capped at 40 % on bosses and minibosses (the Sylt-Clique, tier 1, stays uncapped).
 - **Melee hits harder:** melee weapons deal ×2 damage to elites, minibosses and bosses (v0.4, D-121); they have to stand next to them.
@@ -583,7 +595,7 @@ Bug fix that comes with this: the Sauerländer's walk targets and money drops (a
 - **Abstimmung (D-109):** first vote after 20 s or at the first phase change; he hurries there at ×2.5 speed (5 s at most); the segment glows and the Plenum circles (radius 70, 230 px in front of the wall, 160 px apart) appear when he sets off; the vote starts when he arrives. No other attacks while he votes. AfD enemies spawn behind the hole and come through it.
 - **Kahlschlag (D-110):** 90° cone, 380 px, at his current target, 1.5× contact damage; removes every summon a player owns and the zones Kleber, Sitzblockade, Brandmauer-Ziegel, Straßenkreide (not the Oma, not the turbines). He stands still during the warning.
 - **Die Brandmauer hält (D-111):** neighbours count only on the same wall; phase-2 push rings shove each player toward the hole nearest to them; the band stays into phase 3.
-- **Cast display (D-108, D-112):** the boss bar shows the running cast and its progress ("Abstimmung läuft …"); a stun shows "UNTERBROCHEN"; the Pressekonferenz shows a banner with the phase name; Standfest shows a press-spokesperson shield over the unit. Snapshot version 4 carries it (networking.md §6.1).
+- **Cast display (D-108, D-112):** the boss bar shows the running cast and its progress ("Abstimmung läuft …"); a stun shows "UNTERBROCHEN"; the Pressekonferenz shows a banner with the phase name **above the boss bar, at the bottom**, for as long as it lasts (D-158: it used to sit at the top of the arena and covered the boss walking to the middle; it replaces the small gold "Pressekonferenz" label there); Standfest shows a press-spokesperson shield over the unit. Snapshot version 4 carries it (networking.md §6.1).
 
 ### Pool (after the MVP)
 | Tier | Encounter | Mechanic |
@@ -599,13 +611,15 @@ Bug fix that comes with this: the Sauerländer's walk targets and money drops (a
 - **No real quotes as speech bubbles during waves.** They block the view. Enemy bubbles during waves are **invented lines** and **status bubbles** ("Verspätung aus betrieblichen Gründen", "Schwarz gefahren!"). Intro quotes stay on the card.
 - **Option Sprechblasen** (opacity; *aus* turns bubbles off). Status bubbles stay readable at any setting except *aus*.
 - **Only quotes marked `verifiziert` in the research are used** (see [content guidelines](specs/content-guidelines.md)). 62 of 110 verified quotes are curated into the game.
-- **Source data:** `research/zitate_de.json`, selection in `research/auswahl.json`.
+- **Slurs are never shown** (D-156): a slur in a real quote, above all the N-word, is replaced by asterisks with the mark `[N-Wort zensiert]` inside the quote text, so the mark shows on every card, screen and Album page (e.g. `afd-maier-02`). Otherwise the quote is dropped.
+- **Source data:** `research/zitate_de.json`, selection in `research/auswahl.json`. The game reads and ships only the generated `research/zitate_spiel.json` (curated, verified quotes; D-159).
 
 ## 16. Co-op (1–4 players)
 
 | Mechanic | Rule |
 |---|---|
 | **Solidaritätszuschlag** | Reviving a downed player costs the helper 10 % of their max HP (5 % with Erste-Hilfe-Kurs). The revived player returns with 40 % HP |
+| **Downed hint** | While you are down, the HUD says "Kurz durchatmen – die anderen holen dich zurück!". **Solo** (only one player left in the run) there is nobody to revive you: going down ends the run ("Vertagt.", or the boss wave restarts with Boss-Wiederholung; Zweiter Wahlgang catches the hit before you go down at all). The hint then says "Solidarität braucht mindestens zwei. Nächster Anlauf!", and the downed character lies there without the revive ring, the green cross and "Hilf mir hoch!" (D-157). **Co-op, everyone down** (the run is over, "Vertagt."): nobody is left to help either, so the hint says "Alle am Boden. Nächstes Mal stehen wir zusammen wieder auf!" and the revive markers disappear as well |
 | **Scaling** | More players means more enemies and stronger elites |
 | **Späti** | One per player. No timer: the next wave starts when every player is "Bereit" |
 | **Zusammenhalt** | Shared across the team |
@@ -627,17 +641,23 @@ Whoever collects far more Pfand in a wave than the others (e.g. thanks to Pfandr
 - The Späti shows what you paid or received; the end screen shows the totals.
 
 ### Koalitionsvertrag (vote before waves 4, 8, 12, 16)
-Offers a set of modifier options; the result applies for **4 waves** (`Content.VERTRAG`, worse options have a higher "badness"):
+Offers **3 options drawn at random** from the pool below; the result applies for **4 waves** (`Content.VERTRAG`, worse options have a higher "badness"). Six more since D-155 (marked ✚), drawn like the others:
 
-| Option | Badness | Effect |
-|---|---|---|
-| Digitalpakt | 0 | nothing happens |
-| Tempolimit | 1 | players −10 Deutschlandticket, enemies 15 % slower |
-| Mindestlohn | 2 | +3 Nebenjob for all, enemies +10 % HP |
-| Bürokratieabbau | 2 | +25 Vernetzung, one Späti offer fewer |
-| Aufrüstung | 3 | +20 Wut for players, enemies +20 % damage |
-| Schuldenbremse | 4 | Späti prices −15 %, no regeneration |
-| Sanktionen | 5 | income halved, 30 % fewer Pfand drops |
+| Option | Badness | Effect | Background |
+|---|---|---|---|
+| Digitalpakt | 0 | nothing happens | |
+| ✚ Klimageld | 0 | nothing during the contract; when it ends, a 50 % chance (one roll for the whole team) that every player gets +30 Pfand × the price factor of the next Späti (D-150). A bubble says "ausgezahlt" or "verschoben" | coalition agreement 2021, never paid out |
+| Tempolimit | 1 | players −10 Deutschlandticket, enemies 15 % slower | |
+| ✚ Cannabis-Legalisierung | 1 | +5 Krankenschein, −10 Akkord | CanG, 1 April 2024 |
+| ✚ 9-Euro-Ticket | 1 | +20 Deutschlandticket, enemies 10 % faster | June–August 2022 |
+| Mindestlohn | 2 | +3 Nebenjob for all, enemies +10 % HP | |
+| Bürokratieabbau | 2 | +25 Vernetzung, one Späti offer fewer | |
+| ✚ Wehrdienst per Los | 2 | at every wave start one present player is drawn (solo: always you): +20 Wut, −20 Deutschlandticket for that wave. A bubble "Eingezogen!" marks them | Wehrdienstgesetz 2025, the dispute over drawing lots |
+| Aufrüstung | 3 | +20 Wut for players, enemies +20 % damage | |
+| ✚ Maskendeals | 3 | +5 Kündigungsschutz, Späti prices +20 % | 2020/21, commissions for Union MPs |
+| ✚ Rente mit 70 | 3 | +10 Akkord, −10 Solidarität | debate 2023–2025 |
+| Schuldenbremse | 4 | Späti prices −15 %, no regeneration | |
+| Sanktionen | 5 | income halved, 30 % fewer Pfand drops | |
 
 **Vote rules:**
 - Everyone **votes or abstains ("Enthalten")**. **"Bereit" is only possible afterwards**, so an unnoticed missing vote can't pick the worst option.
@@ -675,7 +695,7 @@ Offers a set of modifier options; the result applies for **4 waves** (`Content.V
 - 1 arena with the Brandmauer
 - 8 characters, plus Die Töchter as an unlock
 - 3 Organisationen
-- 12 weapons, 61 items in the shop pool (green/blue/purple/red; 12 red)
+- 12 weapons, 69 items in the shop pool (green/blue/purple/red; 12 red)
 - 20 waves (ramping), with 3 elites/minibosses (waves 5/10/15) and 1 boss (wave 20)
 - The Späti with combine, sell, discard and statistics
 - Zusammenhalt progression
@@ -691,6 +711,7 @@ Saved immediately.
 | **Gesamtlautstärke** | master volume (default 70 %) |
 | **Musik** | volume (default 50 %) |
 | **Geräusche** | volume (sound effects) |
+| **Geräusche der Mitspieler:innen** | volume of the sounds your teammates cause: shots, hits, Pfand (default 50 %, 0 % = off; [audio spec](specs/audio.md) §5). Waves, level-ups and downs are always heard |
 | **Zielauswahl** | Nächste:r Gegner:in (default) / Meiste Lebenspunkte / Wenigste Lebenspunkte |
 | **Fenstermodus** | Vollbild / Maximiertes Fenster / Fenster (default) |
 | **Sprechblasen** | opacity (default 70 %), *aus* |
@@ -750,3 +771,13 @@ The art is deliberately crude and hand-drawn. It's fast to produce, it fits the 
 - **Tech:** tracks are assigned through data, never in code, so they can be swapped without code changes.
 - **Source:** openly licensed tracks for now (CC0 / CC BY, see [asset licensing spec](specs/asset-licensing.md)). We may switch to a real band later.
 - **Possible later:** adaptive layers, e.g. a "hold music" opening that changes with Zusammenhalt, once we have stems from a band.
+
+### Sound effects
+Retro synth sounds rendered by `tools/gen_sfx.py` (our own work, D-040), mixed as in the [audio spec](specs/audio.md) (D-151):
+- **Loudness tiers:** routine sounds (shots, hits) are quiet, short and capped; rewards and alerts are louder and never cut off.
+- **Pfand streak:** quick pickups climb a pentatonic scale.
+- **Audible hits and crits.**
+- **Ka-ching by tier:** red has a full arpeggio.
+- **Your own sounds first:** teammates' sounds are quieter, with their own option.
+
+Reward sounds play only for real gains, never for losses.
