@@ -498,12 +498,30 @@ Sauerländer's wave came out identical in all 80 pairs). Every number of her kit
 
 - Lobby option for the host, **"Boss-Wiederholung"** (off by default), part of the run config.
 - Only in waves with an elite or boss (5, 10, 15, 20). If the whole team is down or dead
-  there, the wave **starts over** instead of ending the run:
-  - everyone is revived with full HP at the arena center
-  - enemies, projectiles, hazards and pickups are cleared
-  - the wave timer and the encounter start again (boss intro included)
-  - items, weapons, stats and Pfand stay as they are
+  there, the wave **starts over from its beginning** instead of ending the run, exactly as
+  with Wellen-Wiederholung (§8a): the same wave-start checkpoint, so the lost attempt's
+  bounty (Pfand, XP, level-ups) is gone (D-165; until then items, weapons, stats and Pfand
+  stayed as they were at the wipe)
+- Players who left the run stay gone and away players stay away (D-164); only who is down
+  comes back.
 - Unlimited retries. The end screen shows how many were used; such a win still counts.
+
+### 8a. Retry for every wave (option, D-163)
+
+- Lobby option for the host, **"Wellen-Wiederholung"** (off by default), run config `wave_retry`.
+- In **every** wave: if the whole team is down or dead, the wave starts over from the
+  **checkpoint taken at its start** (the same one the run save uses, GDD §17 "Weiterspielen"):
+  - everyone back with full HP at the arena center, the arena cleared, the wave timer and
+    encounter (boss intro included) start again
+  - Pfand, XP, level-ups, Zusammenhalt, Brandmauer, Kasse, items, weapons and run statistics
+    are **as at the wave's start**; whatever the lost attempt brought is gone, so dying on
+    purpose never farms anything
+  - the RNG state is restored too, so it's the same encounter and the same Wehrdienst draw
+  - players who left the run stay gone, away players stay away
+- Unlimited; it uses the same counter as Boss-Wiederholung ("Wellen wiederholt: N" on the end
+  screen) and such a win still counts.
+- Both options restart the same way (D-165); they differ only in which waves they cover, so
+  with both on every wave is covered.
 
 ## 9. Where ground weapons land (D-113)
 

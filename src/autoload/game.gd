@@ -35,6 +35,8 @@ var _inputs: Array = []          # client prediction: [{seq, dir, dt}]
 var _pred_pos := Vector2.INF
 var _last_ack := 0
 var _clock := 0.0
+var _resume := {}                # host: checkpoint for the next run start (continue_run)
+var _saved_seq := -1             # Sim.checkpoint_seq last written to the run save
 
 
 func _ready() -> void:
@@ -164,8 +166,119 @@ func start_run() -> void:
 	var cfg := {
 		"seed": randi(), "players": players, "org": Net.org,
 		"difficulty": Net.difficulty, "blackrock": blackrock, "boss_retry": Net.boss_retry,
+		"wave_retry": Net.wave_retry,
 	}
 	Net.broadcast_run_start(cfg)
+
+
+# --- Run save: continue a run (GDD §17 "Weiterspielen", D-162) ----------------
+
+## Summary of the saved run for menu and lobby (Sim.checkpoint_summary), or {}.
+func continue_info() -> Dictionary:
+	return Sim.checkpoint_summary(Save.run_save())
+
+
+## Main menu "Weiterspielen" for a one-player save: straight into the run.
+## A co-op save goes through open_continue_host and the lobby instead.
+func open_continue() -> bool:
+	var info := continue_info()
+	if info.is_empty() or (info["players"] as Array).size() != 1:
+		return false
+	open_solo()
+	Net.set_char(str(info["players"][0]["char"]))
+	if continue_run():
+		return true
+	return false
+
+
+## Co-op save: host lobby with the host's saved character picked; "Fortsetzen" there.
+func open_continue_host(player_name: String, use_upnp: bool) -> void:
+	open_host(player_name, use_upnp)
+	if mode != Mode.HOST:
+		return
+	for sp in continue_info().get("players", []):
+		if int(sp["id"]) == 1:
+			Net.set_char(str(sp["char"]))
+
+
+## Host: starts the saved run with the players in the lobby (resume_mapping).
+func continue_run() -> bool:
+	if not is_host_side() or mode == Mode.SERVER or is_running():
+		return false
+	var cp := Save.run_save()
+	var mapping := resume_mapping(Net.lobby, cp)
+	if mapping.is_empty():
+		return false
+	var chars := {}
+	for sp in Sim.checkpoint_summary(cp)["players"]:
+		chars[int(sp["id"])] = str(sp["char"])
+	var players := []
+	for id in Net.lobby:
+		var from := int(mapping[int(id)])
+		players.append({"id": int(id), "name": Net.lobby[id].get("name", ""), "char": chars[from], "from": from})
+	var cfg: Dictionary = (cp.get("config", {}) as Dictionary).duplicate(true)
+	cfg["players"] = players
+	_resume = cp
+	Net.broadcast_run_start(cfg)
+	return true
+
+
+## Lobby: whether "Fortsetzen" can start the saved run with the current lobby.
+func can_continue() -> bool:
+	return is_host_side() and not resume_mapping(Net.lobby, Save.run_save()).is_empty()
+
+
+## Lobby player id -> saved player id: same character and name first, then the
+## same character, then any free one in order. {} when the lobby is empty or has
+## more players than the save has characters.
+static func resume_mapping(lobby: Dictionary, cp: Dictionary) -> Dictionary:
+	var saved: Array = Sim.checkpoint_summary(cp).get("players", [])
+	if lobby.is_empty() or lobby.size() > saved.size():
+		return {}
+	var out := {}
+	var used := {}
+	for pass_i in 3:
+		for id in lobby:
+			if out.has(int(id)):
+				continue
+			var entry: Dictionary = lobby[id]
+			for sp in saved:
+				if used.has(sp["id"]):
+					continue
+				var same_char: bool = sp["char"] == str(entry.get("char", ""))
+				var same_name: bool = sp["name"] == str(entry.get("name", ""))
+				if pass_i == 2 or (same_char and (same_name or pass_i == 1)):
+					out[int(id)] = sp["id"]
+					used[sp["id"]] = true
+					break
+	return out
+
+
+## Pause menu "Aufgeben": the run is over for good.
+func give_up() -> void:
+	if is_host_side():
+		Save.clear_run()
+		_saved_seq = -1
+		sim = null
+	quit_to_menu()
+
+
+## Host side: keeps the run save up to date. A new Sim checkpoint is written as
+## it comes; in the Späti (shop_now) the current state is. A decided run has none.
+func _sync_run_save(shop_now := false) -> void:
+	if sim == null or (mode != Mode.SOLO and mode != Mode.HOST):
+		return
+	if sim.phase == Sim.Phase.OVER:
+		if _saved_seq != -2:
+			_saved_seq = -2
+			Save.clear_run()
+		return
+	if shop_now and sim.phase == Sim.Phase.SHOP:
+		_saved_seq = sim.checkpoint_seq
+		Save.write_run(sim.make_checkpoint("shop"))
+	elif sim.checkpoint_seq != _saved_seq:
+		_saved_seq = sim.checkpoint_seq
+		Save.write_run(sim.checkpoint)
 
 
 func request(action: String, arg = null) -> void:
@@ -175,6 +288,7 @@ func request(action: String, arg = null) -> void:
 		if sim and mode != Mode.SERVER:
 			sim.request(local_id(), action, arg)
 			_flush_events()
+			_sync_run_save(true)
 	else:
 		Net.send_request(action, arg)
 
@@ -195,6 +309,7 @@ func back_to_lobby() -> void:
 func quit_to_menu(keep_rejoin := false) -> void:
 	if not keep_rejoin:
 		Save.clear_rejoin()
+	_sync_run_save(true)
 	_reset_run()
 	Net.leave()
 	mode = Mode.NONE
@@ -232,12 +347,17 @@ func _on_disconnected(reason: String) -> void:
 
 
 func _on_run_start(cfg: Dictionary) -> void:
+	var resume := _resume
 	_reset_run()
 	config = cfg
 	view = ViewState.new()
 	if is_host_side():
 		sim = Sim.new()
-		sim.start_run(cfg)
+		if resume.is_empty():
+			sim.start_run(cfg)
+		else:
+			sim.resume_run(cfg, resume)
+		_sync_run_save()
 		sim.build_view(view)
 		meta = sim.build_meta()
 		_flush_events()
@@ -294,6 +414,7 @@ func _on_request(peer: int, action: String, arg) -> void:
 	if sim:
 		sim.request(peer, action, arg)
 		_flush_events()
+		_sync_run_save(true)
 
 
 func _on_peer_left(peer: int) -> void:
@@ -330,6 +451,7 @@ func _on_run_resent(_peer: int) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		Save.clear_rejoin()
+		_sync_run_save(true)   # closing in the Späti keeps it as it is
 
 
 ## Client: back in the run after a lost connection. Drop stale snapshots and
@@ -367,6 +489,8 @@ func _reset_run() -> void:
 	_end_timer = -1.0
 	_seq = 0
 	_last_ack = 0
+	_resume = {}
+	_saved_seq = -1
 
 
 func _process(_dt: float) -> void:
@@ -419,6 +543,7 @@ func _host_tick(dt: float) -> void:
 		if sim.phase == Sim.Phase.OVER and not was_over:
 			_end_timer = END_DELAY
 	_flush_events()
+	_sync_run_save()
 	sim.build_view(view)
 	_frame += 1
 	if mode != Mode.SOLO and _frame % SNAPSHOT_EVERY == 0:

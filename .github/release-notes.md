@@ -2,6 +2,14 @@
 
 Danke, dass du mittestest! Das Spiel ist eine **Beta**: Es gibt Bugs, und das Balancing ist noch nicht fertig.
 
+### Neu in 0.5.1
+- **Weiterspielen:** Du kannst jederzeit aufhören und später weitermachen. Im Pausemenü **„Speichern und beenden“**, im Hauptmenü dann **„Weiterspielen“**. Gespeichert wird zu Beginn jeder Welle und im Späti: Mitten in einer Welle geht es am Anfang dieser Welle weiter, im Späti genau da, wo du warst. **„Aufgeben“** löscht den Spielstand. Ist der Lauf gewonnen oder verloren, ist auch der Spielstand weg.
+- **Koop weiterspielen:** Der Spielstand liegt beim Host. „Weiterspielen“ öffnet die Lobby, alle wählen ihren Charakter von damals, dann **„Fortsetzen“**.
+- **Neue Option „Wellen-Wiederholung“** in der Lobby (Standard aus): Stirbt das Team in irgendeiner Welle, startet sie neu, mit dem Stand vom Wellenbeginn.
+- **Boss-Wiederholung** startet die Bosswelle jetzt auch mit dem Stand vom Wellenbeginn neu. Pfand und Level aus dem verlorenen Versuch sind wieder weg.
+- **Bug behoben:** Bei der Boss-Wiederholung standen Mitspieler:innen wieder auf, die das Spiel schon verlassen hatten.
+- **Wichtig für Koop:** Alle brauchen diese Version, ältere können nicht mitspielen.
+
 ### Neu in 0.5.0
 - **Reservieren im Späti:** Jedes Angebot lässt sich kostenlos reservieren und liegt im nächsten Späti zum alten Preis wieder im Regal – auch eins, das du dir gerade nicht leisten kannst. Mit Controller **Y** auf dem Angebot, mit Tastatur **L**.
 - **Besserer Angebotsmix:** immer eine Waffe für deinen Build und mindestens ein Item, nie mehr als drei Waffen. Die acht Politik-Items (Wahlversprechen, Maut-Vertrag, BER-Eröffnungstermin, Puma …) tauchen jetzt auch wirklich im Späti auf.

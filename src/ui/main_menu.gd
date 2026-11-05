@@ -39,6 +39,21 @@ func build() -> void:
 		# A failed rejoin keeps this menu open (main.gd); Game shows the reason.
 		UIApi.connect_opt(UIApi.net(), "disconnected", _on_rejoin_failed)
 
+	# The saved run of this machine (GDD §17 "Weiterspielen", D-162).
+	var cont = UIApi.call_opt(UIApi.game(), "continue_info", [], {})
+	if cont is Dictionary and not (cont as Dictionary).is_empty():
+		var cb := UIKit.button(tr("MENU_CONTINUE") % int(cont["wave"]), _on_continue, 30)
+		cb.name = "continue"
+		cb.custom_minimum_size = Vector2(514, 56)
+		cb.tooltip_text = continue_tip(cont)
+		UIKit.ready_look(cb, true)
+		UIKit.tilt(cb, 0.6)
+		var cc := CenterContainer.new()
+		cc.add_child(cb)
+		body.add_child(cc)
+		if focus_target == null:
+			focus_target = cb
+
 	var row := UIKit.hbox(40)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.size_flags_vertical = SIZE_EXPAND | SIZE_SHRINK_CENTER
@@ -123,6 +138,39 @@ func _on_solo() -> void:
 		ToastLayer.show_text(tr("UI_NOT_READY"))
 		return
 	UIApi.call_opt(g, "open_solo", [_player_name()])
+
+
+## "Weiter mit Welle 7 · Umfrage 20 % · Gewerkschaft · Oma (Ben), Antifa (Lea)"
+static func continue_tip(info: Dictionary) -> String:
+	var who := []
+	for sp in info.get("players", []):
+		who.append("%s (%s)" % [UIKit.content_text("CHAR", str(sp["char"])), str(sp["name"])])
+	var lvl := clampi(int(info.get("difficulty", 0)), 0, Content.DIFFICULTY_PERCENT.size() - 1)
+	var where := TranslationServer.translate("MENU_CONTINUE_SHOP" if info.get("resume", "") == "shop" else "MENU_CONTINUE_WAVE")
+	return TranslationServer.translate("MENU_CONTINUE_TIP").format({
+		"where": where % int(info.get("wave", 1)), "umfrage": Content.DIFFICULTY_PERCENT[lvl],
+		"org": UIKit.content_text("ORG", str(info.get("org", ""))), "players": ", ".join(who)})
+
+
+## One player: straight into the run. Co-op: host dialog, then the lobby ("Fortsetzen").
+func _on_continue() -> void:
+	_player_name()
+	var g := UIApi.game()
+	var info = UIApi.call_opt(g, "continue_info", [], {})
+	if not (info is Dictionary) or (info as Dictionary).is_empty():
+		ToastLayer.show_text(tr("MENU_CONTINUE_FAILED"))
+		return
+	if (info["players"] as Array).size() == 1:
+		if not bool(UIApi.call_opt(g, "open_continue", [], false)):
+			ToastLayer.show_text(tr("MENU_CONTINUE_FAILED"))
+		return
+	var dlg := HostDialog.new()
+	dlg.confirmed.connect(_do_continue_host)
+	_push(dlg)
+
+
+func _do_continue_host(upnp: bool) -> void:
+	UIApi.call_opt(UIApi.game(), "open_continue_host", [_player_name(), upnp])
 
 
 func _on_rejoin_failed(_reason: String) -> void:

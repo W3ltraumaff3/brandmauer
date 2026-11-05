@@ -297,6 +297,16 @@ var place_mode: String = Content.BALANCE["place"]
 ## Experiment only (balance_sim zonetime=): puddles and walls live k × as long at 1/k damage per second.
 var zone_time_mult := 1.0
 
+## Checkpoints between waves (architecture.md "Run checkpoints", D-162/D-163): the run
+## save writes `checkpoint`; Wellen-Wiederholung loads `wave_checkpoint` again.
+const CHECKPOINT_FORMAT := 1
+const CHECKPOINT_KEYS := ["time", "wave", "wall", "org", "difficulty", "blackrock", "kasse", "team_level",
+	"team_xp", "stage", "vertrag", "streik_available", "streik_discount", "retries", "last_encounter",
+	"encounters_beaten", "shown_quotes", "_next_id", "_hole_repair_counter", "_oma_timer", "_oma_pfand"]
+var checkpoint := {}                 # latest: a wave start or the Späti
+var wave_checkpoint := {}            # start of the current wave
+var checkpoint_seq := 0              # bumped by every new checkpoint (Game writes the run save)
+
 
 # --- Setup -------------------------------------------------------------------
 
@@ -331,7 +341,7 @@ func start_run(cfg: Dictionary) -> void:
 		players[p.id] = p
 		_recompute(p)
 		p.hp = p.stats["max_hp"]
-	_begin_wave(1)
+	_start_wave(1)
 
 
 func remove_player(id: int) -> void:
@@ -704,6 +714,7 @@ func _end_wave() -> void:
 	phase = Phase.SHOP
 	streik_active = 0.0
 	meta_dirty = true
+	_take_checkpoint("shop")
 
 
 func _resolve_vertrag() -> void:
@@ -1180,24 +1191,213 @@ func _check_game_over() -> void:
 	for p in players.values():
 		if p.state == 0 or p.state == 3:
 			return
-	if bool(config.get("boss_retry", false)) and Content.ENCOUNTER_POOLS.has(wave):
-		_retry_wave()
+	# Both retry options start the lost wave over from its beginning (D-165).
+	if bool(config.get("wave_retry", false)) or (bool(config.get("boss_retry", false)) and Content.ENCOUNTER_POOLS.has(wave)):
+		_retry_from_checkpoint()
 		return
 	_finish(false)
 
 
-## Boss-Wiederholung (balancing.md §8): the lost elite/boss wave starts over with
-## the same encounter; everyone is back with full HP, gear and Pfand stay.
+## Fallback restart in place when there is no checkpoint for this wave (tests and
+## tools that call _begin_wave directly): same encounter, everyone who is down is
+## back with full HP; who left stays gone (D-164).
 func _retry_wave() -> void:
 	retries += 1
 	var enc := encounter
 	if enc == "":
 		enc = last_encounter
 	for p in players.values():
-		if p.state == 1 or p.state == 2:
+		if p.state == 1:
 			p.state = 0
 	_begin_wave(wave, enc)
 	_event(["say", Arena.CENTER - Vector2(0, 100), "SAY_BOSS_RETRY", ""])
+
+
+## Wellen- and Boss-Wiederholung (balancing.md §8, §8a, D-163, D-165): the lost wave
+## starts over from its wave-start checkpoint, so the lost attempt brings nothing. The retry counter and
+## who is gone or away stay as they are now.
+func _retry_from_checkpoint() -> void:
+	var n := int(wave_checkpoint.get("next_wave", 0))
+	if wave_checkpoint.is_empty() or n != wave:
+		_retry_wave()   # no checkpoint for this wave (tests, tools): restart it in place
+		return
+	var states := {}
+	for p in players.values():
+		states[p.id] = p.state
+	var count := retries + 1
+	_load_checkpoint(wave_checkpoint)
+	retries = count
+	for id in states:
+		var p: SimPlayer = players.get(id)
+		if p == null:
+			continue
+		p.state = states[id] if states[id] == 2 or states[id] == 3 else 0
+		p.away_state = 0
+	_start_wave(n)
+	_event(["say", Arena.CENTER - Vector2(0, 100), "SAY_BOSS_RETRY" if encounter != "" else "SAY_WAVE_RETRY", ""])
+
+
+# --- Checkpoints (run save, Wellen-Wiederholung; D-162, D-163) -----------------
+
+## Every new wave goes through here: checkpoint first, then the wave.
+func _start_wave(n: int) -> void:
+	_take_checkpoint("wave", n)
+	_begin_wave(n)
+
+
+func _take_checkpoint(resume: String, next_wave := 0) -> void:
+	checkpoint = make_checkpoint(resume, next_wave)
+	if resume == "wave":
+		wave_checkpoint = checkpoint
+	checkpoint_seq += 1
+
+
+## The state between waves as plain data (no objects): resume "wave" starts
+## `next_wave`, "shop" opens the Späti (architecture.md "Run checkpoints").
+func make_checkpoint(resume: String, next_wave := 0) -> Dictionary:
+	var s := {"rng_seed": rng.seed, "rng_state": rng.state}
+	for k in CHECKPOINT_KEYS:
+		s[k] = _copy(get(k))
+	var ps := []
+	for p in players.values():
+		ps.append(_props_of(p))
+	return {
+		"format": CHECKPOINT_FORMAT, "resume": resume, "next_wave": next_wave if resume == "wave" else wave + 1,
+		"saved_at": int(Time.get_unix_time_from_system()), "config": config.duplicate(true), "sim": s, "players": ps,
+	}
+
+
+## Continues a saved run (Game.continue_run). cfg is the new run config; its
+## players carry `from`, the saved player id they take over. Saved players
+## nobody took are left out.
+func resume_run(cfg: Dictionary, cp: Dictionary) -> void:
+	config = cfg
+	skip_intro = cfg.get("skip_intro", false)
+	_grid.resize(GRID_W * GRID_H)
+	var id_map := {}
+	var names := {}
+	for pd in cfg.get("players", []):
+		id_map[int(pd.get("from", pd["id"]))] = int(pd["id"])
+		names[int(pd["id"])] = str(pd.get("name", ""))
+	_load_checkpoint(cp, id_map)
+	for id in names:
+		var p: SimPlayer = players.get(id)
+		if p:
+			p.name = names[id]
+			p.state = 0
+			p.away_state = 0
+	if str(cp.get("resume", "wave")) == "wave":
+		_start_wave(int(cp.get("next_wave", wave + 1)))
+		return
+	phase = Phase.SHOP
+	for p in players.values():
+		p.ready = false
+	_take_checkpoint("shop")
+
+
+## Loads a checkpoint. id_map: saved player id -> new id; empty keeps the ids.
+## The arena is empty afterwards; the caller starts the wave or the Späti.
+func _load_checkpoint(cp: Dictionary, id_map := {}) -> void:
+	var s: Dictionary = cp.get("sim", {})
+	for k in CHECKPOINT_KEYS:
+		if s.has(k):
+			_assign(self, k, s[k])
+	rng.seed = int(s.get("rng_seed", rng.seed))
+	rng.state = int(s.get("rng_state", rng.state))
+	diff = Content.difficulty_mult(difficulty)
+	enemies.clear()
+	projectiles.clear()
+	pickups.clear()
+	hazards.clear()
+	summons.clear()
+	effects.clear()
+	_decoys.clear()
+	_stuck.clear()
+	encounter = ""
+	intro_wait = false
+	intro_done = {}
+	players.clear()
+	for pd in cp.get("players", []):
+		var old := int(pd.get("id", 0))
+		if not id_map.is_empty() and not id_map.has(old):
+			continue
+		var p := SimPlayer.new()
+		for k in pd:
+			_assign(p, k, pd[k])
+		p.id = int(id_map.get(old, old))
+		_sanitize_player(p)
+		players[p.id] = p
+	var votes := {}
+	for k in vertrag.get("votes", {}):
+		if id_map.is_empty() or id_map.has(int(k)):
+			votes[int(id_map.get(int(k), int(k)))] = vertrag["votes"][k]
+	vertrag["votes"] = votes
+	var drafted := int(vertrag.get("drafted", 0))
+	vertrag["drafted"] = int(id_map.get(drafted, 0 if not id_map.is_empty() else drafted))
+	for p in players.values():
+		_recompute(p)
+		p.hp = p.stats["max_hp"]
+	meta_dirty = true
+
+
+## A save from an older build may name content that is gone: drop it.
+func _sanitize_player(p: SimPlayer) -> void:
+	if not Content.CHARACTERS.has(p.char_id):
+		p.char_id = "stadtbild"
+	p.weapons = p.weapons.filter(func(w): return w is Dictionary and Content.WEAPONS.has(str(w.get("id", ""))))
+	var items: Array[String] = []
+	for it in p.items:
+		if Content.ITEMS.has(it):
+			items.append(it)
+	p.items = items
+	p.offers = p.offers.filter(func(o): return o is Dictionary and (
+		Content.WEAPONS.has(str(o.get("id", ""))) if o.get("kind", "") == "weapon" else Content.ITEMS.has(str(o.get("id", "")))))
+	for k in p.levelup_stats.keys():
+		if not Content.BASE_STATS.has(k):
+			p.levelup_stats.erase(k)
+
+
+## Script variables of a SimPlayer as plain data.
+static func _props_of(o: Object) -> Dictionary:
+	var d := {}
+	for prop in o.get_property_list():
+		if int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			d[prop["name"]] = _copy(o.get(prop["name"]))
+	return d
+
+
+static func _copy(v):
+	return v.duplicate(true) if v is Array or v is Dictionary else v
+
+
+## Sets a script variable from a deep copy of saved data (a checkpoint can be
+## loaded again); a value of another type is skipped, typed arrays are filled in place.
+static func _assign(o: Object, key: String, v) -> void:
+	if not key in o:
+		return
+	var cur = o.get(key)
+	if cur is Array and v is Array:
+		(cur as Array).assign(v.duplicate(true))
+	elif cur is Dictionary and v is Dictionary:
+		o.set(key, v.duplicate(true))
+	elif typeof(cur) == typeof(v):
+		o.set(key, v)
+	elif cur is float and v is int:
+		o.set(key, float(v))
+
+
+## Main menu / lobby: what a checkpoint holds, without loading it.
+## {wave, resume, difficulty, org, players: [{id, name, char}]} (players who left are not listed).
+static func checkpoint_summary(cp: Dictionary) -> Dictionary:
+	if cp.is_empty():
+		return {}
+	var s: Dictionary = cp.get("sim", {})
+	var ps := []
+	for pd in cp.get("players", []):
+		if pd is Dictionary and int(pd.get("state", 0)) != 2:
+			ps.append({"id": int(pd.get("id", 0)), "name": str(pd.get("name", "")), "char": str(pd.get("char_id", ""))})
+	return {"wave": int(cp.get("next_wave", 1)), "resume": str(cp.get("resume", "wave")),
+		"difficulty": int(s.get("difficulty", 0)), "org": str(s.get("org", "")), "players": ps}
 
 
 # --- Weapons -----------------------------------------------------------------
@@ -5247,7 +5447,7 @@ func _check_all_ready() -> void:
 		if (p.state == 0 or p.state == 1) and not p.ready:
 			return
 	streik_discount = false
-	_begin_wave(wave + 1)
+	_start_wave(wave + 1)
 
 
 # --- Meta & view -------------------------------------------------------------

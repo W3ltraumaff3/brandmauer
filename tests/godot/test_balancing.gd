@@ -123,6 +123,22 @@ func test_boss_retry_restarts_the_boss_wave() -> void:
 	assert_eq(t.phase, Sim.Phase.OVER, "no retry in a regular wave")
 
 
+## §8, D-164: a retry brings back who is down, never who left the run.
+func test_boss_retry_keeps_who_left_gone() -> void:
+	var s := _sim(["oma", "antifa"], {"boss_retry": true})
+	s._begin_wave(5)
+	s.remove_player(2)
+	var p: Sim.SimPlayer = s.players[1]
+	p.stats["dodge"] = 0.0
+	p.iframes = 0.0
+	s.damage_player(p, 1.0e6)
+	for i in 30:
+		s.step(1.0 / 60.0)
+	assert_eq(s.retries, 1, "retried")
+	assert_eq(s.players[1].state, 0, "the downed player is back")
+	assert_eq(s.players[2].state, 2, "who left stays gone")
+
+
 ## §7 (D-106): the old 50 % switch is gone; the tempo comes with the phases at
 ## 66 % / 33 % of the encounter's total HP (the Sylt-Clique as one group).
 func test_elite_phase_tempo() -> void:

@@ -619,7 +619,7 @@ Bug fix that comes with this: the Sauerländer's walk targets and money drops (a
 | Mechanic | Rule |
 |---|---|
 | **Solidaritätszuschlag** | Reviving a downed player costs the helper 10 % of their max HP (5 % with Erste-Hilfe-Kurs). The revived player returns with 40 % HP |
-| **Downed hint** | While you are down, the HUD says "Kurz durchatmen – die anderen holen dich zurück!". **Solo** (only one player left in the run) there is nobody to revive you: going down ends the run ("Vertagt.", or the boss wave restarts with Boss-Wiederholung; Zweiter Wahlgang catches the hit before you go down at all). The hint then says "Solidarität braucht mindestens zwei. Nächster Anlauf!", and the downed character lies there without the revive ring, the green cross and "Hilf mir hoch!" (D-157). **Co-op, everyone down** (the run is over, "Vertagt."): nobody is left to help either, so the hint says "Alle am Boden. Nächstes Mal stehen wir zusammen wieder auf!" and the revive markers disappear as well |
+| **Downed hint** | While you are down, the HUD says "Kurz durchatmen – die anderen holen dich zurück!". **Solo** (only one player left in the run) there is nobody to revive you: going down ends the run ("Vertagt.", or the wave restarts with Wellen-Wiederholung, or the boss wave with Boss-Wiederholung; Zweiter Wahlgang catches the hit before you go down at all). The hint then says "Solidarität braucht mindestens zwei. Nächster Anlauf!", and the downed character lies there without the revive ring, the green cross and "Hilf mir hoch!" (D-157). **Co-op, everyone down** (the run is over, "Vertagt."): nobody is left to help either, so the hint says "Alle am Boden. Nächstes Mal stehen wir zusammen wieder auf!" and the revive markers disappear as well |
 | **Scaling** | More players means more enemies and stronger elites |
 | **Späti** | One per player. No timer: the next wave starts when every player is "Bereit" |
 | **Zusammenhalt** | Shared across the team |
@@ -673,7 +673,15 @@ Offers **3 options drawn at random** from the pool below; the result applies for
 - **Unlocks** (characters, weapons, items) come from achievements, e.g. "Win as Bürgergeld-Empfänger without buying a weapon" or "Finish a run with an intact Brandmauer" (*Unmöglich*).
 - **Zitat-Album:** collectible quote cards with source, date and context, unlocked by beating bosses and elites.
 - **Difficulty = Umfrage levels:** 10% → 15% → 20% → 25% → 30% → 35%, each step harder (docs/specs/balancing.md §3). **All levels can be picked from the start**; the menu records the highest one beaten. 35 % should be hardly beatable.
-- **Boss-Wiederholung (host option in the lobby, off by default):** if the team dies in a wave with an elite or boss (5, 10, 15, 20), that wave starts over instead of ending the run (docs/specs/balancing.md §8).
+- **Boss-Wiederholung (host option in the lobby, off by default):** if the team dies in a wave with an elite or boss (5, 10, 15, 20), that wave starts over **from its beginning** instead of ending the run, like Wellen-Wiederholung below (docs/specs/balancing.md §8, D-165).
+- **Wellen-Wiederholung (host option in the lobby, off by default, D-163):** if the team dies in **any** wave, that wave starts over **from the state at its start**: what was picked up in the lost attempt is gone, so dying never farms Pfand or XP. Both options restart the same way and differ only in which waves they cover (balancing.md §8a).
+- **Weiterspielen (run save, D-162):** a run can be quit at any time and continued later.
+  - **What is saved:** the machine that runs the game (solo, or the host in co-op) keeps **one** saved run. It is written when a wave starts (after the Späti, so purchases and the Koalitionsvertrag are in it), when the Späti opens, and after every Späti action. It holds everything between waves: wave, Umfrage, Organisation, the retry options, Brandmauer, Zusammenhalt, Koalitionskasse and -vertrag, and per player character, weapons, items, stats, level-ups, Pfand, Späti offers (incl. Reservieren) and run statistics.
+  - **Where you continue:** quit during a wave (pause menu, closing the window, a crash) and you continue at the **start of that wave**; quit in the Späti and you continue in the Späti as you left it.
+  - **Pause menu:** "Speichern und beenden" goes to the main menu and keeps the run; "Aufgeben" (press twice) deletes it. A co-op client only has "Verlassen" (it saves nothing).
+  - **Main menu:** a green **"Weiterspielen · Welle N"** button on top (tooltip: Umfrage, Organisation, characters). A solo run continues at once. A co-op run opens the host dialog and the lobby with your old character picked; there a **"Fortsetzen"** button starts it once everyone is ready.
+  - **Who gets which character (co-op):** a lobby player takes the saved character with the same character and name, then the same character, then any free one in order. Saved characters nobody takes are left out. More players than saved characters: "Fortsetzen" is off.
+  - **The save ends with the run:** it is deleted the moment the run is won or lost, so dying can't be undone by quitting. Starting a new run replaces it, so "Los geht's!" asks for a second press while a saved run exists.
 - **Achievements (8):** Döp dödö döp (Sylt-Clique), 180 Grad (Geschichtslehrer), Abgesetzt (Sauerländer, unlocks Die Töchter), Remigration (Remigrantin), Unmöglich (intact Brandmauer), Faul, aber effizient (win as Bürgergeld-Empfänger:in without buying a weapon), Kassenwart:in (co-op), Fliegenschiss (hidden Vogelschiss).
 - **Saves are stored locally per player.** A host never stores a client's progress.
 - **Co-op-only content is hidden in solo:** the Koalitionskasse, its end-screen columns and the achievement *Kassenwart:in*, and the item Erste-Hilfe-Kurs (not offered in the shop).
@@ -739,7 +747,7 @@ The whole game is fully playable with a gamepad (Xbox/PlayStation/Switch layouts
 | Confirm in menus | A / ✕ | Enter |
 | Back / close dialog | B / ○ | Esc |
 | Späti tabs/sections | LB / RB jump between the sections Angebote, Waffen, Items, Kasse, Mauer, Vertrag, Bereit and Werte; the right stick scrolls lists | — |
-| Lobby areas | LB / RB jump between Einstellungen (Organisation, Umfrage, Boss-Wiederholung), Charaktere (your selected card) and the bottom row (Bereit, else Los; D-124) | — |
+| Lobby areas | LB / RB jump between Einstellungen (Organisation, Umfrage, Boss-Wiederholung, Wellen-Wiederholung), Charaktere (your selected card) and the bottom row (Bereit, else Los; D-124) | — |
 
 - **Every menu, dialog and the Späti are navigable with focus:** there's a visible focus frame, focus never gets lost, and the first sensible button gets focus.
 - **Directions mean directions:** right moves to the control on the right, down to the one below, and so on.

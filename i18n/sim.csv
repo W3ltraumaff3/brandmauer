@@ -30,6 +30,7 @@ SAY_ENTLASSEN,Entlassen!
 SAY_NICHTIG,Nichtig erklärt!
 SAY_BETRIEBSPRUEFUNG,Betriebsprüfung! Die Hälfte ist weg.
 SAY_BOSS_RETRY,Nochmal! Diesmal mit Plan.
+SAY_WAVE_RETRY,Zurück auf Anfang. Diesmal mit Plan.
 SAY_ENRAGE,Jetzt reicht’s aber!
 SAY_REICHENSTEUER,Reichensteuer! Wer viel hat, gibt ab.
 SAY_OFFENGELEGT,Offengelegt!
