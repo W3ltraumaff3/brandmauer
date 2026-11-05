@@ -162,10 +162,10 @@
 6. **Stable RPC ids:** the handshake RPCs are named `_rpc_00_hello`, `_rpc_01_reject` and `_rpc_02_welcome`.
    - Godot numbers RPCs by sorted method name, so these keep the same ids across game versions, and an old client still gets a clean version error.
    - Never rename them or change their arguments. New RPCs (`_rpc_session`, `_rpc_resume`, `_rpc_bye`, `_rpc_host_closed`, …) sort after them.
-7. **Protocol version:** `PROTOCOL_VERSION` is **8** since the sound events carry the peer who caused them (`sfx`, `dmg`, `kill`; D-151), so a host without it rejects newer clients; 7 came with the Späti request `lock` (D-148); 6 came with snapshot version 5 (§6.1, D-144); 5 came with snapshot version 4 (D-108); 4 came with snapshot version 3 (D-093). Version 3 added `_rpc_want_run` for rejoining after a crash (§7.5), version 2 the reconnect RPCs. New RPCs shift the ids of every later RPC; a new snapshot version also bumps the protocol, so the handshake rejects a mismatched build.
+7. **Protocol version:** `PROTOCOL_VERSION` is **9** since `_rpc_lobby` also carries Wellen-Wiederholung (D-163); 8 came when the sound events started to carry the peer who caused them (`sfx`, `dmg`, `kill`; D-151), so a host without it rejects newer clients; 7 came with the Späti request `lock` (D-148); 6 came with snapshot version 5 (§6.1, D-144); 5 came with snapshot version 4 (D-108); 4 came with snapshot version 3 (D-093). Version 3 added `_rpc_want_run` for rejoining after a crash (§7.5), version 2 the reconnect RPCs. New RPCs shift the ids of every later RPC; a new snapshot version also bumps the protocol, so the handshake rejects a mismatched build.
 
 ### 7.2 Lobby
-- **Ownership:** the host owns `Net.lobby` (`{player_id: {name, char, ready}}`), `Net.org` and `Net.difficulty`, and pushes all three to every client on every change. Each push emits `lobby_changed`.
+- **Ownership:** the host owns `Net.lobby` (`{player_id: {name, char, ready}}`), `Net.org`, `Net.difficulty` and the retry options `Net.boss_retry` / `Net.wave_retry`, and pushes them to every client on every change. Each push emits `lobby_changed`.
 - **Client changes:** clients call `set_char` and `set_ready`, which become requests to the host. The host validates them: the char must be in `Content.CHAR_ORDER`, the org in `Content.ORG_ORDER`, and the difficulty is clamped to 0..5.
 - **Names:** trimmed, `|` replaced, at most 20 characters.
 - **A peer leaves** (in the lobby, after its grace period, or with `bye`):
@@ -266,6 +266,7 @@
 ## 8. Saves & trust
 
 - **Meta progression is saved locally on each player's machine.** Hosts never store client progress.
+- **The run save (GDD §17 "Weiterspielen", D-162) lives where the `Sim` runs:** solo or the host (not the dedicated server, it has no menu to continue from). It is a `Sim` checkpoint, so solo and co-op share one code path; a co-op save holds every player's character state, and clients save nothing. Continuing goes through the normal run start: the host broadcasts a config whose players carry `from` (their saved player id), clients see an ordinary run start, and only the host's `Sim` loads the checkpoint (`Sim.resume_run`).
 - **Unlocks are checked client-side** when a player picks a character, and the host accepts the choice.
 - **Trust model:** co-op among friends. The host validates gameplay requests for consistency, but there's **no anti-cheat**.
 

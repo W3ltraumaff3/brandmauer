@@ -230,9 +230,15 @@ func local_id() -> int                   # our player id (Net.local_player_id();
 func local_meta() -> Dictionary          # meta.players[local_id()] or {}
 func open_solo() / open_host(name, use_upnp) / open_join(ip, port, name)  # -> lobby screen
 func start_run() -> void                 # host only: builds the config from Net.lobby and broadcasts it
+func continue_info() -> Dictionary       # summary of the saved run (Sim.checkpoint_summary) or {}
+func open_continue() -> bool             # main menu "Weiterspielen": a one-player save starts solo at once
+func open_continue_host(name, use_upnp)  # co-op save: host lobby with the host's saved character picked
+func continue_run() -> bool              # host only: the saved run with the lobby players (resume_mapping)
+static func resume_mapping(lobby, checkpoint) -> Dictionary   # player id -> saved player id, {} = impossible
 func request(action: String, arg = null) -> void
 func back_to_lobby() -> void             # host: after the end screen
-func quit_to_menu() -> void
+func quit_to_menu() -> void             # host side: writes the run save first (in the Späti: as it is now)
+func give_up() -> void                   # pause menu "Aufgeben": deletes the run save, then quit_to_menu
 func is_paused() -> bool / set_paused(p: bool)   # pause is solo only
 ```
 
@@ -242,7 +248,31 @@ var data := {}  # unlocked_chars, achievements, album, max_umfrage, stats, optio
 func is_char_unlocked(id) -> bool; func has_achievement(id) -> bool; func album_has(quote_id) -> bool
 func apply_result(result: Dictionary, my_peer: int) -> Dictionary  # returns {"new_achievements": [], "new_quotes": [], "new_chars": []}
 func option(key, default); func set_option(key, value); func save()
+# Run save (GDD §17 "Weiterspielen", D-162): one Sim checkpoint in user://run_save.bin
+# (binary store_var, no objects; written to a temp file and renamed). Memory only when persist is off.
+func write_run(checkpoint: Dictionary) -> void
+func run_save() -> Dictionary            # {} if missing, unreadable or of another Sim.CHECKPOINT_FORMAT
+func clear_run() -> void
 ```
+
+### Run checkpoints (src/sim/sim.gd, D-162/D-163)
+A checkpoint is a plain Dictionary of the state **between waves**; nothing in the arena is in it.
+```
+{format: Sim.CHECKPOINT_FORMAT, resume: "wave" | "shop", next_wave: int, saved_at: int,
+ config: {...run config},                 # Game builds the resumed run's config from it
+ sim: {CHECKPOINT_KEYS..., rng_seed, rng_state},
+ players: [{every script variable of SimPlayer}]}
+```
+- `Sim._start_wave(n)` takes a "wave" checkpoint right before `_begin_wave(n)` (also wave 1);
+  it is `checkpoint` and `wave_checkpoint`. `_end_wave` takes a "shop" checkpoint when the Späti
+  opens. Each new one bumps `checkpoint_seq`; Game writes `checkpoint` to the run save when the
+  seq changed and, in the Späti, `make_checkpoint("shop")` after every request and on quitting.
+- `Sim.resume_run(cfg, checkpoint)`: cfg.players carry `from` (the saved player id); players
+  nobody took are left out, votes and the Wehrdienst draw are remapped. "wave" starts that wave,
+  "shop" opens the Späti with nobody ready.
+- Wellen-Wiederholung (`config.wave_retry`) loads `wave_checkpoint` again and starts the wave;
+  `retries` and who is gone or away are kept.
+- Game deletes the run save as soon as the Sim reaches `Phase.OVER`.
 
 ### `Audio` (src/autoload/audio.gd)
 ```

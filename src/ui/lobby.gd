@@ -15,6 +15,9 @@ var _diff_pick: OptionButton
 var _diff_label: Label
 var _diff_desc: Label
 var _retry_check: CheckBox
+var _wave_retry_check: CheckBox
+var _continue_btn: Button
+var _start_armed := false        # a saved run exists: "Los" asks for a second press (D-162)
 var _conn_box: VBoxContainer
 var _ready_btn: Button
 var _start_btn: Button
@@ -64,6 +67,12 @@ func build() -> void:
 	_ready_btn.toggle_mode = true
 	_ready_btn.custom_minimum_size.x = 170
 	bottom.add_child(_ready_btn)
+	# The saved run of the host (GDD §17 "Weiterspielen").
+	_continue_btn = UIKit.button("", _on_continue, 24)
+	_continue_btn.name = "continue"
+	_continue_btn.visible = false
+	UIKit.ready_look(_continue_btn, true)
+	bottom.add_child(_continue_btn)
 	_start_btn = UIKit.button(tr("LOBBY_START"), _on_start, 28)
 	_start_btn.custom_minimum_size.x = 220
 	UIKit.tilt(_start_btn, -1.0)
@@ -142,6 +151,15 @@ func _build_left() -> Control:
 	_retry_check.disabled = not UIApi.is_host()
 	_retry_check.toggled.connect(func(on: bool) -> void: UIApi.call_opt(UIApi.net(), "set_boss_retry", [on]))
 	diff.add_child(_retry_check)
+	# Wellen-Wiederholung (balancing.md §8a, D-163).
+	_wave_retry_check = CheckBox.new()
+	_wave_retry_check.name = "wave_retry"
+	_wave_retry_check.text = tr("LOBBY_WAVE_RETRY")
+	_wave_retry_check.tooltip_text = tr("LOBBY_WAVE_RETRY_TIP")
+	_wave_retry_check.add_theme_font_size_override("font_size", 18)
+	_wave_retry_check.disabled = not UIApi.is_host()
+	_wave_retry_check.toggled.connect(func(on: bool) -> void: UIApi.call_opt(UIApi.net(), "set_wave_retry", [on]))
+	diff.add_child(_wave_retry_check)
 	return col
 
 
@@ -321,6 +339,8 @@ func refresh() -> void:
 	_diff_desc.text = _diff_text(diff)
 	if _retry_check:
 		_retry_check.set_pressed_no_signal(bool(UIApi.net_value("boss_retry", false)))
+	if _wave_retry_check:
+		_wave_retry_check.set_pressed_no_signal(bool(UIApi.net_value("wave_retry", false)))
 
 	# Connection info (host in co-op).
 	if _conn_box:
@@ -353,6 +373,20 @@ func refresh() -> void:
 	_start_btn.visible = host
 	_start_btn.disabled = not (solo or all_ready) or my_char == ""
 	UINav.sync_disabled(_start_btn)
+	var saved: Dictionary = UIApi.call_opt(UIApi.game(), "continue_info", [], {}) if host else {}
+	_continue_btn.visible = not saved.is_empty()
+	if not saved.is_empty():
+		var fits := bool(UIApi.call_opt(UIApi.game(), "can_continue", [], false))
+		_continue_btn.text = tr("LOBBY_CONTINUE") % int(saved["wave"])
+		_continue_btn.disabled = not (solo or all_ready) or not fits
+		_continue_btn.tooltip_text = MainMenu.continue_tip(saved) + " · " + (tr("LOBBY_CONTINUE_TIP") if fits
+			else tr("LOBBY_CONTINUE_TOO_MANY") % (saved["players"] as Array).size())
+		UINav.sync_disabled(_continue_btn)
+	_start_btn.tooltip_text = tr("LOBBY_START_OVERWRITE_TIP") % int(saved["wave"]) if not saved.is_empty() else ""
+	if saved.is_empty() and _start_armed:
+		_start_armed = false
+		_start_btn.text = tr("LOBBY_START")
+		_start_btn.remove_theme_color_override("font_color")
 	_wait_label.visible = not host
 	if host and not solo and not all_ready:
 		_wait_label.visible = true
@@ -369,7 +403,7 @@ func _link_bottom_row() -> void:
 	var target: Button = _char_buttons.get(mine, _char_buttons.get(Content.CHAR_ORDER[0])) as Button
 	if target == null:
 		return
-	for b in [_ready_btn, _start_btn]:
+	for b in [_ready_btn, _continue_btn, _start_btn]:
 		(b as Control).focus_neighbor_top = (b as Control).get_path_to(target)
 
 
@@ -408,7 +442,7 @@ func _area_target(area: Control) -> Control:
 		var mine := str(_my_entry().get("char", Content.CHAR_ORDER[0]))
 		return _char_buttons.get(mine, _char_buttons.get(Content.CHAR_ORDER[0])) as Control
 	if area == _bottom_area:
-		for b in [_ready_btn, _start_btn]:
+		for b in [_ready_btn, _continue_btn, _start_btn]:
 			if UINav.can_focus(b):
 				return b
 	for c in area.find_children("*", "Control", true, false):
@@ -527,7 +561,18 @@ func _on_ready() -> void:
 
 
 func _on_start() -> void:
+	# A new run replaces the saved one: second press (D-162).
+	if not _start_armed and not (UIApi.call_opt(UIApi.game(), "continue_info", [], {}) as Dictionary).is_empty():
+		_start_armed = true
+		_start_btn.text = tr("LOBBY_START_OVERWRITE")
+		_start_btn.add_theme_color_override("font_color", UITheme.RED)
+		return
 	UIApi.call_opt(UIApi.game(), "start_run")
+
+
+func _on_continue() -> void:
+	if not bool(UIApi.call_opt(UIApi.game(), "continue_run", [], false)):
+		ToastLayer.show_text(tr("MENU_CONTINUE_FAILED"))
 
 
 func _on_back() -> void:

@@ -1,7 +1,8 @@
 class_name PauseMenu
 extends Control
 ## Pause overlay for the run screen. Pauses only in solo (Game.set_paused);
-## in co-op the run keeps going behind it.
+## in co-op the run keeps going behind it. The machine running the game can
+## save and quit (the run save, GDD §17) or give the run up; a client leaves.
 
 signal closed
 
@@ -9,6 +10,7 @@ var _card_box: VBoxContainer
 var _quit_btn: Button
 var _quit_armed := false
 var _solo := false
+var _host := false
 var _closing := false
 
 
@@ -23,6 +25,7 @@ func _ready() -> void:
 		theme = UITheme.get_theme()  # also themed under a CanvasLayer
 	UINav.modal_open(self)  # the Späti behind stays out of reach
 	_solo = UIApi.is_solo()
+	_host = UIApi.is_host()
 	if _solo:
 		UIApi.call_opt(UIApi.game(), "set_paused", [true])
 	var dim := ColorRect.new()
@@ -46,7 +49,15 @@ func _ready() -> void:
 	var resume := UIKit.button(tr("PAUSE_RESUME"), resume_game, 26)
 	_card_box.add_child(resume)
 	_card_box.add_child(UIKit.button(tr("MENU_OPTIONS"), _on_options, 24))
-	_quit_btn = UIKit.button(tr("PAUSE_GIVE_UP") if _solo else tr("PAUSE_LEAVE"), _on_quit, 24)
+	if _host:
+		var save_quit := UIKit.button(tr("PAUSE_SAVE_QUIT"), _on_save_quit, 24)
+		save_quit.name = "save_quit"
+		save_quit.tooltip_text = tr("PAUSE_SAVE_QUIT_TIP")
+		_card_box.add_child(save_quit)
+	_quit_btn = UIKit.button(tr("PAUSE_GIVE_UP") if _host else tr("PAUSE_LEAVE"), _on_quit, 24)
+	_quit_btn.name = "quit"
+	if _host:
+		_quit_btn.tooltip_text = tr("PAUSE_GIVE_UP_TIP")
 	_card_box.add_child(_quit_btn)
 	var keys := UIKit.label("", 16, UITheme.GREY, HORIZONTAL_ALIGNMENT_CENTER)
 	keys.name = "input_hint"
@@ -84,6 +95,13 @@ func _on_quit() -> void:
 		_quit_btn.text = tr("PAUSE_CONFIRM")
 		_quit_btn.add_theme_color_override("font_color", UITheme.RED)
 		return
+	if _solo:
+		UIApi.call_opt(UIApi.game(), "set_paused", [false])
+	UIApi.call_opt(UIApi.game(), "give_up" if _host else "quit_to_menu")
+
+
+## The run save keeps the last wave start or the Späti as it is (Game.quit_to_menu).
+func _on_save_quit() -> void:
 	if _solo:
 		UIApi.call_opt(UIApi.game(), "set_paused", [false])
 	UIApi.call_opt(UIApi.game(), "quit_to_menu")

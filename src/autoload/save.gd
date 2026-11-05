@@ -97,6 +97,55 @@ func clear_rejoin() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(REJOIN_PATH))
 
 
+## Run save (GDD §17 "Weiterspielen", D-162): the latest Sim checkpoint of the run
+## this machine hosts. Binary store_var without objects, written to a temp file
+## first so a crash mid-write never leaves half a save. Memory only when `persist` is off.
+const RUN_PATH := "user://run_save.bin"
+
+var _run_mem := {}
+
+
+func write_run(cp: Dictionary) -> void:
+	_run_mem = cp.duplicate(true)
+	if not persist:
+		return
+	var tmp := RUN_PATH + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_var(cp, false)
+	f.close()
+	var to := ProjectSettings.globalize_path(RUN_PATH)
+	if DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), to) != OK:
+		DirAccess.remove_absolute(to)
+		DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), to)
+
+
+## The saved run, or {} if there is none or it doesn't fit this build.
+func run_save() -> Dictionary:
+	var d = _run_mem
+	if persist:
+		d = null
+		if FileAccess.file_exists(RUN_PATH):
+			var f := FileAccess.open(RUN_PATH, FileAccess.READ)
+			d = f.get_var(false) if f else null
+	if not (d is Dictionary) or int((d as Dictionary).get("format", -1)) != Sim.CHECKPOINT_FORMAT:
+		return {}
+	if Sim.checkpoint_summary(d).get("players", []).is_empty():
+		return {}
+	return d
+
+
+func has_run_save() -> bool:
+	return not run_save().is_empty()
+
+
+func clear_run() -> void:
+	_run_mem = {}
+	if persist and FileAccess.file_exists(RUN_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(RUN_PATH))
+
+
 func is_char_unlocked(id: String) -> bool:
 	var c: Dictionary = Content.CHARACTERS.get(id, {})
 	if c.is_empty():

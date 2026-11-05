@@ -12,7 +12,7 @@ extends Node
 
 const PORT := 24713                 # game port (UDP); LAN discovery uses PORT + 1
 const LAN_PORT := PORT + 1
-const PROTOCOL_VERSION := 8                  # 8: sound events carry the peer (D-151); 7: Späti lock request (D-148); 6: snapshot v5 (D-144); 5: snapshot v4 (D-108); 4: snapshot v3 (D-093)
+const PROTOCOL_VERSION := 9                  # 9: lobby carries Wellen-Wiederholung (D-163); 8: sound events carry the peer (D-151); 7: Späti lock request (D-148); 6: snapshot v5 (D-144); 5: snapshot v4 (D-108); 4: snapshot v3 (D-093)
 const MAX_PLAYERS := 4
 const DEFAULT_CHAR := "stadtbild"
 const HANDSHAKE_TIMEOUT_S := 8.0
@@ -68,6 +68,7 @@ var lobby := {}        # player id -> {"name": String, "char": String, "ready": 
 var org := "gewerkschaft"
 var difficulty := 0
 var boss_retry := false             # host option: a lost boss wave starts over (balancing.md §8)
+var wave_retry := false             # host option: any lost wave starts over from its start (balancing.md §8a)
 var dedicated := false
 var lan_games := []    # [{"name", "ip", "port", "players"}]
 var upnp_status := ""  # "" | "ok" | "failed: ..."
@@ -343,6 +344,13 @@ func set_boss_retry(on: bool) -> void:
 	_lobby_updated()
 
 
+func set_wave_retry(on: bool) -> void:
+	if not is_host() or on == wave_retry:
+		return
+	wave_retry = on
+	_lobby_updated()
+
+
 func start_lan_discovery() -> void:
 	if _lan_rx != null:
 		return
@@ -582,7 +590,7 @@ func _apply_ready(peer: int, is_ready: bool) -> void:
 ## Host: push the lobby to all clients and notify locally.
 func _lobby_updated() -> void:
 	for id in _client_ids():
-		_rpc_lobby.rpc_id(id, lobby, org, difficulty, boss_retry)
+		_rpc_lobby.rpc_id(id, lobby, org, difficulty, boss_retry, wave_retry)
 	_log_lobby()
 	_update_autostart()
 	lobby_changed.emit()
@@ -949,13 +957,14 @@ func _rpc_host_closed() -> void:
 
 
 @rpc("authority", "call_remote", "reliable", CH_LOBBY)
-func _rpc_lobby(new_lobby: Dictionary, new_org: String, new_difficulty: int, new_boss_retry: bool) -> void:
+func _rpc_lobby(new_lobby: Dictionary, new_org: String, new_difficulty: int, new_boss_retry: bool, new_wave_retry: bool) -> void:
 	if _mode != Mode.CLIENT:
 		return
 	lobby = new_lobby
 	org = new_org
 	difficulty = new_difficulty
 	boss_retry = new_boss_retry
+	wave_retry = new_wave_retry
 	lobby_changed.emit()
 
 

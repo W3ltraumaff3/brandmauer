@@ -173,6 +173,9 @@ PAUSE_HINT_COOP,Achtung: Im Koop läuft das Spiel weiter!
 PAUSE_RESUME,Fortsetzen
 PAUSE_GIVE_UP,Aufgeben
 PAUSE_LEAVE,Verlassen
+PAUSE_SAVE_QUIT,Speichern und beenden
+PAUSE_SAVE_QUIT_TIP,"Zurück ins Hauptmenü. Mit „Weiterspielen“ geht es am Anfang dieser Welle weiter, im Späti genau da, wo du warst."
+PAUSE_GIVE_UP_TIP,Beendet den Lauf endgültig. Der Spielstand wird gelöscht.
 PAUSE_CONFIRM,Wirklich? Nochmal drücken.
 # Options
 OPTIONS_TITLE,Optionen
@@ -329,11 +332,23 @@ READY_TAKE_BACK_TIP,Nochmal drücken: doch nicht bereit.
 MENU_REJOIN,Zurück ins Spiel
 MENU_REJOIN_TIP,Deine Koop-Runde bei %s läuft noch. Dein Charakter wartet auf dich.
 MENU_REJOIN_CONNECTING,Verbinde …
+MENU_CONTINUE,Weiterspielen · Welle %d
+MENU_CONTINUE_TIP,{where} · Umfrage {umfrage} % · {org} · {players}
+MENU_CONTINUE_WAVE,Weiter mit Welle %d
+MENU_CONTINUE_SHOP,Weiter im Späti vor Welle %d
+MENU_CONTINUE_FAILED,Der gespeicherte Lauf ließ sich nicht laden.
 LOBBY_DIFF_NORMAL,Normale Gegnerstärke.
 LOBBY_DIFF_STATS,"Gegner:innen +%d %% Leben, +%d %% Schaden, +%d %% Spawns."
 LOBBY_BOSS_RETRY,Boss-Wiederholung
-LOBBY_BOSS_RETRY_TIP,"Stirbt das Team in einer Boss- oder Elite-Welle, startet diese Welle neu. Items, Waffen und Pfand bleiben. Für alle, die das Finale sehen wollen."
-END_RETRIES,Boss-Wiederholungen: %d
+LOBBY_BOSS_RETRY_TIP,"Stirbt das Team in einer Boss- oder Elite-Welle, startet diese Welle neu: mit dem Stand vom Wellenbeginn. Für alle, die das Finale sehen wollen."
+LOBBY_WAVE_RETRY,Wellen-Wiederholung
+LOBBY_WAVE_RETRY_TIP,"Stirbt das Team in irgendeiner Welle, startet sie neu: mit dem Stand vom Wellenbeginn. Was im verlorenen Versuch eingesammelt wurde, ist wieder weg."
+LOBBY_CONTINUE,Fortsetzen · Welle %d
+LOBBY_CONTINUE_TIP,"Wer denselben Charakter wählt, übernimmt dessen Stand."
+LOBBY_CONTINUE_TOO_MANY,"Im Spielstand sind nur %d Spieler:innen."
+LOBBY_START_OVERWRITE,Neuer Lauf? Nochmal drücken.
+LOBBY_START_OVERWRITE_TIP,"Ein neuer Lauf ersetzt den gespeicherten (Welle %d)."
+END_RETRIES,Wellen wiederholt: %d
 SPAETI_TAX_PAID,Reichensteuer: −%d %s an die Ärmsten
 SPAETI_TAX_RECEIVED,Reichensteuer: +%d %s für dich
 END_TAX,"Reichensteuer: %d gezahlt, %d erhalten"
