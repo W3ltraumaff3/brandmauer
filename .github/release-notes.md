@@ -2,6 +2,10 @@
 
 Danke, dass du mittestest! Das Spiel ist eine **Beta**: Es gibt Bugs, und das Balancing ist noch nicht fertig.
 
+### Neu in 0.5.2
+- **Spenden:** Im Hauptmenü gibt es jetzt den Knopf **„Spenden“**. Er erklärt, wohin das Geld geht, und öffnet dann die Ko-fi-Seite (ko-fi.com/brandmauer). Jede Spende geht an Organisationen gegen Rechtsextremismus, z. B. Amadeu Antonio Stiftung, EXIT-Deutschland, VBRG und Bundesverband Mobile Beratung.
+- **Wichtig für Koop:** Alle brauchen diese Version, ältere können nicht mitspielen.
+
 ### Neu in 0.5.1
 - **Weiterspielen:** Du kannst jederzeit aufhören und später weitermachen. Im Pausemenü **„Speichern und beenden“**, im Hauptmenü dann **„Weiterspielen“**. Gespeichert wird zu Beginn jeder Welle und im Späti: Mitten in einer Welle geht es am Anfang dieser Welle weiter, im Späti genau da, wo du warst. **„Aufgeben“** löscht den Spielstand. Ist der Lauf gewonnen oder verloren, ist auch der Spielstand weg.
 - **Koop weiterspielen:** Der Spielstand liegt beim Host. „Weiterspielen“ öffnet die Lobby, alle wählen ihren Charakter von damals, dann **„Fortsetzen“**.

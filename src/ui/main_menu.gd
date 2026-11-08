@@ -68,7 +68,8 @@ func build() -> void:
 		["MENU_SOLO", _on_solo], ["MENU_HOST", _on_host],
 		["MENU_JOIN", _on_join], ["MENU_ALBUM", _open.bind("album")],
 		["MENU_ACHIEVEMENTS", _open.bind("achievements")], ["MENU_OPTIONS", _open.bind("options")],
-		["MENU_CREDITS", _open.bind("credits")], ["MENU_BUG", _on_bug], ["MENU_QUIT", _on_quit],
+		["MENU_CREDITS", _open.bind("credits")], ["MENU_BUG", _on_bug],
+		["MENU_DONATE", _open.bind("donate")], ["MENU_QUIT", _on_quit],
 	]
 	for i in entries.size():
 		var b := UIKit.button(tr(entries[i][0]), entries[i][1], 26)
@@ -226,6 +227,7 @@ func _open(which: String) -> void:
 		"achievements": s = AchievementsScreen.new()
 		"options": s = OptionsScreen.new()
 		"credits": s = CreditsScreen.new()
+		"donate": s = DonateDialog.new()
 	if s:
 		_push(s)
 

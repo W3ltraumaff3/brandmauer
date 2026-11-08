@@ -733,6 +733,11 @@ Saved immediately.
 
 The main menu also has a **Bug melden** button that opens the GitHub bug-report form.
 
+**Spenden** (main menu, next to "Beenden", D-166): opens a small dialog that first says where the money goes, then links to the Ko-fi page (`https://ko-fi.com/brandmauer`, opened in the browser). No money is handled in the game. Dialog text:
+- "Wohin dein Geld geht: Jede Spende gebe ich an Organisationen gegen Rechtsextremismus weiter, z. B.:"
+- Amadeu Antonio Stiftung · EXIT-Deutschland (Ausstieg aus der Neonazi-Szene) · VBRG (Beratung für Betroffene rechter Gewalt) · Bundesverband Mobile Beratung
+- Buttons: "Abbrechen" and "Zu Ko-fi". The text is plain and serious, no satire: it's about real money.
+
 After a crash or a lost connection during a co-op run, the main menu shows a green **"Zurück ins Spiel"** button on top. It brings you back into the same run as the same character, as long as that run is still going (networking.md §7.5).
 
 ### 19b. Controller support

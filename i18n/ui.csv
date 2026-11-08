@@ -352,3 +352,13 @@ END_RETRIES,Wellen wiederholt: %d
 SPAETI_TAX_PAID,Reichensteuer: −%d %s an die Ärmsten
 SPAETI_TAX_RECEIVED,Reichensteuer: +%d %s für dich
 END_TAX,"Reichensteuer: %d gezahlt, %d erhalten"
+MENU_DONATE,Spenden
+DONATE_TITLE,Spenden gegen rechts
+DONATE_WHERE,Wohin dein Geld geht:
+DONATE_TEXT,"Jede Spende gebe ich an Organisationen gegen Rechtsextremismus weiter, z. B.:"
+DONATE_ORG_1,• Amadeu Antonio Stiftung
+DONATE_ORG_2,• EXIT-Deutschland (Ausstieg aus der Neonazi-Szene)
+DONATE_ORG_3,• VBRG (Beratung für Betroffene rechter Gewalt)
+DONATE_ORG_4,• Bundesverband Mobile Beratung
+DONATE_GO,Zu Ko-fi
+DONATE_OPENED,Ko-fi wurde im Browser geöffnet. Danke!
