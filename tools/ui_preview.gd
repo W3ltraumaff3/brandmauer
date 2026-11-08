@@ -41,6 +41,7 @@ func _run() -> void:
 
 	await _shot("01_main_menu", MainMenu.new())
 	await _shot_menu_overlay("02_host_dialog", HostDialog.new())
+	await _shot_menu_overlay("02b_donate_dialog", DonateDialog.new())
 	UIApi.preview_net = {"lan_games": [
 		{"name": "Oma Inge", "ip": "192.168.178.23", "port": 24713, "players": 2},
 		{"name": "Kiezkollektiv", "ip": "192.168.178.40", "port": 24713, "players": 1}]}

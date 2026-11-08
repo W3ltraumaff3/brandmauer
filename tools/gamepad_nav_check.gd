@@ -306,6 +306,7 @@ func _check_menu_overlays() -> void:
 		["album", "MENU_ALBUM", "ddddddddddrrlluu", ""],
 		["achievements", "MENU_ACHIEVEMENTS", "ddrdlluu", ""],
 		["credits", "MENU_CREDITS", "ud", ""],
+		["donate dialog", "MENU_DONATE", "lrlrud", ""],
 	]
 	UIApi.preview_net = {"lan_games": [
 		{"name": "Oma Inge", "ip": "192.168.178.23", "port": 24713, "players": 2},
